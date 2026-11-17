@@ -1,0 +1,84 @@
+<section class="space-y-6">
+  <!-- Service Number Lookup Bar (matches Screenshot 161542) -->
+  <div class="space-y-2">
+    <form id="doc-lookup-form" class="flex flex-wrap items-end gap-3">
+      <div class="w-full sm:w-80">
+        <label for="doc-service-number" class="block text-sm text-gray-600 mb-1.5">Enter Service Number</label>
+        <input
+          id="doc-service-number"
+          name="serviceNumber"
+          type="text"
+          placeholder="e.g. B0539"
+          class="cirerms-input py-2.5"
+        />
+      </div>
+      <button id="doc-proceed-btn" type="submit" class="cirerms-btn-teal px-5 py-2.5">
+        Proceed
+      </button>
+    </form>
+
+    <div class="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+      <span>Quick demo lookup:</span>
+      <button type="button" data-quick-sn="B0539" class="rounded bg-white border border-cirerms-border px-2 py-0.5 hover:border-cirerms-teal text-cirerms-ink font-medium">B0539</button>
+      <button type="button" data-quick-sn="B0559F" class="rounded bg-white border border-cirerms-border px-2 py-0.5 hover:border-cirerms-teal text-cirerms-ink font-medium">B0559F</button>
+      <button type="button" data-quick-sn="B0302" class="rounded bg-white border border-cirerms-border px-2 py-0.5 hover:border-cirerms-teal text-cirerms-ink font-medium">B0302</button>
+    </div>
+  </div>
+
+  <!-- Loaded Rating Document Workspace -->
+  <div id="doc-workspace" class="hidden space-y-5">
+    <!-- Rating Summary Banner -->
+    <div class="bg-white rounded shadow-sm border border-cirerms-border p-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Personnel Folder</div>
+        <div id="doc-rating-title" class="text-base font-semibold text-cirerms-ink mt-0.5"></div>
+        <div id="doc-rating-meta" class="text-xs text-gray-500 mt-0.5"></div>
+      </div>
+      <a id="doc-open-profile-link" href="#ratings/current" class="cirerms-btn-blue text-xs">
+        Open Full Profile
+      </a>
+    </div>
+
+    <!-- Category Filter Pills + Upload Card -->
+    <div class="bg-white rounded shadow-sm border border-cirerms-border p-5 space-y-5">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2.5">Filter by Document Category</div>
+        <div id="doc-category-pills" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="border-t border-gray-100 pt-4">
+        <h3 class="text-base font-normal text-gray-700 mb-3">Document Personnel Upload</h3>
+        <form id="doc-upload-form" class="flex flex-wrap items-center gap-3">
+          <input
+            id="doc-file-input"
+            name="document"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+            class="text-xs text-gray-700 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-gray-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-100"
+          />
+          <select id="doc-upload-category" name="category_id" class="cirerms-input w-64"></select>
+          <button id="doc-upload-btn" type="submit" class="cirerms-btn-teal">
+            Upload
+          </button>
+        </form>
+      </div>
+
+      <!-- Documents Table -->
+      <div class="border-t border-gray-100 pt-4 overflow-x-auto cirerms-scroll">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-gray-300 text-xs font-bold text-cirerms-ink">
+              <th class="py-2.5 px-3">S/N</th>
+              <th class="py-2.5 px-3">Document Name</th>
+              <th class="py-2.5 px-3">Category</th>
+              <th class="py-2.5 px-3">Size</th>
+              <th class="py-2.5 px-3">Uploaded</th>
+              <th class="py-2.5 px-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="doc-table-body" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

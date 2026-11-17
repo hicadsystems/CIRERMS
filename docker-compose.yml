@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: cirerms
+      MYSQL_USER: cirerms
+      MYSQL_PASSWORD: cirerms_password
+      MYSQL_ROOT_PASSWORD: root_password
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - cirerms_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ucirerms", "-pcirerms_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: cirerms
+      DB_PASSWORD: cirerms_password
+      DB_NAME: cirerms
+      JWT_SECRET: change-this-secret-in-production
+      JWT_EXPIRES_IN: 8h
+      UPLOAD_DIR: ./storage/uploads
+    ports:
+      - "3000:3000"
+    volumes:
+      - cirerms_uploads:/app/storage/uploads
+    command: sh -c "npm run migrate:up && npm run seed && npm start"
+
+volumes:
+  cirerms_mysql_data:
+  cirerms_uploads:

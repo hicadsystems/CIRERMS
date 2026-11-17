@@ -1,0 +1,162 @@
+const TOKEN_STORAGE_KEY = 'cirerms_session_fallback';
+
+export function setFallbackToken(token) {
+  try {
+    if (token) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } else {
+      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+  } catch (_) {
+    // Ignore storage restriction errors
+  }
+}
+
+export function getFallbackToken() {
+  try {
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch (_) {
+    return null;
+  }
+}
+
+function buildAuthHeaders(extra = {}) {
+  const headers = { ...extra };
+  const token = getFallbackToken();
+  if (token && !headers.Authorization) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export class ApiClientError extends Error {
+  constructor(status, code, message, fields = null) {
+    super(message);
+    this.name = 'ApiClientError';
+    this.status = status;
+    this.code = code;
+    this.fields = fields;
+  }
+}
+
+async function request(url, { method = 'GET', body = undefined, isFormData = false, skipAuthRedirect = false } = {}) {
+  const headers = buildAuthHeaders(
+    body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}
+  );
+
+  const response = await fetch(url, {
+    method,
+    credentials: 'include',
+    headers,
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
+  });
+
+  if (response.status === 401 && !skipAuthRedirect) {
+    setFallbackToken(null);
+    if (!window.location.pathname.endsWith('/index.html') && window.location.pathname !== '/' && window.location.pathname !== '/login') {
+      window.location.href = '/index.html';
+    }
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  const payload = contentType.includes('application/json') ? await response.json() : null;
+
+  if (!response.ok) {
+    const errInfo = payload?.error || {};
+    throw new ApiClientError(
+      response.status,
+      errInfo.code || 'REQUEST_FAILED',
+      errInfo.message || `Request failed with status ${response.status}.`,
+      errInfo.fields || null
+    );
+  }
+
+  return payload;
+}
+
+function parseFilenameFromDisposition(disposition) {
+  if (!disposition) return null;
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  return match ? match[1] : null;
+}
+
+export async function fetchBlob(url) {
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: buildAuthHeaders(),
+  });
+
+  if (response.status === 401) {
+    setFallbackToken(null);
+    window.location.href = '/index.html';
+    throw new ApiClientError(401, 'UNAUTHORIZED', 'Session expired.');
+  }
+
+  if (!response.ok) {
+    const ct = response.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const payload = await response.json();
+      throw new ApiClientError(
+        response.status,
+        payload?.error?.code || 'DOWNLOAD_FAILED',
+        payload?.error?.message || 'Unable to retrieve file.'
+      );
+    }
+    throw new ApiClientError(response.status, 'DOWNLOAD_FAILED', 'Unable to retrieve file.');
+  }
+
+  const blob = await response.blob();
+  const mimeType = response.headers.get('content-type') || blob.type || 'application/octet-stream';
+  const fileName = parseFilenameFromDisposition(response.headers.get('content-disposition'));
+
+  return { blob, mimeType, fileName };
+}
+
+export async function downloadFile(url, fallbackName = 'download') {
+  const { blob, fileName } = await fetchBlob(url);
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = fileName || fallbackName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+}
+
+export async function loadAuthImage(imgEl, url, fallbackPlaceholderEl = null) {
+  if (!imgEl) return;
+  if (imgEl.dataset.blobUrl) {
+    URL.revokeObjectURL(imgEl.dataset.blobUrl);
+    delete imgEl.dataset.blobUrl;
+  }
+  if (!url) {
+    imgEl.classList.add('hidden');
+    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const { blob } = await fetchBlob(url);
+    const objectUrl = URL.createObjectURL(blob);
+    imgEl.dataset.blobUrl = objectUrl;
+    imgEl.src = objectUrl;
+    imgEl.classList.remove('hidden');
+    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.add('hidden');
+  } catch (_) {
+    imgEl.classList.add('hidden');
+    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.remove('hidden');
+  }
+}
+
+export const api = {
+  get: (url, opts) => request(url, { ...opts, method: 'GET' }),
+  post: (url, body, opts) => request(url, { ...opts, method: 'POST', body }),
+  put: (url, body, opts) => request(url, { ...opts, method: 'PUT', body }),
+  del: (url, opts) => request(url, { ...opts, method: 'DELETE' }),
+  upload: (url, formData, opts) => request(url, { ...opts, method: 'POST', body: formData, isFormData: true }),
+  fetchBlob,
+  downloadFile,
+  loadAuthImage,
+};

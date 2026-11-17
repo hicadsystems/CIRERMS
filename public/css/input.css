@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1d2939;
+    background-color: #e4e7ea;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Legacy CIRERMS diagonal-striped blue progress bar */
+.cirerms-progress-track {
+  background-color: #f1f3f5;
+  border-radius: 2px;
+  height: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.cirerms-progress-bar {
+  height: 100%;
+  background-color: #428bca;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.18) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.18) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 28px 28px;
+  transition: width 240ms ease-in-out;
+}
+
+/* Standard CIRERMS form controls */
+.cirerms-input {
+  @apply w-full rounded border border-cirerms-border bg-white px-3 py-2 text-sm text-cirerms-ink shadow-sm transition focus:border-cirerms-blue focus:outline-none focus:ring-1 focus:ring-cirerms-blue disabled:bg-gray-100 disabled:text-gray-600;
+}
+
+.cirerms-label {
+  @apply mb-1 block text-xs font-semibold tracking-wide text-gray-600;
+}
+
+.cirerms-btn-teal {
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-teal px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-teal-hover focus:outline-none focus:ring-2 focus:ring-cirerms-teal focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.cirerms-btn-blue {
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-blue px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-blue-hover focus:outline-none focus:ring-2 focus:ring-cirerms-blue focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.cirerms-btn-danger {
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-danger px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-cirerms-danger-hover focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.cirerms-dt-btn {
+  @apply border border-cirerms-border bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 active:bg-gray-100;
+}
+
+/* Custom thin scrollbar for sidebar & wide tables */
+.cirerms-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.cirerms-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 3px;
+}

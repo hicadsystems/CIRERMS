@@ -1,0 +1,11 @@
+node_modules
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+npm-debug.log*
+storage/uploads/photos/*
+!storage/uploads/photos/.gitkeep
+storage/uploads/documents/*
+!storage/uploads/documents/.gitkeep

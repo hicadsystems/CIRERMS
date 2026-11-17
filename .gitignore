@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Runtime uploaded files (keep directory placeholders)
+storage/uploads/photos/*
+!storage/uploads/photos/.gitkeep
+storage/uploads/documents/*
+!storage/uploads/documents/.gitkeep
