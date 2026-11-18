@@ -42,7 +42,7 @@ CIRERMS/
 │     ├─ ratings/               # ratings.routes.js  ratings.service.js  ratings.repo.js
 │     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
-│  ├─ index.html                # sign in (auth.login)
+│  ├─ index.html                # sign in (auth.login): the animated canvas (js/sections/login-canvas.js), crest and form
 │  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
 │  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices
 │  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session
@@ -50,7 +50,7 @@ CIRERMS/
 │  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents),
 │  │                            # the record's parts (rating-*.js) and app-shell.js (routes to screens)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
-│  └─ assets/                   # navy-logo.png, icons.svg (built by scripts/build-icons.js)
+│  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
 ├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js
 │                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
@@ -198,7 +198,10 @@ DROP TABLE ratings;
 - **No white.** Nothing is `#fff`, `bg-white` or `text-white`. Surfaces are `bg-background` / `bg-card`
   (ivory `#faf9f0`, sampled from the reference screen), text and icons on a coloured fill are `text-on-fill`
   (the same ivory), and faint tints on the sidebar are `bg-on-fill/10`. The app shell's `<body>` carries
-  `app-canvas`, the page gradient (`--canvas-from` / `-via` / `-to`); the sign-in page keeps its navy.
+  `app-canvas`, the page gradient (`--canvas-from` / `-via` / `-to`). The sign-in page has its own canvas
+  (`--login-*` tokens: a black-to-navy gradient with drifting linked dots, drawn by `js/sections/login-canvas.js`,
+  still for people who ask for reduced motion), the large crest at the left and the form in a glass card;
+  its text is `text-on-fill`.
 - **Depth and corners.** `rounded-ctl` (8 px: fields, buttons), `rounded-card` (12 px: cards, panels,
   dropdown lists), `rounded-dialog` (16 px: dialogs); shadows `shadow-card`, `shadow-card-hover`,
   `shadow-pop` (menus, dialogs) and `shadow-btn`; actions are gentle gradients (`bg-gradient-to-b

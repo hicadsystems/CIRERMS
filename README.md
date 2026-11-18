@@ -23,7 +23,7 @@ Modernised **Ratings Management** slice of the **Centralised Integrated Ratings 
 
 Every screen works on desktop (761 px and up) and on a phone (760 px and below), and every "add" opens in a dialog (a bottom sheet on a phone).
 
-1. **Sign In** (`/index.html`) — JWT session in `HttpOnly` cookie (`cirerms_session`), `bcrypt` password verification, brute-force throttle.
+1. **Sign In** (`/index.html`) — an animated navy canvas with the Nigerian Navy crest at the left and the sign-in form at the right (the crest above the form on a phone); demo account buttons fill the form. JWT session in `HttpOnly` cookie (`cirerms_session`), `bcrypt` password verification, brute-force throttle.
 2. **Dashboard** (`#dashboard`) — Live **Members** tile (total, current, former) queried from `ratings`; **Drafting**, **Memos and Mails** and **Appraisals** show `0`; **Recently Enlisted**; **Current Ratings by Rate**.
 3. **Current and Former Ratings** (`#ratings/current`, `#ratings/former`) — search by Official No or name, **Rate** and **Ship** filters, 25 a page from the server, a table on desktop and cards on a phone. A clicked rating shows beside the list on a wide screen (in a dialog or bottom sheet otherwise) with **Open Record**, **Print Report** and **Documents**. **Export** (Copy Rows, Excel, PDF, CSV) uses the same filters.
 4. **New Rating** (`#ratings/new` or the **New Rating** buttons) — a dialog with four steps (*Basic Details*, *Contact*, *Health*, *Official*) and the passport photo; moving between steps keeps what was typed.

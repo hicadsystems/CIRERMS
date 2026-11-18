@@ -14,6 +14,9 @@ const submitBtn = document.getElementById('login-submit');
 const submitText = document.getElementById('login-submit-text');
 const toggle = document.getElementById('password-toggle');
 
+const year = document.getElementById('year');
+if (year) year.textContent = String(new Date().getFullYear());
+
 function showError(msg) {
   errorText.textContent = msg;
   errorBox.classList.remove('hidden');
