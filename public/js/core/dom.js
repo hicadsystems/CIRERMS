@@ -73,7 +73,9 @@ export function showFieldErrors(container, fields = {}) {
   for (const [fieldName, msg] of Object.entries(fields)) {
     const input = container.querySelector(`[name="${CSS.escape(fieldName)}"]`);
     if (!input) continue;
-    input.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+    // A searchable dropdown draws its box on its inner search field, not on the wrapper
+    const box = input._customDropdown ? input._customDropdown.searchInput : input;
+    box.classList.add('border-red-500', 'ring-1', 'ring-red-500');
     const errNode = el('p', {
       className: 'field-error-msg mt-1 text-xs text-red-600 font-medium',
       text: msg,

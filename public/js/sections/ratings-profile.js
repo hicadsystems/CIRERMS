@@ -107,30 +107,35 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
     ['exit_type_id', lookups.exitTypes],
   ];
 
+  // Selects are found by name rather than through form.elements: choices.js swaps
+  // each <select> for a searchable dropdown, and form.elements only reaches its
+  // hidden input, which receives neither the options nor the change events.
+  const selectField = (name) => personalForm.querySelector(`[name="${name}"]`);
+
   for (const [name, list] of selectMappings) {
-    populateSelect(personalForm.elements[name], list || []);
+    populateSelect(selectField(name), list || []);
   }
 
   function refreshDenominationSelect(selectedVal = '') {
-    const relId = personalForm.elements.religion_id.value;
+    const relId = selectField('religion_id').value;
     const items = filterDenominations(lookups, relId);
-    populateSelect(personalForm.elements.religion_denomination_id, items, {
+    populateSelect(selectField('religion_denomination_id'), items, {
       placeholder: relId ? '-- Select Denomination --' : '-- Select Religion First --',
       selectedValue: selectedVal,
     });
   }
 
   function refreshLgaSelect(selectedVal = '') {
-    const stId = personalForm.elements.state_id.value;
+    const stId = selectField('state_id').value;
     const items = filterLgas(lookups, stId);
-    populateSelect(personalForm.elements.local_government_id, items, {
+    populateSelect(selectField('local_government_id'), items, {
       placeholder: stId ? '-- Select Local Government --' : '-- Select State First --',
       selectedValue: selectedVal,
     });
   }
 
-  personalForm.elements.religion_id.addEventListener('change', () => refreshDenominationSelect(''));
-  personalForm.elements.state_id.addEventListener('change', () => refreshLgaSelect(''));
+  selectField('religion_id').addEventListener('change', () => refreshDenominationSelect(''));
+  selectField('state_id').addEventListener('change', () => refreshLgaSelect(''));
   refreshDenominationSelect('');
   refreshLgaSelect('');
 
@@ -345,10 +350,9 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
     api.loadAuthImage(passportImg, r.passport_photo_url, passportPlaceholder);
 
     if (isReadOnly()) {
-      Array.from(personalForm.elements).forEach((input) => {
-        if (input.tagName === 'INPUT' || input.tagName === 'SELECT' || input.tagName === 'TEXTAREA') {
-          input.disabled = true;
-        }
+      // `select` here also matches the searchable dropdowns, so they lock as a whole
+      personalForm.querySelectorAll('input, select, textarea').forEach((control) => {
+        control.disabled = true;
       });
     }
   }
@@ -1024,9 +1028,11 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
               showToast('Please choose a file before clicking Upload.', 'error');
               return;
             }
+            // The category is read from the form: once on the page, catSelect has
+            // been replaced by its searchable dropdown and no longer holds the choice.
             const fd = new FormData();
             fd.append('document', f);
-            fd.append('category_id', catSelect.value);
+            fd.append('category_id', new FormData(e.currentTarget).get('category_id') ?? '');
             uploadBtn.disabled = true;
             uploadBtn.textContent = 'Uploading...';
             try {
