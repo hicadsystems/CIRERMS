@@ -105,10 +105,12 @@ module.exports = {
       keyframes: {
         shake: { '0%, 100%': { transform: 'translateX(0)' }, '20%, 60%': { transform: 'translateX(-6px)' }, '40%, 80%': { transform: 'translateX(6px)' } },
         rise: { from: { opacity: '0', transform: 'translateY(8px) scale(0.98)' }, to: { opacity: '1', transform: 'none' } },
+        sheet: { from: { transform: 'translateY(100%)' }, to: { transform: 'none' } },
       },
       animation: {
         shake: 'shake 0.4s ease-in-out',   // a wrong password
-        rise: 'rise 0.25s ease-out',       // the lock card arriving
+        rise: 'rise 0.25s ease-out',       // the lock card arriving, a dialog opening
+        sheet: 'sheet 0.25s ease-out',     // a bottom sheet rising on a phone
       },
       fontFamily: {
         sans: [

@@ -1,0 +1,85 @@
+/*
+ * phone chrome (760 px and below): the header (crest, or a back arrow on a
+ * record; the title; search; account), the bottom bar (Home, Ratings,
+ * Documents, My Details, More), the More sheet of every module as tiles, and
+ * the New Rating button bottom right on the ratings lists.
+ *
+ *   renderPhone(info)   openMore()
+ */
+import { AREAS, BOTTOM, bottomKeyFor } from '../core/nav.js';
+import { icon } from '../core/icons.js';
+import { openSearch } from '../core/search.js';
+import { cx, h } from '../ui/html.js';
+import { openDialog } from '../ui/dialog.js';
+import { attachMenu } from '../ui/menu.js';
+import { pillClass } from '../ui/pill.js';
+import { initialsOf } from '../ui/avatar.js';
+import { accountItems, getUser, roleLabel } from './session.js';
+
+const ROUND = 'inline-flex h-tap w-tap flex-none items-center justify-center rounded-full hover:bg-sidebar-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-foreground/60';
+
+export function openMore() {
+  return openDialog({
+    title: 'More',
+    body: AREAS.map((a) => h('div', { className: 'mb-4' }, [
+      h('div', { className: 'mb-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground', text: a.label }),
+      h('div', { className: 'grid grid-cols-4 gap-2' }, a.modules.map((m) => h('a', {
+        href: `#${m.href || `soon/${m.key}`}`,
+        className: 'relative flex flex-col items-center gap-1.5 rounded-card p-2 text-center text-2xs font-medium hover:bg-muted',
+        'aria-label': m.soon ? `${m.label} (Soon)` : m.label,
+      }, [
+        h('span', { className: cx('flex h-12 w-12 items-center justify-center rounded-2xl', m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-sidebar to-sidebar-deep text-sidebar-foreground shadow-md shadow-sidebar/30') }, icon(m.icon, 'icon h-6 w-6')),
+        m.short,
+        m.soon ? h('span', { className: cx(pillClass('neutral'), 'absolute right-0 top-0'), text: 'Soon' }) : null,
+      ]))),
+    ])),
+  });
+}
+
+function renderHeader(info) {
+  const header = document.getElementById('phone-header');
+  if (!header) return;
+  const user = getUser() || {};
+  const lead = info && info.back
+    ? h('a', { href: `#${info.back}`, className: ROUND, 'aria-label': 'Back' }, icon('arrow-left', 'icon h-5 w-5'))
+    : h('span', { className: 'ml-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-background p-0.5 ring-2 ring-sidebar-foreground/30' }, h('img', { src: '/assets/navy-logo.png', alt: '', className: 'h-8 w-8 object-contain' }));
+  const search = h('button', { type: 'button', className: ROUND, 'aria-label': 'Search', onClick: () => openSearch() }, icon('search', 'icon h-5 w-5'));
+  const account = h('button', { type: 'button', className: ROUND, 'aria-label': 'Account' },
+    h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-2xs font-bold text-sidebar-accent-foreground', text: initialsOf(user.fullName || user.username || '') }));
+  attachMenu(account, accountItems, { title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
+  header.replaceChildren(
+    lead,
+    h('span', { className: 'min-w-0 flex-1 truncate px-1 text-base font-semibold', text: info ? info.short : 'CIRERMS' }),
+    search,
+    account
+  );
+}
+
+function renderBottom(info) {
+  const bar = document.getElementById('bottom-bar');
+  if (!bar) return;
+  const cur = bottomKeyFor(info);
+  bar.replaceChildren(...BOTTOM.map((b) => {
+    const on = b.key === cur;
+    const cls = cx('flex h-16 flex-col items-center justify-center gap-1 text-2xs focus-visible:outline-none', on ? 'font-semibold text-sidebar' : 'text-muted-foreground');
+    const inner = [
+      h('span', { className: cx('flex h-7 w-14 items-center justify-center rounded-full transition-colors', on && 'bg-sidebar/10') }, icon(b.icon, 'icon h-[22px] w-[22px]')),
+      h('span', { text: b.label }),
+    ];
+    return b.href
+      ? h('a', { href: `#${b.href}`, className: cls, 'aria-current': on ? 'page' : undefined }, inner)
+      : h('button', { type: 'button', className: cls, 'aria-haspopup': 'dialog', onClick: openMore }, inner);
+  }));
+
+  const fab = document.getElementById('fab');
+  if (fab) {
+    const show = info && (info.path === 'ratings/current' || info.path === 'ratings/former');
+    fab.classList.toggle('hidden', !show);
+    fab.classList.toggle('flex', !!show);
+  }
+}
+
+export function renderPhone(info) {
+  renderHeader(info);
+  renderBottom(info);
+}
