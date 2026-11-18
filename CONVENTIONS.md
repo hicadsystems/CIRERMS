@@ -52,6 +52,7 @@ CIRERMS/
 │  │                            # the record's parts (rating-*.js) and app-shell.js (routes to screens)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
+├─ docs/PLAN.md                # the project plan: work packages, models, order, status
 ├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js
 │                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
