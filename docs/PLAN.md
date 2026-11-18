@@ -96,7 +96,7 @@ are settled. Both modules keep their **Soon** label until then.
 | Report | Reports | Report: personellistbybranch (ship history), personellistfilter (all personnel), PersonelReport (disposition); the Crystal reports WP0 finds still in use | Done, approved (D2 adds any Crystal reports WP0 finds in use) | WP9 |
 | System Administration | System Administration | Security/CreateNewUser (Manage Users), RoleManagement/roleList (Manage Roles), Security/ResetPasswordServiceNumber (Manage Password), Account/AuditTrail | Done, approved | WP1 (backend), WP3 (screens) |
 | (from the new app) | Session lock | Locks after idle time; unlocks with the password only | Done, approved | WP1 |
-| (from the new app) | Light and dark mode, sign-in page | The app has them; the demo gets them in the `demo-themes` job (section 8) | In progress | Done |
+| (from the new app) | Light and dark mode, sign-in page | The app has them; the demo gets them in the `demo-themes` job (section 8) | Done, awaiting merge | Done |
 
 Not in the old menu and out of scope: leave applications, medical history screens, the file
 explorer and the info routers. Their tables stay in WP0's map only.
@@ -172,7 +172,7 @@ the next wave once the owner has merged.
 
 | Pkg | Status | Branch | Last report |
 |---|---|---|---|
-| `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Running since 18/11/2026, Sonnet 5.5 · low | `demo-themes` | |
+| `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Done, checked, ready to merge (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
 | WP0 | Not started | `legacy-map` | |
 | D1 | Not started | `design-drafting` | |
 | WP1 | Not started | `foundation-access` | |
