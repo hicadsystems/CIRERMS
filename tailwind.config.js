@@ -29,8 +29,6 @@ module.exports = {
         popover: { DEFAULT: token('popover'), foreground: token('popover-foreground') },
         muted: { DEFAULT: token('muted'), foreground: token('muted-foreground') },
         subtle: token('subtle'),
-        'tab-idle': token('tab-idle'),
-        track: token('track'),
         border: token('border'),
         input: token('input'),
         ring: token('ring'),
@@ -57,24 +55,6 @@ module.exports = {
         'on-fill': token('on-fill'),
         canvas: { from: token('canvas-from'), via: token('canvas-via'), to: token('canvas-to') },
 
-        // The names the screens use today, kept on the tokens so nothing changes
-        // while each screen moves to the role names above as it is rebuilt.
-        cirerms: {
-          sidebar: token('sidebar'),
-          pill: token('sidebar-primary'),
-          teal: token('primary'),
-          'teal-hover': token('primary-hover'),
-          blue: token('secondary'),
-          'blue-hover': token('secondary-hover'),
-          danger: token('destructive'),
-          'danger-hover': token('destructive-hover'),
-          ink: token('foreground'),
-          canvas: token('muted'),
-          subheader: token('subtle'),
-          'tab-idle': token('tab-idle'),
-          border: token('border'),
-          note: token('warning'),
-        },
       },
       spacing: {
         tap: '2.75rem',            // 44 px: the smallest thing a finger presses on a phone

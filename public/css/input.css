@@ -35,8 +35,6 @@
     --muted: 228 234 241;                 /* #e4eaf1: tracks, chips, table heads (sampled table head) */
     --muted-foreground: 99 110 123;       /* #636e7b: secondary text. 4.91:1 on background, 4.64:1 on subtle, 4.28:1 on muted and 4.30:1 on canvas-to (under AA) */
     --subtle: 237 243 248;                /* #edf3f8: hover rows, quiet bands (sampled row) */
-    --tab-idle: 234 236 238;              /* #eaecee: a tab not chosen */
-    --track: 241 243 245;                 /* #f1f3f5: the progress bar's track */
     --border: 211 215 219;                /* #d3d7db: dividers and card edges */
     --input: 211 215 219;                 /* #d3d7db: field borders */
     --ring: 66 139 202;                   /* #428bca: focus ring */
@@ -167,34 +165,9 @@
   background-color: rgb(var(--meter-high));
 }
 
-/* Standard CIRERMS form controls */
-.cirerms-input {
-  @apply w-full rounded-ctl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 disabled:bg-subtle disabled:text-muted-foreground;
-}
-
-.cirerms-label {
-  @apply mb-1 block text-xs font-semibold tracking-wide text-gray-600;
-}
-
-.cirerms-btn-teal {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-4 py-2 text-sm font-medium text-primary-foreground shadow-btn transition hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-primary/25 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
-}
-
-.cirerms-btn-blue {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-secondary to-secondary-hover px-3.5 py-1.5 text-sm font-medium text-secondary-foreground shadow-btn transition hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-secondary/25 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
-}
-
-.cirerms-btn-danger {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-destructive to-destructive-hover px-3 py-1.5 text-xs font-medium text-destructive-foreground shadow-btn transition hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-destructive/25 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
-}
-
-.cirerms-dt-btn {
-  @apply border border-border bg-background px-3.5 py-1.5 text-xs font-medium text-gray-700 transition first:rounded-l-ctl last:rounded-r-ctl hover:bg-gray-50 active:bg-gray-100;
-}
-
 /*
  * Searchable dropdowns (js/core/choices.js) in the CIRERMS look: the field
- * matches .cirerms-input, the list is a rounded floating panel with a tick on
+ * matches the kit's text fields (INPUT in js/ui/classes.js), the list is a rounded floating panel with a tick on
  * the chosen item, and the chevron is a 16 px muted icon like the rest of the
  * set. The script draws its own colours (classes on its parts and a <style> it
  * adds at run time), so these rules start with `html` and are marked important

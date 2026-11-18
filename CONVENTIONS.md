@@ -18,7 +18,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. One admin role for the demo; screen IDs ready for permissions later |
-| Out of scope (for now) | Automated tests, Playwright, CI pipelines, non-Ratings sidebar modules |
+| Out of scope (for now) | Automated tests and CI pipelines. On hold until the legacy system is available as reference: the session lock, Static Tables, Reports and System Administration (their look is agreed in `docs/design/demo.html`). The other non-Ratings modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
 ## Folder layout
@@ -42,21 +42,22 @@ CIRERMS/
 │     ├─ ratings/               # ratings.routes.js  ratings.service.js  ratings.repo.js
 │     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
-│  ├─ index.html                # login (auth.login)
+│  ├─ index.html                # sign in (auth.login)
 │  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
-│  ├─ sections/<module>/<screen>.html
-│  ├─ js/core/                  # api, dates, router, nav (the navigation catalogue), search (Ctrl K hook), dom, choices, icons, lookups
-│  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), session
+│  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices
+│  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session
 │  ├─ js/ui/                    # the component kit (docs/design/components.md)
-│  ├─ js/sections/<module>/<screen>.js
+│  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents),
+│  │                            # the record's parts (rating-*.js) and app-shell.js (routes to screens)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png, icons.svg (built by scripts/build-icons.js)
-├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js rebuild it (npm run demo:build)
+├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js
+│                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
 ├─ migrate.js                   # migration CLI
 ├─ tailwind.config.js           # names the colour tokens, the phone/desk screens and the shared sizes
-├─ conventions.md
+├─ CONVENTIONS.md
 ├─ README.md
 ├─ .env.example
 ├─ Dockerfile
@@ -64,8 +65,9 @@ CIRERMS/
 └─ package.json
 ```
 
-New modules (drafting, advancement, discipline, ...) are added as new folders under
-`src/modules/` and `public/sections/` — nothing else moves.
+New modules (drafting, advancement, discipline, ...) are added as a folder under `src/modules/`, their
+screens as files in `public/js/sections/` (mapped in `app-shell.js` `SCREENS`), and their pages and tabs in
+`public/js/core/nav.js`; nothing else moves.
 
 ## Backend layering
 
@@ -99,8 +101,8 @@ Every module has three files, each with one job:
 | Lookup tables | `ref_` prefix | `ref_rate`, `ref_title`, `ref_branch` |
 | Screen ID | `module.screen` | `ratings.list`, `ratings.new` |
 
-The **screen ID** is the single name for a screen: menu item, section file
-(`sections/ratings/list.html`), and later the permission key. UI labels preserve familiar
+The **screen ID** is the single name for a screen: its page in `js/core/nav.js` (`screen`), the menu item, and
+later the permission key. UI labels preserve familiar
 naval wording ("Official Number" / "Service No") while the DB and API standardise on `service_number`.
 
 ## Database
@@ -183,14 +185,16 @@ DROP TABLE ratings;
   - toolbar (`toolbar.js`), list view (`list-view.js`, server paging at 25), pager (`pager.js`),
     list and record (`list-record.js`)
   - in-page tabs (`tabs.js`), stepper (`stepper.js`), completeness bar (`progress.js`)
-  - `js/core/dom.js` (`showToast`, `confirmModal`, `previewBlobModal`, `showFieldErrors`) draws with these, for the older screens
+  - screen parts shared by the record, My Details and New Rating: `js/sections/rating-*.js` (fields catalogue,
+    list tabs, documents block, names; see `docs/design/components.md`)
+  - small DOM helpers in `js/core/dom.js` (`el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes`)
 - **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
   `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
   canvas) and `text-muted-foreground`, `border-border` and `border-input`, `ring-ring`, `bg-primary` (teal,
   the main action), `bg-secondary` (blue), `bg-destructive`, the status pairs `text-success bg-success-soft`
   (and `warning`, `info`, `error`), and `bg-sidebar` with its `sidebar-*` parts. Each text pair records its
-  contrast ratio. New markup uses only these: no hex, no `rgb()`, no Tailwind palette colour (`gray-*`,
-  `red-*` ...). The older `cirerms-*` names map onto the same tokens until each screen moves to the role names.
+  contrast ratio. Markup uses only these: no hex, no `rgb()`, no Tailwind palette colour (`gray-*`,
+  `red-*` ...). The only `cirerms-*` classes left are `.cirerms-scroll` and the completeness bar's.
 - **No white.** Nothing is `#fff`, `bg-white` or `text-white`. Surfaces are `bg-background` / `bg-card`
   (ivory `#faf9f0`, sampled from the reference screen), text and icons on a coloured fill are `text-on-fill`
   (the same ivory), and faint tints on the sidebar are `bg-on-fill/10`. The app shell's `<body>` carries
@@ -238,10 +242,15 @@ DROP TABLE ratings;
 | `ratings.my-details` | My Details: the record read-only for the signed-in user's `service_number`, or a notice for an account with none |
 | `ratings.documents` | Documents: find a rating by Official No or name, then its files by category, preview, download and upload |
 
-Other sidebar menus (`Drafting`, `Special Drafting`, `Advancement Processing`, `Assessment of NAVAL Character & Efficiency`, `Disciplinary Action`, `Discharge Administration`) are visible in the sidebar as disabled items.
+Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
+
+The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
+Drafting, Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
+Assessment, Disciplinary Action and Discharge Administration (Records); Static Tables, Reports and System
+Administration (Administration).
 
 ## Open items
 
 - Real dropdown values (rate, title, religion denomination, tribe, state/LGA, ship, ...) — realistic placeholders seeded until official lists are supplied.
-- Demo data: generated synthetic ratings shaped like the real records (`HICO001` admin + `B0601` rating-linked login).
+- Demo data: generated synthetic ratings shaped like the real records (`HICO001` admin + `B0539` rating-linked login).
 - MySQL vs Postgres — final call pending (all SQL isolated in `src/modules/*/*.repo.js`).

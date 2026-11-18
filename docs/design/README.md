@@ -3,6 +3,9 @@
 `demo.html` is the approved layout and look for the CIRERMS frontend (approved 18/11/2026). It is one
 self-contained file: open it in a browser, offline. Everything on it is sample data and nothing saves.
 
+The app now follows it: the theme, the shell, the component kit (`components.md`), every Ratings screen and
+Ctrl K search are built. What is still only in the demo is listed at the end.
+
 | File | What it is |
 |---|---|
 | `demo.html` | The built demo. Open it; **Phone Preview** (top right) shows the phone layout from a desktop |
@@ -29,9 +32,14 @@ the demo after `npm run demo:build`.
 - **Look.** No white: ivory surfaces on the ivory-to-pale-blue page gradient; rounded corners, soft
   shadows, gradient buttons, the theme-blue scrollbar. The rules are in `CONVENTIONS.md`, Frontend.
 
-## Decided after the demo (build these too)
+## Decided after the demo (built in the app)
 
-- **Collapsed sidebar:** each item's name shows in a tooltip just below the pointer.
+- **Folded sidebar:** each item's name shows in a tooltip just below the pointer, with a soft shadow; the
+  areas are separated by a thin line instead of blank space.
+- **Dialogs and bottom sheets** animate in (rising on desktop, sliding up on a phone).
+- **Toasts** fade, have a close button and stay 4.2 seconds (errors 6 seconds).
+- **Sidebar Administration items** (Static Tables, Reports, System Administration) show as Soon until their
+  screens are built.
 
 ## Demo only (not to be built as shown)
 

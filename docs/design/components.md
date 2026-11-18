@@ -314,5 +314,36 @@ levelFor(64);                                 // 'mid'
 | Areas, modules, tabs and every page's title, subtitle, back link and screen id | `public/js/core/nav.js` (`AREAS`, `MODULES`, `PAGES`, `describe(path)`) |
 | Ctrl K and the search buttons | `public/js/core/search.js`: `openSearch()` calls the handler registered with `setSearchHandler(fn)`; the shell registers the palette in `public/js/shell/search-palette.js` |
 | Signed-in user, sign out, account menu items | `public/js/shell/session.js` (`getUser()`, `signOut()`, `accountItems()`) |
-| Routes to screens | `public/js/sections/app-shell.js` `SCREENS` (pattern, template, mount) |
+| Routes to screens | `public/js/sections/app-shell.js` `SCREENS`: route pattern to the screen's mount function, which draws the whole screen (there are no HTML templates) |
+| The phone header's title on a record | `public/js/shell/phone.js` `setPhoneTitle(text)` |
 | Rail, module tabs, phone header, bottom bar and More sheet | `public/js/shell/rail.js`, `module-tabs.js`, `phone.js` |
+
+## Screen parts
+
+Pieces of the Ratings screens, in `public/js/sections/`, shared by the record, My Details and New Rating.
+
+| Name | File | What it is |
+|---|---|---|
+| `SECTIONS`, `sectionFields(section, lookups, values)`, `readForm(form)`, `displayRows(section, r)`, `wireCascades(scope, lookups)`, `dateField(name, value)` | `rating-fields.js` | The rating's own fields in their four sections (Basic Details, Contact, Health, Official): the New Rating steps, the record's Edit dialogs and its read-only cards all come from this one catalogue. `wireCascades` links Religion to Denomination and State to Local Government |
+| `CHILD_TABS`, `childPanel({ serviceNumber, tab, rows, rating, readOnly, lookups, onChange })` | `rating-children.js` | The record's list tabs (Next of Kin as cards with photos, Drafting as a timeline, the rest as tables) with Add and Edit in a dialog and Delete after a confirm |
+| `documentsBlock({ serviceNumber, readOnly, onCount })` | `rating-documents-block.js` | Category chips with counts, the file list and its preview, Upload Document. Used by the record's Documents tab and the Documents screen |
+| `openNewRating({ onClose })`, `newRatingButton()`, `photoPicker()`, `uploadPassport(serviceNumber, file)` | `rating-new.js` | The New Rating dialog: the four steps in one form, the passport photo uploaded after the rating is created |
+| `mountRatingRecord`, `mountMyDetails`, `photoAvatar(r, size)` | `rating-record.js` | The record (head row, completeness bar, ten tabs) and My Details, the same record read-only |
+| `shortRate(rate)`, `personName(r)`, `ratingName(r)` | `rating-names.js` | How a rating is named on screen, the same everywhere |
+
+```js
+import { openNewRating } from './rating-new.js';
+newRatingButton();                      // the page header's New Rating button
+openNewRating();                        // what #ratings/new and the phone's floating button do
+```
+
+## Core helpers
+
+| Name | File | What it does |
+|---|---|---|
+| `api.get / post / put / del / upload`, `downloadFile`, `fetchBlob` | `core/api.js` | Every request: the session token, JSON or form data, blob downloads, errors as `{ code, message, fields }` |
+| `parseDisplayDate(text)`, `wireDateField(input)`, `formatDisplayDate(value)`, `toInputDate(value)`, `yearsBetween(from, to)`, `durationSince(from)` | `core/dates.js` | Dates are typed and shown as dd/mm/yyyy and sent as YYYY-MM-DD. `parseDisplayDate` returns the ISO date or `null` for a date that does not exist; `wireDateField` tidies a field when it loses focus |
+| `getLookups()`, `filterDenominations(lookups, religionId)`, `filterLgas(lookups, stateId)` | `core/lookups.js` | The dropdown lists, loaded once per visit |
+| `el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes` | `core/dom.js` | Small DOM helpers (`el` is `ui/html.js` `h`); `previewBlobModal` shows a PDF or image in the dialog |
+| `icon(name, className)` | `core/icons.js` | One icon from the sprite |
+

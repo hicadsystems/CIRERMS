@@ -8,9 +8,9 @@ Modernised **Ratings Management** slice of the **Centralised Integrated Ratings 
 
 | Legacy .NET Layer | Modernised Stack | Why Chosen |
 |---|---|---|
-| ASP.NET Razor Layouts (`_Layout.cshtml`) | `public/index.html` + `public/app.html` | Persistent shell loaded once; zero full-page postbacks when switching screens or tabs. |
-| Razor Partial Views (`.cshtml`) | `public/sections/**/*.html` + `public/js/sections/*.js` | Clean 1:1 pairing of static HTML markup and scoped ES2022 module controllers — no React/Vue/Vite build chain required. |
-| Bootstrap 3 + Legacy Custom CSS | **Tailwind CSS v3** (`public/css/output.css`) | Precompiled single stylesheet using exact pixel-sampled CIRERMS naval palette (`#0074a8`, `#02a9f4`, `#1caf9a`, `#428bca`, `#d9534f`, `#1d2939`). |
+| ASP.NET Razor Layouts (`_Layout.cshtml`) | `public/index.html` + `public/app.html` + `public/js/shell/` | Persistent shell loaded once: on desktop a sidebar grouped by area (folds to icons), a top bar with Ctrl K search and the module's pages as tabs; on a phone a header, chips, a bottom bar and a More sheet. No full-page postbacks. |
+| Razor Partial Views (`.cshtml`) | `public/js/sections/*.js` built from the component kit in `public/js/ui/` | Each screen is an ES module that draws itself with shared parts (page header, list view, dialog and bottom sheet, tabs, stepper, toasts); no HTML templates and no React/Vue/Vite build chain. |
+| Bootstrap 3 + Legacy Custom CSS | **Tailwind CSS v3** (`public/css/output.css`) | Precompiled single stylesheet. Colours are tokens in `public/css/input.css`: the CIRERMS naval palette (`#0074a8`, `#02a9f4`, `#1caf9a`, `#428bca`, `#d9534f`, `#1d2939`) with ivory surfaces on an ivory-to-pale-blue gradient (no white anywhere), rounded corners, soft shadows and theme-blue scrollbars. |
 | ASP.NET MVC Controllers + Services | **Node.js 20 + Express 4** (`routes` → `service` → `repo`) | Strict 3-layer separation: HTTP concerns in `*.routes.js`, validation & transactions in `*.service.js`, parameterised SQL in `*.repo.js`. |
 | Entity Framework / SQL Server | **MySQL 8 (`mysql2/promise`)** + `migrate.js` | Explicit `-- UP` / `-- DOWN` SQL migrations with SHA-256 checksum drift detection, advisory `GET_LOCK` concurrency safety, and idempotent seeds. |
 | Server-side Reports & Imports | **`exceljs` + `pdfkit` + `multer` v2** | Streaming `.xlsx` / `.csv` exports, `.xlsx` batch template & transactional bulk import, official Nigerian Navy PDF dossiers, and magic-byte validated uploads. |
@@ -20,19 +20,25 @@ Modernised **Ratings Management** slice of the **Centralised Integrated Ratings 
 ## 2. Demo Scope
 
 ### Implemented Screens (Ratings Management Slice)
-1. **Sign In** (`/index.html`) — JWT session in `HttpOnly` cookie (`cirerms_session`), `bcrypt` password verification, brute-force throttle.
-2. **Dashboard** (`#dashboard`) — Live `MEMBERS` card (`Total`, `Old Members`, `Current Members`) queried from `ratings`; non-Ratings cards (`Drafting`, `Memos/Mails`, `Appraisals`) display `0`.
-3. **Current Ratings List** (`#ratings/current`) — `Official No` + `Name` filter bar, live search, sortable columns, server-side pagination, `Copy | Excel | PDF | CSV` exports, row `Edit` and `Print Report` PDF.
-4. **Former Ratings List** (`#ratings/former`) — Discharged/retired ratings roll with clean formatted exit dates (`DD MMM YYYY`) and exit reasons.
-5. **New / Edit Rating (10-Tab Dossier)** (`#ratings/new`, `#ratings/edit/:serviceNumber`) —
-   - Tab 1: **Ratings Details** across 4 sub-steps (*Basic Details*, *Contact*, *Health Info*, *Official*) + Passport Photo upload.
-   - Tabs 2–9: **Next of Kin** (with NOK photo), **Spouse**, **Children**, **Advancement**, **Drafting**, **Training**, **Education**, **Language Fluency** — locked until Tab 1 is saved, with collapsible Add/Edit forms and per-tab **Generate PDF** + **View Document** actions.
-   - Tab 10: **View Document/Upload** — Category filters (`DRAFTING`, `CERTIFICATE`, `REQUEST_FORM`, `EMOLUMENT`, `GEN_FORM`, `OTHER`) + file upload, inline preview, and download.
-6. **View My Details** (`#ratings/my-details`) — Read-only 10-tab dossier resolved automatically from `users.service_number` (shows a clear administrative notice when signed in as an unlinked admin like `HICO001`, and loads the full personal dossier when signed in as `B0539`).
-7. **Batch Upload** (`#ratings/upload`) — Official `.xlsx` template download (with embedded lookup reference sheet) and transactional bulk importer that enforces compulsory fields/dates/lookups and safely skips duplicate Official Numbers.
-8. **View Ratings Documents** (`#ratings/documents`) — Standalone Navpers document lookup by Service Number, category filter, inline PDF/image modal viewer, download, and upload.
 
-*(Non-Ratings sidebar items — Drafting, Special Drafting, Advancement Processing, Assessment of NAVAL Character & Efficiency, Disciplinary Action, Discharge Administration, Training Drafting — are preserved visually in a disabled state.)*
+Every screen works on desktop (761 px and up) and on a phone (760 px and below), and every "add" opens in a dialog (a bottom sheet on a phone).
+
+1. **Sign In** (`/index.html`) — JWT session in `HttpOnly` cookie (`cirerms_session`), `bcrypt` password verification, brute-force throttle.
+2. **Dashboard** (`#dashboard`) — Live **Members** tile (total, current, former) queried from `ratings`; **Drafting**, **Memos and Mails** and **Appraisals** show `0`; **Recently Enlisted**; **Current Ratings by Rate**.
+3. **Current and Former Ratings** (`#ratings/current`, `#ratings/former`) — search by Official No or name, **Rate** and **Ship** filters, 25 a page from the server, a table on desktop and cards on a phone. A clicked rating shows beside the list on a wide screen (in a dialog or bottom sheet otherwise) with **Open Record**, **Print Report** and **Documents**. **Export** (Copy Rows, Excel, PDF, CSV) uses the same filters.
+4. **New Rating** (`#ratings/new` or the **New Rating** buttons) — a dialog with four steps (*Basic Details*, *Contact*, *Health*, *Official*) and the passport photo; moving between steps keeps what was typed.
+5. **The rating's record** (`#ratings/edit/:serviceNumber`) — photo, name, labels and **Edit Details** / **Print Dossier** / **Delete**; a thin completeness bar (red below 50%, amber to 79%, green from 80%); ten tabs:
+   - **Details**: Basic Details, Contact, Health and Official as cards, each edited in a dialog.
+   - **Next of Kin** (with photo), **Spouse**, **Children**, **Advancement**, **Drafting** (a timeline with the current posting), **Training**, **Education**, **Language**: Add and Edit in dialogs, Delete after a confirm, tab PDFs where the old system had them.
+   - **Documents**: category chips (`DRAFTING`, `CERTIFICATE`, `REQUEST_FORM`, `EMOLUMENT`, `GEN_FORM`, `OTHER`), file list, preview, download and upload.
+6. **My Details** (`#ratings/my-details`) — the same record read-only, resolved from `users.service_number` (a clear notice for an unlinked admin like `HICO001`; the full record for `B0539`).
+7. **Batch Upload** (`#ratings/upload`) — **Download Template** (with an embedded lookup reference sheet), **Upload Workbook**, **Review and Commit**: compulsory fields, dates and lookups enforced, duplicate Official Numbers skipped, the rest added in one transaction.
+8. **Documents** (`#ratings/documents`) — find a rating by Official No or name, then its Navpers files by category, with preview, download and upload.
+9. **Search** (Ctrl K, or the search button) — finds screens and ratings by Official No or name.
+
+*(The other sidebar items — Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Static Tables, Reports and System Administration — carry a **Soon** badge and open a "Coming in a Later Release" page.)*
+
+The approved layout and look is `docs/design/demo.html` (one file; open it in a browser). `docs/design/components.md` lists the shared components.
 
 ---
 
@@ -87,3 +93,4 @@ Open **http://localhost:3000**. MySQL 8 starts, migrations and seeds run automat
 | `npm run seed` | Run idempotent lookup & demo personnel seeds (`INSERT IGNORE` / `WHERE NOT EXISTS`). |
 | `npm run css:build` | Recompile minified Tailwind CSS (`public/css/input.css` → `public/css/output.css`). |
 | `npm run icons:build` | Rebuild the icon sprite (`public/assets/icons.svg`) from the Lucide icons listed in `scripts/build-icons.js`. |
+| `npm run demo:build` | Rebuild the design reference (`docs/design/demo.html`) from its source with the project's current tokens and icons. |
