@@ -19,7 +19,10 @@ records from the old SQL Server database once our tables are settled. Both modul
 
 - Repository `hicadsystems/cirems` (named HPProject inside), last commit 21/12/2022. ASP.NET MVC 5,
   Entity Framework, SQL Server, Crystal Reports.
-- `hpproject/Views/Shared/_menu.cshtml` is its menu; section 4 maps every item to our modules.
+- `hpproject/Views/Shared/_menu.cshtml` is its menu; section 4 maps every item to our modules. The
+  live system's menu (its page source, 18/11/2026) matches this file once the items commented out in
+  it are dropped, so this repository is the code the live system runs. Commented-out items are
+  switched off and out of scope.
 - Its logic lives in three places: the controllers (`hpproject/Controllers`, about 23,000 lines),
   the data layer (`HRProjectDAL`, its model in `Core/HicadHRProjectModel.edmx`: 174 tables), and
   84 SQL Server procedures. Most procedure bodies are not in the code; they are in the 2017 backup
@@ -66,17 +69,17 @@ records from the old SQL Server database once our tables are settled. Both modul
 
 | Old menu | New module | Old actions (controller/action) | Phase 1 |
 |---|---|---|---|
-| Ratings Management | Ratings Management | Employee: Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents), GetFolderList (confidential documents); Security/Upload (batch creation of accounts) | Built. Gaps checked in WP0 (confidential documents, batch account creation) |
+| Ratings Management | Ratings Management | Employee: viewprofile (View My Details), Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents) | Built |
 | Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, draftapproval, closedraftreview, ExcelUpload, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList | WP7 |
-| Advance Draft | Special Drafting | draftings: SpecialDraft, specialdraftinglist | Later |
-| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, Advancementapproval, closeadvancement, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload | WP8 |
+| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report) | Later |
+| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement are in the code but not in the live menu (section 9) | WP8 |
 | Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (a placeholder link in the old menu) | Later |
 | Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | WP4 |
-| Discharge Administration | Discharge Administration | Discharge: dischargeproposal, dischargereview (registration, processing), ServiceDetails (print), Reports (verification forms), dischargereport, ExcelUpload | WP5 |
+| Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | WP5 |
 | Training Drafting | Training Drafting | TrainingDraft: TrainingDraftiningProcess, Trainingreview, trainingdraftenddate (training history), summaryreport, ExcelUpload | WP6 |
-| Static Tables | Static Tables | 25 tables: Appraisal Ratings, Branch, Exit Type, Entry Mode, Appraisal Period, Disciplinary Offence, Disciplinary Sanction, Institution, Local Government, Languages, Relationship, Blood Group, Genotype, Staff Branch, Specialisation Area, Appointment, Ships, Hospital, Ailment, Country, States, Title, Qualification, Leave Type, Training | WP2 |
+| Static Tables | Static Tables | 16 tables: Appraisal Ratings, Branch, Exit Type, Entry Mode, Disciplinary Offence, Disciplinary Sanction, Institution, Local Government, Languages, Relationship, Staff Branch, Specialisation Area, Ships, States, Title, Training | WP2 |
 | Report | Reports | Report: personellistbybranch (ship history), personellistfilter (all personnel), PersonelReport (disposition); the Crystal reports WP0 finds still in use | WP9 |
-| System Administration | System Administration | Security/CreateNewUser, RoleManagement/roleList, RoleManagement/priviledgelist, Security/ResetPasswordServiceNumber, Account/AuditTrail | WP1 (backend), WP3 (screens) |
+| System Administration | System Administration | Security/CreateNewUser (Manage Users), RoleManagement/roleList (Manage Roles), Security/ResetPasswordServiceNumber (Manage Password), Account/AuditTrail | WP1 (backend), WP3 (screens) |
 | (from the new app) | Session lock | Locks after idle time; unlocks with the password only | WP1 |
 
 Not in the old menu and out of scope: leave applications, medical history screens, the file
@@ -90,15 +93,15 @@ Sonnet where screens follow patterns already in the kit.
 
 | WP | Branch | Scope | Model · effort | Needs merged first | Size |
 |---|---|---|---|---|---|
-| WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and gaps against our app); procedure, view and table definitions from the 2017 backup in `docs/legacy/sql/` (definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
+| WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and the old pages' faults we should not copy); procedure, view and table definitions from the 2017 backup in `docs/legacy/sql/` (definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
 | WP1 | `foundation-access` | Users, roles and privileges modelled on the old ones (a privilege per screen and action: view, add, edit, delete, approve), checked on every route; menus, tabs and buttons hidden without the grant; the audit trail (table and a helper every write calls); the session lock (password only); routes and screens registered from each module's own folder so later packages only add files; the admin role seeded with every privilege | Opus 5.5 · high | WP0 | L |
-| WP2 | `static-tables` | One table engine for the 25 static tables (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1 | M |
-| WP3 | `system-admin` | Manage Users (an account for a rating, batch creation from Excel), Manage Roles, Manage Privileges (a role and screen grid), Manage Password (reset by official number), Audit Trail (filter by date, user and action) | Sonnet 5.5 · medium | WP1 | M |
+| WP2 | `static-tables` | One table engine for the 16 static tables (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1 | M |
+| WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action) | Sonnet 5.5 · medium | WP1 | M |
 | WP4 | `disciplinary` | Initiate an incident, pending cases, conclude a case with its sanction, concluded cases, the disciplinary report (PDF and Excel); the rating's record shows the cases | Sonnet 5.5 · medium | WP2 | S |
-| WP5 | `discharge` | Discharge proposal, registration, processing (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2 | M |
+| WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2 | M |
 | WP6 | `training-drafting` | Process a training draft, training review, update training history (feeds the record's Training tab), the reports, upload from Excel | Sonnet 5.5 · high | WP2 | M |
 | WP7 | `drafting` | Manning requirement per ship, draft proposal (who is due, by the old rules), review and print, approval, close, upload, update WEF, batch and signal content, rate DOD history, draft report; drafting updates the record's Drafting tab and current ship. Split into WP7a and WP7b if WP0 advises | Opus 5.5 · high | WP2 | L |
-| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. If the rules read appraisal grades, the demo seeds them (Naval Character Assessment is later) | Opus 5.5 · high | WP2, WP4 | L |
+| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review (approval and close if the owner confirms them, section 9), board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. If the rules read appraisal grades, the demo seeds them (Naval Character Assessment is later) | Opus 5.5 · high | WP2, WP4 | L |
 | WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, and the old Crystal reports WP0 lists as still in use, as PDF and Excel | Sonnet 5.5 · medium | WP7 | M |
 | WP10 | `demo-finish` | Dashboard tiles live (Drafting, Memos and Mails as WP0 finds them, Appraisals stays 0), Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole demo on desktop and phone in both themes, docs and `docs/design/demo.html` brought up to date | Sonnet 5.5 · medium | WP3 to WP9 | M |
 
@@ -159,5 +162,7 @@ wave once the owner has merged.
   comes from. Until then the tile stays 0.
 - **Crystal reports:** the old system has 77; WP0 lists which ones its screens still open, and only
   those are rebuilt.
+- **Advancement Approval and Close** are live code in the old system but missing from the live menu:
+  either switched off or hidden from the owner's role. The owner confirms before WP8 starts.
 - **Advancement and appraisals:** if advancement needs appraisal grades, the demo seeds them until
   Naval Character Assessment is built.
