@@ -43,9 +43,11 @@ CIRERMS/
 │     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
 │  ├─ index.html                # login (auth.login)
-│  ├─ app.html                  # shell: sidebar + header + <main>
+│  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
 │  ├─ sections/<module>/<screen>.html
-│  ├─ js/core/                  # api, auth, dates, router, ui, choices, icons, filter-bar, table, modal, tabs, upload, rating-profile
+│  ├─ js/core/                  # api, dates, router, nav (the navigation catalogue), search (Ctrl K hook), dom, choices, icons, lookups
+│  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), session
+│  ├─ js/ui/                    # the component kit (docs/design/components.md)
 │  ├─ js/sections/<module>/<screen>.js
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png, icons.svg (built by scripts/build-icons.js)
@@ -169,12 +171,16 @@ DROP TABLE ratings;
 - `app.html` is the shell; the router loads `sections/<module>/<screen>.html` into `<main>`
   and runs its matching `js/sections/<module>/<screen>.js` (payroll's `data-section` approach).
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
-- Reusable pieces in `js/core/`, built once:
-  - filter bar (`filter-bar.js`)
-  - data table (`table.js` — server paging + sorting + Copy / Excel / PDF / CSV)
-  - modal (`modal.js`) & collapsible form panel (`ui.js` — "Add Next of Kin" style)
-  - tabbed record (`tabs.js` + `rating-profile.js` — the 10-tab rating profile with 4 sub-steps & completeness bar)
-  - Excel upload flow (`upload.js` — download template → upload & validate → error/duplicate report → commit)
+- Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);
+  the rail, the module tabs, the phone header, bottom bar and More sheet, and the router all read it.
+- Reusable pieces are in `js/ui/`, one per file (list and examples: `docs/design/components.md`):
+  - buttons and action group (`button.js`), page header (`page-header.js`), card (`card.js`), stat tile (`stat-tile.js`),
+    pill (`pill.js`), avatar (`avatar.js`), facts list (`facts.js`), empty state (`empty-state.js`), field (`field.js`)
+  - dialog and bottom sheet (`dialog.js`), confirm (`confirm.js`), menu (`menu.js`), toasts (`toast.js`)
+  - toolbar (`toolbar.js`), list view (`list-view.js`, server paging at 25), pager (`pager.js`),
+    list and record (`list-record.js`)
+  - in-page tabs (`tabs.js`), stepper (`stepper.js`), completeness bar (`progress.js`)
+  - `js/core/dom.js` (`showToast`, `confirmModal`, `previewBlobModal`, `showFieldErrors`) draws with these, for the older screens
 - **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
   `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
   canvas) and `text-muted-foreground`, `border-border` and `border-input`, `ring-ring`, `bg-primary` (teal,
