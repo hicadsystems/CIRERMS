@@ -34,7 +34,7 @@ export async function mountDashboard(outlet) {
       members,
       statTile({ label: 'Drafting', value: 0, icon: 'briefcase', tone: 'destructive', foot: footText(0, 'this year') }),
       statTile({ label: 'Memos and Mails', value: 0, icon: 'file-text', tone: 'secondary', foot: footText(0, 'unread') }),
-      statTile({ label: 'Appraisals', value: 0, icon: 'clipboard-check', tone: 'sidebar', foot: footText(0, 'this month') }),
+      statTile({ label: 'Appraisals', value: 0, icon: 'clipboard-check', tone: 'brand', foot: footText(0, 'this month') }),
     ]),
     h('div', { className: 'mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1' }, [
       card({
@@ -76,7 +76,7 @@ export async function mountDashboard(outlet) {
     const max = Math.max(1, ...rates.map((x) => x.total));
     fill(byRate, rates.length
       ? h('div', { className: 'space-y-2.5 p-4' }, rates.map((x) => {
-          const bar = h('div', { className: 'h-2 rounded-full bg-gradient-to-r from-sidebar to-secondary' });
+          const bar = h('div', { className: 'h-2 rounded-full bg-gradient-to-r from-brand-fill to-secondary' });
           bar.style.width = `${Math.round((x.total / max) * 100)}%`;
           return h('div', {}, [
             h('div', { className: 'mb-1 flex justify-between gap-2 text-xs' }, [h('span', { text: x.rate }), h('b', { text: String(x.total) })]),

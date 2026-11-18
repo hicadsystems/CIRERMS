@@ -38,6 +38,11 @@ the demo after `npm run demo:build`.
   areas are separated by a thin line instead of blank space.
 - **Dialogs and bottom sheets** animate in (rising on desktop, sliding up on a phone).
 - **Toasts** fade, have a close button and stay 4.2 seconds (errors 6 seconds).
+- **Light and dark mode:** dark is "Navy Night" (deep navy surfaces, dimmed ivory text, brighter teal and
+  blue, dark text on the bright buttons and pills). The first visit follows the device; the switch is at the
+  top right of the desktop top bar and in the account menu (sidebar and phone), and the choice is kept. The
+  sign-in page is a day sea in light mode and a night sea in dark mode, with its own switch at the top
+  right. This demo shows light mode only.
 - **Sidebar Administration items** (Static Tables, Reports, System Administration) show as Soon until their
   screens are built.
 

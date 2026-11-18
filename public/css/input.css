@@ -73,16 +73,138 @@
     --sidebar-hover: rgb(var(--on-fill) / 0.10);
     --sidebar-border: rgb(var(--on-fill) / 0.15);
 
+    /* ---- Sign-in page (public/index.html): a day sea in light mode, a night sea in dark mode.
+       The canvas (js/sections/login-canvas.js) reads the sky, waves, crests, glow and stars;
+       the page reads ink, glass, link and the blues. Values with "/ A" carry their own alpha. ---- */
+    --login-from: 250 249 238;            /* #faf9ee: the sky, top (the app canvas ivory) */
+    --login-via: 234 241 246;             /* #eaf1f6: the sky, middle */
+    --login-to: 196 220 244;              /* #c4dcf4: the sky at the sea */
+    --login-wave-1: 170 203 238 / 0.55;   /* #aacbee: the farthest wave */
+    --login-wave-2: 140 184 232 / 0.55;   /* #8cb8e8 */
+    --login-wave-3: 104 157 219 / 0.60;   /* #689ddb */
+    --login-wave-4: 214 230 247 / 0.96;   /* #d6e6f7: the nearest wave, behind the footer */
+    --login-crest: 250 249 240 / 0.90;    /* ivory foam on each crest (the nearest at full strength) */
+    --login-glow: 253 214 140 / 0.55;     /* #fdd68c: a warm sun glow, high on the right */
+    --login-star: 250 249 240 / 0;        /* no stars by day */
+    --login-ink: 22 36 64;                /* #162440: text and lines. Measured on the page: 12.5:1 as the heading, 70% ink 5.0:1 or better wherever it sits */
+    --login-glass: 250 249 240 / 0.72;    /* the sign-in card: ivory glass */
+    --login-link: 29 78 216;              /* #1d4ed8: the footer link. 5.17:1 on the nearest wave */
+    --login-dot: 59 130 246;              /* #3b82f6: the icon badge, focus rings, hover edges */
+    --login-accent: 37 99 235;            /* #2563eb: the Sign In button, light end. on-fill 4.89:1, 6.1:1 under its label */
+    --login-accent-deep: 30 64 175;       /* #1e40af: its navy end. on-fill 8.25:1 */
+
     /* ---- Overlays ---- */
     --scrim: rgb(0 0 0 / 0.5);            /* behind a modal */
     --scrollbar: rgb(var(--sidebar));     /* thin scrollbar thumb: the theme blue */
     --scrollbar-hover: rgb(var(--sidebar-deep));
     --scrollbar-on-sidebar: rgb(var(--on-fill) / 0.35); /* on the blue sidebar itself, where blue would vanish */
 
+    /* ---- Brand accent: the selected tab, chip and bottom-bar item, links, avatars and icon badges.
+       The sidebar blue in light mode; a lighter blue in dark mode, where the sidebar is too dark to show. ---- */
+    --brand: 0 116 168;                   /* #0074a8: accent text and selected fills. 4.89:1 on background */
+    --brand-foreground: var(--on-fill);   /* text on a brand fill: 4.89:1 */
+    --brand-fill: 0 116 168;              /* #0074a8: avatar and icon-badge gradients, light end */
+    --brand-deep: 0 93 135;               /* #005d87: their dark end */
+
+    /* ---- Shadows: tinted with the text colour in light mode, plain black in dark mode ---- */
+    --shadow-card: 0 1px 2px 0 rgb(var(--foreground) / 0.04), 0 1px 3px 0 rgb(var(--foreground) / 0.06);
+    --shadow-card-hover: 0 2px 4px -1px rgb(var(--foreground) / 0.06), 0 8px 20px -6px rgb(var(--foreground) / 0.12);
+    --shadow-pop: 0 12px 32px -8px rgb(var(--foreground) / 0.22), 0 4px 12px -4px rgb(var(--foreground) / 0.10);
+    --shadow-btn: inset 0 1px 0 0 rgb(var(--on-fill) / 0.18), 0 1px 2px 0 rgb(var(--foreground) / 0.14);
+
+    color-scheme: light;
+
     /* ---- Completeness meter (derived: Bootstrap 3's danger, warning and success, the old system's framework) ---- */
     --meter-low: 217 83 79;               /* #d9534f: 0 to 49% */
     --meter-mid: 240 173 78;              /* #f0ad4e: 50 to 79% */
     --meter-high: 92 184 92;              /* #5cb85c: 80 to 100% */
+  }
+
+  /*
+   * Dark mode, "Navy Night": deep navy surfaces (never black), ivory text (never white),
+   * depth by lighter surfaces, and dark text on the bright buttons and pills. Set by
+   * data-theme="dark" on <html> (js/core/theme-boot.js sets it before the page draws).
+   * Every text pair is AA: ratios against the surface it sits on.
+   */
+  :root[data-theme="dark"] {
+    --background: 20 29 48;               /* #141d30: cards, bars, fields */
+    --foreground: 236 233 221;            /* #ece9dd: dimmed ivory. 13.83:1 on background, 12.59:1 on popover, 11.67:1 on muted */
+    --card: 20 29 48;                     /* #141d30 */
+    --card-foreground: 236 233 221;       /* 13.83:1 */
+    --popover: 26 37 59;                  /* #1a253b: menus, dropdown lists, dialogs, one step up */
+    --popover-foreground: 236 233 221;    /* 12.59:1 */
+    --canvas-from: 10 16 32;              /* #0a1020: page gradient, top left */
+    --canvas-via: 14 23 41;               /* #0e1729 */
+    --canvas-to: 16 40 74;                /* #10284a: bottom right */
+    --muted: 30 43 66;                    /* #1e2b42: tracks, chips, table heads */
+    --muted-foreground: 154 169 190;      /* #9aa9be: 7.04:1 on background, 5.94:1 on muted, 6.41:1 on popover */
+    --subtle: 24 35 56;                   /* #18233a: hover rows */
+    --border: 43 59 87;                   /* #2b3b57 */
+    --input: 52 71 106;                   /* #34476a */
+    --ring: 90 169 230;                   /* #5aa9e6 */
+    --on-fill: 236 233 221;               /* #ece9dd */
+
+    --primary: 28 175 154;                /* #1caf9a: the same teal */
+    --primary-hover: 34 196 173;          /* #22c4ad */
+    --primary-foreground: 10 16 32;       /* #0a1020: dark text, 6.90:1 on primary, 8.64:1 on hover */
+    --secondary: 77 155 224;              /* #4d9be0: links 5.67:1 on background */
+    --secondary-hover: 106 174 232;       /* #6aaee8 */
+    --secondary-foreground: 10 16 32;     /* 6.39:1 on secondary, 7.97:1 on hover */
+    --destructive: 224 98 93;             /* #e0625d: 4.87:1 as text on background */
+    --destructive-hover: 234 123 118;     /* #ea7b76 */
+    --destructive-foreground: 10 16 32;   /* 5.48:1 on destructive, 6.85:1 on hover */
+
+    --success: 111 211 160;               /* #6fd3a0: 7.60:1 on success-soft */
+    --success-soft: 17 50 42;             /* #11322a */
+    --warning: 242 196 109;               /* #f2c46d: 8.16:1 on warning-soft */
+    --warning-soft: 58 46 20;             /* #3a2e14 */
+    --info: 124 196 236;                  /* #7cc4ec: 7.44:1 on info-soft */
+    --info-soft: 17 45 64;                /* #112d40 */
+    --error: 240 139 134;                 /* #f08b86: 6.41:1 on error-soft */
+    --error-soft: 61 26 29;               /* #3d1a1d */
+
+    --sidebar: 11 26 48;                  /* #0b1a30 */
+    --sidebar-deep: 8 19 36;              /* #081324 */
+    --sidebar-foreground: 236 233 221;    /* 14.33:1 on sidebar */
+    --sidebar-muted: 143 179 217;         /* #8fb3d9: 7.98:1 */
+    --sidebar-accent: 22 54 94;           /* #16365e: the open module */
+    --sidebar-accent-foreground: 236 233 221; /* 10.02:1 */
+    --sidebar-primary: 42 169 240;        /* #2aa9f0 */
+    --sidebar-primary-foreground: 10 16 32; /* 7.25:1 */
+    --sidebar-hover: rgb(236 233 221 / 0.07);
+    --sidebar-border: rgb(236 233 221 / 0.10);
+
+    --brand: 90 169 230;                  /* #5aa9e6: 6.61:1 on background, 5.58:1 on muted */
+    --brand-foreground: 10 16 32;         /* 7.45:1 on brand */
+    --brand-fill: 42 111 174;             /* #2a6fae: ivory initials 4.33:1 here, 6.95:1 at the deep end */
+    --brand-deep: 26 79 130;              /* #1a4f82 */
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35), 0 1px 3px 0 rgb(0 0 0 / 0.40);
+    --shadow-card-hover: 0 2px 4px -1px rgb(0 0 0 / 0.40), 0 8px 20px -6px rgb(0 0 0 / 0.55);
+    --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.65), 0 4px 12px -4px rgb(0 0 0 / 0.45);
+    --shadow-btn: inset 0 1px 0 0 rgb(var(--on-fill) / 0.12), 0 1px 2px 0 rgb(0 0 0 / 0.45);
+
+    /* the night sea: a black sky over navy, the waves darker the nearer they are */
+    --login-from: 0 0 0;                  /* #000000: the sky, top */
+    --login-via: 17 24 39;                /* #111827: the sky, middle */
+    --login-to: 20 44 102;                /* #142c66: the sky at the sea */
+    --login-wave-1: 30 58 138 / 0.30;     /* #1e3a8a: the farthest wave */
+    --login-wave-2: 23 47 110 / 0.55;     /* #172f6e */
+    --login-wave-3: 15 33 80 / 0.80;      /* #0f2150 */
+    --login-wave-4: 9 24 56 / 0.95;       /* #091838: the nearest wave, behind the footer */
+    --login-crest: 59 130 246 / 0.24;     /* a faint blue line on each crest */
+    --login-glow: 59 130 246 / 0.14;      /* a soft moon glow, high on the right */
+    --login-star: 236 233 221 / 1;        /* twinkling ivory stars */
+    --login-ink: 236 233 221;             /* #ece9dd: text and lines. Measured on the page: 70% ink 4.6:1 or better wherever it sits, 7.5:1 on the nearest wave */
+    --login-glass: 236 233 221 / 0.05;    /* the sign-in card: smoked glass */
+    --login-link: 96 165 250;             /* #60a5fa: the footer link. 6.88:1 on the nearest wave */
+
+    --scrim: rgb(0 0 0 / 0.6);
+    --scrollbar: rgb(77 155 224);         /* the theme blue, lifted for the dark page */
+    --scrollbar-hover: rgb(106 174 232);
+    --scrollbar-on-sidebar: rgb(var(--on-fill) / 0.25);
+
+    color-scheme: dark;
   }
 
   html,
@@ -132,6 +254,16 @@
     .cirerms-scroll {
       scrollbar-color: var(--scrollbar-on-sidebar) transparent;
     }
+  }
+}
+
+@layer utilities {
+  /* A row that scrolls sideways with no scrollbar showing (tab strips, chip rows; js/ui/scroll-row.js). */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 

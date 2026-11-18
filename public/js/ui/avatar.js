@@ -28,7 +28,7 @@ export function initialsOf(name = '') {
 
 export function avatar({ name = '', initials, src, size = 'base', className = '' } = {}) {
   const cls = cx(
-    'flex flex-none items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep font-semibold text-sidebar-foreground shadow-sm ring-2 ring-background',
+    'flex flex-none items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-brand-fill to-brand-deep font-semibold text-on-fill shadow-sm ring-2 ring-background',
     SIZES[size] || SIZES.base,
     className
   );

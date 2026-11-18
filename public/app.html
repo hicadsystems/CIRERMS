@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>CIRERMS</title>
   <link rel="icon" type="image/png" href="/assets/navy-logo.png" />
+  <!-- Light or dark before the page draws (the person's choice, else the device's) -->
+  <script src="/js/core/theme-boot.js"></script>
   <link rel="stylesheet" href="/css/output.css" />
   <!-- Turns every <select> into a searchable dropdown; must run before the app's modules -->
   <script src="/js/core/choices.js"></script>
@@ -25,6 +27,10 @@
           <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#search"></use></svg>
           <span class="truncate">Search Ratings and Screens</span>
           <span class="ml-auto flex gap-1 text-2xs font-semibold" aria-hidden="true"><kbd class="rounded border border-border bg-background px-1.5 py-0.5">Ctrl</kbd><kbd class="rounded border border-border bg-background px-1.5 py-0.5">K</kbd></span>
+        </button>
+        <!-- light / dark (js/core/theme.js) -->
+        <button id="theme-toggle" type="button" aria-label="Switch to Dark Mode" class="ml-auto inline-flex h-9 w-9 flex-none items-center justify-center rounded-ctl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#moon"></use></svg>
         </button>
       </header>
 

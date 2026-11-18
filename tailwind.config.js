@@ -52,6 +52,14 @@ module.exports = {
           border: 'var(--sidebar-border)',
         },
         scrim: 'var(--scrim)',
+        brand: { DEFAULT: token('brand'), foreground: token('brand-foreground'), fill: token('brand-fill'), deep: token('brand-deep') },
+        login: {
+          from: token('login-from'), via: token('login-via'), to: token('login-to'),
+          ink: token('login-ink'), link: token('login-link'), dot: token('login-dot'),
+          accent: { DEFAULT: token('login-accent'), deep: token('login-accent-deep') },
+          // carries its own alpha (ivory glass by day, smoked by night), so it takes no /opacity
+          glass: 'rgb(var(--login-glass))',
+        },
         'on-fill': token('on-fill'),
         canvas: { from: token('canvas-from'), via: token('canvas-via'), to: token('canvas-to') },
 
@@ -77,10 +85,11 @@ module.exports = {
       },
       boxShadow: {
         // soft, layered and tinted with the text colour, so surfaces lift without a hard edge
-        card: '0 1px 2px 0 rgb(var(--foreground) / 0.04), 0 1px 3px 0 rgb(var(--foreground) / 0.06)',
-        'card-hover': '0 2px 4px -1px rgb(var(--foreground) / 0.06), 0 8px 20px -6px rgb(var(--foreground) / 0.12)',
-        pop: '0 12px 32px -8px rgb(var(--foreground) / 0.22), 0 4px 12px -4px rgb(var(--foreground) / 0.10)',
-        btn: 'inset 0 1px 0 0 rgb(var(--on-fill) / 0.18), 0 1px 2px 0 rgb(var(--foreground) / 0.14)',
+        // values are tokens in input.css: tinted with the text colour in light mode, black in dark mode
+        card: 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        pop: 'var(--shadow-pop)',
+        btn: 'var(--shadow-btn)',
       },
       keyframes: {
         shake: { '0%, 100%': { transform: 'translateX(0)' }, '20%, 60%': { transform: 'translateX(-6px)' }, '40%, 80%': { transform: 'translateX(6px)' } },

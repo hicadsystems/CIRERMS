@@ -1,9 +1,11 @@
 /*
  * Sign In (auth.login, public/index.html): signs in, then opens the app.
  * Already signed in goes straight to the dashboard. The demo account buttons
- * fill the form; the eye shows or hides the password.
+ * fill the form; the eye shows or hides the password; the button at the top
+ * right switches light and dark, the same setting the app uses.
  */
 import { api, setFallbackToken } from '../core/api.js';
+import { bindThemeButton } from '../core/theme.js';
 
 const form = document.getElementById('login-form');
 const usernameInput = document.getElementById('username');
@@ -13,6 +15,11 @@ const errorText = document.getElementById('login-error-text');
 const submitBtn = document.getElementById('login-submit');
 const submitText = document.getElementById('login-submit-text');
 const toggle = document.getElementById('password-toggle');
+
+bindThemeButton(document.getElementById('theme-toggle'));
+
+const year = document.getElementById('year');
+if (year) year.textContent = String(new Date().getFullYear());
 
 function showError(msg) {
   errorText.textContent = msg;

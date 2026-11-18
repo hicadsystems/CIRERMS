@@ -70,7 +70,7 @@ card({ title: 'Recently Enlisted', actions: [button({ label: 'View All', variant
 `ui/stat-tile.js`
 
 ```js
-statTile({ label, value, icon, tone, foot })   // tone: 'primary' | 'destructive' | 'secondary' | 'sidebar'
+statTile({ label, value, icon, tone, foot })   // tone: 'primary' | 'destructive' | 'secondary' | 'brand'
 
 const t = statTile({ label: 'Members', value: 33, icon: 'users', tone: 'primary',
   foot: [h('a', { href: '#ratings/current' }, [h('b', { className: 'text-foreground', text: '25' }), ' current'])] });
@@ -287,6 +287,16 @@ const tabs = inPageTabs({
 tabs.el; tabs.setActive('nok'); tabs.setCount('nok', 3); tabs.active();
 ```
 
+## Scroll row
+
+`ui/scroll-row.js`: a row of tabs or chips that scrolls sideways with no scrollbar showing; a mouse wheel
+moves it too, then the page scrolls at either end. The module tabs, the record's tabs and the document
+category chips use it. Not for tables, which keep their scrollbar.
+
+```js
+scrollRow(h('div', { className: 'flex gap-2 overflow-x-auto' }, chips));
+```
+
 ## Stepper
 
 `ui/stepper.js`: New Rating's four steps. Keep all the steps' fields in the form and show only the
@@ -346,4 +356,5 @@ openNewRating();                        // what #ratings/new and the phone's flo
 | `getLookups()`, `filterDenominations(lookups, religionId)`, `filterLgas(lookups, stateId)` | `core/lookups.js` | The dropdown lists, loaded once per visit |
 | `el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes` | `core/dom.js` | Small DOM helpers (`el` is `ui/html.js` `h`); `previewBlobModal` shows a PDF or image in the dialog |
 | `icon(name, className)` | `core/icons.js` | One icon from the sprite |
+| `currentTheme()`, `setTheme(theme)`, `toggleTheme()`, `onThemeChange(fn)`, `bindThemeButton(button)` | `core/theme.js` | Light or dark. `bindThemeButton` makes a button the switch: it shows a moon or a sun and says the mode it switches to. `core/theme-boot.js` (a plain script in each page's `<head>`) sets the first one before the page draws |
 

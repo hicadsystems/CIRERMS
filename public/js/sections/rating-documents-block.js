@@ -24,6 +24,7 @@ import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { field, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { isWide, onLayout } from '../ui/media.js';
+import { scrollRow } from '../ui/scroll-row.js';
 
 const DOC_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx';
 
@@ -44,7 +45,7 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}
   let picked = null;
   let previewUrl = null;
 
-  const chips = h('div', { className: 'mb-3 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Document categories' });
+  const chips = scrollRow(h('div', { className: 'mb-3 flex gap-2 overflow-x-auto', role: 'group', 'aria-label': 'Document categories' }));
   const listCard = h('div', { className: cx(CARD, 'self-start overflow-hidden') });
   const aside = h('aside', { className: cx(CARD, 'sticky top-0 self-start overflow-hidden'), 'aria-label': 'Document preview' });
   const grid = h('div', { className: 'grid grid-cols-1 gap-4' }, [listCard]);
@@ -60,9 +61,9 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}
       return h('button', {
         type: 'button',
         'aria-pressed': String(on),
-        className: cx('inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 phone:h-9', on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'),
+        className: cx('inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 phone:h-9', on ? 'border-brand bg-brand text-brand-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'),
         onClick: () => { cat = c.code; picked = null; draw(); },
-      }, [c.name, h('span', { className: on ? 'text-sidebar-foreground' : 'text-muted-foreground', text: String(n) })]);
+      }, [c.name, h('span', { className: on ? 'text-brand-foreground' : 'text-muted-foreground', text: String(n) })]);
     }));
   }
 

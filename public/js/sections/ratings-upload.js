@@ -16,7 +16,7 @@ import { toast } from '../ui/toast.js';
 function stepHead(n, title, state) {
   const done = state === 'done';
   return h('div', { className: 'flex items-center gap-3' }, [
-    h('span', { className: cx('flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold', done ? 'bg-primary text-primary-foreground' : state === 'on' ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground') }, done ? icon('check') : String(n)),
+    h('span', { className: cx('flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold', done ? 'bg-primary text-primary-foreground' : state === 'on' ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground') }, done ? icon('check') : String(n)),
     h('h2', { className: 'text-sm font-semibold', text: title }),
   ]);
 }

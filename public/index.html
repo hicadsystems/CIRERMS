@@ -5,82 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Sign In · CIRERMS</title>
   <link rel="icon" type="image/png" href="/assets/navy-logo.png" />
+  <!-- Light or dark before the page draws (the person's choice, else the device's) -->
+  <script src="/js/core/theme-boot.js"></script>
   <link rel="stylesheet" href="/css/output.css" />
 </head>
-<!-- auth.login: the navy page and the ivory card; js/sections/auth.js signs in -->
-<body class="relative flex min-h-dvh flex-col overflow-x-hidden bg-gradient-to-b from-sidebar to-sidebar-deep text-foreground">
-  <div aria-hidden="true" class="pointer-events-none absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-sidebar-primary/25 blur-3xl"></div>
-  <div aria-hidden="true" class="pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-3xl"></div>
+<!--
+  auth.login: the sea canvas (js/sections/login-canvas.js, day in light mode, night in
+  dark), the crest at the left on desktop, and the sign-in form at the right. The
+  button at the top right switches light and dark. js/sections/auth.js signs in.
+-->
+<body class="relative min-h-dvh overflow-x-hidden bg-gradient-to-b from-login-from via-login-via to-login-to text-login-ink">
+  <canvas id="login-canvas" class="pointer-events-none fixed inset-0 h-full w-full" aria-hidden="true"></canvas>
 
-  <main class="relative flex flex-1 items-center justify-center px-4 py-10">
-    <div class="w-full max-w-md">
-      <div class="mb-6 text-center">
-        <div class="mb-3 inline-flex h-24 w-24 items-center justify-center rounded-full bg-background p-2 shadow-pop ring-4 ring-sidebar-foreground/20">
-          <img src="/assets/navy-logo.png" alt="Nigerian Navy crest" class="h-20 w-auto object-contain" />
+  <!-- light / dark (js/core/theme.js), the same setting the app uses -->
+  <button id="theme-toggle" type="button" aria-label="Switch to Dark Mode"
+    class="fixed right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-login-ink/15 bg-login-glass text-login-ink/80 shadow-card backdrop-blur-md transition-colors hover:border-login-dot/60 hover:text-login-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30 desk:right-6 desk:top-6 phone:h-tap phone:w-tap">
+    <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#moon"></use></svg>
+  </button>
+
+  <div class="relative flex min-h-dvh">
+    <!-- the crest, desktop only -->
+    <div class="hidden w-1/2 items-center justify-center p-12 desk:flex">
+      <img src="/assets/navy-crest.webp" alt="Nigerian Navy crest" class="max-h-[60vh] w-auto max-w-full animate-rise object-contain drop-shadow-2xl" />
+    </div>
+
+    <!-- sign in -->
+    <main class="flex flex-1 items-center justify-center px-4 pb-20 pt-10 desk:p-8">
+      <div class="w-full max-w-md animate-rise">
+        <img src="/assets/navy-crest.webp" alt="Nigerian Navy crest" class="mx-auto mb-6 h-28 w-auto object-contain drop-shadow-2xl desk:hidden" />
+
+        <div class="mb-6 text-center">
+          <span class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-login-dot to-login-accent text-on-fill shadow-lg">
+            <svg class="icon h-6 w-6" aria-hidden="true"><use href="/assets/icons.svg#circle-user"></use></svg>
+          </span>
+          <h1 class="text-3xl font-bold tracking-tight">Welcome Back</h1>
+          <p class="mt-2 text-sm text-login-ink/70">Sign in to CIRERMS, the Nigerian Navy ratings records.</p>
         </div>
-        <h1 class="text-2xl font-bold tracking-wide text-sidebar-foreground">CIRERMS</h1>
-        <p class="mt-1 text-sm text-sidebar-muted">Nigerian Navy Ratings Records</p>
-      </div>
 
-      <div class="overflow-hidden rounded-dialog bg-card shadow-pop">
-        <div class="border-b border-border px-6 py-4">
-          <h2 class="text-base font-semibold">Sign In</h2>
-          <p class="mt-0.5 text-sm text-muted-foreground">Use your username or Official Number.</p>
-        </div>
+        <div class="rounded-dialog border border-login-ink/10 bg-login-glass shadow-pop backdrop-blur-md">
+          <form id="login-form" class="space-y-4 p-6" novalidate>
+            <div id="login-error" class="hidden items-start gap-2 rounded-card border border-error/40 bg-error-soft px-3.5 py-2.5 text-sm font-medium text-error" role="alert">
+              <svg class="icon mt-0.5 flex-none" aria-hidden="true"><use href="/assets/icons.svg#circle-alert"></use></svg>
+              <span id="login-error-text"></span>
+            </div>
 
-        <form id="login-form" class="space-y-4 p-6" novalidate>
-          <div id="login-error" class="hidden items-start gap-2 rounded-card border border-error bg-error-soft px-3.5 py-2.5 text-sm font-medium text-error" role="alert">
-            <svg class="icon mt-0.5 flex-none" aria-hidden="true"><use href="/assets/icons.svg#circle-alert"></use></svg>
-            <span id="login-error-text"></span>
-          </div>
+            <div>
+              <label for="username" class="mb-1 block text-xs font-semibold text-login-ink/80">Username or Official Number</label>
+              <input id="username" name="username" type="text" autocomplete="username" autocapitalize="characters" required placeholder="e.g. HICO001"
+                class="w-full rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2.5 text-sm text-login-ink transition placeholder:text-login-ink/70 focus:border-login-dot focus:bg-login-ink/10 focus:outline-none focus:ring-4 focus:ring-login-dot/30 phone:h-tap" />
+            </div>
 
-          <div>
-            <label for="username" class="mb-1 block text-xs font-semibold text-muted-foreground">Username or Official Number</label>
-            <input id="username" name="username" type="text" autocomplete="username" autocapitalize="characters" required placeholder="e.g. HICO001"
-              class="w-full rounded-ctl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 phone:h-tap" />
-          </div>
+            <div>
+              <label for="password" class="mb-1 block text-xs font-semibold text-login-ink/80">Password</label>
+              <div class="relative">
+                <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Your password"
+                  class="w-full rounded-ctl border border-login-ink/15 bg-login-ink/5 py-2.5 pl-3 pr-11 text-sm text-login-ink transition placeholder:text-login-ink/70 focus:border-login-dot focus:bg-login-ink/10 focus:outline-none focus:ring-4 focus:ring-login-dot/30 phone:h-tap" />
+                <button id="password-toggle" type="button" aria-label="Show Password" aria-pressed="false"
+                  class="absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center rounded-r-ctl text-login-ink/70 hover:text-login-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30 phone:w-tap">
+                  <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#eye"></use></svg>
+                </button>
+              </div>
+            </div>
 
-          <div>
-            <label for="password" class="mb-1 block text-xs font-semibold text-muted-foreground">Password</label>
-            <div class="relative">
-              <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Your password"
-                class="w-full rounded-ctl border border-input bg-background py-2 pl-3 pr-11 text-sm text-foreground shadow-sm transition placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 phone:h-tap" />
-              <button id="password-toggle" type="button" aria-label="Show Password" aria-pressed="false"
-                class="absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center rounded-r-ctl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 phone:w-tap">
-                <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#eye"></use></svg>
+            <button id="login-submit" type="submit"
+              class="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-ctl bg-gradient-to-r from-login-accent to-login-accent-deep px-4 text-sm font-semibold text-on-fill shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/40 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 phone:h-tap">
+              <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#log-in"></use></svg>
+              <span id="login-submit-text">Sign In</span>
+              <svg class="icon h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden="true"><use href="/assets/icons.svg#chevron-right"></use></svg>
+            </button>
+          </form>
+
+          <!-- demo accounts: fill the form with one -->
+          <div class="border-t border-login-ink/10 px-6 py-4">
+            <p class="mb-2 text-2xs font-semibold uppercase tracking-wider text-login-ink/70">Demo Accounts</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-demo-user="HICO001" data-demo-pass="Admin@123"
+                class="rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2 text-left transition-colors hover:border-login-dot/60 hover:bg-login-ink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30">
+                <span class="block text-sm font-semibold">HICO001</span>
+                <span class="block text-xs text-login-ink/70">Administrator</span>
+              </button>
+              <button type="button" data-demo-user="B0539" data-demo-pass="Rating@123"
+                class="rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2 text-left transition-colors hover:border-login-dot/60 hover:bg-login-ink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30">
+                <span class="block text-sm font-semibold">B0539</span>
+                <span class="block text-xs text-login-ink/70">Rating (My Details)</span>
               </button>
             </div>
           </div>
-
-          <button id="login-submit" type="submit"
-            class="inline-flex h-control w-full items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-3.5 text-sm font-semibold text-primary-foreground shadow-btn transition-all hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 phone:h-tap">
-            <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#log-in"></use></svg>
-            <span id="login-submit-text">Sign In</span>
-          </button>
-        </form>
-
-        <!-- demo accounts: fill the form with one -->
-        <div class="border-t border-border bg-subtle/70 px-6 py-4">
-          <p class="mb-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Demo Accounts</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" data-demo-user="HICO001" data-demo-pass="Admin@123"
-              class="rounded-ctl border border-border bg-background px-3 py-2 text-left shadow-card transition-colors hover:border-ring/40 hover:bg-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15">
-              <span class="block text-sm font-semibold">HICO001</span>
-              <span class="block text-xs text-muted-foreground">Administrator</span>
-            </button>
-            <button type="button" data-demo-user="B0539" data-demo-pass="Rating@123"
-              class="rounded-ctl border border-border bg-background px-3 py-2 text-left shadow-card transition-colors hover:border-ring/40 hover:bg-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15">
-              <span class="block text-sm font-semibold">B0539</span>
-              <span class="block text-xs text-muted-foreground">Rating (My Details)</span>
-            </button>
-          </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
-  <footer class="relative py-3 text-center text-xs text-sidebar-muted">Nigerian Navy · Onward Together</footer>
+  <footer class="absolute bottom-0 left-0 w-full px-4 py-4 text-center text-sm text-login-ink/70 desk:bottom-8 desk:left-8 desk:w-auto desk:p-0 desk:text-left">
+    &copy; <span id="year">2026</span>
+    <a href="https://hicadsystemsltd.com/" target="_blank" rel="noopener" class="font-bold text-login-link hover:underline">Hicad Systems Limited.</a>
+    All rights reserved.
+  </footer>
 
+  <script type="module" src="/js/sections/login-canvas.js"></script>
   <script type="module" src="/js/sections/auth.js"></script>
 </body>
 </html>

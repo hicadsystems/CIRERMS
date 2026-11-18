@@ -5,8 +5,10 @@
  *   getUser()   { username, fullName, role, serviceNumber } or null
  *   roleLabel(user)   'Administrator' for admin, else the role in Title Case
  *   signOut()   ends the session on the server and returns to the sign-in page
+ *   accountItems()   the account menu: View My Details, Dark Mode / Light Mode, Sign Out
  */
 import { api, setFallbackToken } from '../core/api.js';
+import { currentTheme, toggleTheme } from '../core/theme.js';
 
 let user = null;
 
@@ -32,6 +34,9 @@ export async function signOut() {
 export function accountItems() {
   return [
     { label: 'View My Details', icon: 'user-round', href: '#ratings/my-details' },
+    currentTheme() === 'dark'
+      ? { label: 'Light Mode', icon: 'sun', onSelect: toggleTheme }
+      : { label: 'Dark Mode', icon: 'moon', onSelect: toggleTheme },
     { divider: true },
     { label: 'Sign Out', icon: 'log-out', tone: 'danger', onSelect: signOut },
   ];
