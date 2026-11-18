@@ -201,7 +201,7 @@ attachMenu(exportBtn, [
 
 ```js
 toast('Rating saved.');                       // tone: 'success' (default) | 'error' | 'info' | 'warning'
-toast(err.message, 'error', { timeout: 0 });  // 3200 ms by default; 0 keeps it
+toast(err.message, 'error', { timeout: 0 });  // 4200 ms by default (errors 6000); 0 keeps it until its X is pressed
 ```
 
 It shows bottom right on desktop and full width above the bottom bar on a phone. `core/dom.js`

@@ -33,7 +33,7 @@ export function setFolded(v) {
 let tip = null;
 function tipEl() {
   if (!tip) {
-    tip = h('div', { role: 'tooltip', className: 'pointer-events-none fixed z-[60] hidden whitespace-nowrap rounded-ctl bg-foreground px-2 py-1 text-xs text-background' });
+    tip = h('div', { role: 'tooltip', className: 'pointer-events-none fixed z-[60] hidden whitespace-nowrap rounded-ctl bg-foreground px-2 py-1 text-xs font-medium text-background shadow-pop' });
     document.body.appendChild(tip);
   }
   return tip;
@@ -93,7 +93,7 @@ export function renderRail(info) {
 
   const scroll = h('nav', { 'aria-label': 'Modules', className: 'cirerms-scroll flex min-h-0 flex-1 flex-col gap-px overflow-y-auto px-2.5 pb-3', dataset: { railScroll: '' } });
   AREAS.forEach((area) => {
-    scroll.appendChild(h('div', { className: cx('text-2xs font-semibold uppercase tracking-widest text-sidebar-muted', c ? 'invisible h-3 p-0' : 'px-2 pb-1.5 pt-4'), 'aria-hidden': c ? 'true' : undefined, text: area.label }));
+    scroll.appendChild(h('div', { className: cx('text-2xs font-semibold uppercase tracking-widest text-sidebar-muted', c ? 'mx-2 mb-1.5 mt-3 h-px bg-sidebar-border' : 'px-2 pb-1.5 pt-4'), 'aria-hidden': c ? 'true' : undefined, text: c ? '' : area.label }));
     area.modules.forEach((m) => {
       const on = m.key === current;
       const href = `#${m.href || `soon/${m.key}`}`;

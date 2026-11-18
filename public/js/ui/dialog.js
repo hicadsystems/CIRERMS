@@ -85,7 +85,7 @@ export function openDialog({ title = '', body = null, footer = null, size = 'md'
     'aria-modal': 'true',
     'aria-labelledby': titleId,
     className: cx(
-      'pointer-events-auto flex max-h-full w-full flex-col overflow-hidden bg-background text-foreground shadow-pop desk:rounded-dialog phone:rounded-t-3xl',
+      'pointer-events-auto flex max-h-full w-full flex-col overflow-hidden bg-background text-foreground shadow-pop desk:animate-rise desk:rounded-dialog phone:animate-sheet phone:rounded-t-3xl',
       SIZES[size] || SIZES.md,
       className
     ),
