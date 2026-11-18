@@ -125,31 +125,6 @@ export async function downloadFile(url, fallbackName = 'download') {
   setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
 }
 
-export async function loadAuthImage(imgEl, url, fallbackPlaceholderEl = null) {
-  if (!imgEl) return;
-  if (imgEl.dataset.blobUrl) {
-    URL.revokeObjectURL(imgEl.dataset.blobUrl);
-    delete imgEl.dataset.blobUrl;
-  }
-  if (!url) {
-    imgEl.classList.add('hidden');
-    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.remove('hidden');
-    return;
-  }
-
-  try {
-    const { blob } = await fetchBlob(url);
-    const objectUrl = URL.createObjectURL(blob);
-    imgEl.dataset.blobUrl = objectUrl;
-    imgEl.src = objectUrl;
-    imgEl.classList.remove('hidden');
-    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.add('hidden');
-  } catch (_) {
-    imgEl.classList.add('hidden');
-    if (fallbackPlaceholderEl) fallbackPlaceholderEl.classList.remove('hidden');
-  }
-}
-
 export const api = {
   get: (url, opts) => request(url, { ...opts, method: 'GET' }),
   post: (url, body, opts) => request(url, { ...opts, method: 'POST', body }),
@@ -158,5 +133,4 @@ export const api = {
   upload: (url, formData, opts) => request(url, { ...opts, method: 'POST', body: formData, isFormData: true }),
   fetchBlob,
   downloadFile,
-  loadAuthImage,
 };

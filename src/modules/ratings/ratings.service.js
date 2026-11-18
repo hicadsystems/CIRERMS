@@ -241,30 +241,38 @@ function decoratePhotoUrls(rating) {
   };
 }
 
+// Shared by the list and its exports: the status, search and filter keys a list accepts.
+// status is 'current' (default), 'former' or 'all' (the search palette and the Documents picker).
+function parseListFilters(queryParams = {}) {
+  const rawStatus = String(queryParams.status || '').toLowerCase();
+  const status = rawStatus === 'former' ? 'former' : rawStatus === 'all' ? null : 'current';
+  const positiveId = (v) => {
+    const n = Number.parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  return {
+    status,
+    officialNo: String(queryParams.officialNo || '').trim(),
+    name: String(queryParams.name || '').trim(),
+    search: String(queryParams.search || '').trim(),
+    q: String(queryParams.q || '').trim().slice(0, 100),
+    rateId: positiveId(queryParams.rateId),
+    shipId: positiveId(queryParams.shipId),
+    sortBy: String(queryParams.sortBy || 'service_number'),
+    sortDir: String(queryParams.sortDir || 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc',
+  };
+}
+
 async function listRatings(queryParams = {}) {
-  const status = queryParams.status === 'former' ? 'former' : 'current';
-  const officialNo = String(queryParams.officialNo || '').trim();
-  const name = String(queryParams.name || '').trim();
-  const search = String(queryParams.search || '').trim();
-  const sortBy = String(queryParams.sortBy || 'service_number');
-  const sortDir = String(queryParams.sortDir || 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc';
+  const filters = parseListFilters(queryParams);
 
   const rawPage = Number.parseInt(queryParams.page, 10);
   const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
 
   const rawSize = Number.parseInt(queryParams.pageSize, 10);
-  const pageSize = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(rawSize, 200) : 10;
+  const pageSize = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(rawSize, 200) : 25;
 
-  return ratingsRepo.listRatings({
-    status,
-    officialNo,
-    name,
-    search,
-    sortBy,
-    sortDir,
-    page,
-    pageSize,
-  });
+  return ratingsRepo.listRatings({ ...filters, page, pageSize });
 }
 
 async function getFullDossier(serviceNumberRaw) {
@@ -860,25 +868,24 @@ async function deleteRatingDocument(serviceNumberRaw, docIdRaw) {
 // ============================================================================
 
 async function exportRatingsList(queryParams = {}, generatedBy = '') {
-  const status = queryParams.status === 'former' ? 'former' : 'current';
+  const filters = parseListFilters(queryParams);
+  const status = filters.status || 'current';
   const format = String(queryParams.format || 'xlsx').toLowerCase();
-  const officialNo = String(queryParams.officialNo || '').trim();
-  const name = String(queryParams.name || '').trim();
-  const search = String(queryParams.search || '').trim();
-  const sortBy = String(queryParams.sortBy || 'service_number');
-  const sortDir = String(queryParams.sortDir || 'asc');
 
-  const { items } = await ratingsRepo.listRatings({
-    status,
-    officialNo,
-    name,
-    search,
-    sortBy,
-    sortDir,
-    exportAll: true,
-  });
+  const { items } = await ratingsRepo.listRatings({ ...filters, status, exportAll: true });
 
-  const filterSummary = [officialNo, name, search].filter(Boolean).join(' / ');
+  // the report's filter line names the rate and ship rather than their ids
+  let lookupRate = null;
+  let lookupShip = null;
+  if (filters.rateId || filters.shipId) {
+    const lookups = await lookupsRepo.fetchAllLookups();
+    lookupRate = (lookups.rates || []).find((x) => Number(x.id) === filters.rateId) || null;
+    lookupShip = (lookups.ships || []).find((x) => Number(x.id) === filters.shipId) || null;
+  }
+  const { officialNo, name, search, q } = filters;
+  const filterSummary = [q, officialNo, name, search, lookupRate && lookupRate.name, lookupShip && lookupShip.name]
+    .filter(Boolean)
+    .join(' / ');
 
   const dateTag = new Date().toISOString().slice(0, 10);
   const baseName = `CIRERMS_${status}_ratings_${dateTag}`;

@@ -36,14 +36,44 @@ async function listRatings({
   officialNo = '',
   name = '',
   search = '',
+  q = '',
+  rateId = null,
+  shipId = null,
   sortBy = 'service_number',
   sortDir = 'asc',
   page = 1,
   pageSize = 10,
   exportAll = false,
 }) {
-  const whereClauses = ['r.status = ?'];
-  const params = [status];
+  const whereClauses = [];
+  const params = [];
+  if (status) {
+    whereClauses.push('r.status = ?');
+    params.push(status);
+  }
+
+  // Official No or name
+  const trimmedQ = String(q || '').trim();
+  if (trimmedQ) {
+    const like = `%${trimmedQ}%`;
+    whereClauses.push(`(
+      r.service_number LIKE ?
+      OR CONCAT_WS(' ', r.surname, r.first_name, r.middle_name) LIKE ?
+      OR CONCAT_WS(' ', r.first_name, r.middle_name, r.surname) LIKE ?
+      OR CONCAT_WS(' ', r.first_name, r.surname) LIKE ?
+    )`);
+    params.push(like, like, like, like);
+  }
+
+  if (rateId) {
+    whereClauses.push('r.rate_id = ?');
+    params.push(rateId);
+  }
+
+  if (shipId) {
+    whereClauses.push('cur_draft.ship_id = ?');
+    params.push(shipId);
+  }
 
   const trimmedOfficial = String(officialNo || '').trim();
   if (trimmedOfficial) {
@@ -81,7 +111,7 @@ async function listRatings({
     params.push(like, like, like, like, like, like, like, like, like);
   }
 
-  const whereSql = `WHERE ${whereClauses.join(' AND ')}`;
+  const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
   const sortExpr = SORT_COLUMNS[sortBy] || SORT_COLUMNS.service_number;
   const direction = String(sortDir).toLowerCase() === 'desc' ? 'DESC' : 'ASC';
   const orderSql = sortBy === 'full_name'
@@ -125,7 +155,8 @@ async function listRatings({
       cmd.name AS command_name,
       st.name AS state_name,
       r.phone,
-      r.email_address
+      r.email_address,
+      r.date_employed
   `;
 
   if (exportAll) {

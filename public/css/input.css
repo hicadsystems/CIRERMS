@@ -2,73 +2,247 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * CIRERMS design tokens: the only place a colour is defined. tailwind.config.js
+ * turns each one into classes by its role (bg-background, text-muted-foreground,
+ * border-input, bg-sidebar, bg-primary hover:bg-primary-hover ...).
+ *
+ * Values are the legacy CIRERMS palette, pixel-sampled from the old system.
+ * Values marked "derived" are new and say where they come from. Every text
+ * pair carries its WCAG 2 contrast ratio, computed, not estimated: AA is 4.5:1
+ * for body text and 3:1 for large or bold text. Pairs under AA are the legacy
+ * look kept as it was, and are marked "under AA".
+ *
+ * Solid colours are "R G B" channels so Tailwind's opacity modifiers work
+ * (bg-primary/10). Colours with their own alpha are whole rgb() values and
+ * take no modifier.
+ */
 @layer base {
+  :root {
+    /* ---- Surfaces and text ----
+       No white anywhere: surfaces are ivory sampled from the reference screen
+       (nncpo.ng), and the page sits on its gradient, ivory at the top left to
+       pale blue at the bottom right (--canvas-*). */
+    --background: 250 249 240;            /* #faf9f0: cards, bars, fields (sampled card) */
+    --foreground: 29 41 57;               /* #1d2939: text. 13.91:1 on background, 12.14:1 on muted, 12.19:1 on canvas-to */
+    --card: 250 249 240;                  /* #faf9f0 */
+    --card-foreground: 29 41 57;          /* #1d2939: 13.91:1 */
+    --popover: 250 249 240;               /* #faf9f0: menus, dropdown lists, dialogs */
+    --popover-foreground: 29 41 57;       /* #1d2939: 13.91:1 */
+    --canvas-from: 250 249 238;           /* #faf9ee: page gradient, top left (sampled) */
+    --canvas-via: 242 245 241;            /* #f2f5f1: page gradient, middle (sampled) */
+    --canvas-to: 222 235 253;             /* #deebfd: page gradient, bottom right (sampled) */
+    --muted: 228 234 241;                 /* #e4eaf1: tracks, chips, table heads (sampled table head) */
+    --muted-foreground: 99 110 123;       /* #636e7b: secondary text. 4.91:1 on background, 4.64:1 on subtle, 4.28:1 on muted and 4.30:1 on canvas-to (under AA) */
+    --subtle: 237 243 248;                /* #edf3f8: hover rows, quiet bands (sampled row) */
+    --border: 211 215 219;                /* #d3d7db: dividers and card edges */
+    --input: 211 215 219;                 /* #d3d7db: field borders */
+    --ring: 66 139 202;                   /* #428bca: focus ring */
+    --on-fill: 250 249 240;               /* #faf9f0: text and icons on a coloured fill, in place of white */
+
+    /* ---- Actions ---- */
+    --primary: 28 175 154;                /* #1caf9a: the main action (Save, Process) */
+    --primary-hover: 23 153 134;          /* #179986 */
+    --primary-foreground: var(--on-fill); /* 2.60:1 on primary, 3.35:1 on primary-hover (under AA) */
+    --secondary: 66 139 202;              /* #428bca: a second action (Print), links on background (3.44:1, under AA) */
+    --secondary-hover: 53 126 189;        /* #357ebd */
+    --secondary-foreground: var(--on-fill); /* 3.44:1 on secondary, 4.08:1 on secondary-hover (under AA) */
+    --destructive: 217 83 79;             /* #d9534f: delete */
+    --destructive-hover: 201 48 44;       /* #c9302c */
+    --destructive-foreground: var(--on-fill); /* 3.75:1 on destructive (under AA), 5.04:1 on destructive-hover */
+
+    /* ---- Status: text on its soft fill (derived: Bootstrap 3's alert colours, the old system's framework) ---- */
+    --success: 60 118 61;                 /* #3c763d: 4.57:1 on success-soft */
+    --success-soft: 223 240 216;          /* #dff0d8 */
+    --warning: 138 109 59;                /* #8a6d3b: the legacy note colour. 4.54:1 on warning-soft */
+    --warning-soft: 252 248 227;          /* #fcf8e3 */
+    --info: 49 112 143;                   /* #31708f: 4.53:1 on info-soft */
+    --info-soft: 217 237 247;             /* #d9edf7 */
+    --error: 169 68 66;                   /* #a94442: 4.53:1 on error-soft */
+    --error-soft: 242 222 222;            /* #f2dede */
+
+    /* ---- Sidebar ---- */
+    --sidebar: 0 116 168;                 /* #0074a8 */
+    --sidebar-deep: 0 93 135;             /* #005d87: the legacy darker sidebar, where its gradient ends. sidebar-foreground 6.82:1, sidebar-muted 4.26:1 */
+    --sidebar-foreground: var(--on-fill); /* 4.89:1 on sidebar, 6.82:1 on sidebar-deep */
+    --sidebar-muted: 149 207 236;         /* #95cfec, derived: sky-200 at 80% on sidebar, the group label as drawn today. 3.06:1 (under AA) */
+    --sidebar-accent: var(--background); /* the open module */
+    --sidebar-accent-foreground: 29 41 57; /* #1d2939: 13.91:1 on sidebar-accent */
+    --sidebar-primary: 2 169 244;         /* #02a9f4: the current screen's pill */
+    --sidebar-primary-foreground: var(--on-fill); /* 2.49:1 on sidebar-primary (under AA) */
+    --sidebar-hover: rgb(var(--on-fill) / 0.10);
+    --sidebar-border: rgb(var(--on-fill) / 0.15);
+
+    /* ---- Overlays ---- */
+    --scrim: rgb(0 0 0 / 0.5);            /* behind a modal */
+    --scrollbar: rgb(var(--sidebar));     /* thin scrollbar thumb: the theme blue */
+    --scrollbar-hover: rgb(var(--sidebar-deep));
+    --scrollbar-on-sidebar: rgb(var(--on-fill) / 0.35); /* on the blue sidebar itself, where blue would vanish */
+
+    /* ---- Completeness meter (derived: Bootstrap 3's danger, warning and success, the old system's framework) ---- */
+    --meter-low: 217 83 79;               /* #d9534f: 0 to 49% */
+    --meter-mid: 240 173 78;              /* #f0ad4e: 50 to 79% */
+    --meter-high: 92 184 92;              /* #5cb85c: 80 to 100% */
+  }
+
   html,
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #1d2939;
-    background-color: #e4e7ea;
+    color: rgb(var(--foreground));
+    background-color: rgb(var(--canvas-via));
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* The page gradient from the reference screen, for pages that ask for it with
+     class="app-canvas" (the app shell); it stays put while the page scrolls. The
+     sign-in page keeps its own navy. */
+  .app-canvas {
+    background-image: linear-gradient(135deg, rgb(var(--canvas-from)) 0%, rgb(var(--canvas-via)) 45%, rgb(var(--canvas-to)) 100%);
+    background-attachment: fixed;
+  }
+
+  /* Thin rounded scrollbars everywhere, as on the sidebar: Chrome, Edge and Safari
+     draw the ::-webkit-scrollbar parts, Firefox reads scrollbar-width and -color. */
+  @supports selector(::-webkit-scrollbar) {
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background: var(--scrollbar);
+      border-radius: 9999px;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-hover);
+    }
+    .cirerms-scroll::-webkit-scrollbar-thumb,
+    .cirerms-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-on-sidebar);
+    }
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar) transparent;
+    }
+    .cirerms-scroll {
+      scrollbar-color: var(--scrollbar-on-sidebar) transparent;
+    }
   }
 }
 
-/* Legacy CIRERMS diagonal-striped blue progress bar */
+@layer components {
+  /* An icon from the sprite: <svg class="icon"><use href="/assets/icons.svg#search"></use></svg>.
+     1rem square by default; size it with h-* w-* or size-*. */
+  .icon {
+    @apply inline-block h-4 w-4 shrink-0;
+  }
+}
+
+/* Completeness meter: a thin plain bar, red below 50%, amber to 79%, green from 80%.
+   The page sets data-level="low|mid|high" on the bar with its width. */
 .cirerms-progress-track {
-  background-color: #f1f3f5;
-  border-radius: 2px;
-  height: 14px;
+  background-color: rgb(var(--muted));
+  border-radius: 9999px;
+  height: 6px;
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .cirerms-progress-bar {
   height: 100%;
-  background-color: #428bca;
-  background-image: linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.18) 25%,
-    transparent 25%,
-    transparent 50%,
-    rgba(255, 255, 255, 0.18) 50%,
-    rgba(255, 255, 255, 0.18) 75%,
-    transparent 75%,
-    transparent
-  );
-  background-size: 28px 28px;
-  transition: width 240ms ease-in-out;
+  border-radius: 9999px;
+  background-color: rgb(var(--meter-low));
+  transition: width 240ms ease-in-out, background-color 240ms ease-in-out;
+}
+.cirerms-progress-bar[data-level="mid"] {
+  background-color: rgb(var(--meter-mid));
+}
+.cirerms-progress-bar[data-level="high"] {
+  background-color: rgb(var(--meter-high));
 }
 
-/* Standard CIRERMS form controls */
-.cirerms-input {
-  @apply w-full rounded border border-cirerms-border bg-white px-3 py-2 text-sm text-cirerms-ink shadow-sm transition focus:border-cirerms-blue focus:outline-none focus:ring-1 focus:ring-cirerms-blue disabled:bg-gray-100 disabled:text-gray-600;
+/*
+ * Searchable dropdowns (js/core/choices.js) in the CIRERMS look: the field
+ * matches the kit's text fields (INPUT in js/ui/classes.js), the list is a rounded floating panel with a tick on
+ * the chosen item, and the chevron is a 16 px muted icon like the rest of the
+ * set. The script draws its own colours (classes on its parts and a <style> it
+ * adds at run time), so these rules start with `html` and are marked important
+ * to win over both. Delete this block to get its own look back.
+ */
+html .custom-dropdown-search {
+  @apply rounded-ctl border-input bg-background text-sm text-foreground shadow-sm transition !important;
 }
-
-.cirerms-label {
-  @apply mb-1 block text-xs font-semibold tracking-wide text-gray-600;
+html .custom-dropdown-search:focus {
+  @apply border-ring ring-4 ring-ring/15 !important;
 }
-
-.cirerms-btn-teal {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-teal px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-teal-hover focus:outline-none focus:ring-2 focus:ring-cirerms-teal focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+html .custom-dropdown-search:disabled {
+  @apply bg-subtle text-muted-foreground !important;
 }
-
-.cirerms-btn-blue {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-blue px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-blue-hover focus:outline-none focus:ring-2 focus:ring-cirerms-blue focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+html .custom-dropdown-arrow {
+  @apply pr-3 text-muted-foreground !important;
 }
-
-.cirerms-btn-danger {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-danger px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-cirerms-danger-hover focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+html .custom-dropdown-arrow svg {
+  @apply h-4 w-4 text-muted-foreground !important;
 }
-
-.cirerms-dt-btn {
-  @apply border border-cirerms-border bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 active:bg-gray-100;
+html .custom-dropdown-clear {
+  @apply right-8 text-lg text-muted-foreground/70 !important;
 }
-
-/* Custom thin scrollbar for sidebar & wide tables */
-.cirerms-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+html .custom-dropdown-clear:hover {
+  @apply text-destructive !important;
 }
-.cirerms-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.22);
-  border-radius: 3px;
+html .custom-dropdown-list {
+  @apply mt-1 rounded-card border-border bg-popover text-sm text-popover-foreground shadow-pop !important;
+}
+html .custom-dropdown-items {
+  @apply p-1 !important;
+}
+html .custom-dropdown-item {
+  @apply relative my-px rounded-md border-0 px-2.5 py-2 transition-colors !important;
+}
+html .custom-dropdown-item:hover,
+html .custom-dropdown-item.cdd-active {
+  @apply bg-secondary/10 !important;
+}
+html .custom-dropdown-item.cdd-selected {
+  @apply bg-secondary/15 pr-8 font-medium text-foreground !important;
+}
+html .custom-dropdown-item.cdd-selected::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.625rem;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  background-color: rgb(var(--secondary));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+html .custom-dropdown-item.cdd-placeholder {
+  @apply bg-transparent text-muted-foreground !important;
+}
+html .custom-dropdown-item.cdd-placeholder:hover,
+html .custom-dropdown-item.cdd-placeholder.cdd-active {
+  @apply bg-subtle !important;
+}
+html .custom-dropdown-items::-webkit-scrollbar {
+  width: 6px !important;
+}
+html .custom-dropdown-items::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+html .custom-dropdown-items::-webkit-scrollbar-thumb {
+  background: var(--scrollbar) !important;
+  border-radius: 9999px !important;
+}
+html .custom-dropdown-search::placeholder {
+  color: rgb(var(--muted-foreground));
+}
+html .custom-dropdown-search::selection {
+  background: rgb(var(--secondary) / 0.2);
+  color: inherit;
 }

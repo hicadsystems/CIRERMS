@@ -1,346 +1,200 @@
+/*
+ * Current and Former Ratings (#ratings/current, #ratings/former; #ratings/new
+ * is the current list with the New Rating dialog open over it).
+ *
+ * Search (Official No or name) and the Rate and Ship filters above the list;
+ * 25 a page from the server; a table on desktop and cards on a phone. A row
+ * shows the rating beside the list at 1280 px and up, in a dialog from 761 to
+ * 1279 px and in a bottom sheet on a phone (Open Record, Print Report,
+ * Documents). The header has Export (Copy Rows, Excel, PDF, CSV, with the
+ * list's filters) and New Rating.
+ */
 import { api } from '../core/api.js';
-import { clear, el, previewBlobModal, showToast } from '../core/dom.js';
-import { formatDisplayDate } from '../core/dates.js';
-import { navigate } from '../core/router.js';
+import { getLookups } from '../core/lookups.js';
+import { formatDisplayDate, yearsBetween, durationSince } from '../core/dates.js';
+import { previewBlobModal } from '../core/dom.js';
+import { h, cx } from '../ui/html.js';
+import { button } from '../ui/button.js';
+import { pageHeader } from '../ui/page-header.js';
+import { toolbar } from '../ui/toolbar.js';
+import { listRecordView } from '../ui/list-record.js';
+import { attachMenu } from '../ui/menu.js';
+import { pill } from '../ui/pill.js';
+import { facts } from '../ui/facts.js';
+import { emptyState } from '../ui/empty-state.js';
+import { toast } from '../ui/toast.js';
+import { openNewRating, newRatingButton } from './rating-new.js';
+import { ratingName, personName, shortRate } from './rating-names.js';
+import { photoAvatar } from './rating-record.js';
 
-export async function mountRatingsList(outlet, { status = 'current' }) {
-  const state = {
-    status,
-    officialNo: '',
-    name: '',
-    search: '',
-    sortBy: 'service_number',
-    sortDir: 'asc',
-    page: 1,
-    pageSize: 10,
-    items: [],
-    total: 0,
-    totalPages: 1,
-  };
+const COLUMNS = {
+  current: [
+    { key: 'service_number', label: 'Official No', headClassName: 'whitespace-nowrap' },
+    { key: 'name', label: 'Name', render: (r) => personName(r) },
+    { key: 'rate', label: 'Rate', render: (r) => shortRate(r.rate_name) },
+    { key: 'current_ship_name', label: 'Ship' },
+    { key: 'branch_name', label: 'Branch' },
+  ],
+  former: [
+    { key: 'service_number', label: 'Official No', headClassName: 'whitespace-nowrap' },
+    { key: 'name', label: 'Name', render: (r) => personName(r) },
+    { key: 'rate', label: 'Rate', render: (r) => shortRate(r.rate_name) },
+    { key: 'exit_date', label: 'Exit Date', render: (r) => formatDisplayDate(r.exit_date) },
+    { key: 'exit_type_name', label: 'Reason', render: (r) => r.exit_type_name || r.exit_reason },
+  ],
+};
 
-  const filterForm = outlet.querySelector('#list-filter-form');
-  const officialInput = outlet.querySelector('#filter-official-no');
-  const nameInput = outlet.querySelector('#filter-name');
-  const resetBtn = outlet.querySelector('#filter-reset-btn');
-  const pageSizeSelect = outlet.querySelector('#list-page-size');
-  const quickSearchInput = outlet.querySelector('#list-quick-search');
-  const theadRow = outlet.querySelector('#list-thead-row');
-  const tbody = outlet.querySelector('#list-tbody');
-  const summaryText = outlet.querySelector('#list-summary-text');
-  const prevBtn = outlet.querySelector('#page-prev-btn');
-  const nextBtn = outlet.querySelector('#page-next-btn');
-  const pageNumbers = outlet.querySelector('#page-numbers');
+async function printReport(sn) {
+  try {
+    const { blob, mimeType, fileName } = await api.fetchBlob(`/api/ratings/${encodeURIComponent(sn)}/pdf`);
+    previewBlobModal({ title: `Report: ${sn}`, blob, mimeType, fileName: fileName || `CIRERMS_Dossier_${sn}.pdf` });
+  } catch (err) {
+    toast(err.message || 'Could not make the report.', 'error');
+  }
+}
 
-  const columns = status === 'former'
+/** The rating beside the list (or in its dialog or sheet): who, where, and the three actions. */
+async function ratingCard(row) {
+  let r = row;
+  let children = {};
+  try {
+    const res = await api.get(`/api/ratings/${encodeURIComponent(row.service_number)}`);
+    r = res.data.rating;
+    children = res.data.children || {};
+  } catch (err) {
+    return emptyState({ icon: 'circle-alert', title: 'Could Not Load the Rating', text: err.message || '' });
+  }
+  const current = r.status !== 'former';
+  const posting = (children.drafting || []).find((p) => !p.end_date);
+  const age = yearsBetween(r.date_of_birth);
+  const docs = (children.documents || []).length;
+  const rows = current
     ? [
-        { key: 'service_number', label: 'Official No', sortable: true },
-        { key: 'first_name', label: 'First Name', sortable: true },
-        { key: 'middle_name', label: 'Middle Name', sortable: true },
-        { key: 'surname', label: 'Last Name', sortable: true },
-        { key: 'rate_name', label: 'Rate', sortable: true },
-        { key: 'exit_date', label: 'Exit Date', sortable: true },
-        { key: 'exit_type_name', label: 'Exit Reason', sortable: true },
-        { key: 'actions', label: 'Action', sortable: false },
+        ['Current Ship', r.current_ship_name],
+        ['On Ship For', posting && posting.start_date ? durationSince(posting.start_date) : ''],
+        ['Command', r.command_name],
+        ['Enlisted', formatDisplayDate(r.date_employed)],
+        ['Phone', r.phone],
+        ['Age', age === null ? '' : String(age)],
+        ['State of Origin', r.state_name],
+        ['Documents', String(docs)],
       ]
     : [
-        { key: 'service_number', label: 'Service No', sortable: true },
-        { key: 'first_name', label: 'First Name', sortable: true },
-        { key: 'middle_name', label: 'Middle Name', sortable: true },
-        { key: 'surname', label: 'Last Name', sortable: true },
-        { key: 'rate_name', label: 'Rate', sortable: true },
-        { key: 'current_ship_name', label: 'Current Ship', sortable: true },
-        { key: 'actions', label: 'Action', sortable: false },
+        ['Exit Date', formatDisplayDate(r.exit_date)],
+        ['Reason', r.exit_type_name || r.exit_reason],
+        ['Last Ship', (children.drafting || [])[0] ? children.drafting[0].ship_name : ''],
+        ['Enlisted', formatDisplayDate(r.date_employed)],
+        ['Service', r.date_employed ? `${yearsBetween(r.date_employed, r.exit_date)} years` : ''],
+        ['State of Origin', r.state_name],
       ];
+  const sn = encodeURIComponent(r.service_number);
+  return h('div', { className: 'space-y-4' }, [
+    h('div', { className: 'flex items-start gap-3' }, [
+      photoAvatar(r, 'lg'),
+      h('div', { className: 'min-w-0' }, [
+        h('div', { className: 'text-base font-semibold leading-tight', text: ratingName(r) }),
+        h('div', { className: 'text-sm text-muted-foreground', text: [r.service_number, r.rate_name].filter(Boolean).join(' · ') }),
+        h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5' }, [pill(current ? 'Current' : 'Former', current ? 'success' : 'neutral'), r.branch_name ? pill(r.branch_name, 'info') : null]),
+      ]),
+    ]),
+    facts(rows),
+    h('div', { className: 'flex flex-wrap gap-2 phone:flex-col phone:items-stretch' }, [
+      button({ label: 'Open Record', icon: 'id-card', variant: 'primary', href: `#ratings/edit/${sn}` }),
+      button({ label: 'Print Report', icon: 'printer', variant: 'blue', onClick: () => printReport(r.service_number) }),
+      button({ label: 'Documents', icon: 'folder-open', variant: 'outline', href: `#ratings/documents/${sn}` }),
+    ]),
+  ]);
+}
 
-  function renderHeader() {
-    clear(theadRow);
-    for (const col of columns) {
-      if (!col.sortable) {
-        theadRow.appendChild(el('th', { className: 'py-3 px-4 whitespace-nowrap', text: col.label }));
-        continue;
-      }
-      const isSorted = state.sortBy === col.key;
-      const arrow = isSorted ? (state.sortDir === 'asc' ? ' ▲' : ' ▼') : ' ⇅';
-      const th = el(
-        'th',
-        {
-          className: 'py-3 px-4 whitespace-nowrap cursor-pointer select-none hover:bg-gray-50',
-          onClick: () => {
-            if (state.sortBy === col.key) {
-              state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
-            } else {
-              state.sortBy = col.key;
-              state.sortDir = 'asc';
-            }
-            state.page = 1;
-            loadData();
-          },
-        },
-        [
-          el('span', { text: col.label }),
-          el('span', { className: `text-[10px] ml-1 ${isSorted ? 'text-cirerms-sidebar' : 'text-gray-300'}`, text: arrow }),
-        ]
-      );
-      theadRow.appendChild(th);
-    }
-  }
+export async function mountRatingsList(outlet, { status = 'current', info, openNew = false } = {}) {
+  const isCurrent = status === 'current';
+  const filters = { q: '', rateId: '', shipId: '' };
+  const params = (extra = {}) => {
+    const p = new URLSearchParams({ status, ...extra });
+    Object.entries(filters).forEach(([k, v]) => { if (v) p.set(k, v); });
+    return p.toString();
+  };
 
-  async function handlePrintReport(serviceNumber) {
+  // Export: the server makes the files with the list's filters; Copy Rows copies the page shown
+  const exportItems = [
+    { label: 'Copy Rows', icon: 'copy', onSelect: () => copyRows() },
+    { label: 'Excel', icon: 'file-spreadsheet', onSelect: () => download('xlsx') },
+    { label: 'PDF', icon: 'file-text', onSelect: () => download('pdf') },
+    { label: 'CSV', icon: 'file-text', onSelect: () => download('csv') },
+  ];
+  async function download(format) {
     try {
-      const url = `/api/ratings/${encodeURIComponent(serviceNumber)}/pdf`;
-      const { blob, mimeType, fileName } = await api.fetchBlob(url);
-      previewBlobModal({
-        title: `Personnel Dossier — ${serviceNumber}`,
-        blob,
-        mimeType,
-        fileName: fileName || `CIRERMS_Dossier_${serviceNumber}.pdf`,
-      });
+      await api.downloadFile(`/api/ratings/export?${params({ format })}`, `ratings.${format}`);
+      toast(`${format === 'xlsx' ? 'Excel' : format.toUpperCase()} downloaded.`);
     } catch (err) {
-      showToast(err.message || 'Failed to generate Print Report PDF.', 'error');
+      toast(err.message || 'Export failed.', 'error');
     }
   }
-
-  function renderRows() {
-    clear(tbody);
-    if (state.items.length === 0) {
-      tbody.appendChild(
-        el('tr', {}, [
-          el('td', {
-            colSpan: columns.length,
-            className: 'py-10 px-4 text-center text-sm text-gray-500',
-            text: 'No matching ratings records found.',
-          }),
-        ])
-      );
-      return;
-    }
-
-    for (const row of state.items) {
-      const tr = el('tr', { className: 'hover:bg-sky-50/30 transition' });
-      tr.appendChild(el('td', { className: 'py-3 px-4 font-medium text-cirerms-ink whitespace-nowrap', text: row.service_number }));
-      tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap', text: row.first_name || '' }));
-      tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap', text: row.middle_name || '' }));
-      tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap', text: row.surname || '' }));
-      tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap text-xs text-gray-600', text: row.rate_name || '-' }));
-
-      if (status === 'former') {
-        tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap text-xs', text: formatDisplayDate(row.exit_date) || '-' }));
-        tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap text-xs', text: row.exit_type_name || '-' }));
-      } else {
-        tr.appendChild(el('td', { className: 'py-3 px-4 whitespace-nowrap text-xs text-gray-600', text: row.current_ship_name || '-' }));
-      }
-
-      const actionCell = el('td', { className: 'py-2.5 px-4 whitespace-nowrap' }, [
-        el('div', { className: 'inline-flex items-center gap-1.5' }, [
-          el('button', {
-            type: 'button',
-            className: 'cirerms-btn-blue text-xs px-3 py-1.5',
-            text: 'Edit',
-            onClick: () => navigate(`#ratings/edit/${encodeURIComponent(row.service_number)}`),
-          }),
-          el('button', {
-            type: 'button',
-            className: 'cirerms-btn-blue text-xs px-3 py-1.5',
-            text: 'Print Report',
-            onClick: () => handlePrintReport(row.service_number),
-          }),
-        ]),
-      ]);
-      tr.appendChild(actionCell);
-      tbody.appendChild(tr);
-    }
-  }
-
-  function renderPagination() {
-    const startIdx = state.total === 0 ? 0 : (state.page - 1) * state.pageSize + 1;
-    const endIdx = Math.min(state.page * state.pageSize, state.total);
-    summaryText.textContent = `Showing ${startIdx} to ${endIdx} of ${state.total} entries`;
-
-    prevBtn.disabled = state.page <= 1;
-    nextBtn.disabled = state.page >= state.totalPages;
-
-    clear(pageNumbers);
-    const maxButtons = 5;
-    let startPage = Math.max(1, state.page - 2);
-    const endPage = Math.min(state.totalPages, startPage + maxButtons - 1);
-    if (endPage - startPage < maxButtons - 1) {
-      startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-
-    for (let p = startPage; p <= endPage; p += 1) {
-      const active = p === state.page;
-      pageNumbers.appendChild(
-        el('button', {
-          type: 'button',
-          className: active
-            ? 'rounded bg-cirerms-blue px-3 py-1.5 text-xs font-semibold text-white'
-            : 'rounded border border-cirerms-border bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50',
-          text: String(p),
-          onClick: () => {
-            if (p !== state.page) {
-              state.page = p;
-              loadData();
-            }
-          },
-        })
-      );
-    }
-
-    const hasFilters = Boolean(state.officialNo || state.name || state.search);
-    resetBtn.classList.toggle('hidden', !hasFilters);
-  }
-
-  function buildFilterQuery(extra = {}) {
-    const qs = new URLSearchParams({
-      status: state.status,
-      sortBy: state.sortBy,
-      sortDir: state.sortDir,
-      ...extra,
-    });
-    if (state.officialNo) qs.set('officialNo', state.officialNo);
-    if (state.name) qs.set('name', state.name);
-    if (state.search) qs.set('search', state.search);
-    return qs.toString();
-  }
-
-  async function loadData() {
-    renderHeader();
+  async function copyRows() {
+    const cols = COLUMNS[status];
+    const rows = view.list.rows();
+    const cell = (c, r) => String((c.render ? c.render(r) : r[c.key]) || '');
+    const text = [cols.map((c) => c.label).join('\t'), ...rows.map((r) => cols.map((c) => cell(c, r)).join('\t'))].join('\n');
     try {
-      const qs = buildFilterQuery({
-        page: String(state.page),
-        pageSize: String(state.pageSize),
-      });
-      const res = await api.get(`/api/ratings?${qs}`);
-      state.items = res.data || [];
-      state.total = res.meta?.total || 0;
-      state.page = res.meta?.page || 1;
-      state.totalPages = res.meta?.totalPages || 1;
-      renderRows();
-      renderPagination();
-    } catch (err) {
-      showToast(err.message || 'Failed to load ratings list.', 'error');
-    }
-  }
-
-  // Event wiring
-  filterForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    state.officialNo = officialInput.value.trim();
-    state.name = nameInput.value.trim();
-    state.page = 1;
-    loadData();
-  });
-
-  resetBtn.addEventListener('click', () => {
-    officialInput.value = '';
-    nameInput.value = '';
-    quickSearchInput.value = '';
-    state.officialNo = '';
-    state.name = '';
-    state.search = '';
-    state.page = 1;
-    loadData();
-  });
-
-  pageSizeSelect.addEventListener('change', () => {
-    state.pageSize = Number(pageSizeSelect.value) || 10;
-    state.page = 1;
-    loadData();
-  });
-
-  let searchTimer = null;
-  quickSearchInput.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      state.search = quickSearchInput.value.trim();
-      state.page = 1;
-      loadData();
-    }, 240);
-  });
-
-  prevBtn.addEventListener('click', () => {
-    if (state.page > 1) {
-      state.page -= 1;
-      loadData();
-    }
-  });
-
-  nextBtn.addEventListener('click', () => {
-    if (state.page < state.totalPages) {
-      state.page += 1;
-      loadData();
-    }
-  });
-
-  // Export buttons: Copy | Excel | PDF | CSV
-  outlet.querySelector('#export-copy-btn').addEventListener('click', async () => {
-    const header = columns
-      .filter((c) => c.key !== 'actions')
-      .map((c) => c.label)
-      .join('\t');
-    const lines = state.items.map((r) => {
-      if (status === 'former') {
-        return [
-          r.service_number,
-          r.first_name || '',
-          r.middle_name || '',
-          r.surname || '',
-          r.rate_name || '',
-          formatDisplayDate(r.exit_date),
-          r.exit_type_name || '',
-        ].join('\t');
-      }
-      return [
-        r.service_number,
-        r.first_name || '',
-        r.middle_name || '',
-        r.surname || '',
-        r.rate_name || '',
-        r.current_ship_name || '',
-      ].join('\t');
-    });
-    const tsv = [header, ...lines].join('\n');
-    try {
-      await navigator.clipboard.writeText(tsv);
-      showToast(`Copied ${state.items.length} row(s) to clipboard.`, 'success');
+      await navigator.clipboard.writeText(text);
+      toast(`${rows.length} ${rows.length === 1 ? 'row' : 'rows'} copied.`);
     } catch (_) {
-      showToast('Clipboard access was denied by browser.', 'error');
+      toast('Copying is blocked in this browser.', 'error');
     }
+  }
+  const exportBtn = attachMenu(button({ label: 'Export', icon: 'download', iconAfter: 'chevron-down', variant: 'blue' }), exportItems);
+  const phoneExport = attachMenu(button({ icon: 'download', ariaLabel: 'Export', variant: 'outline', className: 'desk:hidden' }), exportItems, { title: 'Export' });
+
+  const tb = toolbar({
+    search: { placeholder: 'Official No or name', name: 'q' },
+    filters: [
+      { name: 'rateId', label: 'Rates', options: [], placeholder: 'All Rates', width: 'w-56' },
+      { name: 'shipId', label: 'Ships', options: [], placeholder: 'All Ships', width: 'w-48' },
+    ],
+    noun: ['rating', 'ratings'],
+    actions: [phoneExport],
+    onChange: (values) => {
+      Object.assign(filters, values);
+      view.reload({ resetPage: true });
+    },
   });
 
-  outlet.querySelector('#export-excel-btn').addEventListener('click', async () => {
-    try {
-      const qs = buildFilterQuery({ format: 'xlsx' });
-      await api.downloadFile(`/api/ratings/export?${qs}`, `CIRERMS_${status}_ratings.xlsx`);
-    } catch (err) {
-      showToast(err.message || 'Excel export failed.', 'error');
-    }
+  const view = listRecordView({
+    list: {
+      columns: COLUMNS[status],
+      load: ({ page, pageSize }) => api.get(`/api/ratings?${params({ page, pageSize })}`),
+      card: {
+        avatar: (r) => personName(r),
+        title: (r) => ratingName(r),
+        subtitle: (r) => `${r.service_number} · ${isCurrent ? r.current_ship_name || 'No current posting' : `Left ${formatDisplayDate(r.exit_date) || '-'}`}`,
+      },
+      rowKey: (r) => r.service_number,
+      empty: { icon: 'search', title: 'No Ratings Found' },
+      onLoaded: ({ meta }) => tb.setCount(meta.total),
+    },
+    renderRecord: ratingCard,
+    recordTitle: (r, { phone }) => (phone ? 'Rating' : ratingName(r)),
   });
 
-  outlet.querySelector('#export-csv-btn').addEventListener('click', async () => {
-    try {
-      const qs = buildFilterQuery({ format: 'csv' });
-      await api.downloadFile(`/api/ratings/export?${qs}`, `CIRERMS_${status}_ratings.csv`);
-    } catch (err) {
-      showToast(err.message || 'CSV export failed.', 'error');
-    }
-  });
+  outlet.replaceChildren(
+    pageHeader({ title: info ? info.title : isCurrent ? 'Current Ratings' : 'Former Ratings', subtitle: info ? info.subtitle : '', actions: [exportBtn, newRatingButton()], phoneActions: 'hide' }),
+    tb.el,
+    h('div', { className: cx('min-w-0') }, view.el),
+  );
 
-  outlet.querySelector('#export-pdf-btn').addEventListener('click', async () => {
-    try {
-      const qs = buildFilterQuery({ format: 'pdf' });
-      const { blob, mimeType, fileName } = await api.fetchBlob(`/api/ratings/export?${qs}`);
-      previewBlobModal({
-        title: status === 'former' ? 'Former Ratings Nominal Roll (PDF)' : 'Current Ratings Nominal Roll (PDF)',
-        blob,
-        mimeType,
-        fileName: fileName || `CIRERMS_${status}_ratings.pdf`,
-      });
-    } catch (err) {
-      showToast(err.message || 'PDF export failed.', 'error');
-    }
-  });
+  getLookups().then((lookups) => {
+    tb.setOptions('rateId', (lookups.rates || []).map((x) => ({ value: x.id, label: x.name })));
+    tb.setOptions('shipId', (lookups.ships || []).map((x) => ({ value: x.id, label: x.name })));
+  }).catch(() => {});
 
-  await loadData();
-  return () => clearTimeout(searchTimer);
+  if (openNew) {
+    // #ratings/new: the dialog over the current list; closing it leaves the list's address
+    openNewRating({
+      onClose: () => {
+        if (window.location.hash.startsWith('#ratings/new')) window.history.replaceState(null, '', '#ratings/current');
+      },
+    });
+  }
+
+  return () => view.destroy();
 }

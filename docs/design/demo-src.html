@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CIRERMS Layout Demo</title>
+<link rel="icon" type="image/png" href="__CREST__" />
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body class="app-canvas h-full overflow-hidden text-foreground">
+<!--__SPRITE__-->
+
+<div id="shell" class="flex h-dvh min-h-0">
+  <aside id="rail" class="flex flex-none flex-col bg-sidebar text-sidebar-foreground phone:hidden" aria-label="Main"></aside>
+
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+    <!-- desktop top bar -->
+    <header class="relative z-20 flex h-14 flex-none items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl phone:hidden">
+      <button type="button" data-act="toggle-rail" class="inline-flex h-9 w-9 items-center justify-center rounded-ctl text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Collapse Menu">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="#i-panel-left"></use></svg>
+      </button>
+      <button type="button" data-act="palette" class="flex h-9 w-full max-w-md items-center gap-2 rounded-full border border-border bg-muted px-3.5 text-sm text-muted-foreground transition-all hover:border-input hover:bg-background hover:shadow-card">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+        <span class="truncate">Search Ratings and Screens</span>
+        <span class="ml-auto flex gap-1 text-2xs font-semibold"><kbd class="rounded border border-border bg-background px-1.5 py-0.5">Ctrl</kbd><kbd class="rounded border border-border bg-background px-1.5 py-0.5">K</kbd></span>
+      </button>
+      <!-- demo only: see the phone layout from a desktop browser -->
+      <div id="demo-bar" class="ml-auto flex flex-none items-center gap-2 text-xs">
+        <span class="rounded-full bg-warning-soft px-2 py-1 font-semibold text-warning">Layout Demo</span>
+        <button type="button" data-act="phone-preview" class="inline-flex h-8 items-center gap-1.5 rounded-full bg-sidebar px-3 font-medium text-sidebar-foreground hover:opacity-90">
+          <svg class="icon" aria-hidden="true"><use href="#i-smartphone"></use></svg>Phone Preview
+        </button>
+      </div>
+    </header>
+
+    <!-- phone header -->
+    <header id="phone-header" class="relative z-10 flex h-14 flex-none items-center gap-2 bg-gradient-to-r from-sidebar to-sidebar-deep px-2 text-sidebar-foreground shadow-md desk:hidden"></header>
+
+    <!-- the module's screens: a tab strip on desktop, chips on a phone -->
+    <nav id="tabs" aria-label="Screens" class="flex-none"></nav>
+
+    <main id="page" class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-10 pt-5 phone:px-3.5 phone:pb-24 phone:pt-3.5">
+      <div id="view" class="mx-auto w-full max-w-page"></div>
+    </main>
+
+    <!-- phone bottom bar -->
+    <nav id="bottom-bar" aria-label="Main" class="grid flex-none grid-cols-5 border-t border-border/60 bg-background/80 px-1 shadow-pop backdrop-blur-xl desk:hidden"></nav>
+  </div>
+</div>
+
+<!-- floating New Rating on a phone -->
+<button id="fab" type="button" data-act="new-rating" class="fixed bottom-24 right-4 z-30 hidden h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-lg shadow-primary/30 ring-1 ring-primary-foreground/20 desk:hidden" aria-label="New Rating">
+  <svg class="icon h-6 w-6" aria-hidden="true"><use href="#i-plus"></use></svg>
+</button>
+
+<!-- one overlay: a centred dialog on desktop, a bottom sheet on a phone -->
+<div id="overlay" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-scrim backdrop-blur-sm" data-act="close"></div>
+  <div class="pointer-events-none absolute inset-0 flex justify-center desk:items-center desk:p-6 phone:items-end phone:pt-10">
+    <div id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" class="pointer-events-auto flex max-h-full w-full flex-col overflow-hidden bg-background shadow-pop desk:rounded-dialog phone:rounded-t-3xl">
+      <div class="mx-auto mt-2 h-1.5 w-10 flex-none rounded-full bg-border desk:hidden"></div>
+      <div class="flex flex-none items-center gap-3 border-b border-border px-5 py-3.5">
+        <h2 id="dialog-title" class="min-w-0 flex-1 truncate text-base font-semibold"></h2>
+        <button type="button" data-act="close" class="inline-flex h-9 w-9 items-center justify-center rounded-ctl text-muted-foreground hover:bg-muted phone:h-tap phone:w-tap" aria-label="Close">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+      <div id="dialog-body" class="min-h-0 flex-1 overflow-y-auto px-5 py-4"></div>
+      <div id="dialog-foot" class="flex flex-none flex-wrap justify-end gap-2 border-t border-border px-5 py-3 phone:flex-col-reverse"></div>
+    </div>
+  </div>
+</div>
+
+<!-- command palette -->
+<div id="palette" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-scrim backdrop-blur-sm" data-act="close-palette"></div>
+  <div class="pointer-events-none absolute inset-0 flex justify-center desk:items-start desk:p-6 desk:pt-24">
+    <div class="pointer-events-auto flex max-h-full w-full flex-col overflow-hidden bg-popover shadow-pop desk:max-w-xl desk:rounded-dialog">
+      <div class="flex flex-none items-center gap-2 border-b border-border px-4">
+        <svg class="icon h-5 w-5 text-muted-foreground" aria-hidden="true"><use href="#i-search"></use></svg>
+        <input id="palette-input" type="text" autocomplete="off" placeholder="Search ratings and screens" aria-label="Search" class="h-14 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground" />
+        <button type="button" data-act="close-palette" class="inline-flex h-tap w-tap items-center justify-center text-muted-foreground desk:hidden" aria-label="Close">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="#i-x"></use></svg>
+        </button>
+        <kbd class="rounded border border-border px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground phone:hidden">Esc</kbd>
+      </div>
+      <div id="palette-results" class="min-h-0 flex-1 overflow-y-auto p-2"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 flex-col gap-2 phone:bottom-20 phone:left-3 phone:right-3 phone:w-auto"></div>
+
+<div id="phone-frame" class="fixed inset-0 z-50 hidden items-center justify-center bg-scrim p-4">
+  <div class="flex flex-col items-center gap-3">
+    <div class="h-full overflow-hidden rounded-3xl border-8 border-foreground bg-foreground shadow-2xl">
+      <iframe id="phone-iframe" title="Phone preview" width="390" height="760" class="block bg-background"></iframe>
+    </div>
+    <button type="button" data-act="close-phone" class="inline-flex h-9 items-center gap-1.5 rounded-full bg-background px-4 text-sm font-medium shadow">
+      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>Close Preview
+    </button>
+  </div>
+</div>
+
+<!-- session lock: password only -->
+<div id="lock" role="dialog" aria-modal="true" aria-labelledby="lock-title" aria-describedby="lock-reason" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-sidebar-deep/90 p-4 backdrop-blur-xl">
+  <div aria-hidden="true" class="pointer-events-none absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-sidebar-primary/25 blur-3xl"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-3xl"></div>
+  <form id="lock-form" novalidate class="relative w-full max-w-sm">
+    <div id="lock-card" class="animate-rise rounded-dialog border border-border/60 bg-card p-6 text-card-foreground shadow-pop">
+      <div class="flex flex-col items-center text-center">
+        <span class="relative">
+          <span class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-2xl font-bold text-sidebar-foreground shadow-md ring-4 ring-background">HA</span>
+          <span class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-md ring-4 ring-card"><svg class="icon" aria-hidden="true"><use href="#i-lock-keyhole"></use></svg></span>
+        </span>
+        <h2 id="lock-title" class="mt-4 text-2xl font-bold tracking-tight">Session Locked</h2>
+        <p id="lock-reason" class="mt-1 text-sm text-muted-foreground">Locked while you were away</p>
+        <p class="mt-4 font-semibold">HICO Administrator</p>
+        <p class="text-sm text-muted-foreground">HICO001 · Administrator</p>
+      </div>
+      <label class="mt-5 block"><span class="mb-1 block text-xs font-semibold text-muted-foreground">Password</span>
+        <span class="relative block">
+          <input id="lock-pass" type="password" autocomplete="current-password" class="w-full rounded-ctl border border-input bg-background px-3 py-2 pr-11 text-sm shadow-sm transition placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 phone:h-tap" />
+          <button type="button" data-act="lock-eye" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Show Password"><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg></button>
+        </span>
+        <span id="lock-err" role="alert" class="mt-1 hidden text-xs font-medium text-error">Wrong password</span>
+      </label>
+      <div class="mt-6 flex flex-col gap-2">
+        <button type="submit" class="inline-flex h-control w-full items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-3.5 text-sm font-medium text-primary-foreground shadow-btn transition-all hover:brightness-105 active:translate-y-px phone:h-tap"><svg class="icon" aria-hidden="true"><use href="#i-lock-keyhole-open"></use></svg>Unlock</button>
+        <div class="my-2 h-px bg-border"></div>
+        <button type="button" data-act="lock-signout" class="inline-flex h-control w-full items-center justify-center gap-1.5 rounded-ctl px-3.5 text-sm font-medium text-destructive transition-colors hover:bg-error-soft phone:h-tap"><svg class="icon" aria-hidden="true"><use href="#i-log-out"></use></svg>Sign Out</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+/*__CHOICES__*/
+</script>
+<script>
+(function () {
+  'use strict';
+
+  // ==========================================================================
+  // Demonstration data (synthetic)
+  // ==========================================================================
+  const TODAY = new Date(2026, 10, 18);
+  const RATES = ['Ordinary Seaman (OS)', 'Able Seaman (AB)', 'Leading Seaman (LS)', 'Petty Officer (PO)', 'Chief Petty Officer (CPO)', 'Warrant Officer (WO)', 'Master Warrant Officer (MWO)', 'Navy Warrant Officer (NWO)'];
+  const SHIPS = ['NNS ARADU', 'NNS THUNDER', 'NNS OKPABANA', 'NNS CENTENARY', 'NNS UNITY', 'NNS PROSPERITY', 'NNS KADA', 'NNS BEECROFT', 'NNS PATHFINDER', 'NNS VICTORY', 'NNS DELTA', 'NNS JUBILEE'];
+  const BRANCHES = ['Seaman', 'Marine Engineering', 'Weapon Engineering', 'Logistics', 'Medical', 'Information Technology', 'Education', 'Naval Police'];
+  const COMMANDS = ['Western Naval Command', 'Eastern Naval Command', 'Central Naval Command', 'Naval Training Command', 'Logistics Command'];
+  const STATES = ['Lagos', 'Rivers', 'Enugu', 'Kaduna', 'Delta', 'Oyo', 'Anambra', 'Kano', 'Cross River', 'Bayelsa', 'Imo', 'Ondo'];
+  const SURNAMES = ['Adebayo', 'Okafor', 'Bello', 'Eze', 'Ibrahim', 'Ogunleye', 'Nwosu', 'Abubakar', 'Etim', 'Okoro', 'Danjuma', 'Akpan', 'Olatunji', 'Umar', 'Obi', 'Lawal', 'Effiong', 'Musa', 'Adeyemi', 'Chukwu', 'Garba', 'Ndukwe', 'Bassey', 'Yusuf', 'Ogbonna', 'Idowu', 'Ajayi', 'Onyeka', 'Salisu', 'Ekanem', 'Agbaje', 'Uzor', 'Tanko'];
+  const FIRST = ['Chinedu', 'Tunde', 'Abdullahi', 'Emeka', 'Aisha', 'Segun', 'Ngozi', 'Uduak', 'Kelechi', 'Sadiq', 'Funmilayo', 'Obinna', 'Halima', 'Ikechukwu', 'Bola', 'Nnamdi', 'Zainab', 'Yemi', 'Chidi', 'Blessing', 'Amina', 'Femi', 'Ebere', 'Bashir', 'Tosin', 'Uchenna', 'Danladi', 'Kemi', 'Ese', 'Nkechi'];
+  const EXITS = ['Retired', 'Completed engagement', 'Discharged at own request', 'Medical discharge'];
+  const CATEGORIES = [['DRAFTING', 'Drafting'], ['CERTIFICATE', 'Certificate'], ['REQUEST_FORM', 'Request Form'], ['EMOLUMENT', 'Emolument'], ['GEN_FORM', 'General Form'], ['OTHER', 'Other']];
+
+  const short = (rate) => (rate.match(/\(([^)]+)\)/) || [, rate])[1];
+  const pad = (n, w = 2) => String(n).padStart(w, '0');
+  const d = (y, m, day) => new Date(y, m - 1, day);
+  const fmt = (dt) => (dt ? `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()}` : '-');
+  const years = (from, to = TODAY) => Math.floor((to - from) / 31557600000);
+  const since = (from) => { const m = Math.max(0, (TODAY.getFullYear() - from.getFullYear()) * 12 + TODAY.getMonth() - from.getMonth()); return m >= 12 ? `${Math.floor(m / 12)} yr ${m % 12} mo` : `${m} mo`; };
+
+  const ratings = [];
+  for (let i = 0; i < 33; i += 1) {
+    const enlisted = d(2004 + (i % 17), 1 + ((i * 5) % 12), 1 + ((i * 11) % 27));
+    ratings.push({
+      sn: `B0${pad(410 + i * 9, 3)}`,
+      surname: SURNAMES[i],
+      first: FIRST[(i * 7) % FIRST.length],
+      middle: FIRST[(i * 3 + 5) % FIRST.length],
+      rate: RATES[[1, 2, 3, 1, 2, 4, 0, 3, 2, 5, 1, 3, 2, 6, 1, 3, 2][i % 17]],
+      ship: SHIPS[(i * 5) % SHIPS.length],
+      shipSince: d(2019 + (i % 7), 1 + ((i * 7) % 12), 3 + (i % 20)),
+      branch: BRANCHES[(i * 3) % BRANCHES.length],
+      command: COMMANDS[i % COMMANDS.length],
+      state: STATES[(i * 7) % STATES.length],
+      enlisted,
+      dob: d(enlisted.getFullYear() - 19 - (i % 4), 1 + ((i * 3) % 12), 2 + ((i * 13) % 26)),
+      phone: `080${3 + (i % 6)} ${pad((412 + i * 137) % 1000, 3)} ${pad((4000 + i * 911) % 10000, 4)}`,
+      gender: [4, 6, 12, 18, 19, 20, 27, 29].includes((i * 7) % FIRST.length) ? 'Female' : 'Male',
+      status: i < 25 ? 'current' : 'former',
+      exitDate: i < 25 ? null : d(2023 + (i % 4), 1 + ((i * 5) % 12), 4 + (i % 22)),
+      exitReason: i < 25 ? null : EXITS[i % EXITS.length],
+    });
+  }
+  // the demo login's own record
+  const me = {
+    sn: 'B0539', surname: 'Okonkwo', first: 'Chukwuemeka', middle: 'Ifeanyi', rate: 'Petty Officer (PO)', ship: 'NNS ARADU', shipSince: d(2020, 3, 14),
+    branch: 'Seaman', command: 'Western Naval Command', state: 'Anambra', enlisted: d(2010, 2, 8), dob: d(1990, 4, 18), phone: '0803 539 2041',
+    gender: 'Male', status: 'current', exitDate: null, exitReason: null,
+  };
+  ratings.splice(6, 0, me);
+  const bySn = (sn) => ratings.find((r) => r.sn === sn);
+  const fullName = (r) => `${short(r.rate)} ${r.surname} ${r.first}`;
+  const initials = (r) => `${r.surname[0]}${r.first[0]}`;
+
+  // the record's child lists; the demo login's record is complete, the others sparse
+  const RECORDS = {
+    B0539: {
+      nok: [{ name: 'Adaeze Okonkwo', relation: 'Spouse', phone: '0805 221 9087', address: '14 Marine Road, Apapa, Lagos' }, { name: 'Ifeanyi Okonkwo', relation: 'Brother', phone: '0809 114 3302', address: '3 Zik Avenue, Awka, Anambra' }],
+      spouse: [{ name: 'Adaeze Okonkwo', married: d(2016, 12, 10), phone: '0805 221 9087', occupation: 'Teacher' }],
+      children: [{ name: 'Chiamaka Okonkwo', gender: 'Female', dob: d(2018, 6, 2) }, { name: 'Obinna Okonkwo', gender: 'Male', dob: d(2021, 9, 27) }],
+      advancement: [{ from: 'Ordinary Seaman (OS)', to: 'Able Seaman (AB)', date: d(2012, 7, 1) }, { from: 'Able Seaman (AB)', to: 'Leading Seaman (LS)', date: d(2016, 1, 1) }, { from: 'Leading Seaman (LS)', to: 'Petty Officer (PO)', date: d(2021, 7, 1) }],
+      drafting: [{ ship: 'NAVTRAC EBUTE-ERO', from: d(2010, 2, 8), to: d(2011, 1, 20) }, { ship: 'NNS THUNDER', from: d(2011, 2, 1), to: d(2015, 6, 30) }, { ship: 'NNS UNITY', from: d(2015, 7, 6), to: d(2020, 3, 1) }, { ship: 'NNS ARADU', from: d(2020, 3, 14), to: null }],
+      training: [{ course: 'Basic Seamanship', place: 'NAVTRAC Ebute-Ero', from: d(2010, 2, 8), to: d(2010, 8, 30), result: 'Pass' }, { course: 'Leading Rate Course', place: 'NNS Quorra', from: d(2015, 9, 1), to: d(2015, 12, 4), result: 'Credit' }, { course: 'Petty Officer Course', place: 'NNS Quorra', from: d(2020, 10, 5), to: d(2021, 2, 12), result: 'Distinction' }],
+      education: [{ qualification: 'WASSCE', school: 'Government Secondary School, Awka', year: 2008 }, { qualification: 'National Diploma, Marine Engineering', school: 'Federal Polytechnic, Oko', year: 2019 }],
+      language: [{ language: 'English', read: true, write: true, speak: true }, { language: 'Igbo', read: true, write: false, speak: true }, { language: 'Hausa', read: false, write: false, speak: true }],
+      documents: [
+        { name: 'Drafting Order NNS ARADU.pdf', cat: 'DRAFTING', size: '182 KB', date: d(2020, 3, 2) },
+        { name: 'Advancement Certificate PO.pdf', cat: 'CERTIFICATE', size: '96 KB', date: d(2021, 7, 4) },
+        { name: 'Petty Officer Course Result.pdf', cat: 'CERTIFICATE', size: '74 KB', date: d(2021, 2, 20) },
+        { name: 'Annual Leave Request 2026.pdf', cat: 'REQUEST_FORM', size: '41 KB', date: d(2026, 6, 11) },
+        { name: 'Emolument Form 2026.pdf', cat: 'EMOLUMENT', size: '128 KB', date: d(2026, 1, 15) },
+      ],
+    },
+  };
+  function record(r) {
+    if (!RECORDS[r.sn]) {
+      const k = ratings.indexOf(r);
+      const rec = { nok: [], spouse: [], children: [], advancement: [], training: [], education: [], language: [{ language: 'English', read: true, write: true, speak: true }], documents: [],
+        drafting: [{ ship: 'NAVTRAC EBUTE-ERO', from: r.enlisted, to: d(r.enlisted.getFullYear() + 1, 1, 15) }, { ship: r.ship, from: r.shipSince, to: r.exitDate }] };
+      if (k % 3 === 1) {
+        rec.nok = [{ name: `${r.first} ${r.surname} (Snr)`, relation: 'Father', phone: '0802 118 4471', address: `${r.state} State` }];
+        rec.advancement = [{ from: 'Ordinary Seaman (OS)', to: 'Able Seaman (AB)', date: d(r.enlisted.getFullYear() + 2, 7, 1) }];
+      }
+      if (k % 4 === 1) {
+        rec.training = [{ course: 'Basic Seamanship', place: 'NAVTRAC Ebute-Ero', from: r.enlisted, to: d(r.enlisted.getFullYear(), 9, 30), result: 'Pass' }];
+        rec.education = [{ qualification: 'WASSCE', school: `Government Secondary School, ${r.state}`, year: r.enlisted.getFullYear() - 2 }];
+        rec.documents = [{ name: 'Enlistment Form.pdf', cat: 'GEN_FORM', size: '88 KB', date: r.enlisted }];
+      }
+      RECORDS[r.sn] = rec;
+    }
+    return RECORDS[r.sn];
+  }
+
+  // ==========================================================================
+  // Navigation catalogue: the rail on desktop, the bottom bar and More on a phone
+  // ==========================================================================
+  const AREAS = [
+    { label: 'Overview', modules: [{ key: 'dashboard', label: 'Dashboard', short: 'Home', icon: 'layout-dashboard', href: 'dashboard' }] },
+    { label: 'Personnel', modules: [{ key: 'ratings', label: 'Ratings Management', short: 'Ratings', icon: 'users', href: 'ratings/current' }] },
+    { label: 'Operations', modules: [
+      { key: 'drafting', label: 'Drafting', short: 'Drafting', icon: 'briefcase', soon: true },
+      { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
+      { key: 'training-drafting', label: 'Training Drafting', short: 'Training', icon: 'graduation-cap', soon: true },
+    ] },
+    { label: 'Records', modules: [
+      { key: 'advancement', label: 'Advancement Processing', short: 'Advance', icon: 'trending-up', soon: true },
+      { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
+      { key: 'disciplinary', label: 'Disciplinary Action', short: 'Discipline', icon: 'gavel', soon: true },
+      { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', soon: true },
+    ] },
+    { label: 'Administration', modules: [
+      { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', href: 'tables/appraisal-ratings' },
+      { key: 'reports', label: 'Reports', short: 'Reports', icon: 'chart-column', href: 'reports/ship-history' },
+      { key: 'admin', label: 'System Administration', short: 'Admin', icon: 'shield-user', href: 'admin/users' },
+    ] },
+  ];
+  const MODULES = AREAS.flatMap((a) => a.modules.map((m) => ({ ...m, href: m.href || `soon/${m.key}` })));
+  const RATINGS_TABS = [
+    { route: 'ratings/current', label: 'Current' },
+    { route: 'ratings/former', label: 'Former' },
+    { route: 'ratings/upload', label: 'Batch Upload' },
+    { route: 'ratings/documents', label: 'Documents' },
+    { route: 'ratings/my-details', label: 'My Details' },
+  ];
+  const BOTTOM = [
+    { key: 'dashboard', label: 'Home', icon: 'house', href: 'dashboard' },
+    { key: 'ratings', label: 'Ratings', icon: 'users', href: 'ratings/current' },
+    { key: 'documents', label: 'Documents', icon: 'folder-open', href: 'ratings/documents' },
+    { key: 'me', label: 'My Details', icon: 'user-round', href: 'ratings/my-details' },
+    { key: 'more', label: 'More', icon: 'layout-grid' },
+  ];
+
+  // ==========================================================================
+  // State and helpers
+  // ==========================================================================
+  const state = {
+    collapsed: false, list: { current: { page: 1, picked: null }, former: { page: 1, picked: null } },
+    pages: {}, qs: {}, report: { ship: 'NNS ARADU', status: 'all', rate: '', branch: '', command: '' }, userPicked: null, role: 'Records Officer', audit: { action: '', table: '', by: '', key: '' }, auditPicked: null,
+    q: '', rate: '', ship: '', recordTab: 'details', step: 1, upload: 0, docSn: 'B0539', docCat: 'ALL', docPicked: null,
+  };
+  const PAGE_SIZE = 25;
+  const $ = (s, root = document) => root.querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ic = (name, cls = 'icon') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+  const phoneMq = matchMedia('(max-width: 760px)');
+  const besideMq = matchMedia('(min-width: 1280px)');
+  const isPhone = () => phoneMq.matches;
+  const sideBySide = () => besideMq.matches;
+  const FRACTIONS = ['w-0', 'w-1/12', 'w-2/12', 'w-3/12', 'w-4/12', 'w-5/12', 'w-6/12', 'w-7/12', 'w-8/12', 'w-9/12', 'w-10/12', 'w-11/12', 'w-full'];
+  const fraction = (p) => FRACTIONS[Math.max(0, Math.min(12, Math.round(p * 12)))];
+
+  const BTN = 'inline-flex h-control items-center justify-center gap-1.5 whitespace-nowrap rounded-ctl px-3.5 text-sm font-medium transition-all active:translate-y-px focus-visible:outline-none phone:h-tap';
+  const btn = {
+    primary: `${BTN} bg-gradient-to-b from-primary to-primary-hover text-primary-foreground shadow-btn hover:brightness-105 focus-visible:ring-4 focus-visible:ring-primary/25`,
+    blue: `${BTN} bg-gradient-to-b from-secondary to-secondary-hover text-secondary-foreground shadow-btn hover:brightness-105 focus-visible:ring-4 focus-visible:ring-secondary/25`,
+    danger: `${BTN} bg-gradient-to-b from-destructive to-destructive-hover text-destructive-foreground shadow-btn hover:brightness-105 focus-visible:ring-4 focus-visible:ring-destructive/25`,
+    outline: `${BTN} border border-input bg-background text-foreground shadow-card hover:border-ring/40 hover:bg-subtle focus-visible:ring-4 focus-visible:ring-ring/15`,
+    ghost: 'inline-flex h-8 items-center gap-1.5 rounded-ctl px-2.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary/10 phone:h-tap',
+  };
+  const PILL = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold';
+  const pill = {
+    success: `${PILL} bg-success-soft text-success`, warning: `${PILL} bg-warning-soft text-warning`,
+    info: `${PILL} bg-info-soft text-info`, error: `${PILL} bg-error-soft text-error`, neutral: `${PILL} bg-muted text-muted-foreground`,
+  };
+  const CARD = 'rounded-card border border-border/60 bg-card/75 shadow-card backdrop-blur-md';
+  const INPUT = 'w-full rounded-ctl border border-input bg-background px-3 py-2 text-sm shadow-sm transition placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 phone:h-tap';
+  const LABEL = 'mb-1 block text-xs font-semibold text-muted-foreground';
+  const TH = 'bg-subtle/70 px-4 py-2.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground';
+
+  function pageHeader(title, subtitle, actions = '', phoneActions = true) {
+    return `<div class="mb-4 flex flex-wrap items-end gap-3">
+      <div class="min-w-0"><h1 class="text-2xl font-semibold tracking-tight phone:text-xl">${esc(title)}</h1>
+      ${subtitle ? `<p class="mt-0.5 text-sm text-muted-foreground phone:hidden">${esc(subtitle)}</p>` : ''}</div>
+      ${actions ? `<div class="flex flex-wrap gap-2 desk:ml-auto ${phoneActions ? 'phone:w-full phone:[&>*]:flex-1' : 'phone:hidden'}">${actions}</div>` : ''}
+    </div>`;
+  }
+  const field = (label, control, optional) => `<label class="block"><span class="${LABEL}">${esc(label)}${optional ? ' <span class="font-normal">(Optional)</span>' : ''}</span>${control}</label>`;
+  const options = (list, chosen = '', placeholder = '-- Select --') =>
+    `<option value="">${esc(placeholder)}</option>${list.map((v) => `<option value="${esc(v)}"${v === chosen ? ' selected' : ''}>${esc(v)}</option>`).join('')}`;
+  const dl = (rows) => `<dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">${rows.map(([k, v]) => `<div class="min-w-0"><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(k)}</dt><dd class="mt-0.5 break-words">${esc(v)}</dd></div>`).join('')}</dl>`;
+  const empty = (iconName, title, action = '') => `<div class="flex flex-col items-center gap-3 px-4 py-10 text-center">
+      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-muted to-subtle text-muted-foreground ring-8 ring-subtle">${ic(iconName, 'icon h-6 w-6')}</div>
+      <p class="text-sm font-medium">${esc(title)}</p>${action}</div>`;
+  const avatar = (r, size = 'h-11 w-11 text-sm') => `<div class="flex ${size} flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep font-semibold text-sidebar-foreground shadow-sm ring-2 ring-background">${esc(initials(r))}</div>`;
+
+  function toast(message, tone = 'success') {
+    const t = document.createElement('div');
+    t.setAttribute('role', 'status');
+    t.className = `pointer-events-auto flex items-start gap-2 rounded-card border px-4 py-3 text-sm font-medium shadow-pop ${tone === 'error' ? 'border-error bg-error-soft text-error' : 'border-success bg-success-soft text-success'}`;
+    t.innerHTML = `${ic(tone === 'error' ? 'circle-alert' : 'circle-check', 'icon mt-0.5')}<span>${esc(message)}</span>`;
+    $('#toasts').appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+  }
+
+  // ==========================================================================
+  // Overlay: dialog on desktop, bottom sheet on a phone
+  // ==========================================================================
+  let lastFocus = null;
+  function openDialog({ title, body, foot = '', size = 'md' }) {
+    lastFocus = document.activeElement;
+    $('#dialog-title').textContent = title;
+    $('#dialog-body').innerHTML = body;
+    $('#dialog-foot').innerHTML = foot;
+    $('#dialog-foot').classList.toggle('hidden', !foot);
+    const dlg = $('#dialog');
+    dlg.classList.remove('desk:max-w-md', 'desk:max-w-lg', 'desk:max-w-2xl', 'desk:max-w-3xl', 'desk:max-w-5xl');
+    dlg.classList.add({ sm: 'desk:max-w-md', md: 'desk:max-w-lg', lg: 'desk:max-w-2xl', xl: 'desk:max-w-3xl', '2xl': 'desk:max-w-5xl' }[size]);
+    $('#overlay').classList.remove('hidden');
+    setTimeout(() => $('#dialog [data-act="close"]').focus(), 0);
+  }
+  function closeDialog() {
+    $('#overlay').classList.add('hidden');
+    $('#dialog-body').innerHTML = '';
+    if (lastFocus && lastFocus.isConnected) lastFocus.focus();
+  }
+  const demoSave = (msg = 'Demo only: nothing was saved.') => { closeDialog(); toast(msg); };
+
+  // ==========================================================================
+  // Rail (desktop)
+  // ==========================================================================
+  function moduleOf(route) {
+    if (route.startsWith('ratings')) return 'ratings';
+    if (route.startsWith('tables/')) return 'tables';
+    if (route.startsWith('reports/')) return 'reports';
+    if (route.startsWith('admin/')) return 'admin';
+    if (route.startsWith('soon/')) return route.slice(5);
+    return 'dashboard';
+  }
+  function renderRail(route) {
+    const c = state.collapsed;
+    const current = moduleOf(route);
+    const rail = $('#rail');
+    const before = rail.querySelector('[data-rail-scroll]');
+    const kept = before ? before.scrollTop : 0;
+    rail.className = `flex flex-none flex-col bg-gradient-to-b from-sidebar to-sidebar-deep text-sidebar-foreground transition-all phone:hidden ${c ? 'w-rail-collapsed' : 'w-rail'}`;
+    rail.innerHTML = `
+      <a href="#dashboard" class="flex flex-none items-center gap-2.5 px-3.5 pb-3 pt-4 ${c ? 'justify-center px-0' : ''}" aria-label="CIRERMS Home">
+        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-background p-0.5 shadow-md ring-2 ring-sidebar-foreground/30"><img src="__CREST__" alt="" class="h-10 w-10 object-contain" /></span>
+        <span class="min-w-0 leading-tight ${c ? 'hidden' : ''}"><b class="block text-base font-bold tracking-wide">CIRERMS</b><span class="block text-2xs text-sidebar-muted">Nigerian Navy Ratings</span></span>
+      </a>
+      <div data-rail-scroll class="cirerms-scroll flex min-h-0 flex-1 flex-col gap-px overflow-y-auto px-2.5 pb-3">
+        ${AREAS.map((area) => `
+          <div class="px-2 pb-1.5 pt-4 text-2xs font-semibold uppercase tracking-widest text-sidebar-muted ${c ? 'invisible h-3 p-0' : ''}">${esc(area.label)}</div>
+          ${area.modules.map((m) => {
+            const on = m.key === current;
+            const href = m.href || `soon/${m.key}`;
+            return `<a href="#${href}" ${on ? 'aria-current="page"' : ''} aria-label="${esc(m.label)}" class="group relative flex min-h-10 items-center gap-3 rounded-ctl px-2.5 py-2 text-sm transition-colors ${c ? 'justify-center' : ''} ${on ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-md shadow-black/10' : m.soon ? 'text-sidebar-foreground/70 hover:bg-sidebar-hover' : 'text-sidebar-foreground hover:bg-sidebar-hover'}">
+              ${ic(m.icon, 'icon h-[18px] w-[18px]')}
+              <span class="min-w-0 flex-1 leading-snug ${c ? 'hidden' : ''}">${esc(m.label)}</span>
+              ${m.soon && !c ? '<span class="rounded-full bg-sidebar-hover px-2 py-0.5 text-2xs font-semibold text-sidebar-foreground">Soon</span>' : ''}
+              ${c ? `<span class="pointer-events-none absolute left-full top-1/2 z-40 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-ctl bg-foreground px-2 py-1 text-xs text-background group-hover:block">${esc(m.label)}</span>` : ''}
+            </a>`;
+          }).join('')}`).join('')}
+      </div>
+      <div class="relative flex-none border-t border-sidebar-border p-2.5">
+        <button type="button" data-act="account" aria-haspopup="menu" class="flex w-full items-center gap-2.5 rounded-ctl p-1 text-left hover:bg-sidebar-hover ${c ? 'justify-center' : ''}">
+          <span class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground">HA</span>
+          <span class="min-w-0 flex-1 leading-tight ${c ? 'hidden' : ''}"><b class="block truncate text-sm font-semibold">HICO001</b><span class="block truncate text-2xs text-sidebar-muted">Administrator</span></span>
+          ${c ? '' : ic('chevron-up', 'icon text-sidebar-muted')}
+        </button>
+        <div id="account-menu" role="menu" class="absolute bottom-full left-2.5 z-40 mb-1 hidden w-56 rounded-card border border-border/70 bg-popover p-1 text-sm text-popover-foreground shadow-pop">
+          <a role="menuitem" href="#ratings/my-details" class="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-subtle">${ic('user-round')}View My Details</a>
+          <a role="menuitem" href="#admin/password" class="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-subtle">${ic('key-round')}Change Password</a>
+          <button role="menuitem" type="button" data-act="lock" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-subtle">${ic('lock-keyhole')}Lock Screen</button>
+          <div class="my-1 h-px bg-border"></div>
+          <button role="menuitem" type="button" data-act="sign-out" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-destructive hover:bg-error-soft">${ic('log-out')}Sign Out</button>
+        </div>
+      </div>`;
+    // Redrawing the rail must not lose its place: keep the scroll, then bring the current item into view if it is not.
+    const box = rail.querySelector('[data-rail-scroll]');
+    box.scrollTop = kept;
+    const cur = box.querySelector('[aria-current="page"]');
+    if (cur) {
+      const b = box.getBoundingClientRect(); const r = cur.getBoundingClientRect();
+      if (r.top < b.top) box.scrollTop -= b.top - r.top + 12;
+      else if (r.bottom > b.bottom) box.scrollTop += r.bottom - b.bottom + 12;
+    }
+  }
+
+  // ==========================================================================
+  // Tabs (desktop strip, phone chips), phone header and bottom bar
+  // ==========================================================================
+  function tabRoute(route) {
+    if (route.startsWith('ratings/record') || route === 'ratings/new') return route.startsWith('ratings/record/') && ratingFromRoute(route)?.status === 'former' ? 'ratings/former' : 'ratings/current';
+    return route;
+  }
+  function renderTabs(route) {
+    const nav = $('#tabs');
+    const TABS = MODULE_TABS[moduleOf(route)];
+    if (!TABS) { nav.innerHTML = ''; nav.className = 'flex-none'; return; }
+    const cur = route.startsWith('ratings') ? tabRoute(route) : route;
+    const desk = `<div class="flex gap-1 overflow-x-auto border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
+      const on = t.route === cur;
+      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-sidebar after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-sidebar' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
+    }).join('')}</div>`;
+    const phone = route.startsWith('ratings/record') ? '' : `<div class="flex gap-2 overflow-x-auto border-b border-border/60 bg-background/70 px-3.5 py-2 backdrop-blur-xl desk:hidden">${TABS.map((t) => {
+      const on = t.route === cur;
+      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground'}">${esc(t.label)}</a>`;
+    }).join('')}</div>`;
+    nav.className = 'relative z-10 flex-none';
+    nav.innerHTML = desk + phone;
+    // a long strip (Static Tables has 16) keeps the current tab in view
+    nav.querySelectorAll('[aria-current="page"]').forEach((a) => { const strip = a.parentElement; strip.scrollLeft = a.offsetLeft - (strip.clientWidth - a.offsetWidth) / 2; });
+  }
+  function phoneTitle(route) {
+    if (route === 'dashboard') return 'Home';
+    if (route === 'ratings/my-details') return 'My Details';
+    if (route === 'ratings/documents') return 'Documents';
+    if (route.startsWith('ratings')) return 'Ratings';
+    if (route.startsWith('tables/')) return 'Static Tables';
+    if (route.startsWith('reports/')) return 'Reports';
+    if (route.startsWith('admin/')) return 'Administration';
+    const m = MODULES.find((x) => x.key === moduleOf(route));
+    return m ? m.label : 'CIRERMS';
+  }
+  function renderPhoneHeader(route) {
+    const rec = route.startsWith('ratings/record/') ? ratingFromRoute(route) : null;
+    const back = rec;
+    const backTo = rec ? (rec.status === 'former' ? 'ratings/former' : 'ratings/current') : 'ratings/current';
+    $('#phone-header').innerHTML = `
+      ${back
+        ? `<a href="#${backTo}" class="inline-flex h-tap w-tap items-center justify-center rounded-full hover:bg-sidebar-hover" aria-label="Back">${ic('arrow-left', 'icon h-5 w-5')}</a>`
+        : `<span class="ml-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-background p-0.5 ring-2 ring-sidebar-foreground/30"><img src="__CREST__" alt="" class="h-8 w-8 object-contain" /></span>`}
+      <span class="min-w-0 flex-1 truncate px-1 text-base font-semibold">${esc(rec ? fullName(rec) : phoneTitle(route))}</span>
+      <button type="button" data-act="palette" class="inline-flex h-tap w-tap items-center justify-center rounded-full hover:bg-sidebar-hover" aria-label="Search">${ic('search', 'icon h-5 w-5')}</button>
+      <button type="button" data-act="account-sheet" class="inline-flex h-tap w-tap items-center justify-center" aria-label="Account"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-2xs font-bold text-sidebar-accent-foreground">HA</span></button>`;
+  }
+  function renderBottomBar(route) {
+    const cur = route === 'dashboard' ? 'dashboard' : route === 'ratings/documents' ? 'documents' : route === 'ratings/my-details' ? 'me' : route.startsWith('ratings') ? 'ratings' : 'more';
+    $('#bottom-bar').innerHTML = BOTTOM.map((b) => {
+      const on = b.key === cur;
+      const cls = `flex h-16 flex-col items-center justify-center gap-1 text-2xs ${on ? 'font-semibold text-sidebar' : 'text-muted-foreground'}`;
+      const inner = `<span class="flex h-7 w-14 items-center justify-center rounded-full transition-colors ${on ? 'bg-sidebar/10' : ''}">${ic(b.icon, 'icon h-[22px] w-[22px]')}</span><span>${esc(b.label)}</span>`;
+      return b.href ? `<a href="#${b.href}" class="${cls}" ${on ? 'aria-current="page"' : ''}>${inner}</a>` : `<button type="button" data-act="more" aria-haspopup="dialog" class="${cls}">${inner}</button>`;
+    }).join('');
+    $('#fab').classList.toggle('hidden', !(route === 'ratings/current' || route === 'ratings/former'));
+    $('#fab').classList.toggle('flex', route === 'ratings/current' || route === 'ratings/former');
+  }
+  function openMore() {
+    openDialog({
+      title: 'More',
+      body: AREAS.map((a) => `<div class="mb-4"><div class="mb-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">${esc(a.label)}</div>
+        <div class="grid grid-cols-4 gap-2">${a.modules.map((m) => `<a href="#${m.href || `soon/${m.key}`}" data-act="close" class="relative flex flex-col items-center gap-1.5 rounded-card p-2 text-center text-2xs font-medium hover:bg-muted">
+          <span class="flex h-12 w-12 items-center justify-center rounded-2xl ${m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-sidebar to-sidebar-deep text-sidebar-foreground shadow-md shadow-sidebar/30'}">${ic(m.icon, 'icon h-6 w-6')}</span>${esc(m.short)}
+          ${m.soon ? `<span class="${pill.neutral} absolute right-0 top-0">Soon</span>` : ''}</a>`).join('')}</div></div>`).join(''),
+    });
+  }
+
+  // ==========================================================================
+  // Screens
+  // ==========================================================================
+  function ratingFromRoute(route) { return bySn(route.split('/')[2]); }
+
+  function viewDashboard() {
+    const current = ratings.filter((r) => r.status === 'current');
+    const former = ratings.length - current.length;
+    const tile = (label, value, iconName, tone, foot) => `<div class="${CARD} relative overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-card-hover">
+        <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full ${tone[1]}"></div>
+        <div class="relative flex items-start justify-between gap-3"><div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(label)}</div>
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-on-fill shadow-md ${tone[0]}">${ic(iconName, 'icon h-5 w-5')}</span></div>
+        <div class="relative mt-1 text-3xl font-bold tracking-tight">${value}</div>
+        <div class="relative mt-2 flex gap-4 border-t border-border/70 pt-2.5 text-xs text-muted-foreground">${foot}</div></div>`;
+    const byRate = RATES.map((rate) => [rate, current.filter((r) => r.rate === rate).length]).filter(([, n]) => n);
+    const max = Math.max(...byRate.map(([, n]) => n));
+    const recent = ratings.slice().sort((a, b) => b.enlisted - a.enlisted).slice(0, 5);
+    return pageHeader('Dashboard', 'Ratings at a glance', `<button type="button" data-act="new-rating" class="${btn.primary}">${ic('user-plus')}New Rating</button>`) + `
+      <div class="grid grid-cols-4 gap-4 phone:grid-cols-2 phone:gap-3">
+        ${tile('Members', ratings.length, 'users', ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'], `<a href="#ratings/current" class="hover:text-foreground"><b class="text-foreground">${current.length}</b> current</a><a href="#ratings/former" class="hover:text-foreground"><b class="text-foreground">${former}</b> former</a>`)}
+        ${tile('Drafting', 0, 'briefcase', ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'], '<span><b class="text-foreground">0</b> this year</span>')}
+        ${tile('Memos and Mails', 0, 'file-text', ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'], '<span><b class="text-foreground">0</b> unread</span>')}
+        ${tile('Appraisals', 0, 'clipboard-check', ['from-sidebar to-sidebar-deep shadow-sidebar/30', 'bg-sidebar/10'], '<span><b class="text-foreground">0</b> this month</span>')}
+      </div>
+      <div class="mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1">
+        <section class="${CARD} col-span-3 phone:col-span-1">
+          <div class="flex items-center justify-between border-b border-border px-4 py-3"><h2 class="text-sm font-semibold">Recently Enlisted</h2><a href="#ratings/current" class="${btn.ghost}">View All</a></div>
+          <ul>${recent.map((r) => `<li><a href="#ratings/record/${r.sn}" class="flex items-center gap-3 border-b border-border/70 px-4 py-2.5 transition-colors last:border-0 hover:bg-subtle">${avatar(r, 'h-9 w-9 text-xs')}
+            <span class="min-w-0 flex-1"><b class="block truncate text-sm font-medium">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${esc(r.sn)} · ${esc(r.ship)}</span></span>
+            <span class="text-xs text-muted-foreground">${fmt(r.enlisted)}</span></a></li>`).join('')}</ul>
+        </section>
+        <section class="${CARD} col-span-2 phone:col-span-1">
+          <div class="border-b border-border px-4 py-3"><h2 class="text-sm font-semibold">Current Ratings by Rate</h2></div>
+          <div class="space-y-2.5 p-4">${byRate.map(([rate, n]) => `<div><div class="mb-1 flex justify-between text-xs"><span>${esc(rate)}</span><b>${n}</b></div>
+            <div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-sidebar to-secondary ${fraction(n / max)}"></div></div></div>`).join('')}</div>
+        </section>
+      </div>`;
+  }
+
+  function filtered(status) {
+    const q = state.q.trim().toLowerCase();
+    return ratings.filter((r) => r.status === status
+      && (!q || r.sn.toLowerCase().includes(q) || `${r.surname} ${r.first} ${r.middle}`.toLowerCase().includes(q))
+      && (!state.rate || r.rate === state.rate) && (!state.ship || r.ship === state.ship));
+  }
+
+  function ratingCard(r, { inSheet = false } = {}) {
+    const rec = record(r);
+    const current = r.status === 'current';
+    return `<div class="space-y-4">
+      <div class="flex items-start gap-3">${avatar(r, 'h-12 w-12 text-base')}
+        <div class="min-w-0"><div class="text-base font-semibold leading-tight">${esc(fullName(r))}</div>
+        <div class="text-sm text-muted-foreground">${esc(r.sn)} · ${esc(r.rate)}</div>
+        <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${current ? pill.success : pill.neutral}">${current ? 'Current' : 'Former'}</span><span class="${pill.info}">${esc(r.branch)}</span></div></div>
+      </div>
+      ${dl(current ? [['Current Ship', r.ship], ['On Ship For', since(r.shipSince)], ['Command', r.command], ['Enlisted', fmt(r.enlisted)], ['Phone', r.phone], ['Age', `${years(r.dob)}`], ['State of Origin', r.state], ['Documents', `${rec.documents.length}`]]
+        : [['Exit Date', fmt(r.exitDate)], ['Reason', r.exitReason], ['Last Ship', r.ship], ['Enlisted', fmt(r.enlisted)], ['Service', `${years(r.enlisted, r.exitDate)} years`], ['State of Origin', r.state]])}
+      <div class="flex flex-wrap gap-2 ${inSheet ? 'phone:flex-col' : ''}">
+        <a href="#ratings/record/${r.sn}" data-act="close" class="${btn.primary}">${ic('id-card')}Open Record</a>
+        <button type="button" data-act="print" class="${btn.blue}">${ic('printer')}Print Report</button>
+        <a href="#ratings/documents" data-act="docs-for" data-sn="${r.sn}" class="${btn.outline}">${ic('folder-open')}Documents</a>
+      </div></div>`;
+  }
+
+  function viewList(status) {
+    const isCurrent = status === 'current';
+    const rows = filtered(status);
+    const ls = state.list[status];
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    ls.page = Math.min(ls.page, pages);
+    const shown = rows.slice((ls.page - 1) * PAGE_SIZE, ls.page * PAGE_SIZE);
+    if (sideBySide() && (!ls.picked || !shown.some((r) => r.sn === ls.picked))) ls.picked = shown[0] ? shown[0].sn : null;
+    const picked = ls.picked && bySn(ls.picked);
+    const cols = isCurrent ? ['Official No', 'Name', 'Rate', 'Ship', 'Branch'] : ['Official No', 'Name', 'Rate', 'Exit Date', 'Reason'];
+    const cells = (r) => isCurrent ? [r.sn, fullName(r), short(r.rate), r.ship, r.branch] : [r.sn, fullName(r), short(r.rate), fmt(r.exitDate), r.exitReason];
+    const from = rows.length ? (ls.page - 1) * PAGE_SIZE + 1 : 0;
+    const to = Math.min(ls.page * PAGE_SIZE, rows.length);
+
+    const header = pageHeader(isCurrent ? 'Current Ratings' : 'Former Ratings', isCurrent ? 'Serving ratings on the nominal roll' : 'Retired and discharged ratings', `
+      <div class="relative">
+        <button type="button" data-act="export" aria-haspopup="menu" class="${btn.blue}">${ic('download')}Export${ic('chevron-down')}</button>
+        <div id="export-menu" role="menu" class="absolute right-0 top-full z-30 mt-1.5 hidden w-44 rounded-card border border-border/70 bg-popover p-1 text-sm shadow-pop phone:left-0 phone:right-auto">
+          ${[['copy', 'Copy Rows'], ['file-spreadsheet', 'Excel'], ['file-text', 'PDF'], ['file-text', 'CSV']].map(([i, l]) => `<button role="menuitem" type="button" data-act="exported" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-subtle">${ic(i)}${l}</button>`).join('')}
+        </div>
+      </div>
+      <button type="button" data-act="new-rating" class="${btn.primary}">${ic('user-plus')}New Rating</button>`, false);
+
+    const toolbar = `<div class="mb-3 flex flex-wrap items-end gap-3 phone:gap-2">
+        <label class="relative min-w-0 flex-1 desk:max-w-xs"><span class="sr-only">Search</span>
+          <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">${ic('search')}</span>
+          <input id="list-q" type="search" value="${esc(state.q)}" placeholder="Official No or name" class="${INPUT} pl-9" /></label>
+        <div class="w-56 phone:hidden"><select name="rate-filter" aria-label="Rate">${options(RATES, state.rate, 'All Rates')}</select></div>
+        <div class="w-48 phone:hidden"><select name="ship-filter" aria-label="Ship">${options(SHIPS, state.ship, 'All Ships')}</select></div>
+        <button type="button" data-act="export-sheet" class="${btn.outline} w-tap px-0 desk:hidden" aria-label="Export">${ic('download')}</button>
+        <button type="button" data-act="filters" class="${btn.outline} desk:hidden">${ic('funnel')}Filter${state.rate || state.ship ? ` <span class="${pill.info}">${(state.rate ? 1 : 0) + (state.ship ? 1 : 0)}</span>` : ''}</button>
+        <span class="ml-auto text-sm text-muted-foreground phone:hidden">${rows.length} ${rows.length === 1 ? 'rating' : 'ratings'}</span>
+      </div>`;
+
+    const table = `<div class="${CARD} overflow-hidden phone:hidden"><div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="bg-subtle text-left"><tr>${cols.map((c) => `<th class="${TH}">${c}</th>`).join('')}</tr></thead>
+        <tbody>${shown.map((r) => {
+          const on = sideBySide() && r.sn === ls.picked;
+          return `<tr data-pick="${r.sn}" tabindex="0" class="cursor-pointer border-t border-border transition-colors ${on ? 'bg-secondary/10 shadow-[inset_3px_0_0_0_rgb(var(--secondary))]' : 'hover:bg-subtle'}">${cells(r).map((c, i) => `<td class="whitespace-nowrap px-4 py-2.5 ${i === 1 ? 'font-medium' : ''} ${i === 0 ? 'text-muted-foreground' : ''}">${esc(c)}</td>`).join('')}</tr>`;
+        }).join('') || `<tr><td colspan="5">${empty('search', 'No Ratings Found')}</td></tr>`}</tbody></table></div>
+        ${pager(ls.page, pages, from, to, rows.length, status)}</div>`;
+
+    const cards = `<div class="space-y-2 desk:hidden">${shown.map((r) => `<button type="button" data-pick="${r.sn}" class="${CARD} flex w-full items-center gap-3 p-3 text-left transition-all hover:shadow-card-hover active:bg-subtle">${avatar(r, 'h-10 w-10 text-xs')}
+        <span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${esc(fullName(r))}</b>
+        <span class="block truncate text-xs text-muted-foreground">${esc(r.sn)} · ${esc(isCurrent ? r.ship : `Left ${fmt(r.exitDate)}`)}</span></span>${ic('chevron-right', 'icon text-muted-foreground')}</button>`).join('') || `<div class="${CARD}">${empty('search', 'No Ratings Found')}</div>`}
+        <div class="${CARD}">${pager(ls.page, pages, from, to, rows.length, status)}</div></div>`;
+
+    const detail = picked && sideBySide()
+      ? `<aside class="${CARD} sticky top-0 self-start p-4" aria-label="Rating">${ratingCard(picked)}</aside>` : '';
+    return header + toolbar + `<div class="grid gap-4 ${detail ? 'grid-cols-3' : 'grid-cols-1'}"><div class="min-w-0 ${detail ? 'col-span-2' : ''}">${table}${cards}</div>${detail}</div>`;
+  }
+
+  function pager(page, pages, from, to, total, status) {
+    return `<div class="flex items-center gap-2 border-t border-border px-4 py-2.5 text-sm text-muted-foreground phone:border-0 phone:px-3">
+      <span class="flex-1">${from}-${to} of ${total}</span>
+      <button type="button" data-act="page" data-list="${status}" data-to="${page - 1}" ${page <= 1 ? 'disabled' : ''} class="inline-flex h-8 w-8 items-center justify-center rounded-ctl border border-input bg-background text-foreground disabled:opacity-40 phone:h-tap phone:w-tap" aria-label="Previous Page">${ic('chevron-left')}</button>
+      <span class="text-xs">Page ${page} of ${pages}</span>
+      <button type="button" data-act="page" data-list="${status}" data-to="${page + 1}" ${page >= pages ? 'disabled' : ''} class="inline-flex h-8 w-8 items-center justify-center rounded-ctl border border-input bg-background text-foreground disabled:opacity-40 phone:h-tap phone:w-tap" aria-label="Next Page">${ic('chevron-right')}</button>
+    </div>`;
+  }
+
+  // ---- the rating's record: one page, ten tabs ----
+  const RECORD_TABS = [
+    ['details', 'Details'], ['nok', 'Next of Kin'], ['spouse', 'Spouse'], ['children', 'Children'], ['advancement', 'Advancement'],
+    ['drafting', 'Drafting'], ['training', 'Training'], ['education', 'Education'], ['language', 'Language'], ['documents', 'Documents'],
+  ];
+  function viewRecord(r, { readOnly = false } = {}) {
+    if (!r) return empty('search', 'Rating Not Found', `<a href="#ratings/current" class="${btn.outline}">Back to List</a>`);
+    const rec = record(r);
+    const filled = ['nok', 'spouse', 'children', 'advancement', 'drafting', 'training', 'education', 'language', 'documents'].filter((k) => rec[k].length).length + 1;
+    const level = filled * 10 >= 80 ? 'high' : filled * 10 >= 50 ? 'mid' : 'low';
+    const levelText = { low: 'text-error', mid: 'text-warning', high: 'text-success' }[level];
+    const tabCount = (k) => (k === 'details' ? '' : rec[k].length ? `<span class="ml-1.5 rounded-full bg-muted px-1.5 text-2xs font-semibold text-muted-foreground">${rec[k].length}</span>` : '');
+    const tab = state.recordTab;
+    const add = (label) => (readOnly ? '' : `<button type="button" data-act="edit" data-what="${esc(label)}" class="${btn.outline}">${ic('plus')}${esc(label)}</button>`);
+    const tableCard = (heads, rows, emptyIcon, emptyText, addLabel) => `<div class="${CARD} overflow-hidden">
+        ${rows.length ? `${readOnly ? '' : `<div class="flex justify-end border-b border-border px-4 py-2.5">${add(addLabel)}</div>`}<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-subtle text-left"><tr>${heads.map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map((cells) => `<tr class="border-t border-border">${cells.map((c, i) => `<td class="whitespace-nowrap px-4 py-2.5 ${i === 0 ? 'font-medium' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+        : empty(emptyIcon, emptyText, add(addLabel))}</div>`;
+    const yes = (v) => (v ? `<span class="text-success">${ic('check')}</span>` : '<span class="text-muted-foreground">-</span>');
+
+    let body = '';
+    if (tab === 'details') {
+      const section = (title, rows) => `<section class="${CARD}"><div class="flex items-center justify-between border-b border-border px-4 py-2.5"><h3 class="text-sm font-semibold">${title}</h3>
+          ${readOnly ? '' : `<button type="button" data-act="edit" data-what="${title}" class="${btn.ghost}">${ic('pencil')}Edit</button>`}</div><div class="p-4">${dl(rows)}</div></section>`;
+      body = `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">
+        ${section('Basic Details', [['Surname', r.surname], ['First Name', r.first], ['Middle Name', r.middle], ['Rate', r.rate], ['Date of Birth', `${fmt(r.dob)} (${years(r.dob)})`], ['Gender', r.gender], ['Marital Status', rec.spouse.length ? 'Married' : 'Single'], ['Religion', 'Christianity']])}
+        ${section('Contact', [['Phone', r.phone], ['Email', `${r.first.toLowerCase()}.${r.surname.toLowerCase()}@navy.mil.ng`], ['State of Origin', r.state], ['Local Government', `${r.state} North`], ['Address', '14 Marine Road, Apapa, Lagos']])}
+        ${section('Health', [['Blood Group', 'O+'], ['Genotype', 'AA'], ['Height', '1.76 m'], ['Complexion', 'Dark'], ['Disability', 'None']])}
+        ${section('Official', [['Official Number', r.sn], ['Branch', r.branch], ['Command', r.command], ['Date Enlisted', fmt(r.enlisted)], ['Entry Mode', 'Direct Entry'], ['Current Ship', r.status === 'current' ? `${r.ship} (${since(r.shipSince)})` : '-']])}
+      </div>`;
+    } else if (tab === 'nok') {
+      body = rec.nok.length ? `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${rec.nok.map((n) => `<section class="${CARD} p-4"><div class="mb-3 flex items-center justify-between"><b class="text-sm">${esc(n.name)}</b><span class="${pill.info}">${esc(n.relation)}</span></div>${dl([['Phone', n.phone], ['Address', n.address]])}</section>`).join('')}</div>${readOnly ? '' : `<div class="mt-3">${add('Add Next of Kin')}</div>`}`
+        : `<div class="${CARD}">${empty('users', 'No Next of Kin Recorded', add('Add Next of Kin'))}</div>`;
+    } else if (tab === 'spouse') {
+      body = tableCard(['Name', 'Married', 'Phone', 'Occupation'], rec.spouse.map((s) => [esc(s.name), fmt(s.married), esc(s.phone), esc(s.occupation)]), 'heart', 'No Spouse Recorded', 'Add Spouse');
+    } else if (tab === 'children') {
+      body = tableCard(['Name', 'Gender', 'Date of Birth', 'Age'], rec.children.map((c) => [esc(c.name), c.gender, fmt(c.dob), years(c.dob)]), 'baby', 'No Children Recorded', 'Add Child');
+    } else if (tab === 'advancement') {
+      body = tableCard(['From', 'To', 'Effective'], rec.advancement.map((a) => [esc(a.from), esc(a.to), fmt(a.date)]), 'trending-up', 'No Advancement Recorded', 'Add Advancement');
+    } else if (tab === 'drafting') {
+      body = `<div class="${CARD} p-4"><ol class="relative ml-2 border-l-2 border-border">${rec.drafting.slice().reverse().map((p) => `<li class="relative pb-5 pl-5 last:pb-0">
+          <span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-background ${p.to ? 'bg-border' : 'bg-primary'}"></span>
+          <div class="flex flex-wrap items-center gap-2"><b class="text-sm">${esc(p.ship)}</b>${p.to ? '' : `<span class="${pill.success}">Current</span>`}</div>
+          <div class="text-xs text-muted-foreground">${fmt(p.from)} to ${p.to ? fmt(p.to) : 'date'} · ${since(p.from)}${p.to ? '' : ' so far'}</div></li>`).join('')}</ol>
+          ${readOnly ? '' : `<div class="mt-4 border-t border-border pt-3">${add('Add Posting')}</div>`}</div>`;
+    } else if (tab === 'training') {
+      body = tableCard(['Course', 'Institution', 'From', 'To', 'Result'], rec.training.map((t) => [esc(t.course), esc(t.place), fmt(t.from), fmt(t.to), `<span class="${pill.success}">${esc(t.result)}</span>`]), 'graduation-cap', 'No Training Recorded', 'Add Course');
+    } else if (tab === 'education') {
+      body = tableCard(['Qualification', 'Institution', 'Year'], rec.education.map((e) => [esc(e.qualification), esc(e.school), e.year]), 'book-open', 'No Education Recorded', 'Add Qualification');
+    } else if (tab === 'language') {
+      body = tableCard(['Language', 'Read', 'Write', 'Speak'], rec.language.map((l) => [esc(l.language), yes(l.read), yes(l.write), yes(l.speak)]), 'languages', 'No Languages Recorded', 'Add Language');
+    } else if (tab === 'documents') {
+      body = documentsBlock(r, rec, readOnly);
+    }
+
+    const actions = readOnly
+      ? `<button type="button" data-act="print" class="${btn.blue}">${ic('printer')}Print Dossier</button>`
+      : `<button type="button" data-act="edit" data-what="Basic Details" class="${btn.primary}">${ic('pencil')}Edit Details</button>
+         <button type="button" data-act="print" class="${btn.blue}">${ic('printer')}Print Dossier</button>
+         <button type="button" data-act="delete" class="${btn.outline} text-destructive phone:hidden">${ic('trash-2')}Delete</button>`;
+
+    return `${readOnly ? pageHeader('My Details', 'Your service record') : `<a href="#${r.status === 'former' ? 'ratings/former' : 'ratings/current'}" class="mb-3 inline-flex items-center gap-1 text-sm text-secondary hover:underline phone:hidden">${ic('chevron-left')}${r.status === 'former' ? 'Former Ratings' : 'Current Ratings'}</a>`}
+      <section class="${CARD} mb-4 overflow-hidden">
+        <div class="flex flex-wrap items-center gap-4 p-4">
+          ${avatar(r, 'h-16 w-16 text-xl phone:h-14 phone:w-14 phone:text-lg')}
+          <div class="min-w-0 flex-1">
+            <h1 class="text-xl font-semibold tracking-tight">${esc(`${short(r.rate)} ${r.surname} ${r.first} ${r.middle}`)}</h1>
+            <div class="text-sm text-muted-foreground">${esc(r.sn)} · ${esc(r.rate)} · ${esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`)}</div>
+            <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${r.status === 'current' ? pill.success : pill.neutral}">${r.status === 'current' ? 'Current' : 'Former'}</span><span class="${pill.info}">${esc(r.branch)}</span><span class="${pill.neutral}">${esc(r.command)}</span></div>
+          </div>
+          <div class="flex flex-wrap gap-2 phone:w-full phone:[&>*]:flex-1">${actions}</div>
+        </div>
+        <div class="flex items-center gap-3 border-t border-border/70 bg-subtle/60 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(filled / 10)}" data-level="${level}"></div></div><span class="text-xs text-muted-foreground">Record <b class="${levelText}">${filled * 10}%</b> complete</span></div>
+      </section>
+      <div class="mb-4 flex gap-1 overflow-x-auto border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.map(([k, label]) => {
+        const on = k === tab;
+        return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-sidebar desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-sidebar phone:border-sidebar phone:bg-sidebar phone:text-sidebar-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${esc(label)}${tabCount(k)}</button>`;
+      }).join('')}</div>
+      ${body}`;
+  }
+
+  function documentsBlock(r, rec, readOnly) {
+    const docs = rec.documents.filter((x) => state.docCat === 'ALL' || x.cat === state.docCat);
+    const catName = (code) => (CATEGORIES.find(([c]) => c === code) || [, code])[1];
+    if (sideBySide() && (!state.docPicked || !docs.some((x) => x.name === state.docPicked))) state.docPicked = docs[0] ? docs[0].name : null;
+    const picked = docs.find((x) => x.name === state.docPicked);
+    const chips = `<div class="mb-3 flex gap-2 overflow-x-auto">${[['ALL', 'All']].concat(CATEGORIES).map(([code, label]) => {
+      const n = code === 'ALL' ? rec.documents.length : rec.documents.filter((x) => x.cat === code).length;
+      const on = state.docCat === code;
+      return `<button type="button" data-act="doc-cat" data-cat="${code}" class="inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium phone:h-9 ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'}">${label}<span class="${on ? 'text-sidebar-foreground' : 'text-muted-foreground'}">${n}</span></button>`;
+    }).join('')}</div>`;
+    const list = `<div class="${CARD} self-start overflow-hidden">${docs.length ? `<ul>${docs.map((x) => `<li><button type="button" data-act="doc-pick" data-doc="${esc(x.name)}" class="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-0 ${sideBySide() && x.name === state.docPicked ? 'bg-secondary/10' : 'hover:bg-subtle'}">
+        <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-error-soft to-background text-error ring-1 ring-error/15">${ic('file-text')}</span>
+        <span class="min-w-0 flex-1"><b class="block truncate text-sm font-medium">${esc(x.name)}</b><span class="block text-xs text-muted-foreground">${esc(catName(x.cat))} · ${x.size} · ${fmt(x.date)}</span></span>
+        ${ic('chevron-right', 'icon text-muted-foreground')}</button></li>`).join('')}</ul>` : empty('folder-open', 'No Documents Here')}
+        ${readOnly ? '' : `<div class="border-t border-border bg-subtle px-4 py-3"><button type="button" data-act="upload-doc" class="${btn.primary}">${ic('upload')}Upload Document</button></div>`}</div>`;
+    const preview = picked && sideBySide() ? `<aside class="${CARD} sticky top-0 self-start overflow-hidden">${docPreview(picked, catName(picked.cat), r, readOnly)}</aside>` : '';
+    return chips + `<div class="grid gap-4 ${preview ? 'grid-cols-2' : 'grid-cols-1'}">${list}${preview}</div>`;
+  }
+  function docPreview(x, cat, r, readOnly) {
+    return `<div class="flex items-center gap-2 border-b border-border px-4 py-2.5"><b class="min-w-0 flex-1 truncate text-sm">${esc(x.name)}</b><span class="${pill.info}">${esc(cat)}</span></div>
+      <div class="bg-muted p-5"><div class="mx-auto aspect-[3/4] max-w-xs space-y-2.5 rounded-md bg-background p-6 shadow-pop">
+        <div class="mx-auto mb-4 h-10 w-10 rounded-full bg-muted"></div><div class="mx-auto h-2 w-2/3 rounded bg-foreground/70"></div><div class="mx-auto mb-4 h-1.5 w-1/2 rounded bg-muted-foreground/40"></div>
+        ${FRACTIONS.slice(7, 13).map((w) => `<div class="h-1.5 ${w} rounded bg-muted"></div>`).join('')}
+        <div class="pt-6"><div class="h-1.5 w-1/3 rounded bg-muted"></div><div class="mt-1.5 h-1.5 w-1/4 rounded bg-muted"></div></div></div></div>
+      <div class="flex flex-wrap gap-2 border-t border-border px-4 py-3 phone:flex-col">
+        <button type="button" data-act="download" class="${btn.blue}">${ic('download')}Download</button>
+        ${readOnly ? '' : `<button type="button" data-act="delete-doc" class="${btn.outline} text-destructive">${ic('trash-2')}Delete</button>`}</div>`;
+  }
+
+  const NEW_STEPS = ['Basic Details', 'Contact', 'Health', 'Official'];
+  function newRatingSteps(s) {
+    return NEW_STEPS.map((label, i) => {
+      const n = i + 1; const done = n < s; const on = n === s;
+      return `<li><button type="button" data-act="step" data-step="${n}" ${on ? 'aria-current="step"' : ''} class="flex w-full items-center gap-2.5 rounded-ctl px-3 py-2 text-left text-sm transition-colors phone:flex-col phone:gap-1 phone:px-1 phone:text-center phone:text-2xs ${on ? 'bg-sidebar/10 font-semibold text-foreground' : 'text-muted-foreground hover:bg-subtle'}">
+        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span>${label}</button></li>`;
+    }).join('');
+  }
+  function newRatingFoot(s) {
+    return `<button type="button" data-act="step" data-step="${s - 1}" ${s === 1 ? 'disabled' : ''} class="${btn.outline} disabled:opacity-40 desk:mr-auto ${s === 1 ? 'phone:hidden' : ''}">${ic('chevron-left')}Back</button>
+      <button type="button" data-act="close" class="${btn.outline}">Cancel</button>
+      ${s < 4 ? `<button type="button" data-act="step" data-step="${s + 1}" class="${btn.blue}">Next${ic('chevron-right')}</button>` : `<button type="button" data-act="save-new" class="${btn.primary}">${ic('check')}Save Rating</button>`}`;
+  }
+  function setNewStep(n) {
+    state.step = Math.max(1, Math.min(4, n));
+    $('#nr-steps').innerHTML = newRatingSteps(state.step);
+    document.querySelectorAll('[data-panel]').forEach((p) => p.classList.toggle('hidden', Number(p.dataset.panel) !== state.step));
+    $('#dialog-foot').innerHTML = newRatingFoot(state.step);
+    $('#dialog-body').scrollTop = 0;
+  }
+  function openNewRating() {
+    state.step = 1;
+    openDialog({ title: 'New Rating', size: '2xl', body: newRatingBody(), foot: newRatingFoot(1) });
+  }
+  function newRatingBody() {
+    const s = 1;
+    const grid = (inner) => `<div class="grid grid-cols-3 gap-4 phone:grid-cols-1">${inner}</div>`;
+    const sel = (label, list, opt) => field(label, `<select name="${esc(label)}">${options(list)}</select>`, opt);
+    const txt = (label, opt, type = 'text', ph = '') => field(label, `<input type="${type}" placeholder="${esc(ph)}" class="${INPUT}" />`, opt);
+    const fields = [
+      grid(sel('Rate', RATES) + sel('Title', RATES.map(short)) + txt('Official Number', false, 'text', 'e.g. B0539') + txt('Surname') + txt('First Name') + txt('Middle Name', true)
+        + sel('Gender', ['Male', 'Female']) + txt('Date of Birth', false, 'text', 'dd/mm/yyyy') + sel('Marital Status', ['Single', 'Married', 'Divorced', 'Widowed'])
+        + sel('Religion', ['Christianity', 'Islam', 'Traditional', 'Other']) + sel('Tribe', ['Igbo', 'Yoruba', 'Hausa', 'Ijaw', 'Efik', 'Tiv', 'Other'], true)),
+      grid(txt('Phone', false, 'tel', '0803 000 0000') + txt('Email', true, 'email') + sel('State of Origin', STATES) + sel('Local Government', ['Select a state first'], false) + sel('Geopolitical Zone', ['North Central', 'North East', 'North West', 'South East', 'South South', 'South West'])
+        + `<div class="col-span-3 phone:col-span-1">${txt('Residential Address')}</div>`),
+      grid(sel('Blood Group', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']) + sel('Genotype', ['AA', 'AS', 'SS', 'AC']) + txt('Height (m)', true) + sel('Complexion', ['Fair', 'Light', 'Dark'], true) + sel('Disability', ['None', 'Visual', 'Hearing', 'Physical'], true) + sel('Tribal Mark', ['No', 'Yes'], true)),
+      grid(sel('Branch', BRANCHES) + sel('Command', COMMANDS) + sel('Staff Branch', BRANCHES, true) + sel('Entry Mode', ['Direct Entry', 'Recruit', 'Transfer']) + txt('Date Enlisted', false, 'text', 'dd/mm/yyyy') + txt('Seniority Date', true, 'text', 'dd/mm/yyyy')),
+    ];
+    // every step is in the form at once and only the current one shows, so moving between steps keeps what was typed
+    return `<form onsubmit="return false">
+        <ol id="nr-steps" class="mb-5 grid grid-cols-4 gap-1 rounded-card bg-subtle/70 p-1">${newRatingSteps(s)}</ol>
+        ${fields.map((f, i) => `<div data-panel="${i + 1}" class="${i ? 'hidden' : ''} flex gap-6 phone:flex-col">
+          <div class="min-w-0 flex-1">${f}</div>
+          ${i === 0 ? `<div class="w-48 flex-none phone:w-full"><span class="${LABEL}">Passport Photograph</span>
+            <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2 rounded-card border-2 border-dashed border-input bg-subtle text-center text-xs text-muted-foreground transition-colors phone:aspect-auto phone:py-6">${ic('image', 'icon h-8 w-8')}JPG, PNG or WebP, up to 5 MB
+            <button type="button" data-act="demo" class="${btn.outline} mt-1">${ic('upload')}Choose Photo</button></div></div>` : ''}
+        </div>`).join('')}
+      </form>`;
+  }
+
+  function viewUpload() {
+    const st = state.upload;
+    const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
+    const issues = [['Row 7', 'B0611', 'Rate "Senior Seaman" is not in the list', 'error'], ['Row 12', 'B0539', 'Official Number already exists, skipped', 'warning'], ['Row 19', 'B0702', 'Official Number already exists, skipped', 'warning']];
+    return pageHeader('Batch Upload', 'Add many ratings from one workbook') + `
+      <div class="grid grid-cols-3 gap-4 phone:grid-cols-1">
+        <section class="${CARD} space-y-3 p-4">${stepHead(1, 'Download Template', st === 0, st > 0)}
+          <p class="text-sm text-muted-foreground">The workbook lists every field and its allowed values.</p>
+          <button type="button" data-act="template" class="${btn.blue}">${ic('file-spreadsheet')}Download Template</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(2, 'Upload Workbook', st <= 1, st > 1)}
+          <button type="button" data-act="choose-workbook" class="flex w-full flex-col items-center gap-2 rounded-card border-2 border-dashed border-input bg-subtle transition-colors px-4 py-6 text-center text-sm text-muted-foreground hover:border-ring">
+            ${ic('file-up', 'icon h-7 w-7')}${st > 1 ? '<b class="text-foreground">ratings-nov-2026.xlsx</b>28 rows read' : 'Choose an .xlsx workbook'}</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(3, 'Review and Commit', st === 2, st > 2)}
+          ${st >= 2 ? `<div class="grid grid-cols-3 gap-2 text-center"><div class="rounded-ctl bg-success-soft p-2 text-success"><b class="block text-lg">25</b><span class="text-2xs">Ready</span></div>
+            <div class="rounded-ctl bg-warning-soft p-2 text-warning"><b class="block text-lg">2</b><span class="text-2xs">Skipped</span></div><div class="rounded-ctl bg-error-soft p-2 text-error"><b class="block text-lg">1</b><span class="text-2xs">Errors</span></div></div>
+            <button type="button" data-act="commit" ${st > 2 ? 'disabled' : ''} class="${btn.primary} w-full disabled:opacity-50">${ic('check')}${st > 2 ? 'Committed' : 'Commit 25 Ratings'}</button>`
+            : '<p class="text-sm text-muted-foreground">Upload a workbook to see what will be added.</p>'}</section>
+      </div>
+      ${st >= 2 ? `<section class="${CARD} mt-4 overflow-hidden"><div class="border-b border-border px-4 py-3"><h2 class="text-sm font-semibold">Rows Not Added</h2></div>
+        <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-subtle text-left"><tr>${['Row', 'Official No', 'Issue'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${issues.map(([row, sn, msg, tone]) => `<tr class="border-t border-border"><td class="px-4 py-2.5 font-medium">${row}</td><td class="px-4 py-2.5">${sn}</td><td class="px-4 py-2.5"><span class="${pill[tone]}">${tone === 'error' ? 'Error' : 'Skipped'}</span> ${esc(msg)}</td></tr>`).join('')}</tbody></table></div></section>` : ''}`;
+  }
+
+  function viewDocuments() {
+    const r = bySn(state.docSn);
+    return pageHeader('Documents', 'Navpers files by service number') + `
+      <div class="mb-4 flex flex-wrap items-end gap-3">
+        <div class="w-80 phone:w-full"><span class="${LABEL}">Rating</span><select name="doc-rating" aria-label="Rating">${`<option value="">-- Select Rating --</option>${ratings.map((x) => `<option value="${x.sn}"${x.sn === state.docSn ? ' selected' : ''}>${esc(`${x.sn} · ${fullName(x)}`)}</option>`).join('')}`}</select></div>
+        ${r ? `<a href="#ratings/record/${r.sn}" class="${btn.outline}">${ic('id-card')}Open Record</a>` : ''}
+      </div>
+      ${r ? documentsBlock(r, record(r), false) : `<div class="${CARD}">${empty('folder-open', 'Choose a Rating')}</div>`}`;
+  }
+
+  function viewSoon(key) {
+    const m = MODULES.find((x) => x.key === key) || { label: 'Module', icon: 'lock' };
+    return pageHeader(m.label, '') + `<div class="${CARD}">${empty(m.icon, 'Coming in a Later Release', `<a href="#dashboard" class="${btn.outline}">${ic('house')}Go to Dashboard</a>`)}</div>`;
+  }
+
+  // ==========================================================================
+  // Administration: Static Tables, Reports, System Administration
+  // ==========================================================================
+  const T = (slug, tab, title, item, cols, rows, extra = {}) => ({ slug, tab, title, item, cols, rows: rows.map((r) => (Array.isArray(r) ? r : [r])), ...extra });
+  const TABLES = [
+    T('appraisal-ratings', 'Appraisal Ratings', 'Appraisal Ratings', 'Grade', ['Grade', 'Code', 'Score Range'], [['Outstanding', 'A', '90 - 100'], ['Very Good', 'B', '75 - 89'], ['Good', 'C', '60 - 74'], ['Fair', 'D', '45 - 59'], ['Poor', 'E', '0 - 44']]),
+    T('branch', 'Branch', 'Branches', 'Branch', ['Branch'], ['Seaman', 'Marine Engineering', 'Weapon Engineering', 'Logistics', 'Medical', 'Information Technology', 'Education', 'Naval Police', 'Music', 'Physical Training']),
+    T('exit-type', 'Exit Type', 'Exit Types', 'Exit Type', ['Exit Type'], ['Discharged', 'Retired', 'Voluntary Discharge', 'Medical Discharge', 'Dismissed', 'Deceased']),
+    T('entry-mode', 'Entry Mode', 'Entry Modes', 'Entry Mode', ['Entry Mode'], ['Regular Recruitment', 'Specialist Enlistment', 'Direct Intake', 'Sportsmen Enlistment'], { off: ['Sportsmen Enlistment'] }),
+    T('offences', 'Offences', 'Disciplinary Offences', 'Offence', ['Offence', 'Code', 'Category'], [['Absence without leave', 'OF01', 'Discipline'], ['Insubordination', 'OF02', 'Conduct'], ['Drunkenness on duty', 'OF03', 'Conduct'], ['Negligent performance of duty', 'OF04', 'Duty'], ['Disobedience to standing orders', 'OF05', 'Discipline'], ['Loss of service property', 'OF06', 'Property'], ['Sleeping on watch', 'OF07', 'Duty'], ['Conduct prejudicial to good order', 'OF08', 'Conduct']]),
+    T('sanctions', 'Sanctions', 'Disciplinary Sanctions', 'Sanction', ['Sanction', 'Severity'], [['Reprimand', 'Minor'], ['Severe reprimand', 'Minor'], ['Extra duties', 'Minor'], ['Stoppage of leave', 'Minor'], ['Fine', 'Major'], ['Detention', 'Major'], ['Reduction in rate', 'Major'], ['Dismissal', 'Major']]),
+    T('institution', 'Institution', 'Institutions', 'Institution', ['Institution', 'Location', 'Type'], [['NAVTRAC Ebute-Ero', 'Lagos', 'Training Centre'], ['NNS Quorra', 'Lagos', 'Training Base'], ['Naval Engineering College', 'Sapele', 'College'], ['Nigerian Defence Academy', 'Kaduna', 'University'], ['Federal Polytechnic, Oko', 'Anambra', 'Polytechnic'], ['University of Lagos', 'Lagos', 'University']]),
+    T('local-government', 'Local Government', 'Local Governments', 'Local Government', ['Local Government', 'State'], [['Umuahia North', 'Abia'], ['Aba South', 'Abia'], ['Yola North', 'Adamawa'], ['Mubi North', 'Adamawa'], ['Uyo', 'Akwa Ibom'], ['Ikot Abasi', 'Akwa Ibom'], ['Awka South', 'Anambra'], ['Onitsha North', 'Anambra'], ['Bauchi', 'Bauchi'], ['Yenagoa', 'Bayelsa'], ['Makurdi', 'Benue'], ['Calabar Municipal', 'Cross River'], ['Warri South', 'Delta'], ['Enugu North', 'Enugu'], ['Kaduna North', 'Kaduna'], ['Kano Municipal', 'Kano'], ['Ikeja', 'Lagos'], ['Apapa', 'Lagos'], ['Lagos Island', 'Lagos'], ['Port Harcourt', 'Rivers'], ['Obio/Akpor', 'Rivers'], ['Ibadan North', 'Oyo'], ['Akure South', 'Ondo'], ['Owerri Municipal', 'Imo'], ['Abeokuta South', 'Ogun'], ['Ilorin West', 'Kwara'], ['Jos North', 'Plateau']]),
+    T('languages', 'Languages', 'Languages', 'Language', ['Language'], ['English', 'Hausa', 'Igbo', 'Yoruba', 'French', 'Arabic', 'Nigerian Pidgin', 'Efik', 'Ijaw', 'Kanuri', 'Tiv']),
+    T('relationship', 'Relationship', 'Relationships', 'Relationship', ['Relationship'], ['Spouse', 'Father', 'Mother', 'Son', 'Daughter', 'Brother', 'Sister', 'Uncle', 'Aunt', 'Cousin', 'Guardian']),
+    T('staff-branch', 'Staff Branch', 'Staff Branches', 'Staff Branch', ['Staff Branch'], ['Personnel (Navpers)', 'Operations', 'Administration', 'Logistics', 'Training', 'Accounts & Budget', 'Fleet Maintenance']),
+    T('specialisation', 'Specialisation Area', 'Specialisation Areas', 'Specialisation', ['Specialisation'], ['Gunnery', 'Navigation', 'Communications', 'Radar Plotter', 'Marine Propulsion', 'Electrical / Weapon Systems', 'Hull Maintenance', 'Stores & Supply', 'Catering', 'Writer (Admin)', 'Medical Assistant', 'Regulating (Provost)', 'ICT / Cyber', 'Hydrography', 'Clearance Diver']),
+    T('ships', 'Ships', 'Ships and Bases', 'Ship', ['Ship', 'Type'], [['NNS ARADU', 'Ship'], ['NNS THUNDER', 'Ship'], ['NNS OKPABANA', 'Ship'], ['NNS CENTENARY', 'Ship'], ['NNS UNITY', 'Ship'], ['NNS PROSPERITY', 'Ship'], ['NNS KADA', 'Ship'], ['NNS VICTORY', 'Ship'], ['NNS BEECROFT', 'Base'], ['NNS PATHFINDER', 'Base'], ['NNS DELTA', 'Base'], ['NNS JUBILEE', 'Base'], ['NNS QUORRA', 'Base'], ['NAVTRAC EBUTE-ERO', 'Base']]),
+    T('states', 'States', 'States', 'State', ['State'], ['Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT - Abuja', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara']),
+    T('title', 'Title', 'Titles', 'Title', ['Title'], ['OS', 'AB', 'LS', 'PO', 'CPO', 'WO', 'MWO', 'NWO', 'Mr', 'Mrs', 'Miss']),
+    T('training', 'Training', 'Training Courses', 'Course', ['Course', 'Institution', 'Weeks'], [['Basic Seamanship', 'NAVTRAC Ebute-Ero', '26'], ['Leading Rate Course', 'NNS Quorra', '12'], ['Petty Officer Course', 'NNS Quorra', '16'], ['Marine Engineering Artificer', 'Naval Engineering College', '52'], ['Gunnery Course', 'NNS Quorra', '10'], ['Damage Control and Firefighting', 'NNS Quorra', '4'], ['Navigation Basic', 'NNS Quorra', '8'], ['ICT Fundamentals', 'NAVTRAC Ebute-Ero', '6']]),
+  ];
+  const REPORTS = [
+    { slug: 'ship-history', tab: 'Ship History', title: 'Ship History Report', sub: 'Ratings posted to a ship over time' },
+    { slug: 'all-personnel', tab: 'All Personnel', title: 'All Personnel', sub: 'The nominal roll, filtered your way' },
+    { slug: 'disposition', tab: 'Disposition', title: 'Disposition Report', sub: 'Where ratings serve, by rate' },
+  ];
+  const ADMIN_TABS = [
+    { route: 'admin/users', label: 'Manage Users' }, { route: 'admin/roles', label: 'Manage Roles' },
+    { route: 'admin/password', label: 'Manage Password' }, { route: 'admin/audit', label: 'Audit Trail' },
+  ];
+  const MODULE_TABS = {
+    ratings: RATINGS_TABS,
+    tables: TABLES.map((t) => ({ route: `tables/${t.slug}`, label: t.tab })),
+    reports: REPORTS.map((r) => ({ route: `reports/${r.slug}`, label: r.tab })),
+    admin: ADMIN_TABS,
+  };
+  const searchBox = (key, placeholder) => `<label class="relative min-w-0 flex-1 desk:max-w-xs"><span class="sr-only">Search</span>
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">${ic('search')}</span>
+      <input id="q-${key}" data-q="${key}" type="search" value="${esc(state.qs[key] || '')}" placeholder="${esc(placeholder)}" class="${INPUT} pl-9" /></label>`;
+  const paged = (key, rows) => {
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    const page = Math.min(state.pages[key] || 1, pages);
+    return { page, pages, shown: rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), from: rows.length ? (page - 1) * PAGE_SIZE + 1 : 0, to: Math.min(page * PAGE_SIZE, rows.length) };
+  };
+
+  // ---- Static Tables: one searchable list per lookup, Add and Edit in a dialog
+  function viewTable(slug) {
+    const t = TABLES.find((x) => x.slug === slug);
+    const q = (state.qs[slug] || '').trim().toLowerCase();
+    const rows = t.rows.map((r, i) => ({ r, i })).filter(({ r }) => !q || r.join(' ').toLowerCase().includes(q));
+    const pg = paged(slug, rows);
+    const active = (r) => !(t.off || []).includes(r[0]);
+    const table = `<div class="${CARD} overflow-hidden phone:hidden"><div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="text-left"><tr><th class="${TH} w-14">#</th>${t.cols.map((c) => `<th class="${TH}">${esc(c)}</th>`).join('')}<th class="${TH} w-28">Status</th><th class="${TH} w-20"></th></tr></thead>
+        <tbody>${pg.shown.map(({ r, i }) => `<tr class="border-t border-border/70 transition-colors hover:bg-subtle/70">
+          <td class="px-4 py-2.5 text-muted-foreground">${i + 1}</td>${r.map((c, j) => `<td class="px-4 py-2.5 ${j === 0 ? 'font-medium' : ''}">${esc(c)}</td>`).join('')}
+          <td class="px-4 py-2.5"><span class="${active(r) ? pill.success : pill.neutral}">${active(r) ? 'Active' : 'Inactive'}</span></td>
+          <td class="px-4 py-2 text-right"><button type="button" data-act="table-edit" data-i="${i}" class="${btn.ghost}">${ic('pencil')}Edit</button></td></tr>`).join('') || `<tr><td colspan="9">${empty('search', 'Nothing Matches')}</td></tr>`}</tbody></table></div>
+        ${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, slug)}</div>`;
+    const cards = `<div class="space-y-2 desk:hidden">${pg.shown.map(({ r, i }) => `<button type="button" data-act="table-edit" data-i="${i}" class="${CARD} flex w-full items-center gap-3 p-3 text-left">
+        <span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${esc(r[0])}</b>${r.length > 1 ? `<span class="block truncate text-xs text-muted-foreground">${esc(r.slice(1).join(' · '))}</span>` : ''}</span>
+        <span class="${active(r) ? pill.success : pill.neutral}">${active(r) ? 'Active' : 'Inactive'}</span>${ic('chevron-right', 'icon text-muted-foreground')}</button>`).join('') || `<div class="${CARD}">${empty('search', 'Nothing Matches')}</div>`}
+        <div class="${CARD}">${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, slug)}</div></div>`;
+    return pageHeader(t.title, `${t.rows.length} entries`, `<button type="button" data-act="table-add" class="${btn.primary}">${ic('plus')}Add ${esc(t.item)}</button>`)
+      + `<div class="mb-3 flex items-center gap-3">${searchBox(slug, `Search ${t.title.toLowerCase()}`)}<span class="ml-auto text-sm text-muted-foreground phone:hidden">${rows.length} shown</span></div>` + table + cards;
+  }
+  function tableForm(slug, i) {
+    const t = TABLES.find((x) => x.slug === slug);
+    const r = i == null ? [] : t.rows[i];
+    const choices = { State: TABLES.find((x) => x.slug === 'states').rows.map((x) => x[0]), Institution: TABLES.find((x) => x.slug === 'institution').rows.map((x) => x[0]),
+      Category: ['Conduct', 'Discipline', 'Duty', 'Property'], Severity: ['Minor', 'Major'], Type: slug === 'ships' ? ['Ship', 'Base'] : ['Training Centre', 'Training Base', 'College', 'University', 'Polytechnic'] };
+    const fields = t.cols.map((c, j) => (choices[c] ? field(c, `<select name="tf-${j}">${options(choices[c], r[j] || '')}</select>`) : field(c, `<input type="text" value="${esc(r[j] || '')}" class="${INPUT}" />`))).join('')
+      + field('Status', `<select name="tf-status">${options(['Active', 'Inactive'], i == null || !(t.off || []).includes(r[0]) ? 'Active' : 'Inactive', '-- Select --')}</select>`);
+    openDialog({ title: i == null ? `Add ${t.item}` : `Edit ${t.item}`, size: 'md', body: `<form class="grid gap-4" onsubmit="return false">${fields}</form>`,
+      foot: `${i == null ? '' : `<button type="button" data-act="saved" class="${btn.outline} text-destructive desk:mr-auto">${ic('trash-2')}Delete</button>`}<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save</button>` });
+  }
+
+  // ---- Reports: filters, Run Report, results with Print and Export
+  function reportShell(r, filters, results) {
+    return pageHeader(r.title, r.sub, `<button type="button" data-act="print" class="${btn.blue}">${ic('printer')}Print PDF</button><button type="button" data-act="exported" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button>`)
+      + `<section class="${CARD} mb-4 p-4"><div class="flex flex-wrap items-end gap-3">${filters}<button type="button" data-act="run-report" class="${btn.primary} phone:w-full">${ic('refresh-cw')}Run Report</button></div></section>` + results;
+  }
+  const stat = (label, value, tone) => `<div class="${CARD} p-4"><div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(label)}</div><div class="mt-1 text-2xl font-bold tracking-tight ${tone || ''}">${value}</div></div>`;
+  const repSelect = (name, label, list, chosen, placeholder, width = 'w-56') => `<div class="${width} phone:w-full"><span class="${LABEL}">${esc(label)}</span><select name="rep-${name}">${options(list, chosen, placeholder)}</select></div>`;
+  const repText = (label, value, width = 'w-36') => `<label class="${width} phone:w-[calc(50%-0.375rem)]"><span class="${LABEL}">${esc(label)}</span><input type="text" value="${esc(value)}" placeholder="dd/mm/yyyy" class="${INPUT}" /></label>`;
+  function viewReport(slug) {
+    const r = REPORTS.find((x) => x.slug === slug);
+    const st = state.report;
+    if (slug === 'ship-history') {
+      const rows = ratings.flatMap((x) => record(x).drafting.filter((p) => p.ship === st.ship).map((p) => ({ x, p }))).sort((a, b) => b.p.from - a.p.from);
+      const aboard = rows.filter(({ p }) => !p.to).length;
+      const months = rows.map(({ p }) => ((p.to || TODAY) - p.from) / 2629800000);
+      const avg = months.length ? Math.round(months.reduce((a, b) => a + b, 0) / months.length) : 0;
+      return reportShell(r, repSelect('ship', 'Ship', SHIPS.concat(['NAVTRAC EBUTE-ERO']), st.ship, '-- Select Ship --') + repText('From', '01/01/2010') + repText('To', fmt(TODAY)),
+        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Postings', rows.length)}${stat('Aboard Now', aboard, 'text-primary-hover')}${stat('Average Tour', `${Math.floor(avg / 12)} yr ${avg % 12} mo`)}</div>
+        <div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Official No', 'Name', 'Rate', 'From', 'To', 'Tour'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(({ x, p }) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 text-muted-foreground">${x.sn}</td><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(fullName(x))}</td><td class="px-4 py-2.5">${short(x.rate)}</td><td class="px-4 py-2.5">${fmt(p.from)}</td><td class="px-4 py-2.5">${p.to ? fmt(p.to) : `<span class="${pill.success}">Aboard</span>`}</td><td class="whitespace-nowrap px-4 py-2.5">${since(p.from)}</td></tr>`).join('') || `<tr><td colspan="6">${empty('ship', 'No Postings Found')}</td></tr>`}</tbody></table></div></div>`);
+    }
+    if (slug === 'all-personnel') {
+      const rows = ratings.filter((x) => (st.status === 'all' || !st.status || x.status === st.status) && (!st.rate || x.rate === st.rate) && (!st.branch || x.branch === st.branch) && (!st.command || x.command === st.command));
+      const pg = paged('all-personnel', rows);
+      return reportShell(r, repSelect('status', 'Status', ['all', 'current', 'former'], st.status, 'All', 'w-36') + repSelect('rate', 'Rate', RATES, st.rate, 'All Rates') + repSelect('branch', 'Branch', BRANCHES, st.branch, 'All Branches', 'w-48') + repSelect('command', 'Command', COMMANDS, st.command, 'All Commands'),
+        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Personnel', rows.length)}${stat('Current', rows.filter((x) => x.status === 'current').length, 'text-primary-hover')}${stat('Former', rows.filter((x) => x.status === 'former').length, 'text-muted-foreground')}</div>
+        <div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Official No', 'Name', 'Rate', 'Branch', 'Ship', 'Command', 'Status'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${pg.shown.map((x) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 text-muted-foreground">${x.sn}</td><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(fullName(x))}</td><td class="px-4 py-2.5">${short(x.rate)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.branch)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.ship)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.command)}</td><td class="px-4 py-2.5"><span class="${x.status === 'current' ? pill.success : pill.neutral}">${x.status === 'current' ? 'Current' : 'Former'}</span></td></tr>`).join('')}</tbody></table></div>
+        ${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, 'all-personnel')}</div>`);
+    }
+    // disposition: current ratings by ship and rate
+    const cols = ['OS', 'AB', 'LS', 'PO', 'CPO', 'WO+'];
+    const bucket = (x) => { const s = short(x.rate); return ['WO', 'MWO', 'NWO'].includes(s) ? 'WO+' : s; };
+    const current = ratings.filter((x) => x.status === 'current' && (!st.command || x.command === st.command));
+    const ships = [...new Set(current.map((x) => x.ship))].sort();
+    const grid = ships.map((sh) => { const on = current.filter((x) => x.ship === sh); return { sh, n: cols.map((c) => on.filter((x) => bucket(x) === c).length), total: on.length }; });
+    const max = Math.max(1, ...grid.map((g) => g.total));
+    return reportShell(r, repSelect('command', 'Command', COMMANDS, st.command, 'All Commands') + repText('As At', fmt(TODAY)),
+      `<div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Ship or Unit</th>${cols.map((c) => `<th class="${TH} text-center">${c}</th>`).join('')}<th class="${TH} text-center">Total</th><th class="${TH} w-1/4 phone:hidden"></th></tr></thead>
+      <tbody>${grid.map((g) => `<tr class="border-t border-border/70"><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(g.sh)}</td>${g.n.map((n) => `<td class="px-4 py-2.5 text-center ${n ? '' : 'text-muted-foreground/60'}">${n || '-'}</td>`).join('')}<td class="px-4 py-2.5 text-center font-bold">${g.total}</td>
+        <td class="px-4 py-2.5 phone:hidden"><div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-sidebar to-secondary ${fraction(g.total / max)}"></div></div></td></tr>`).join('')}
+        <tr class="border-t-2 border-border bg-subtle/70 font-bold"><td class="px-4 py-2.5">Total</td>${cols.map((c, i) => `<td class="px-4 py-2.5 text-center">${grid.reduce((a, g) => a + g.n[i], 0)}</td>`).join('')}<td class="px-4 py-2.5 text-center">${current.length}</td><td class="phone:hidden"></td></tr></tbody></table></div></div>`);
+  }
+
+  // ---- System Administration
+  const USERS = [
+    { username: 'HICO001', name: 'HICO Administrator', role: 'Administrator', sn: '', status: 'Active', last: '18/11/2026 15:02', created: '16/11/2026', attempts: 0 },
+    { username: 'NAVPERS01', name: 'Lt Cdr Amaka Eze', role: 'Records Officer', sn: '', status: 'Active', last: '18/11/2026 11:47', created: '16/11/2026', attempts: 0 },
+    { username: 'NAVPERS02', name: 'CPO Segun Ogunleye', role: 'Records Clerk', sn: 'B0455', status: 'Active', last: '17/11/2026 16:20', created: '16/11/2026', attempts: 1 },
+    { username: 'AUDIT01', name: 'Mrs Funke Ajayi', role: 'Auditor', sn: '', status: 'Active', last: '15/11/2026 09:05', created: '16/11/2026', attempts: 0 },
+    { username: 'B0539', name: 'PO Chukwuemeka Okonkwo', role: 'Rating', sn: 'B0539', status: 'Active', last: '18/11/2026 08:31', created: '16/11/2026', attempts: 0 },
+    { username: 'B0428', name: 'PO Bola Bello', role: 'Rating', sn: 'B0428', status: 'Locked', last: '02/11/2026 09:14', created: '16/11/2026', attempts: 5 },
+  ];
+  const ROLES = ['Administrator', 'Records Officer', 'Records Clerk', 'Auditor', 'Rating'];
+  const PERM_MODULES = ['Dashboard', 'Ratings Management', 'Documents', 'Batch Upload', 'Static Tables', 'Reports', 'System Administration'];
+  const OPS = ['View', 'Add', 'Edit', 'Delete'];
+  const perms = {};
+  ROLES.forEach((role) => {
+    perms[role] = {};
+    PERM_MODULES.forEach((m, mi) => OPS.forEach((op, oi) => {
+      const on = role === 'Administrator' || (role === 'Records Officer' && mi < 6) || (role === 'Records Clerk' && mi < 4 && oi < 3) || (role === 'Auditor' && oi === 0 && mi !== 3) || (role === 'Rating' && oi === 0 && mi < 3);
+      perms[role][`${m}|${op}`] = on;
+    }));
+  });
+  const ACTION_TONE = { INSERT: pill.success, UPDATE: pill.info, DELETE: pill.error, 'SIGN IN': pill.neutral, 'SIGN OUT': pill.neutral, UNLOCK: pill.warning };
+  const AUDIT = [];
+  (function buildAudit() {
+    const acts = ['UPDATE', 'UPDATE', 'INSERT', 'SIGN IN', 'UPDATE', 'DELETE', 'UNLOCK', 'INSERT', 'SIGN OUT', 'UPDATE'];
+    const tables = { UPDATE: ['ratings', 'rating_drafting', 'rating_next_of_kin', 'ref_ship'], INSERT: ['rating_documents', 'rating_training', 'ratings'], DELETE: ['rating_documents', 'rating_children'], 'SIGN IN': ['users'], 'SIGN OUT': ['users'], UNLOCK: ['users'] };
+    const by = ['HICO001', 'NAVPERS01', 'NAVPERS02', 'B0539'];
+    let t = new Date(2026, 10, 18, 15, 3);
+    for (let i = 0; i < 64; i += 1) {
+      const a = acts[i % acts.length];
+      const tb = tables[a][i % tables[a].length];
+      const who = by[(i * 3) % by.length];
+      const subject = ratings[(i * 7) % ratings.length];
+      const key = tb === 'users' ? who : tb === 'ref_ship' ? 'NNS UNITY' : tb === 'rating_documents' ? `${subject.sn}:DOC` : subject.sn;
+      AUDIT.push({ i, time: new Date(t), action: a, table: tb, key, by: who, ip: `10.12.4.${20 + ((i * 13) % 200)}`, subject });
+      t = new Date(t.getTime() - (4 + ((i * 7) % 23)) * 60000);
+    }
+  })();
+  const stamp = (dt) => `${fmt(dt)} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+  function auditChanges(e) {
+    const r = e.subject;
+    if (e.action === 'SIGN IN' || e.action === 'SIGN OUT') return [['Session', e.action === 'SIGN IN' ? '-' : 'Open', e.action === 'SIGN IN' ? 'Open' : 'Closed']];
+    if (e.action === 'UNLOCK') return [['Locked Screen', 'Locked', 'Unlocked']];
+    if (e.action === 'DELETE') return [['Document', 'Leave Request.pdf', '-'], ['Category', 'Request Form', '-']];
+    if (e.action === 'INSERT') return e.table === 'ratings' ? [['Official No', '-', r.sn], ['Surname', '-', r.surname], ['Rate', '-', r.rate]] : [['Course', '-', 'Gunnery Course'], ['Result', '-', 'Credit']];
+    if (e.table === 'ref_ship') return [['Name', 'NNS UNITY', 'NNS UNITY'], ['Status', 'Inactive', 'Active']];
+    if (e.table === 'rating_drafting') return [['Ship', 'NNS THUNDER', r.ship], ['End Date', '-', fmt(r.shipSince)]];
+    return [['Phone', '0803 000 1122', r.phone], ['Command', 'Logistics Command', r.command]];
+  }
+
+  function viewAdmin(sub) {
+    if (sub === 'users') {
+      const q = (state.qs.users || '').toLowerCase();
+      const rows = USERS.filter((u) => !q || `${u.username} ${u.name} ${u.role}`.toLowerCase().includes(q));
+      if (sideBySide() && (!state.userPicked || !rows.some((u) => u.username === state.userPicked))) state.userPicked = rows[0] ? rows[0].username : null;
+      const picked = USERS.find((u) => u.username === state.userPicked);
+      const table = `<div class="${CARD} overflow-hidden phone:hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Username', 'Full Name', 'Role', 'Linked Rating', 'Status', 'Last Sign In'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map((u) => `<tr data-act="user-pick" data-user="${u.username}" tabindex="0" class="cursor-pointer border-t border-border/70 transition-colors ${sideBySide() && u.username === state.userPicked ? 'bg-secondary/10 shadow-[inset_3px_0_0_0_rgb(var(--secondary))]' : 'hover:bg-subtle/70'}">
+          <td class="px-4 py-2.5 font-semibold">${u.username}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(u.name)}</td><td class="px-4 py-2.5"><span class="${u.role === 'Administrator' ? pill.warning : pill.info}">${u.role}</span></td><td class="px-4 py-2.5 text-muted-foreground">${u.sn || '-'}</td>
+          <td class="px-4 py-2.5"><span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span></td><td class="whitespace-nowrap px-4 py-2.5 text-muted-foreground">${u.last}</td></tr>`).join('')}</tbody></table></div></div>`;
+      const cards = `<div class="space-y-2 desk:hidden">${rows.map((u) => `<button type="button" data-act="user-pick" data-user="${u.username}" class="${CARD} flex w-full items-center gap-3 p-3 text-left">
+          <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-xs font-semibold text-sidebar-foreground">${u.username.slice(0, 2)}</span>
+          <span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${esc(u.name)}</b><span class="block truncate text-xs text-muted-foreground">${u.username} · ${u.role}</span></span>
+          <span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span></button>`).join('')}</div>`;
+      const detail = picked && sideBySide() ? `<aside class="${CARD} sticky top-0 self-start p-4" aria-label="User">${userCard(picked)}</aside>` : '';
+      return pageHeader('Manage Users', `${USERS.length} accounts`, `<button type="button" data-act="user-add" class="${btn.primary}">${ic('user-plus')}Add User</button>`)
+        + `<div class="mb-3 flex items-center gap-3">${searchBox('users', 'Username, name or role')}</div>`
+        + `<div class="grid gap-4 ${detail ? 'grid-cols-3' : 'grid-cols-1'}"><div class="min-w-0 ${detail ? 'col-span-2' : ''}">${table}${cards}</div>${detail}</div>`;
+    }
+    if (sub === 'roles') {
+      const role = state.role;
+      const count = (r) => USERS.filter((u) => u.role === r).length;
+      const sw = (m, op) => { const on = perms[role][`${m}|${op}`]; const locked = role === 'Administrator';
+        return `<button type="button" role="switch" aria-checked="${on}" aria-label="${esc(`${m} ${op}`)}" data-act="perm" data-key="${esc(`${m}|${op}`)}" ${locked ? 'disabled' : ''} class="relative inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors disabled:opacity-60 phone:h-8 phone:w-14 ${on ? 'bg-gradient-to-r from-primary to-primary-hover shadow-inner' : 'bg-muted ring-1 ring-inset ring-border'}">
+          <span class="inline-block h-5 w-5 rounded-full bg-on-fill shadow transition-transform phone:h-7 phone:w-7 ${on ? 'translate-x-[22px] phone:translate-x-[26px]' : 'translate-x-0.5'}"></span></button>`; };
+      return pageHeader('Manage Roles', 'What each role may open and change', `<button type="button" data-act="role-add" class="${btn.outline}">${ic('plus')}Add Role</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save Changes</button>`)
+        + `<div class="grid grid-cols-4 gap-4 phone:grid-cols-1">
+          <div class="${CARD} self-start p-2 phone:flex phone:gap-2 phone:overflow-x-auto phone:p-2">${ROLES.map((r) => `<button type="button" data-act="role-pick" data-role="${r}" class="flex w-full items-center gap-3 rounded-ctl px-3 py-2.5 text-left text-sm transition-colors phone:w-auto phone:flex-none ${r === role ? 'bg-sidebar text-sidebar-foreground shadow-md' : 'hover:bg-subtle'}">
+            ${ic(r === 'Administrator' ? 'shield-user' : r === 'Rating' ? 'user-round' : 'users', 'icon')}<span class="flex-1 whitespace-nowrap font-medium">${r}</span><span class="rounded-full px-2 text-2xs font-semibold ${r === role ? 'bg-sidebar-hover' : 'bg-muted text-muted-foreground'}">${count(r)}</span></button>`).join('')}</div>
+          <section class="${CARD} col-span-3 overflow-hidden phone:col-span-1">
+            <div class="flex items-center gap-3 border-b border-border/70 px-4 py-3"><h2 class="text-sm font-semibold">${role}</h2><span class="${pill.neutral}">${count(role)} ${count(role) === 1 ? 'user' : 'users'}</span>${role === 'Administrator' ? `<span class="${pill.warning} ml-auto">${ic('lock-keyhole', 'icon h-3 w-3')}Full access</span>` : ''}</div>
+            <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Module</th>${OPS.map((o) => `<th class="${TH} text-center">${o}</th>`).join('')}</tr></thead>
+            <tbody>${PERM_MODULES.map((m) => `<tr class="border-t border-border/70"><td class="whitespace-nowrap px-4 py-3 font-medium">${m}</td>${OPS.map((o) => `<td class="px-4 py-2 text-center">${sw(m, o)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+          </section></div>`;
+    }
+    if (sub === 'password') {
+      const pw = (id, label, auto) => field(label, `<span class="relative block"><input id="${id}" type="password" autocomplete="${auto}" class="${INPUT} pr-11" /><button type="button" data-act="eye" data-for="${id}" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Show Password">${ic('eye')}</button></span>`);
+      return pageHeader('Manage Password', 'Change the password you sign in with') + `<div class="grid grid-cols-5 gap-4 phone:grid-cols-1">
+        <section class="${CARD} col-span-3 p-5 phone:col-span-1">
+          <div class="mb-5 flex items-center gap-3"><span class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-sm font-bold text-sidebar-foreground ring-2 ring-background">HA</span>
+            <div><b class="block text-sm">HICO Administrator</b><span class="text-xs text-muted-foreground">HICO001 · last changed 16/11/2026</span></div></div>
+          <form class="grid gap-4" onsubmit="return false">${pw('pw-current', 'Current Password', 'current-password')}${pw('pw-new', 'New Password', 'new-password')}
+            <div class="-mt-1 flex gap-1.5">${[0, 1, 2, 3].map((i) => `<span data-meter="${i}" class="h-1.5 flex-1 rounded-full bg-muted transition-colors"></span>`).join('')}</div>
+            ${pw('pw-confirm', 'Confirm New Password', 'new-password')}<p id="pw-match" class="-mt-2 hidden text-xs font-medium text-error">Passwords do not match</p>
+            <div class="flex justify-end border-t border-border/70 pt-4"><button type="button" data-act="pw-save" class="${btn.primary} phone:w-full">${ic('key-round')}Update Password</button></div></form>
+        </section>
+        <section class="${CARD} col-span-2 self-start p-5 phone:col-span-1"><h2 class="mb-3 text-sm font-semibold">A Strong Password Has</h2>
+          <ul class="space-y-2.5 text-sm">${[['len', 'At least 8 characters'], ['case', 'Upper and lower case letters'], ['num', 'A number'], ['sym', 'A symbol such as @ or #']].map(([k, t]) => `<li data-rule="${k}" class="flex items-center gap-2.5 text-muted-foreground"><span class="flex h-5 w-5 items-center justify-center rounded-full bg-muted">${ic('check', 'icon h-3 w-3')}</span>${t}</li>`).join('')}</ul></section></div>`;
+    }
+    // audit trail
+    const a = state.audit;
+    const rows = AUDIT.filter((e) => (!a.action || e.action === a.action) && (!a.table || e.table === a.table) && (!a.by || e.by.toLowerCase().includes(a.by.toLowerCase())) && (!a.key || e.key.toLowerCase().includes(a.key.toLowerCase())));
+    const pg = paged('audit', rows);
+    const txt = (name, label, value, ph) => `<label class="min-w-0"><span class="${LABEL}">${label}</span><input type="text" name="${name}" value="${esc(value)}" placeholder="${esc(ph)}" class="${INPUT}" /></label>`;
+    return pageHeader('Audit Trail', 'Every action and change, newest first') + `
+      <section class="${CARD} mb-4 p-4"><div class="mb-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">Filters</div>
+        <div class="grid grid-cols-6 gap-3 phone:grid-cols-2">
+          <div><span class="${LABEL}">Action</span><select name="audit-action">${options(Object.keys(ACTION_TONE), a.action, 'All Actions')}</select></div>
+          <div><span class="${LABEL}">Table</span><select name="audit-table">${options([...new Set(AUDIT.map((e) => e.table))].sort(), a.table, 'All Tables')}</select></div>
+          ${txt('audit-by', 'Performed By', a.by, 'Username')}${txt('audit-key', 'Record Key', a.key, 'e.g. B0539')}${txt('audit-from', 'From', '', 'dd/mm/yyyy')}${txt('audit-to', 'To', '', 'dd/mm/yyyy')}
+        </div>
+        <div class="mt-4 flex flex-wrap items-center gap-2"><button type="button" data-act="audit-search" class="${btn.primary}">${ic('search')}Search</button><button type="button" data-act="audit-reset" class="${btn.outline}">${ic('rotate-ccw')}Reset</button>
+          <span class="ml-auto text-sm text-muted-foreground">${rows.length.toLocaleString()} records</span></div></section>
+      <div class="${CARD} overflow-hidden phone:hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Time', 'Action', 'Table', 'Record', 'By', 'IP', 'Changes'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
+        <tbody>${pg.shown.map((e) => `<tr class="border-t border-border/70 transition-colors hover:bg-subtle/70"><td class="whitespace-nowrap px-4 py-2.5 text-muted-foreground">${stamp(e.time)}</td><td class="px-4 py-2.5"><span class="${ACTION_TONE[e.action]}">${e.action}</span></td>
+          <td class="px-4 py-2.5 font-mono text-xs">${e.table}</td><td class="px-4 py-2.5 font-semibold">${esc(e.key)}</td><td class="px-4 py-2.5">${e.by}</td><td class="px-4 py-2.5 font-mono text-xs text-muted-foreground">${e.ip}</td>
+          <td class="px-4 py-2"><button type="button" data-act="audit-view" data-i="${e.i}" class="${btn.ghost}">${ic('eye')}View</button></td></tr>`).join('') || `<tr><td colspan="7">${empty('history', 'No Records Match')}</td></tr>`}</tbody></table></div>
+        ${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, 'audit')}</div>
+      <div class="space-y-2 desk:hidden">${pg.shown.map((e) => `<button type="button" data-act="audit-view" data-i="${e.i}" class="${CARD} flex w-full items-center gap-3 p-3 text-left"><span class="${ACTION_TONE[e.action]}">${e.action}</span>
+          <span class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(e.key)} <span class="font-mono text-xs font-normal text-muted-foreground">${e.table}</span></b><span class="block text-xs text-muted-foreground">${stamp(e.time)} · ${e.by}</span></span>${ic('chevron-right', 'icon text-muted-foreground')}</button>`).join('')}
+        <div class="${CARD}">${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, 'audit')}</div></div>`;
+  }
+  function userCard(u) {
+    return `<div class="space-y-4"><div class="flex items-start gap-3"><span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-sm font-semibold text-sidebar-foreground ring-2 ring-background">${u.username.slice(0, 2)}</span>
+      <div class="min-w-0"><div class="text-base font-semibold leading-tight">${esc(u.name)}</div><div class="text-sm text-muted-foreground">${u.username}</div>
+      <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span><span class="${u.role === 'Administrator' ? pill.warning : pill.info}">${u.role}</span></div></div></div>
+      ${dl([['Linked Rating', u.sn || 'None'], ['Created', u.created], ['Last Sign In', u.last], ['Failed Attempts', `${u.attempts}`]])}
+      <div class="flex flex-wrap gap-2"><button type="button" data-act="user-edit" data-user="${u.username}" class="${btn.primary}">${ic('pencil')}Edit User</button><button type="button" data-act="reset-pw" class="${btn.blue}">${ic('key-round')}Reset Password</button>
+      <button type="button" data-act="saved" class="${btn.outline}">${ic(u.status === 'Active' ? 'lock-keyhole' : 'lock-keyhole-open')}${u.status === 'Active' ? 'Lock Account' : 'Unlock Account'}</button></div></div>`;
+  }
+  function userForm(u) {
+    openDialog({ title: u ? 'Edit User' : 'Add User', size: 'lg', body: `<form class="grid grid-cols-2 gap-4 phone:grid-cols-1" onsubmit="return false">
+        ${field('Username', `<input type="text" value="${esc(u ? u.username : '')}" class="${INPUT}" />`)}${field('Full Name', `<input type="text" value="${esc(u ? u.name : '')}" class="${INPUT}" />`)}
+        ${field('Role', `<select name="uf-role">${options(ROLES, u ? u.role : '')}</select>`)}${field('Linked Rating', `<select name="uf-rating">${`<option value="">-- None --</option>${ratings.map((x) => `<option value="${x.sn}"${u && x.sn === u.sn ? ' selected' : ''}>${esc(`${x.sn} · ${fullName(x)}`)}</option>`).join('')}`}</select>`, true)}
+        ${u ? '' : `<div class="col-span-2 rounded-card bg-info-soft px-4 py-3 text-sm text-info phone:col-span-1">${ic('key-round', 'icon mr-1.5 inline')}A one-time password is shown once the user is saved.</div>`}</form>`,
+      foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save User</button>` });
+  }
+  function pwCheck() {
+    const v = ($('#pw-new') || {}).value || '';
+    const c = ($('#pw-confirm') || {}).value || '';
+    const rules = { len: v.length >= 8, case: /[a-z]/.test(v) && /[A-Z]/.test(v), num: /\d/.test(v), sym: /[^A-Za-z0-9]/.test(v) };
+    const score = Object.values(rules).filter(Boolean).length;
+    document.querySelectorAll('[data-rule]').forEach((li) => {
+      const ok = rules[li.dataset.rule];
+      li.className = `flex items-center gap-2.5 ${ok ? 'text-success' : 'text-muted-foreground'}`;
+      li.firstElementChild.className = `flex h-5 w-5 items-center justify-center rounded-full ${ok ? 'bg-success text-on-fill' : 'bg-muted'}`;
+    });
+    const tone = score <= 1 ? 'bg-destructive' : score === 2 ? 'bg-warning' : score === 3 ? 'bg-secondary' : 'bg-primary';
+    document.querySelectorAll('[data-meter]').forEach((m) => { m.className = `h-1.5 flex-1 rounded-full transition-colors ${Number(m.dataset.meter) < score && v ? tone : 'bg-muted'}`; });
+    const mm = $('#pw-match'); if (mm) mm.classList.toggle('hidden', !c || c === v);
+    return score === 4 && v === c;
+  }
+
+  // ==========================================================================
+  // Session lock (password only): after the idle limit, or from the account menu.
+  // The screen underneath stays exactly as it was; every open tab locks together.
+  // ==========================================================================
+  const LOCK_KEY = 'cirerms-demo-lock';
+  const IDLE_MS = (Number(new URLSearchParams(location.search).get('idle')) || 120) * 1000;
+  const DEMO_PASSWORD = 'Admin@123';
+  const REASONS = { idle: 'Locked while you were away', manual: 'You locked this session' };
+  let locked = false;
+  let lastActive = Date.now();
+  const store = { get: () => { try { return localStorage.getItem(LOCK_KEY); } catch (e) { return null; } }, set: (v) => { try { if (v) localStorage.setItem(LOCK_KEY, v); else localStorage.removeItem(LOCK_KEY); } catch (e) { /* storage off: this tab only */ } } };
+  function lockScreen(reason, { announce = true } = {}) {
+    if (locked) return;
+    locked = true;
+    $('#lock-reason').textContent = REASONS[reason] || REASONS.idle;
+    ['#shell', '#overlay', '#palette', '#fab', '#toasts'].forEach((s) => { const n = $(s); if (n) n.inert = true; });
+    document.querySelectorAll('.custom-dropdown-list.cdd-open').forEach((l) => l._customDropdown && l._customDropdown.close());
+    const box = $('#lock'); box.classList.remove('hidden'); box.classList.add('flex');
+    $('#lock-pass').value = ''; $('#lock-err').classList.add('hidden');
+    if (announce) store.set(reason);
+    setTimeout(() => $('#lock-pass').focus(), 50);
+  }
+  function unlockScreen({ announce = true } = {}) {
+    locked = false;
+    ['#shell', '#overlay', '#palette', '#fab', '#toasts'].forEach((s) => { const n = $(s); if (n) n.inert = false; });
+    const box = $('#lock'); box.classList.add('hidden'); box.classList.remove('flex');
+    lastActive = Date.now();
+    if (announce) store.set(null);
+  }
+  function tryUnlock() {
+    const input = $('#lock-pass');
+    if (input.value === DEMO_PASSWORD) { unlockScreen(); return; }
+    const card = $('#lock-card');
+    $('#lock-err').textContent = input.value ? 'Wrong password' : 'Enter your password';
+    $('#lock-err').classList.remove('hidden');
+    input.classList.add('border-error', 'ring-4', 'ring-error/15');
+    card.classList.remove('animate-shake'); void card.offsetWidth; card.classList.add('animate-shake');
+    input.select();
+  }
+  ['pointerdown', 'keydown', 'wheel', 'touchstart', 'mousemove'].forEach((ev) => window.addEventListener(ev, () => { if (!locked) lastActive = Date.now(); }, { passive: true, capture: true }));
+  setInterval(() => { if (!locked && Date.now() - lastActive >= IDLE_MS) lockScreen('idle'); }, 1000);
+  window.addEventListener('storage', (e) => { if (e.key !== LOCK_KEY) return; if (e.newValue) lockScreen(e.newValue, { announce: false }); else if (locked) unlockScreen({ announce: false }); });
+  $('#lock-form').addEventListener('submit', (e) => { e.preventDefault(); tryUnlock(); });
+  $('#lock-pass').addEventListener('input', () => { $('#lock-err').classList.add('hidden'); $('#lock-pass').classList.remove('border-error', 'ring-4', 'ring-error/15'); });
+
+  // ==========================================================================
+  // Render and route
+  // ==========================================================================
+  let route = 'dashboard';
+  function render() {
+    route = (location.hash.replace(/^#\/?/, '') || 'dashboard');
+    const view = $('#view');
+    let html;
+    if (route === 'dashboard') html = viewDashboard();
+    else if (route === 'ratings/current') html = viewList('current');
+    else if (route === 'ratings/former') html = viewList('former');
+    else if (route.startsWith('ratings/record/')) html = viewRecord(ratingFromRoute(route));
+    else if (route === 'ratings/my-details') html = viewRecord(me, { readOnly: true });
+    else if (route === 'ratings/upload') html = viewUpload();
+    else if (route === 'ratings/documents') html = viewDocuments();
+    else if (route.startsWith('soon/')) html = viewSoon(route.slice(5));
+    else if (route.startsWith('tables/') && TABLES.some((t) => t.slug === route.slice(7))) html = viewTable(route.slice(7));
+    else if (route.startsWith('reports/') && REPORTS.some((t) => t.slug === route.slice(8))) html = viewReport(route.slice(8));
+    else if (route.startsWith('admin/') && ADMIN_TABS.some((t) => t.route === route)) html = viewAdmin(route.slice(6));
+    else { location.replace('#dashboard'); return; }
+    view.innerHTML = html;
+    renderRail(route);
+    renderTabs(route);
+    renderPhoneHeader(route);
+    renderBottomBar(route);
+    const t = route.startsWith('ratings/record/') ? fullName(ratingFromRoute(route) || me) : phoneTitle(route);
+    document.title = `${t} · CIRERMS`;
+  }
+  let lastRoute = null;
+  window.addEventListener('hashchange', () => {
+    const next = location.hash.replace(/^#\/?/, '');
+    if (next === 'ratings/new') {
+      const back = lastRoute && lastRoute !== 'ratings/new' ? lastRoute : 'ratings/current';
+      history.replaceState(null, '', `#${back}`);
+      closePalette();
+      if (route !== back) { lastRoute = back; render(); }
+      openNewRating();
+      return;
+    }
+    if (next.split('/').slice(0, 2).join('/') !== (lastRoute || '').split('/').slice(0, 2).join('/')) { state.recordTab = 'details'; state.docPicked = null; }
+    lastRoute = next;
+    closeDialog(); closePalette();
+    render();
+    $('#page').scrollTop = 0;
+  });
+  phoneMq.addEventListener('change', render);
+  besideMq.addEventListener('change', render);
+
+  function pickRating(sn) {
+    const list = route === 'ratings/former' ? 'former' : 'current';
+    state.list[list].picked = sn;
+    if (sideBySide()) { render(); return; }
+    openDialog({ title: isPhone() ? 'Rating' : fullName(bySn(sn)), body: ratingCard(bySn(sn), { inSheet: true }), size: 'md' });
+  }
+  function pickDoc(name) {
+    state.docPicked = name;
+    if (sideBySide()) { render(); return; }
+    const r = route === 'ratings/documents' ? bySn(state.docSn) : route === 'ratings/my-details' ? me : ratingFromRoute(route);
+    const x = record(r).documents.find((y) => y.name === name);
+    const cat = (CATEGORIES.find(([c]) => c === x.cat) || [, x.cat])[1];
+    openDialog({ title: 'Document', body: `<div class="-mx-5 -my-4">${docPreview(x, cat, r, route === 'ratings/my-details')}</div>`, size: 'lg' });
+  }
+
+  function editForm(what) {
+    const r = route === 'ratings/my-details' ? me : ratingFromRoute(route) || me;
+    const sel = (label, list, chosen, opt) => field(label, `<select name="${esc(label)}">${options(list, chosen)}</select>`, opt);
+    const txt = (label, value = '', opt) => field(label, `<input type="text" value="${esc(value)}" class="${INPUT}" />`, opt);
+    const forms = {
+      'Basic Details': sel('Rate', RATES, r.rate) + txt('Surname', r.surname) + txt('First Name', r.first) + txt('Middle Name', r.middle, true) + sel('Gender', ['Male', 'Female'], r.gender) + txt('Date of Birth', fmt(r.dob)),
+      Contact: txt('Phone', r.phone) + sel('State of Origin', STATES, r.state) + txt('Email', '', true),
+      Health: sel('Blood Group', ['A+', 'B+', 'AB+', 'O+', 'O-'], 'O+') + sel('Genotype', ['AA', 'AS', 'SS'], 'AA'),
+      Official: sel('Branch', BRANCHES, r.branch) + sel('Command', COMMANDS, r.command) + txt('Date Enlisted', fmt(r.enlisted)),
+      'Add Posting': sel('Ship', SHIPS) + txt('From', '', false) + txt('To', '', true),
+      'Add Language': sel('Language', ['English', 'Hausa', 'Igbo', 'Yoruba', 'French', 'Arabic']) + sel('Can Read', ['Yes', 'No'], 'Yes') + sel('Can Write', ['Yes', 'No'], 'Yes') + sel('Can Speak', ['Yes', 'No'], 'Yes'),
+    };
+    const body = forms[what] || txt('Name') + sel('Relationship', ['Spouse', 'Parent', 'Sibling', 'Child', 'Other']) + txt('Phone') + txt('Date', '', true);
+    const title = what.startsWith('Add') ? what : `Edit ${what}`;
+    openDialog({ title, body: `<form class="grid grid-cols-2 gap-4 phone:grid-cols-1" onsubmit="return false">${body}</form>`,
+      foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save</button>`, size: 'lg' });
+  }
+
+  // ---- command palette ----
+  let paletteIndex = 0;
+  function openPalette() { $('#palette').classList.remove('hidden'); const i = $('#palette-input'); i.value = ''; paletteIndex = 0; renderPalette(); setTimeout(() => i.focus(), 0); }
+  function closePalette() { $('#palette').classList.add('hidden'); }
+  function paletteItems() {
+    const q = $('#palette-input').value.trim().toLowerCase();
+    const screens = [{ label: 'Dashboard', href: 'dashboard', icon: 'layout-dashboard' }, ...RATINGS_TABS.map((t) => ({ label: `Ratings · ${t.label}`, href: t.route, icon: 'users' })), { label: 'New Rating', href: 'ratings/new', icon: 'user-plus' },
+      ...['tables', 'reports', 'admin'].flatMap((k) => { const m = MODULES.find((x) => x.key === k); return MODULE_TABS[k].map((t) => ({ label: `${m.label} · ${t.label}`, href: t.route, icon: m.icon })); }),
+      ...MODULES.filter((m) => m.soon).map((m) => ({ label: m.label, href: `soon/${m.key}`, icon: m.icon }))].filter((s) => !q || s.label.toLowerCase().includes(q));
+    const people = (q ? ratings.filter((r) => `${r.sn} ${r.surname} ${r.first} ${r.middle}`.toLowerCase().includes(q)) : ratings.slice(0, 4))
+      .slice(0, 6).map((r) => ({ label: fullName(r), sub: `${r.sn} · ${r.status === 'current' ? r.ship : 'Former'}`, href: `ratings/record/${r.sn}`, rating: r }));
+    return [['Screens', screens.slice(0, q ? 8 : 5)], ['Ratings', people]];
+  }
+  function renderPalette() {
+    const groups = paletteItems();
+    const flat = groups.flatMap(([, items]) => items);
+    paletteIndex = Math.max(0, Math.min(paletteIndex, flat.length - 1));
+    let n = -1;
+    $('#palette-results').innerHTML = flat.length ? groups.filter(([, items]) => items.length).map(([label, items]) => `<div class="px-2 pb-1 pt-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">${label}</div>
+      ${items.map((it) => { n += 1; return `<a href="#${it.href}" data-idx="${n}" class="flex items-center gap-3 rounded-ctl px-2 py-2 text-sm ${n === paletteIndex ? 'bg-secondary/10' : 'hover:bg-subtle'}">
+        ${it.rating ? avatar(it.rating, 'h-8 w-8 text-2xs') : `<span class="flex h-8 w-8 items-center justify-center rounded-ctl bg-muted text-muted-foreground">${ic(it.icon)}</span>`}
+        <span class="min-w-0 flex-1"><b class="block truncate font-medium">${esc(it.label)}</b>${it.sub ? `<span class="block truncate text-xs text-muted-foreground">${esc(it.sub)}</span>` : ''}</span>${n === paletteIndex ? ic('arrow-left', 'icon rotate-180 text-muted-foreground') : ''}</a>`; }).join('')}`).join('')
+      : empty('search', 'Nothing Matches');
+  }
+  $('#palette-input').addEventListener('input', () => { paletteIndex = 0; renderPalette(); });
+  $('#palette-input').addEventListener('keydown', (e) => {
+    const count = paletteItems().flatMap(([, i]) => i).length;
+    if (e.key === 'ArrowDown') { e.preventDefault(); paletteIndex = (paletteIndex + 1) % Math.max(count, 1); renderPalette(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); paletteIndex = (paletteIndex - 1 + count) % Math.max(count, 1); renderPalette(); }
+    else if (e.key === 'Enter') { e.preventDefault(); const a = $(`#palette-results [data-idx="${paletteIndex}"]`); if (a) { location.hash = a.getAttribute('href'); closePalette(); } }
+  });
+
+  // ==========================================================================
+  // Events
+  // ==========================================================================
+  document.addEventListener('keydown', (e) => {
+    if (locked) return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+    else if (e.key === 'Escape') { if (!$('#palette').classList.contains('hidden')) closePalette(); else if (!$('#overlay').classList.contains('hidden')) closeDialog(); else closePhone(); }
+    else if (e.key === 'Enter' && e.target.matches && e.target.matches('tr[data-pick]')) pickRating(e.target.dataset.pick);
+  });
+  document.addEventListener('click', (e) => {
+    const menuBtn = e.target.closest('[data-act="export"],[data-act="account"]');
+    document.querySelectorAll('#export-menu,#account-menu').forEach((m) => { if (!menuBtn || !menuBtn.parentElement.contains(m)) m.classList.add('hidden'); });
+    const pickEl = e.target.closest('[data-pick]');
+    if (pickEl) { pickRating(pickEl.dataset.pick); return; }
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const act = el.dataset.act;
+    const A = {
+      'toggle-rail': () => { state.collapsed = !state.collapsed; renderRail(route); },
+      palette: openPalette, 'close-palette': closePalette,
+      close: () => closeDialog(),
+      account: () => $('#account-menu').classList.toggle('hidden'),
+      'account-sheet': () => openDialog({ title: 'HICO Administrator', body: `<div class="mb-3 text-sm text-muted-foreground">HICO001 · Administrator</div><div class="flex flex-col gap-2"><a href="#ratings/my-details" data-act="close" class="${btn.outline} justify-start">${ic('user-round')}View My Details</a><a href="#admin/password" data-act="close" class="${btn.outline} justify-start">${ic('key-round')}Change Password</a><button type="button" data-act="lock" class="${btn.outline} justify-start">${ic('lock-keyhole')}Lock Screen</button><button type="button" data-act="sign-out" class="${btn.outline} justify-start text-destructive">${ic('log-out')}Sign Out</button></div>`, size: 'sm' }),
+      'sign-out': () => { closeDialog(); toast('Demo only: you stay signed in.'); },
+      more: openMore,
+      export: () => $('#export-menu').classList.toggle('hidden'),
+      'export-sheet': () => openDialog({ title: 'Export', size: 'sm', body: `<div class="flex flex-col gap-2">${[['copy', 'Copy Rows'], ['file-spreadsheet', 'Excel'], ['file-text', 'PDF'], ['file-text', 'CSV']].map(([i, l]) => `<button type="button" data-act="exported" class="${btn.outline} justify-start">${ic(i)}${l}</button>`).join('')}</div>` }),
+      exported: () => { const m = $('#export-menu'); if (m) m.classList.add('hidden'); closeDialog(); toast('Demo only: no file was made.'); },
+      page: () => { const k = el.dataset.list; if (state.list[k]) state.list[k].page = Number(el.dataset.to); else state.pages[k] = Number(el.dataset.to); render(); $('#page').scrollTop = 0; },
+      filters: () => openDialog({ title: 'Filter', body: `<div class="space-y-4">${field('Rate', `<select name="rate-filter">${options(RATES, state.rate, 'All Rates')}</select>`)}${field('Ship', `<select name="ship-filter">${options(SHIPS, state.ship, 'All Ships')}</select>`)}</div>`,
+        foot: `<button type="button" data-act="clear-filters" class="${btn.outline}">Clear</button><button type="button" data-act="close" class="${btn.primary}">Show Ratings</button>`, size: 'sm' }),
+      'clear-filters': () => { state.rate = ''; state.ship = ''; closeDialog(); render(); },
+      'record-tab': () => { state.recordTab = el.dataset.tab; state.docPicked = null; render(); },
+      edit: () => editForm(el.dataset.what), saved: () => demoSave(),
+      print: () => toast('Demo only: the PDF is made by the server.'),
+      delete: () => openDialog({ title: 'Delete Rating', body: '<p class="text-sm">This removes the record and all its tabs.</p>', foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.danger}">${ic('trash-2')}Delete Rating</button>`, size: 'sm' }),
+      'docs-for': () => { state.docSn = el.dataset.sn; closeDialog(); },
+      'doc-cat': () => { state.docCat = el.dataset.cat; state.docPicked = null; render(); },
+      'doc-pick': () => pickDoc(el.dataset.doc),
+      'upload-doc': () => openDialog({ title: 'Upload Document', body: `<div class="space-y-4">${field('Category', `<select name="doc-category">${options(CATEGORIES.map(([, n]) => n), state.docCat === 'ALL' ? 'Drafting' : (CATEGORIES.find(([c]) => c === state.docCat) || [, ''])[1])}</select>`)}
+          <button type="button" class="flex w-full flex-col items-center gap-2 rounded-card border-2 border-dashed border-input bg-subtle transition-colors px-4 py-6 text-sm text-muted-foreground">${ic('file-up', 'icon h-7 w-7')}Choose a PDF, image or Word file</button></div>`,
+        foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.primary}">${ic('upload')}Upload</button>`, size: 'sm' }),
+      download: () => toast('Demo only: no file to download.'),
+      'delete-doc': () => toast('Demo only: nothing was deleted.'),
+      step: () => setNewStep(Number(el.dataset.step)),
+      'new-rating': () => openNewRating(),
+      'save-new': () => { closeDialog(); toast('Demo only: nothing was saved.'); location.hash = '#ratings/record/B0539'; },
+      template: () => { state.upload = Math.max(state.upload, 1); render(); toast('Demo only: no workbook was made.'); },
+      'choose-workbook': () => { state.upload = 2; render(); },
+      commit: () => { state.upload = 3; render(); toast('Demo only: nothing was added.'); },
+      demo: () => toast('Demo only.'),
+      'table-add': () => tableForm(route.slice(7), null),
+      'table-edit': () => tableForm(route.slice(7), Number(el.dataset.i)),
+      'run-report': () => { render(); toast('Report updated.'); },
+      'user-pick': () => { state.userPicked = el.dataset.user; if (sideBySide()) render(); else { const u = USERS.find((x) => x.username === el.dataset.user); openDialog({ title: 'User', size: 'md', body: userCard(u) }); } },
+      'user-add': () => userForm(null),
+      'user-edit': () => userForm(USERS.find((x) => x.username === el.dataset.user)),
+      'reset-pw': () => openDialog({ title: 'Reset Password', size: 'sm', body: '<p class="text-sm">The user gets a one-time password and must change it at their next sign in.</p>', foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.blue}">${ic('key-round')}Reset Password</button>` }),
+      'role-pick': () => { state.role = el.dataset.role; render(); },
+      'role-add': () => openDialog({ title: 'Add Role', size: 'sm', body: field('Role Name', `<input type="text" class="${INPUT}" />`) + `<div class="mt-4">${field('Copy Access From', `<select name="role-copy">${options(ROLES, '', '-- None --')}</select>`, true)}</div>`, foot: `<button type="button" data-act="close" class="${btn.outline}">Cancel</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Add Role</button>` }),
+      perm: () => { perms[state.role][el.dataset.key] = !perms[state.role][el.dataset.key]; render(); },
+      'pw-save': () => { if (!$('#pw-current').value) { toast('Enter your current password.', 'error'); return; } if (!pwCheck()) { toast('The new password needs every check.', 'error'); return; } toast('Demo only: the password is unchanged.'); },
+      eye: () => { const i = document.getElementById(el.dataset.for); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; el.innerHTML = ic(show ? 'eye-off' : 'eye'); el.setAttribute('aria-label', show ? 'Hide Password' : 'Show Password'); },
+      'audit-search': () => { const v = (n) => { const x = document.querySelector(`[name="${n}"]`); return x ? x.value : ''; }; state.audit = { action: v('audit-action'), table: v('audit-table'), by: v('audit-by'), key: v('audit-key') }; state.pages.audit = 1; render(); },
+      'audit-reset': () => { state.audit = { action: '', table: '', by: '', key: '' }; state.pages.audit = 1; render(); },
+      'audit-view': () => { const e = AUDIT[Number(el.dataset.i)]; openDialog({ title: `${e.action} · ${e.key}`, size: 'lg', body: `<div class="mb-4">${dl([['Time', stamp(e.time)], ['Table', e.table], ['Performed By', e.by], ['IP Address', e.ip]])}</div>
+          <div class="overflow-hidden rounded-card border border-border/70"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Field</th><th class="${TH}">Before</th><th class="${TH}">After</th></tr></thead>
+          <tbody>${auditChanges(e).map(([f, b, a]) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 font-medium">${esc(f)}</td><td class="px-4 py-2.5">${b === '-' ? '<span class="text-muted-foreground">-</span>' : `<span class="rounded bg-error-soft px-1.5 py-0.5 text-error line-through decoration-error/50">${esc(b)}</span>`}</td><td class="px-4 py-2.5">${a === '-' ? '<span class="text-muted-foreground">-</span>' : `<span class="rounded bg-success-soft px-1.5 py-0.5 text-success">${esc(a)}</span>`}</td></tr>`).join('')}</tbody></table></div>` }); },
+      lock: () => { closeDialog(); const m = $('#account-menu'); if (m) m.classList.add('hidden'); lockScreen('manual'); },
+      'lock-eye': () => { const i = $('#lock-pass'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; el.innerHTML = ic(show ? 'eye-off' : 'eye'); el.setAttribute('aria-label', show ? 'Hide Password' : 'Show Password'); i.focus(); },
+      'lock-signout': () => { unlockScreen(); toast('Demo only: this returns to Sign In.'); },
+      'phone-preview': openPhone, 'close-phone': closePhone,
+    };
+    if (A[act]) A[act]();
+  });
+  document.addEventListener('input', (e) => {
+    if (e.target.dataset && e.target.dataset.q) {
+      const key = e.target.dataset.q; state.qs[key] = e.target.value; state.pages[key] = 1;
+      const pos = e.target.selectionStart; const id = e.target.id;
+      render();
+      const i = document.getElementById(id); if (i) { i.focus(); i.setSelectionRange(pos, pos); }
+      return;
+    }
+    if (e.target.id === 'pw-new' || e.target.id === 'pw-confirm') { pwCheck(); return; }
+    if (e.target.id === 'list-q') {
+      state.q = e.target.value;
+      Object.values(state.list).forEach((l) => { l.page = 1; l.picked = null; });
+      const pos = e.target.selectionStart;
+      render();
+      const i = $('#list-q'); if (i) { i.focus(); i.setSelectionRange(pos, pos); }
+    }
+  });
+  document.addEventListener('change', (e) => {
+    const name = e.target.getAttribute && e.target.getAttribute('name');
+    if (name === 'rate-filter' || name === 'ship-filter') {
+      state[name === 'rate-filter' ? 'rate' : 'ship'] = e.target.value;
+      Object.values(state.list).forEach((l) => { l.page = 1; l.picked = null; });
+      if ($('#overlay').classList.contains('hidden')) render(); else setTimeout(render, 0);
+    } else if (name && name.startsWith('rep-')) {
+      state.report[name.slice(4)] = e.target.value;
+    } else if (name === 'doc-rating') {
+      state.docSn = e.target.value; state.docCat = 'ALL'; state.docPicked = null; render();
+    }
+  });
+
+  // ---- phone preview (demo only) ----
+  function openPhone() {
+    const frame = $('#phone-frame');
+    $('#phone-iframe').src = `${location.href.split('#')[0].split('?')[0]}?frame=phone${location.hash || '#dashboard'}`;
+    frame.classList.remove('hidden'); frame.classList.add('flex');
+  }
+  function closePhone() { const f = $('#phone-frame'); f.classList.add('hidden'); f.classList.remove('flex'); $('#phone-iframe').src = 'about:blank'; }
+  if (new URLSearchParams(location.search).get('frame')) $('#demo-bar').remove();
+
+  lastRoute = location.hash.replace(/^#\/?/, '') || 'dashboard';
+  const openNewAtStart = lastRoute === 'ratings/new';
+  if (openNewAtStart) { lastRoute = 'ratings/current'; history.replaceState(null, '', '#ratings/current'); }
+  render();
+  if (openNewAtStart) openNewRating();
+  if (store.get()) lockScreen(store.get(), { announce: false });
+})();
+</script>
+</body>
+</html>

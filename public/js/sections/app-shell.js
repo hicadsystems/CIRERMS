@@ -1,43 +1,104 @@
-import { api, setFallbackToken } from '../core/api.js';
-import { showToast } from '../core/dom.js';
+/*
+ * app shell: the entry point of app.html. Checks the session, draws the
+ * chrome for each page (rail, top bar, module tabs, phone header, bottom bar)
+ * from the navigation catalogue (core/nav.js), hands each route to its screen
+ * (each draws its own page header), and opens the Ctrl K search palette.
+ */
+import { api } from '../core/api.js';
+import { describe } from '../core/nav.js';
+import { openSearch, setSearchHandler } from '../core/search.js';
 import { startRouter } from '../core/router.js';
+import { pageHeader } from '../ui/page-header.js';
+import { button } from '../ui/button.js';
+import { card } from '../ui/card.js';
+import { emptyState } from '../ui/empty-state.js';
+import { closeAllDialogs } from '../ui/dialog.js';
+import { closeMenus } from '../ui/menu.js';
+import { setUser } from '../shell/session.js';
+import { renderRail, isFolded, setFolded } from '../shell/rail.js';
+import { renderModuleTabs } from '../shell/module-tabs.js';
+import { renderPhone } from '../shell/phone.js';
+import { openPalette, closePalette } from '../shell/search-palette.js';
 import { mountDashboard } from './dashboard.js';
 import { mountRatingsList } from './ratings-list.js';
 import { mountRatingsUpload } from './ratings-upload.js';
 import { mountRatingsDocuments } from './ratings-documents.js';
-import { mountRatingsProfile } from './ratings-profile.js';
+import { mountRatingRecord, mountMyDetails } from './rating-record.js';
+import { openNewRating } from './rating-new.js';
 
+/** The signed-in user ({ username, fullName, role, serviceNumber }); kept for older imports. */
 export let currentSessionUser = null;
 
-function syncNavigationUI(route, params) {
-  const heading = document.getElementById('page-heading');
-  const bcParent = document.getElementById('breadcrumb-parent');
-  const bcCurrent = document.getElementById('breadcrumb-current');
+// Each route's screen; every screen draws its own page header. Titles, modules and tabs live in core/nav.js.
+const list = (status, extra = {}) => (o, ctx) => mountRatingsList(o, { ...ctx, info: currentInfo, status, ...extra });
+const SCREENS = {
+  dashboard: mountDashboard,
+  'ratings/current': list('current'),
+  'ratings/former': list('former'),
+  // New Rating is a dialog: this address opens it over the current list
+  'ratings/new': (o, ctx) => mountRatingsList(o, { ...ctx, info: describe('ratings/current'), status: 'current', openNew: true }),
+  'ratings/edit/:serviceNumber': mountRatingRecord,
+  'ratings/my-details': mountMyDetails,
+  'ratings/upload': mountRatingsUpload,
+  'ratings/documents': mountRatingsDocuments,
+  'ratings/documents/:serviceNumber': mountRatingsDocuments,
+  'soon/:key': mountSoon,
+};
 
-  const resolvedTitle = typeof route.title === 'function' ? route.title(params) : route.title;
-  const resolvedCrumb = typeof route.crumb === 'function' ? route.crumb(params) : route.crumb || resolvedTitle;
+let currentInfo = null;
 
-  if (heading) heading.textContent = resolvedTitle;
-  if (bcParent) bcParent.textContent = route.parentCrumb || 'Ratings Management';
-  if (bcCurrent) bcCurrent.textContent = resolvedCrumb;
-  document.title = `${resolvedTitle} — Nigerian Navy CIRERMS`;
+function mountSoon(outlet) {
+  const info = currentInfo;
+  const m = (info && info.module) || { icon: 'lock' };
+  outlet.replaceChildren(pageHeader({ title: info ? info.title : 'Coming Soon' }), card({
+    body: emptyState({
+      icon: m.icon,
+      title: 'Coming in a Later Release',
+      action: button({ label: 'Go to Dashboard', icon: 'house', variant: 'outline', href: '#dashboard' }),
+    }),
+    padded: false,
+  }));
+}
 
-  // Highlight Dashboard vs Ratings Management sub-links
-  const dashLink = document.querySelector('[data-nav-route="dashboard"]');
-  if (dashLink) {
-    if (route.navKey === 'dashboard') {
-      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition bg-cirerms-pill text-white shadow-sm';
-    } else {
-      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition text-white/90 hover:bg-white/10 hover:text-white';
-    }
-  }
+function drawChrome(path) {
+  const info = describe(path);
+  currentInfo = info;
+  closeMenus();
+  closePalette();
+  closeAllDialogs();
+  renderRail(info);
+  renderModuleTabs(info);
+  renderPhone(info);
+  document.title = info ? `${info.title} · CIRERMS` : 'CIRERMS';
+  const page = document.getElementById('page');
+  if (page) page.scrollTop = 0;
+}
 
-  document.querySelectorAll('[data-sub-route]').forEach((link) => {
-    const isActive = link.dataset.subRoute === route.navKey;
-    if (isActive) {
-      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-cirerms-teal font-semibold bg-white/10 transition';
-    } else {
-      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-white/90 hover:text-white hover:bg-white/10 transition';
+function syncToggle() {
+  const t = document.getElementById('rail-toggle');
+  if (!t) return;
+  const folded = isFolded();
+  t.setAttribute('aria-expanded', String(!folded));
+  t.setAttribute('aria-label', folded ? 'Unfold Menu' : 'Fold Menu');
+}
+
+function bindChrome() {
+  document.getElementById('rail-toggle')?.addEventListener('click', () => {
+    setFolded(!isFolded());
+    syncToggle();
+  });
+  syncToggle();
+  setSearchHandler(openPalette);
+  document.getElementById('search-open')?.addEventListener('click', () => openSearch());
+  // the phone's New Rating button opens the dialog where it is
+  document.getElementById('fab')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openNewRating();
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openSearch();
     }
   });
 }
@@ -46,162 +107,19 @@ async function initAppShell() {
   try {
     const res = await api.get('/api/auth/me');
     currentSessionUser = res.data.user;
+    setUser(currentSessionUser);
   } catch (_) {
     window.location.replace('/index.html');
     return;
   }
 
-  const headerUsername = document.getElementById('header-username');
-  const menuFullname = document.getElementById('menu-fullname');
-  const menuRole = document.getElementById('menu-role');
+  bindChrome();
 
-  if (headerUsername) headerUsername.textContent = currentSessionUser.username;
-  if (menuFullname) menuFullname.textContent = currentSessionUser.fullName;
-  if (menuRole) {
-    menuRole.textContent = currentSessionUser.serviceNumber
-      ? `Service No: ${currentSessionUser.serviceNumber}`
-      : `Role: ${String(currentSessionUser.role || 'admin').toUpperCase()}`;
-  }
-
-  // Sidebar collapse toggle
-  const sidebar = document.getElementById('app-sidebar');
-  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-  sidebarToggleBtn?.addEventListener('click', () => {
-    sidebar?.classList.toggle('hidden');
-  });
-
-  // Ratings Management group expand/collapse
-  const groupBtn = document.getElementById('ratings-group-toggle');
-  const submenu = document.getElementById('ratings-submenu');
-  const caret = document.getElementById('ratings-group-caret');
-  groupBtn?.addEventListener('click', () => {
-    const hidden = submenu.classList.toggle('hidden');
-    groupBtn.setAttribute('aria-expanded', String(!hidden));
-    caret?.classList.toggle('rotate-90', !hidden);
-  });
-
-  // Disabled out-of-scope modules notice
-  document.querySelectorAll('[data-disabled-module]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const modName = btn.dataset.disabledModule;
-      showToast(
-        `"${modName}" is disabled in this demo — scope is focused strictly on Ratings Management.`,
-        'info'
-      );
-    });
-  });
-
-  // User dropdown menu
-  const userMenuBtn = document.getElementById('user-menu-btn');
-  const userMenuDropdown = document.getElementById('user-menu-dropdown');
-  userMenuBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    userMenuDropdown?.classList.toggle('hidden');
-  });
-  document.addEventListener('click', () => {
-    userMenuDropdown?.classList.add('hidden');
-  });
-
-  // Logout
-  document.getElementById('logout-btn')?.addEventListener('click', async () => {
-    try {
-      await api.post('/api/auth/logout');
-    } catch (_) {
-      // Ignore network error on logout
-    }
-    setFallbackToken(null);
-    window.location.href = '/index.html';
-  });
-
-  const routes = [
-    {
-      pattern: 'dashboard',
-      navKey: 'dashboard',
-      title: 'Dashboard',
-      parentCrumb: 'CIRERMS',
-      crumb: 'Dashboard',
-      template: '/sections/dashboard/home.html',
-      mount: mountDashboard,
-    },
-    {
-      pattern: 'ratings/current',
-      navKey: 'ratings/current',
-      title: 'Current Rating List',
-      parentCrumb: 'Ratings Management',
-      crumb: 'Current Ratings List',
-      template: '/sections/ratings/list.html',
-      mount: (outlet, ctx) => mountRatingsList(outlet, { ...ctx, status: 'current' }),
-    },
-    {
-      pattern: 'ratings/former',
-      navKey: 'ratings/former',
-      title: 'Former Rating List',
-      parentCrumb: 'Ratings Management',
-      crumb: 'Former Ratings List',
-      template: '/sections/ratings/list.html',
-      mount: (outlet, ctx) => mountRatingsList(outlet, { ...ctx, status: 'former' }),
-    },
-    {
-      pattern: 'ratings/new',
-      navKey: 'ratings/new',
-      title: 'Ratings Personal Details',
-      parentCrumb: 'Ratings Management',
-      crumb: 'New Ratings',
-      template: '/sections/ratings/profile.html',
-      mount: (outlet, ctx) => mountRatingsProfile(outlet, { ...ctx, mode: 'create' }),
-    },
-    {
-      pattern: 'ratings/edit/:serviceNumber',
-      navKey: 'ratings/current',
-      title: 'Ratings Personal Details',
-      parentCrumb: 'Ratings Management',
-      crumb: (p) => `Edit Rating (${p.serviceNumber})`,
-      template: '/sections/ratings/profile.html',
-      mount: (outlet, ctx) => mountRatingsProfile(outlet, { ...ctx, mode: 'edit' }),
-    },
-    {
-      pattern: 'ratings/my-details',
-      navKey: 'ratings/my-details',
-      title: 'My Service Details',
-      parentCrumb: 'Ratings Management',
-      crumb: 'View My Details',
-      template: '/sections/ratings/profile.html',
-      mount: (outlet, ctx) => mountRatingsProfile(outlet, { ...ctx, mode: 'readonly' }),
-    },
-    {
-      pattern: 'ratings/upload',
-      navKey: 'ratings/upload',
-      title: 'Upload New Rates',
-      parentCrumb: 'Ratings Management',
-      crumb: 'Batch Upload',
-      template: '/sections/ratings/upload.html',
-      mount: mountRatingsUpload,
-    },
-    {
-      pattern: 'ratings/documents',
-      navKey: 'ratings/documents',
-      title: 'VIEW RATINGS DOCUMENTS',
-      parentCrumb: 'Navpers',
-      crumb: 'View document',
-      template: '/sections/ratings/documents.html',
-      mount: mountRatingsDocuments,
-    },
-    {
-      pattern: 'ratings/documents/:serviceNumber',
-      navKey: 'ratings/documents',
-      title: 'VIEW RATINGS DOCUMENTS',
-      parentCrumb: 'Navpers',
-      crumb: (p) => `View document (${p.serviceNumber})`,
-      template: '/sections/ratings/documents.html',
-      mount: mountRatingsDocuments,
-    },
-  ];
-
-  const outlet = document.getElementById('app-main');
+  const routes = Object.entries(SCREENS).map(([pattern, mount]) => ({ pattern, template: null, mount }));
   startRouter({
     routes,
-    outlet,
-    onRouteActivated: syncNavigationUI,
+    outlet: document.getElementById('app-main'),
+    onRouteActivated: (route, params, query, path) => drawChrome(path),
   });
 }
 
