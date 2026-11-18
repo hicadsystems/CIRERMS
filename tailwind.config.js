@@ -43,6 +43,7 @@ module.exports = {
         error: { DEFAULT: token('error'), soft: token('error-soft') },
         sidebar: {
           DEFAULT: token('sidebar'),
+          deep: token('sidebar-deep'),
           foreground: token('sidebar-foreground'),
           muted: token('sidebar-muted'),
           accent: token('sidebar-accent'),
@@ -53,6 +54,8 @@ module.exports = {
           border: 'var(--sidebar-border)',
         },
         scrim: 'var(--scrim)',
+        'on-fill': token('on-fill'),
+        canvas: { from: token('canvas-from'), via: token('canvas-via'), to: token('canvas-to') },
 
         // The names the screens use today, kept on the tokens so nothing changes
         // while each screen moves to the role names above as it is rebuilt.
@@ -88,7 +91,24 @@ module.exports = {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11 px: group labels, counts
       },
       borderRadius: {
-        ctl: '0.25rem',            // fields, buttons and cards: the CIRERMS square-ish corner
+        ctl: '0.5rem',             // 8 px: fields, buttons, menu items
+        card: '0.75rem',           // 12 px: cards, panels, dropdown lists
+        dialog: '1rem',            // 16 px: dialogs, the command palette
+      },
+      boxShadow: {
+        // soft, layered and tinted with the text colour, so surfaces lift without a hard edge
+        card: '0 1px 2px 0 rgb(var(--foreground) / 0.04), 0 1px 3px 0 rgb(var(--foreground) / 0.06)',
+        'card-hover': '0 2px 4px -1px rgb(var(--foreground) / 0.06), 0 8px 20px -6px rgb(var(--foreground) / 0.12)',
+        pop: '0 12px 32px -8px rgb(var(--foreground) / 0.22), 0 4px 12px -4px rgb(var(--foreground) / 0.10)',
+        btn: 'inset 0 1px 0 0 rgb(var(--on-fill) / 0.18), 0 1px 2px 0 rgb(var(--foreground) / 0.14)',
+      },
+      keyframes: {
+        shake: { '0%, 100%': { transform: 'translateX(0)' }, '20%, 60%': { transform: 'translateX(-6px)' }, '40%, 80%': { transform: 'translateX(6px)' } },
+        rise: { from: { opacity: '0', transform: 'translateY(8px) scale(0.98)' }, to: { opacity: '1', transform: 'none' } },
+      },
+      animation: {
+        shake: 'shake 0.4s ease-in-out',   // a wrong password
+        rise: 'rise 0.25s ease-out',       // the lock card arriving
       },
       fontFamily: {
         sans: [

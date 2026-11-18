@@ -89,9 +89,9 @@ export function showToast(message, type = 'success') {
   if (!root) return;
 
   const palette = {
-    success: 'bg-emerald-700 border-emerald-800 text-white',
-    error: 'bg-cirerms-danger border-red-700 text-white',
-    info: 'bg-cirerms-sidebar border-sky-900 text-white',
+    success: 'bg-emerald-700 border-emerald-800 text-on-fill',
+    error: 'bg-cirerms-danger border-red-700 text-on-fill',
+    info: 'bg-cirerms-sidebar border-sky-900 text-on-fill',
   };
 
   const card = el(
@@ -139,7 +139,7 @@ export function confirmModal({
 
     const dialog = el(
       'div',
-      { className: 'bg-white rounded-md shadow-2xl border border-cirerms-border max-w-md w-full overflow-hidden' },
+      { className: 'bg-background rounded-md shadow-2xl border border-cirerms-border max-w-md w-full overflow-hidden' },
       [
         el('div', { className: 'bg-cirerms-subheader border-b border-cirerms-border px-5 py-3.5 flex items-center justify-between' }, [
           el('h3', { className: 'text-sm font-semibold text-cirerms-ink', text: title }),
@@ -154,7 +154,7 @@ export function confirmModal({
         el('div', { className: 'bg-gray-50 border-t border-gray-200 px-5 py-3 flex justify-end gap-2' }, [
           el('button', {
             type: 'button',
-            className: 'rounded border border-gray-300 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50',
+            className: 'rounded border border-gray-300 bg-background px-3.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50',
             text: 'Cancel',
             onClick: () => close(false),
           }),
@@ -220,7 +220,7 @@ export function previewBlobModal({ title = 'Document Preview', blob, mimeType = 
 
   const dialog = el(
     'div',
-    { className: 'bg-white rounded-md shadow-2xl border border-cirerms-border max-w-5xl w-full overflow-hidden flex flex-col' },
+    { className: 'bg-background rounded-md shadow-2xl border border-cirerms-border max-w-5xl w-full overflow-hidden flex flex-col' },
     [
       el('div', { className: 'bg-cirerms-subheader border-b border-cirerms-border px-5 py-3 flex flex-wrap items-center justify-between gap-2' }, [
         el('h3', { className: 'text-sm font-semibold text-cirerms-ink truncate', text: title }),
@@ -235,7 +235,7 @@ export function previewBlobModal({ title = 'Document Preview', blob, mimeType = 
             href: objectUrl,
             target: '_blank',
             rel: 'noopener',
-            className: 'rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50',
+            className: 'rounded border border-gray-300 bg-background px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50',
             text: 'Open in New Tab',
           }),
           el('button', {

@@ -201,7 +201,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
           className: [
             'px-2 py-3 text-center border-r border-b lg:border-b-0 border-cirerms-border transition flex flex-col items-center justify-center leading-tight',
             active
-              ? 'bg-white text-cirerms-ink font-semibold shadow-sm'
+              ? 'bg-background text-cirerms-ink font-semibold shadow-sm'
               : locked
                 ? 'bg-cirerms-tab-idle text-gray-400 cursor-not-allowed'
                 : 'bg-cirerms-tab-idle text-gray-600 hover:bg-gray-200/70 hover:text-cirerms-ink',
@@ -225,14 +225,20 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
     if (state.activeTab === 'personal') {
       pct = state.activeSubstep * 2.5 + 2.5; // 5%, 7.5%, 10%, 12.5%
     }
+    setProgress(pct);
+  }
+
+  // The bar's colour follows its value: red below 50%, amber to 79%, green from 80%.
+  function setProgress(pct) {
     progressFill.style.width = `${pct}%`;
+    progressFill.dataset.level = pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low';
   }
 
   function syncSubsteps() {
     outlet.querySelectorAll('[data-substep]').forEach((btn) => {
       const stepNum = Number(btn.dataset.substep);
       const isActive = stepNum === state.activeSubstep;
-      btn.classList.toggle('bg-white', isActive);
+      btn.classList.toggle('bg-background', isActive);
       btn.classList.toggle('text-cirerms-ink', isActive);
       btn.classList.toggle('font-semibold', isActive);
       btn.classList.toggle('bg-cirerms-tab-idle', !isActive);
@@ -250,7 +256,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
     substepNextBtn.classList.toggle('opacity-50', state.activeSubstep >= 4);
 
     if (state.activeTab === 'personal') {
-      progressFill.style.width = `${state.activeSubstep * 2.5 + 2.5}%`;
+      setProgress(state.activeSubstep * 2.5 + 2.5);
     }
   }
 
@@ -682,7 +688,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
 
       tabPaneChild.appendChild(
         el('div', { className: 'rounded border border-cirerms-border bg-gray-50/70 p-4 flex flex-wrap items-center gap-4' }, [
-          el('div', { className: 'w-24 h-28 rounded border border-gray-300 bg-white flex items-center justify-center overflow-hidden shrink-0' }, [
+          el('div', { className: 'w-24 h-28 rounded border border-gray-300 bg-background flex items-center justify-center overflow-hidden shrink-0' }, [
             nokImg,
             nokPlaceholder,
           ]),
@@ -744,7 +750,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
       });
       cancelEditBtn = el('button', {
         type: 'button',
-        className: 'hidden rounded border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50',
+        className: 'hidden rounded border border-gray-300 bg-background px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50',
         text: 'Cancel Edit',
         onClick: () => {
           editingRowId = null;
@@ -773,7 +779,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
       );
 
       tabPaneChild.appendChild(
-        el('div', { className: 'rounded border border-gray-200 bg-white p-4 shadow-sm' }, [
+        el('div', { className: 'rounded border border-gray-200 bg-background p-4 shadow-sm' }, [
           headerToggle,
           formBodyWrapper,
         ])
@@ -971,7 +977,7 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
     const docs = state.children.documents || [];
 
     tabPaneDocuments.appendChild(
-      el('div', { className: 'rounded border border-gray-200 bg-white p-4 shadow-sm' }, [
+      el('div', { className: 'rounded border border-gray-200 bg-background p-4 shadow-sm' }, [
         el('h3', { className: 'text-base font-normal text-cirerms-ink', text: 'View and Upload Rating Documents' }),
         el('p', { className: 'text-xs text-gray-500 mt-0.5', text: 'Filter by Navpers document category or upload new scanned certificates and forms.' }),
       ])
@@ -989,8 +995,8 @@ export async function mountRatingsProfile(outlet, { mode = 'create', params = {}
         el('button', {
           type: 'button',
           className: selected
-            ? 'rounded bg-cirerms-sidebar px-3.5 py-2 text-xs font-semibold text-white shadow-sm'
-            : 'rounded bg-cirerms-teal hover:bg-cirerms-teal-hover px-3.5 py-2 text-xs font-medium text-white shadow-sm transition',
+            ? 'rounded bg-cirerms-sidebar px-3.5 py-2 text-xs font-semibold text-on-fill shadow-sm'
+            : 'rounded bg-cirerms-teal hover:bg-cirerms-teal-hover px-3.5 py-2 text-xs font-medium text-on-fill shadow-sm transition',
           text: p.label,
           onClick: () => {
             state.docCategoryFilter = p.code;

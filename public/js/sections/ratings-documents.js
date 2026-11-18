@@ -51,8 +51,8 @@ export async function mountRatingsDocuments(outlet, { params = {}, query = {} })
         el('button', {
           type: 'button',
           className: isSelected
-            ? 'rounded bg-cirerms-sidebar px-3 py-1.5 text-xs font-semibold text-white shadow-sm'
-            : 'rounded bg-cirerms-teal hover:bg-cirerms-teal-hover px-3 py-1.5 text-xs font-medium text-white shadow-sm transition',
+            ? 'rounded bg-cirerms-sidebar px-3 py-1.5 text-xs font-semibold text-on-fill shadow-sm'
+            : 'rounded bg-cirerms-teal hover:bg-cirerms-teal-hover px-3 py-1.5 text-xs font-medium text-on-fill shadow-sm transition',
           text: spec.label,
           onClick: () => {
             activeCategoryCode = spec.code;

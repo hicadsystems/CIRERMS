@@ -18,7 +18,8 @@
     "seed": "node migrate.js seed",
     "css:build": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
     "css:watch": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
-    "icons:build": "node scripts/build-icons.js"
+    "icons:build": "node scripts/build-icons.js",
+    "demo:build": "node docs/design/build-demo.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

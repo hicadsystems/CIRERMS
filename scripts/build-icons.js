@@ -30,6 +30,8 @@ const ICONS = [
   'file-text', 'file-spreadsheet', 'folder-open', 'image', 'paperclip', 'list',
   // status and feedback
   'info', 'circle-alert', 'circle-check', 'triangle-alert', 'lock', 'shield-check', 'loader-circle', 'calendar',
+  // administration and the session lock
+  'database', 'chart-column', 'shield-user', 'key-round', 'history', 'eye-off', 'lock-keyhole', 'lock-keyhole-open', 'rotate-ccw',
 ];
 
 const SRC = path.join(__dirname, '..', 'node_modules', 'lucide-static', 'icons');

@@ -173,8 +173,8 @@ export async function mountRatingsList(outlet, { status = 'current' }) {
         el('button', {
           type: 'button',
           className: active
-            ? 'rounded bg-cirerms-blue px-3 py-1.5 text-xs font-semibold text-white'
-            : 'rounded border border-cirerms-border bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50',
+            ? 'rounded bg-cirerms-blue px-3 py-1.5 text-xs font-semibold text-on-fill'
+            : 'rounded border border-cirerms-border bg-background px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50',
           text: String(p),
           onClick: () => {
             if (p !== state.page) {

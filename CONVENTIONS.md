@@ -16,7 +16,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap |
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
-| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). Nigerian Navy crest, sidebar, stat cards, Lucide icons. Payroll-style SPA behaviour |
+| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. One admin role for the demo; screen IDs ready for permissions later |
 | Out of scope (for now) | Automated tests, Playwright, CI pipelines, non-Ratings sidebar modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
@@ -49,6 +49,7 @@ CIRERMS/
 │  ├─ js/sections/<module>/<screen>.js
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png, icons.svg (built by scripts/build-icons.js)
+├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js rebuild it (npm run demo:build)
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
 ├─ migrate.js                   # migration CLI
@@ -172,7 +173,7 @@ DROP TABLE ratings;
   - filter bar (`filter-bar.js`)
   - data table (`table.js` — server paging + sorting + Copy / Excel / PDF / CSV)
   - modal (`modal.js`) & collapsible form panel (`ui.js` — "Add Next of Kin" style)
-  - tabbed record (`tabs.js` + `rating-profile.js` — the 10-tab rating profile with 4 sub-steps & striped progress bar)
+  - tabbed record (`tabs.js` + `rating-profile.js` — the 10-tab rating profile with 4 sub-steps & completeness bar)
   - Excel upload flow (`upload.js` — download template → upload & validate → error/duplicate report → commit)
 - **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
   `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
@@ -181,10 +182,22 @@ DROP TABLE ratings;
   (and `warning`, `info`, `error`), and `bg-sidebar` with its `sidebar-*` parts. Each text pair records its
   contrast ratio. New markup uses only these: no hex, no `rgb()`, no Tailwind palette colour (`gray-*`,
   `red-*` ...). The older `cirerms-*` names map onto the same tokens until each screen moves to the role names.
+- **No white.** Nothing is `#fff`, `bg-white` or `text-white`. Surfaces are `bg-background` / `bg-card`
+  (ivory `#faf9f0`, sampled from the reference screen), text and icons on a coloured fill are `text-on-fill`
+  (the same ivory), and faint tints on the sidebar are `bg-on-fill/10`. The app shell's `<body>` carries
+  `app-canvas`, the page gradient (`--canvas-from` / `-via` / `-to`); the sign-in page keeps its navy.
+- **Depth and corners.** `rounded-ctl` (8 px: fields, buttons), `rounded-card` (12 px: cards, panels,
+  dropdown lists), `rounded-dialog` (16 px: dialogs); shadows `shadow-card`, `shadow-card-hover`,
+  `shadow-pop` (menus, dialogs) and `shadow-btn`; actions are gentle gradients (`bg-gradient-to-b
+  from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-ring/15`.
+- **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
+  translucent ivory (`.cirerms-scroll`).
+- **Completeness bars** (`.cirerms-progress-track` / `.cirerms-progress-bar`) are thin and plain; set
+  `data-level` with the width: `low` (red, 0 to 49%), `mid` (amber, 50 to 79%), `high` (green, 80 to 100%).
 - **Two layouts.** `phone:` is 760 px and below (and wins over `sm:` there); `desk:` is 761 px and up.
   Shared sizes: `h-tap` (44 px, the smallest touch target on a phone), `h-control` (36 px fields and buttons
   on desktop), `w-rail` / `w-rail-collapsed` (the sidebar), `max-w-page` (1340 px content), `text-2xs`
-  (11 px labels), `rounded-ctl` (the CIRERMS corner).
+  (11 px labels).
 - **Icons** are Lucide, served from one sprite, `public/assets/icons.svg`, which holds only the icons listed
   in `scripts/build-icons.js` (add a name there, then `npm run icons:build`). Use `icon('search')` from
   `js/core/icons.js`, or `<svg class="icon"><use href="/assets/icons.svg#search"></use></svg>` in HTML.

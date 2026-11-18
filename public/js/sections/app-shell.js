@@ -26,18 +26,18 @@ function syncNavigationUI(route, params) {
   const dashLink = document.querySelector('[data-nav-route="dashboard"]');
   if (dashLink) {
     if (route.navKey === 'dashboard') {
-      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition bg-cirerms-pill text-white shadow-sm';
+      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition bg-cirerms-pill text-on-fill shadow-sm';
     } else {
-      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition text-white/90 hover:bg-white/10 hover:text-white';
+      dashLink.className = 'nav-top-link flex items-center gap-2.5 rounded px-3 py-2 font-medium transition text-on-fill/90 hover:bg-on-fill/10 hover:text-on-fill';
     }
   }
 
   document.querySelectorAll('[data-sub-route]').forEach((link) => {
     const isActive = link.dataset.subRoute === route.navKey;
     if (isActive) {
-      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-cirerms-teal font-semibold bg-white/10 transition';
+      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-cirerms-teal font-semibold bg-on-fill/10 transition';
     } else {
-      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-white/90 hover:text-white hover:bg-white/10 transition';
+      link.className = 'nav-sub-link flex items-center gap-2 px-3 py-1.5 rounded text-on-fill/90 hover:text-on-fill hover:bg-on-fill/10 transition';
     }
   });
 }
