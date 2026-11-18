@@ -2,7 +2,7 @@
 /*
  * Builds docs/design/demo.html, the approved layout demo, from demo-src.html.
  * The CSS is compiled with the project's own Tailwind config and tokens
- * (public/css/input.css), and the icon sprite, crest and js/core/choices.js are
+ * (public/css/input.css), and the icon sprite, both crests and js/core/choices.js are
  * inlined, so the one file opens offline in any browser.
  *
  *   npm run demo:build
@@ -37,12 +37,14 @@ const sprite = fs.readFileSync(at('public', 'assets', 'icons.svg'), 'utf8')
   .replace(/<symbol id="/g, '<symbol id="i-');
 
 const crest = `data:image/png;base64,${fs.readFileSync(at('public', 'assets', 'navy-logo.png')).toString('base64')}`;
+const crestLarge = `data:image/webp;base64,${fs.readFileSync(at('public', 'assets', 'navy-crest.webp')).toString('base64')}`;
 const choices = fs.readFileSync(at('public', 'js', 'core', 'choices.js'), 'utf8');
 
 const out = fs.readFileSync(path.join(HERE, 'demo-src.html'), 'utf8')
   .replace('/*__CSS__*/', () => css)
   .replace('<!--__SPRITE__-->', () => sprite)
   .replace('/*__CHOICES__*/', () => choices)
+  .replace(/__CREST_LARGE__/g, () => crestLarge)
   .replace(/__CREST__/g, () => crest);
 const left = out.match(/__[A-Z]+__/g);
 if (left) throw new Error(`Unfilled placeholders: ${left.join(', ')}`);

@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CIRERMS Layout Demo</title>
 <link rel="icon" type="image/png" href="__CREST__" />
+<script>
+/* Light or dark before the page draws: the person's choice, else the device's (as js/core/theme-boot.js in the app) */
+(function () {
+  var stored = null;
+  try { stored = window.localStorage.getItem('cirerms-theme'); } catch (e) { /* storage off (opened from disk): follow the device */ }
+  var dark = stored === 'dark' || stored === 'light' ? stored === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+})();
+</script>
 <style>
 /*__CSS__*/
 </style>
@@ -29,10 +38,14 @@
       <!-- demo only: see the phone layout from a desktop browser -->
       <div id="demo-bar" class="ml-auto flex flex-none items-center gap-2 text-xs">
         <span class="rounded-full bg-warning-soft px-2 py-1 font-semibold text-warning">Layout Demo</span>
-        <button type="button" data-act="phone-preview" class="inline-flex h-8 items-center gap-1.5 rounded-full bg-sidebar px-3 font-medium text-sidebar-foreground hover:opacity-90">
+        <button type="button" data-act="phone-preview" class="inline-flex h-8 items-center gap-1.5 rounded-full bg-brand px-3 font-medium text-brand-foreground hover:opacity-90">
           <svg class="icon" aria-hidden="true"><use href="#i-smartphone"></use></svg>Phone Preview
         </button>
       </div>
+      <!-- light / dark -->
+      <button type="button" data-theme-toggle aria-label="Switch to Dark Mode" class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-ctl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="#i-moon"></use></svg>
+      </button>
     </header>
 
     <!-- phone header -->
@@ -104,6 +117,71 @@
   </div>
 </div>
 
+<!-- sign in: the sea canvas (day or night), the crest, the glass card; opens first, Sign In enters the dashboard -->
+<div id="login" class="fixed inset-0 z-[70] overflow-y-auto overflow-x-hidden bg-gradient-to-b from-login-from via-login-via to-login-to text-login-ink">
+  <canvas id="login-canvas" class="pointer-events-none fixed inset-0 h-full w-full" aria-hidden="true"></canvas>
+  <button type="button" data-theme-toggle aria-label="Switch to Dark Mode" class="fixed right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-login-ink/15 bg-login-glass text-login-ink/80 shadow-card backdrop-blur-md transition-colors hover:border-login-dot/60 hover:text-login-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30 desk:right-6 desk:top-6 phone:h-tap phone:w-tap">
+    <svg class="icon h-5 w-5" aria-hidden="true"><use href="#i-moon"></use></svg>
+  </button>
+  <div class="relative flex min-h-dvh">
+    <div class="hidden w-1/2 items-center justify-center p-12 desk:flex">
+      <img src="__CREST_LARGE__" alt="Nigerian Navy crest" class="max-h-[60vh] w-auto max-w-full animate-rise object-contain drop-shadow-2xl" />
+    </div>
+    <main class="flex flex-1 items-center justify-center px-4 pb-20 pt-10 desk:p-8">
+      <div class="w-full max-w-md animate-rise">
+        <img src="__CREST_LARGE__" alt="Nigerian Navy crest" class="mx-auto mb-6 h-28 w-auto object-contain drop-shadow-2xl desk:hidden" />
+        <div class="mb-6 text-center">
+          <span class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-login-dot to-login-accent text-on-fill shadow-lg">
+            <svg class="icon h-6 w-6" aria-hidden="true"><use href="#i-circle-user"></use></svg>
+          </span>
+          <h1 class="text-3xl font-bold tracking-tight">Welcome Back</h1>
+          <p class="mt-2 text-sm text-login-ink/70">Sign in to CIRERMS, the Nigerian Navy ratings records.</p>
+        </div>
+        <div class="rounded-dialog border border-login-ink/10 bg-login-glass shadow-pop backdrop-blur-md">
+          <form id="login-form" class="space-y-4 p-6" novalidate>
+            <div>
+              <label for="username" class="mb-1 block text-xs font-semibold text-login-ink/80">Username or Official Number</label>
+              <input id="username" name="username" type="text" autocomplete="username" autocapitalize="characters" placeholder="e.g. HICO001"
+                class="w-full rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2.5 text-sm text-login-ink transition placeholder:text-login-ink/70 focus:border-login-dot focus:bg-login-ink/10 focus:outline-none focus:ring-4 focus:ring-login-dot/30 phone:h-tap" />
+            </div>
+            <div>
+              <label for="password" class="mb-1 block text-xs font-semibold text-login-ink/80">Password</label>
+              <div class="relative">
+                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Your password"
+                  class="w-full rounded-ctl border border-login-ink/15 bg-login-ink/5 py-2.5 pl-3 pr-11 text-sm text-login-ink transition placeholder:text-login-ink/70 focus:border-login-dot focus:bg-login-ink/10 focus:outline-none focus:ring-4 focus:ring-login-dot/30 phone:h-tap" />
+                <button id="password-toggle" type="button" aria-label="Show Password" aria-pressed="false"
+                  class="absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center rounded-r-ctl text-login-ink/70 hover:text-login-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30 phone:w-tap">
+                  <svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit"
+              class="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-ctl bg-gradient-to-r from-login-accent to-login-accent-deep px-4 text-sm font-semibold text-on-fill shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/40 active:translate-y-0 phone:h-tap">
+              <svg class="icon" aria-hidden="true"><use href="#i-log-in"></use></svg>
+              <span>Sign In</span>
+              <svg class="icon h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+            </button>
+          </form>
+          <div class="border-t border-login-ink/10 px-6 py-4">
+            <p class="mb-2 text-2xs font-semibold uppercase tracking-wider text-login-ink/70">Demo Accounts</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-demo-user="HICO001" data-demo-pass="Admin@123" class="rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2 text-left transition-colors hover:border-login-dot/60 hover:bg-login-ink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30">
+                <span class="block text-sm font-semibold">HICO001</span><span class="block text-xs text-login-ink/70">Administrator</span>
+              </button>
+              <button type="button" data-demo-user="B0539" data-demo-pass="Rating@123" class="rounded-ctl border border-login-ink/15 bg-login-ink/5 px-3 py-2 text-left transition-colors hover:border-login-dot/60 hover:bg-login-ink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-login-dot/30">
+                <span class="block text-sm font-semibold">B0539</span><span class="block text-xs text-login-ink/70">Rating (My Details)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="absolute bottom-0 left-0 w-full px-4 py-4 text-center text-sm text-login-ink/70 desk:bottom-8 desk:left-8 desk:w-auto desk:p-0 desk:text-left">
+    &copy; 2026 <a href="https://hicadsystemsltd.com/" target="_blank" rel="noopener" class="font-bold text-login-link hover:underline">Hicad Systems Limited.</a> All rights reserved.
+  </footer>
+</div>
+
 <!-- session lock: password only -->
 <div id="lock" role="dialog" aria-modal="true" aria-labelledby="lock-title" aria-describedby="lock-reason" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-sidebar-deep/90 p-4 backdrop-blur-xl">
   <div aria-hidden="true" class="pointer-events-none absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-sidebar-primary/25 blur-3xl"></div>
@@ -112,7 +190,7 @@
     <div id="lock-card" class="animate-rise rounded-dialog border border-border/60 bg-card p-6 text-card-foreground shadow-pop">
       <div class="flex flex-col items-center text-center">
         <span class="relative">
-          <span class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-2xl font-bold text-sidebar-foreground shadow-md ring-4 ring-background">HA</span>
+          <span class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep text-2xl font-bold text-on-fill shadow-md ring-4 ring-background">HA</span>
           <span class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-md ring-4 ring-card"><svg class="icon" aria-hidden="true"><use href="#i-lock-keyhole"></use></svg></span>
         </span>
         <h2 id="lock-title" class="mt-4 text-2xl font-bold tracking-tight">Session Locked</h2>
@@ -288,6 +366,113 @@
   const $ = (s, root = document) => root.querySelector(s);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ic = (name, cls = 'icon') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+
+  // ---- light / dark (as js/core/theme.js): the choice is kept in localStorage; the device decides until then ----
+  const THEME_KEY = 'cirerms-theme';
+  const themeListeners = [];
+  const storedTheme = () => { try { const v = window.localStorage.getItem(THEME_KEY); return v === 'dark' || v === 'light' ? v : null; } catch (_) { return null; } };
+  const currentTheme = () => (document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  function syncThemeButtons() {
+    const dark = currentTheme() === 'dark';
+    document.querySelectorAll('[data-theme-toggle]').forEach((b) => {
+      b.setAttribute('aria-label', dark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+      b.querySelector('use').setAttribute('href', dark ? '#i-sun' : '#i-moon');
+    });
+  }
+  function applyTheme(t) {
+    if (t === currentTheme()) return;
+    document.documentElement.setAttribute('data-theme', t);
+    syncThemeButtons();
+    themeListeners.forEach((fn) => fn(t));
+  }
+  function setTheme(t) { try { window.localStorage.setItem(THEME_KEY, t); } catch (_) { /* storage off: this page only */ } applyTheme(t); }
+  const toggleTheme = () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  const themeItem = () => (currentTheme() === 'dark' ? `${ic('sun')}Light Mode` : `${ic('moon')}Dark Mode`);
+  const deviceDark = window.matchMedia('(prefers-color-scheme: dark)');
+  deviceDark.addEventListener('change', (e) => { if (!storedTheme()) applyTheme(e.matches ? 'dark' : 'light'); });
+  window.addEventListener('storage', (e) => { if (e.key === THEME_KEY && (e.newValue === 'dark' || e.newValue === 'light')) applyTheme(e.newValue); });
+  document.addEventListener('click', (e) => { if (e.target.closest('[data-theme-toggle]')) toggleTheme(); });
+  syncThemeButtons();
+
+  // ---- sign-in sea (as js/sections/login-canvas.js): day in light mode, night with stars in dark; every colour a --login-* token ----
+  const sea = (() => {
+    const canvas = $('#login-canvas');
+    const ctx = canvas.getContext('2d');
+    const token = (name) => { const [rgb, alpha] = getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).split('/'); return { rgb: rgb.trim().split(/\s+/).join(', '), a: alpha === undefined ? 1 : parseFloat(alpha) }; };
+    const rgba = (c, k = 1) => `rgba(${c.rgb}, ${c.a * k})`;
+    const WAVES = [
+      { level: 0.70, height: 0.022, length: 0.0042, speed: 0.00018, crest: 0.60 },
+      { level: 0.76, height: 0.028, length: 0.0034, speed: -0.00024, crest: 0.73 },
+      { level: 0.83, height: 0.034, length: 0.0027, speed: 0.00031, crest: 0.87 },
+      { level: 0.90, height: 0.040, length: 0.0021, speed: -0.00038, crest: 1 },
+    ];
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let paint = null; let width = 0; let height = 0; let stars = []; let frame = null;
+    const readPaint = () => { paint = { sky: ['login-from', 'login-via', 'login-to'].map(token), waves: WAVES.map((_, i) => token(`login-wave-${i + 1}`)), crest: token('login-crest'), glow: token('login-glow'), star: token('login-star') }; };
+    function resize() {
+      const ratio = window.devicePixelRatio || 1;
+      width = window.innerWidth; height = window.innerHeight;
+      canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const count = Math.max(50, Math.min(160, Math.round((width * height * 0.68) / 9000)));
+      stars = Array.from({ length: count }, () => ({ x: Math.random() * width, y: Math.random() * height * 0.68, size: Math.random() * 1.2 + 0.3, base: Math.random() * 0.45 + 0.15, phase: Math.random() * Math.PI * 2, rate: Math.random() * 0.0015 + 0.0005 }));
+    }
+    const waveY = (w, x, t) => { const base = height * w.level; const amp = height * w.height; return base + Math.sin(x * w.length + t * w.speed) * amp + Math.sin(x * w.length * 2.3 - t * w.speed * 1.7 + 1.3) * amp * 0.35; };
+    function draw(t) {
+      const sky = ctx.createLinearGradient(0, 0, 0, height);
+      sky.addColorStop(0, rgba(paint.sky[0])); sky.addColorStop(0.55, rgba(paint.sky[1])); sky.addColorStop(1, rgba(paint.sky[2]));
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
+      const mx = width * 0.82; const my = height * 0.16;
+      const glow = ctx.createRadialGradient(mx, my, 0, mx, my, Math.max(width, height) * 0.35);
+      glow.addColorStop(0, rgba(paint.glow)); glow.addColorStop(0.3, rgba(paint.glow, 0.375)); glow.addColorStop(1, rgba(paint.glow, 0));
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, width, height);
+      if (paint.star.a > 0) {
+        for (const s of stars) {
+          ctx.fillStyle = rgba(paint.star, s.base * (0.6 + 0.4 * Math.sin(s.phase + t * s.rate)));
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      const step = 8;
+      WAVES.forEach((w, i) => {
+        ctx.beginPath(); ctx.moveTo(0, height);
+        for (let x = 0; x <= width + step; x += step) ctx.lineTo(x, waveY(w, x, t));
+        ctx.lineTo(width, height); ctx.closePath();
+        ctx.fillStyle = rgba(paint.waves[i]); ctx.fill();
+        ctx.beginPath();
+        for (let x = 0; x <= width + step; x += step) { const y = waveY(w, x, t); if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.strokeStyle = rgba(paint.crest, w.crest); ctx.lineWidth = 1.2; ctx.stroke();
+      });
+    }
+    const loop = (t) => { draw(t); frame = window.requestAnimationFrame(loop); };
+    function stop() { if (frame !== null) window.cancelAnimationFrame(frame); frame = null; }
+    function start() { stop(); readPaint(); resize(); if (still.matches) draw(0); else frame = window.requestAnimationFrame(loop); }
+    window.addEventListener('resize', () => { if (frame === null && $('#login').classList.contains('hidden')) return; resize(); if (still.matches) draw(0); });
+    themeListeners.push(() => { if ($('#login').classList.contains('hidden')) return; readPaint(); if (still.matches) draw(0); });
+    return { start, stop };
+  })();
+
+  // ---- sign in / out (demo only: any details enter) ----
+  const framed = !!new URLSearchParams(location.search).get('frame');
+  function showLogin() {
+    $('#login').classList.remove('hidden');
+    $('#shell').setAttribute('inert', ''); $('#fab').classList.add('hidden');
+    $('#username').value = ''; $('#password').value = '';
+    sea.start();
+  }
+  function signIn() {
+    $('#login').classList.add('hidden'); sea.stop();
+    $('#shell').removeAttribute('inert');
+    if (!location.hash || location.hash === '#') location.hash = '#dashboard';
+    render();
+  }
+  function signOut() { location.hash = '#dashboard'; showLogin(); }
+  $('#login-form').addEventListener('submit', (e) => { e.preventDefault(); signIn(); });
+  $('#password-toggle').addEventListener('click', (e) => {
+    const b = e.currentTarget; const i = $('#password'); const show = i.type === 'password';
+    i.type = show ? 'text' : 'password'; b.setAttribute('aria-pressed', String(show)); b.setAttribute('aria-label', show ? 'Hide Password' : 'Show Password');
+    b.innerHTML = ic(show ? 'eye-off' : 'eye');
+  });
+  document.querySelectorAll('[data-demo-user]').forEach((b) => b.addEventListener('click', () => { $('#username').value = b.dataset.demoUser; $('#password').value = b.dataset.demoPass; }));
   const phoneMq = matchMedia('(max-width: 760px)');
   const besideMq = matchMedia('(min-width: 1280px)');
   const isPhone = () => phoneMq.matches;
@@ -327,7 +512,7 @@
   const empty = (iconName, title, action = '') => `<div class="flex flex-col items-center gap-3 px-4 py-10 text-center">
       <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-muted to-subtle text-muted-foreground ring-8 ring-subtle">${ic(iconName, 'icon h-6 w-6')}</div>
       <p class="text-sm font-medium">${esc(title)}</p>${action}</div>`;
-  const avatar = (r, size = 'h-11 w-11 text-sm') => `<div class="flex ${size} flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep font-semibold text-sidebar-foreground shadow-sm ring-2 ring-background">${esc(initials(r))}</div>`;
+  const avatar = (r, size = 'h-11 w-11 text-sm') => `<div class="flex ${size} flex-none items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep font-semibold text-on-fill shadow-sm ring-2 ring-background">${esc(initials(r))}</div>`;
 
   function toast(message, tone = 'success') {
     const t = document.createElement('div');
@@ -408,6 +593,7 @@
           <a role="menuitem" href="#ratings/my-details" class="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-subtle">${ic('user-round')}View My Details</a>
           <a role="menuitem" href="#admin/password" class="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-subtle">${ic('key-round')}Change Password</a>
           <button role="menuitem" type="button" data-act="lock" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-subtle">${ic('lock-keyhole')}Lock Screen</button>
+          <button role="menuitem" type="button" data-act="theme" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left hover:bg-subtle">${themeItem()}</button>
           <div class="my-1 h-px bg-border"></div>
           <button role="menuitem" type="button" data-act="sign-out" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-destructive hover:bg-error-soft">${ic('log-out')}Sign Out</button>
         </div>
@@ -437,11 +623,11 @@
     const cur = route.startsWith('ratings') ? tabRoute(route) : route;
     const desk = `<div class="flex gap-1 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
       const on = t.route === cur;
-      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-sidebar after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-sidebar' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
+      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-brand after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
     }).join('')}</div>`;
     const phone = route.startsWith('ratings/record') ? '' : `<div class="flex gap-2 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/70 px-3.5 py-2 backdrop-blur-xl desk:hidden">${TABS.map((t) => {
       const on = t.route === cur;
-      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground'}">${esc(t.label)}</a>`;
+      return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium ${on ? 'border-brand bg-brand text-brand-foreground' : 'border-border bg-background text-foreground'}">${esc(t.label)}</a>`;
     }).join('')}</div>`;
     nav.className = 'relative z-10 flex-none';
     nav.innerHTML = desk + phone;
@@ -475,8 +661,8 @@
     const cur = route === 'dashboard' ? 'dashboard' : route === 'ratings/documents' ? 'documents' : route === 'ratings/my-details' ? 'me' : route.startsWith('ratings') ? 'ratings' : 'more';
     $('#bottom-bar').innerHTML = BOTTOM.map((b) => {
       const on = b.key === cur;
-      const cls = `flex h-16 flex-col items-center justify-center gap-1 text-2xs ${on ? 'font-semibold text-sidebar' : 'text-muted-foreground'}`;
-      const inner = `<span class="flex h-7 w-14 items-center justify-center rounded-full transition-colors ${on ? 'bg-sidebar/10' : ''}">${ic(b.icon, 'icon h-[22px] w-[22px]')}</span><span>${esc(b.label)}</span>`;
+      const cls = `flex h-16 flex-col items-center justify-center gap-1 text-2xs ${on ? 'font-semibold text-brand' : 'text-muted-foreground'}`;
+      const inner = `<span class="flex h-7 w-14 items-center justify-center rounded-full transition-colors ${on ? 'bg-brand/10' : ''}">${ic(b.icon, 'icon h-[22px] w-[22px]')}</span><span>${esc(b.label)}</span>`;
       return b.href ? `<a href="#${b.href}" class="${cls}" ${on ? 'aria-current="page"' : ''}>${inner}</a>` : `<button type="button" data-act="more" aria-haspopup="dialog" class="${cls}">${inner}</button>`;
     }).join('');
     $('#fab').classList.toggle('hidden', !(route === 'ratings/current' || route === 'ratings/former'));
@@ -487,7 +673,7 @@
       title: 'More',
       body: AREAS.map((a) => `<div class="mb-4"><div class="mb-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">${esc(a.label)}</div>
         <div class="grid grid-cols-4 gap-2">${a.modules.map((m) => `<a href="#${m.href || `soon/${m.key}`}" data-act="close" class="relative flex flex-col items-center gap-1.5 rounded-card p-2 text-center text-2xs font-medium hover:bg-muted">
-          <span class="flex h-12 w-12 items-center justify-center rounded-2xl ${m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-sidebar to-sidebar-deep text-sidebar-foreground shadow-md shadow-sidebar/30'}">${ic(m.icon, 'icon h-6 w-6')}</span>${esc(m.short)}
+          <span class="flex h-12 w-12 items-center justify-center rounded-2xl ${m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-brand-fill to-brand-deep text-on-fill shadow-md shadow-brand-fill/30'}">${ic(m.icon, 'icon h-6 w-6')}</span>${esc(m.short)}
           ${m.soon ? `<span class="${pill.neutral} absolute right-0 top-0">Soon</span>` : ''}</a>`).join('')}</div></div>`).join(''),
     });
   }
@@ -514,7 +700,7 @@
         ${tile('Members', ratings.length, 'users', ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'], `<a href="#ratings/current" class="hover:text-foreground"><b class="text-foreground">${current.length}</b> current</a><a href="#ratings/former" class="hover:text-foreground"><b class="text-foreground">${former}</b> former</a>`)}
         ${tile('Drafting', 0, 'briefcase', ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'], '<span><b class="text-foreground">0</b> this year</span>')}
         ${tile('Memos and Mails', 0, 'file-text', ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'], '<span><b class="text-foreground">0</b> unread</span>')}
-        ${tile('Appraisals', 0, 'clipboard-check', ['from-sidebar to-sidebar-deep shadow-sidebar/30', 'bg-sidebar/10'], '<span><b class="text-foreground">0</b> this month</span>')}
+        ${tile('Appraisals', 0, 'clipboard-check', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], '<span><b class="text-foreground">0</b> this month</span>')}
       </div>
       <div class="mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1">
         <section class="${CARD} col-span-3 phone:col-span-1">
@@ -526,7 +712,7 @@
         <section class="${CARD} col-span-2 phone:col-span-1">
           <div class="border-b border-border px-4 py-3"><h2 class="text-sm font-semibold">Current Ratings by Rate</h2></div>
           <div class="space-y-2.5 p-4">${byRate.map(([rate, n]) => `<div><div class="mb-1 flex justify-between text-xs"><span>${esc(rate)}</span><b>${n}</b></div>
-            <div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-sidebar to-secondary ${fraction(n / max)}"></div></div></div>`).join('')}</div>
+            <div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-brand-fill to-secondary ${fraction(n / max)}"></div></div></div>`).join('')}</div>
         </section>
       </div>`;
   }
@@ -693,7 +879,7 @@
       </section>
       <div class="mb-4 flex gap-1 overflow-x-auto scrollbar-none border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.map(([k, label]) => {
         const on = k === tab;
-        return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-sidebar desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-sidebar phone:border-sidebar phone:bg-sidebar phone:text-sidebar-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${esc(label)}${tabCount(k)}</button>`;
+        return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-brand desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${esc(label)}${tabCount(k)}</button>`;
       }).join('')}</div>
       ${body}`;
   }
@@ -706,7 +892,7 @@
     const chips = `<div class="mb-3 flex gap-2 overflow-x-auto scrollbar-none">${[['ALL', 'All']].concat(CATEGORIES).map(([code, label]) => {
       const n = code === 'ALL' ? rec.documents.length : rec.documents.filter((x) => x.cat === code).length;
       const on = state.docCat === code;
-      return `<button type="button" data-act="doc-cat" data-cat="${code}" class="inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium phone:h-9 ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'}">${label}<span class="${on ? 'text-sidebar-foreground' : 'text-muted-foreground'}">${n}</span></button>`;
+      return `<button type="button" data-act="doc-cat" data-cat="${code}" class="inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium phone:h-9 ${on ? 'border-brand bg-brand text-brand-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'}">${label}<span class="${on ? 'text-brand-foreground' : 'text-muted-foreground'}">${n}</span></button>`;
     }).join('')}</div>`;
     const list = `<div class="${CARD} self-start overflow-hidden">${docs.length ? `<ul>${docs.map((x) => `<li><button type="button" data-act="doc-pick" data-doc="${esc(x.name)}" class="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-0 ${sideBySide() && x.name === state.docPicked ? 'bg-secondary/10' : 'hover:bg-subtle'}">
         <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-error-soft to-background text-error ring-1 ring-error/15">${ic('file-text')}</span>
@@ -731,8 +917,8 @@
   function newRatingSteps(s) {
     return NEW_STEPS.map((label, i) => {
       const n = i + 1; const done = n < s; const on = n === s;
-      return `<li><button type="button" data-act="step" data-step="${n}" ${on ? 'aria-current="step"' : ''} class="flex w-full items-center gap-2.5 rounded-ctl px-3 py-2 text-left text-sm transition-colors phone:flex-col phone:gap-1 phone:px-1 phone:text-center phone:text-2xs ${on ? 'bg-sidebar/10 font-semibold text-foreground' : 'text-muted-foreground hover:bg-subtle'}">
-        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span>${label}</button></li>`;
+      return `<li><button type="button" data-act="step" data-step="${n}" ${on ? 'aria-current="step"' : ''} class="flex w-full items-center gap-2.5 rounded-ctl px-3 py-2 text-left text-sm transition-colors phone:flex-col phone:gap-1 phone:px-1 phone:text-center phone:text-2xs ${on ? 'bg-brand/10 font-semibold text-foreground' : 'text-muted-foreground hover:bg-subtle'}">
+        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span>${label}</button></li>`;
     }).join('');
   }
   function newRatingFoot(s) {
@@ -779,7 +965,7 @@
 
   function viewUpload() {
     const st = state.upload;
-    const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
+    const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
     const issues = [['Row 7', 'B0611', 'Rate "Senior Seaman" is not in the list', 'error'], ['Row 12', 'B0539', 'Official Number already exists, skipped', 'warning'], ['Row 19', 'B0702', 'Official Number already exists, skipped', 'warning']];
     return pageHeader('Batch Upload', 'Add many ratings from one workbook') + `
       <div class="grid grid-cols-3 gap-4 phone:grid-cols-1">
@@ -933,7 +1119,7 @@
     return reportShell(r, repSelect('command', 'Command', COMMANDS, st.command, 'All Commands') + repText('As At', fmt(TODAY)),
       `<div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Ship or Unit</th>${cols.map((c) => `<th class="${TH} text-center">${c}</th>`).join('')}<th class="${TH} text-center">Total</th><th class="${TH} w-1/4 phone:hidden"></th></tr></thead>
       <tbody>${grid.map((g) => `<tr class="border-t border-border/70"><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(g.sh)}</td>${g.n.map((n) => `<td class="px-4 py-2.5 text-center ${n ? '' : 'text-muted-foreground/60'}">${n || '-'}</td>`).join('')}<td class="px-4 py-2.5 text-center font-bold">${g.total}</td>
-        <td class="px-4 py-2.5 phone:hidden"><div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-sidebar to-secondary ${fraction(g.total / max)}"></div></div></td></tr>`).join('')}
+        <td class="px-4 py-2.5 phone:hidden"><div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-brand-fill to-secondary ${fraction(g.total / max)}"></div></div></td></tr>`).join('')}
         <tr class="border-t-2 border-border bg-subtle/70 font-bold"><td class="px-4 py-2.5">Total</td>${cols.map((c, i) => `<td class="px-4 py-2.5 text-center">${grid.reduce((a, g) => a + g.n[i], 0)}</td>`).join('')}<td class="px-4 py-2.5 text-center">${current.length}</td><td class="phone:hidden"></td></tr></tbody></table></div></div>`);
   }
 
@@ -997,7 +1183,7 @@
           <td class="px-4 py-2.5 font-semibold">${u.username}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(u.name)}</td><td class="px-4 py-2.5"><span class="${u.role === 'Administrator' ? pill.warning : pill.info}">${u.role}</span></td><td class="px-4 py-2.5 text-muted-foreground">${u.sn || '-'}</td>
           <td class="px-4 py-2.5"><span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span></td><td class="whitespace-nowrap px-4 py-2.5 text-muted-foreground">${u.last}</td></tr>`).join('')}</tbody></table></div></div>`;
       const cards = `<div class="space-y-2 desk:hidden">${rows.map((u) => `<button type="button" data-act="user-pick" data-user="${u.username}" class="${CARD} flex w-full items-center gap-3 p-3 text-left">
-          <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-xs font-semibold text-sidebar-foreground">${u.username.slice(0, 2)}</span>
+          <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep text-xs font-semibold text-on-fill">${u.username.slice(0, 2)}</span>
           <span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${esc(u.name)}</b><span class="block truncate text-xs text-muted-foreground">${u.username} · ${u.role}</span></span>
           <span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span></button>`).join('')}</div>`;
       const detail = picked && sideBySide() ? `<aside class="${CARD} sticky top-0 self-start p-4" aria-label="User">${userCard(picked)}</aside>` : '';
@@ -1013,8 +1199,8 @@
           <span class="inline-block h-5 w-5 rounded-full bg-on-fill shadow transition-transform phone:h-7 phone:w-7 ${on ? 'translate-x-[22px] phone:translate-x-[26px]' : 'translate-x-0.5'}"></span></button>`; };
       return pageHeader('Manage Roles', 'What each role may open and change', `<button type="button" data-act="role-add" class="${btn.outline}">${ic('plus')}Add Role</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save Changes</button>`)
         + `<div class="grid grid-cols-4 gap-4 phone:grid-cols-1">
-          <div class="${CARD} self-start p-2 phone:flex phone:gap-2 phone:overflow-x-auto scrollbar-none phone:p-2">${ROLES.map((r) => `<button type="button" data-act="role-pick" data-role="${r}" class="flex w-full items-center gap-3 rounded-ctl px-3 py-2.5 text-left text-sm transition-colors phone:w-auto phone:flex-none ${r === role ? 'bg-sidebar text-sidebar-foreground shadow-md' : 'hover:bg-subtle'}">
-            ${ic(r === 'Administrator' ? 'shield-user' : r === 'Rating' ? 'user-round' : 'users', 'icon')}<span class="flex-1 whitespace-nowrap font-medium">${r}</span><span class="rounded-full px-2 text-2xs font-semibold ${r === role ? 'bg-sidebar-hover' : 'bg-muted text-muted-foreground'}">${count(r)}</span></button>`).join('')}</div>
+          <div class="${CARD} self-start p-2 phone:flex phone:gap-2 phone:overflow-x-auto scrollbar-none phone:p-2">${ROLES.map((r) => `<button type="button" data-act="role-pick" data-role="${r}" class="flex w-full items-center gap-3 rounded-ctl px-3 py-2.5 text-left text-sm transition-colors phone:w-auto phone:flex-none ${r === role ? 'bg-brand text-brand-foreground shadow-md' : 'hover:bg-subtle'}">
+            ${ic(r === 'Administrator' ? 'shield-user' : r === 'Rating' ? 'user-round' : 'users', 'icon')}<span class="flex-1 whitespace-nowrap font-medium">${r}</span><span class="rounded-full px-2 text-2xs font-semibold ${r === role ? 'bg-brand-foreground/15' : 'bg-muted text-muted-foreground'}">${count(r)}</span></button>`).join('')}</div>
           <section class="${CARD} col-span-3 overflow-hidden phone:col-span-1">
             <div class="flex items-center gap-3 border-b border-border/70 px-4 py-3"><h2 class="text-sm font-semibold">${role}</h2><span class="${pill.neutral}">${count(role)} ${count(role) === 1 ? 'user' : 'users'}</span>${role === 'Administrator' ? `<span class="${pill.warning} ml-auto">${ic('lock-keyhole', 'icon h-3 w-3')}Full access</span>` : ''}</div>
             <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Module</th>${OPS.map((o) => `<th class="${TH} text-center">${o}</th>`).join('')}</tr></thead>
@@ -1025,7 +1211,7 @@
       const pw = (id, label, auto) => field(label, `<span class="relative block"><input id="${id}" type="password" autocomplete="${auto}" class="${INPUT} pr-11" /><button type="button" data-act="eye" data-for="${id}" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Show Password">${ic('eye')}</button></span>`);
       return pageHeader('Manage Password', 'Change the password you sign in with') + `<div class="grid grid-cols-5 gap-4 phone:grid-cols-1">
         <section class="${CARD} col-span-3 p-5 phone:col-span-1">
-          <div class="mb-5 flex items-center gap-3"><span class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-sm font-bold text-sidebar-foreground ring-2 ring-background">HA</span>
+          <div class="mb-5 flex items-center gap-3"><span class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep text-sm font-bold text-on-fill ring-2 ring-background">HA</span>
             <div><b class="block text-sm">HICO Administrator</b><span class="text-xs text-muted-foreground">HICO001 · last changed 16/11/2026</span></div></div>
           <form class="grid gap-4" onsubmit="return false">${pw('pw-current', 'Current Password', 'current-password')}${pw('pw-new', 'New Password', 'new-password')}
             <div class="-mt-1 flex gap-1.5">${[0, 1, 2, 3].map((i) => `<span data-meter="${i}" class="h-1.5 flex-1 rounded-full bg-muted transition-colors"></span>`).join('')}</div>
@@ -1059,7 +1245,7 @@
         <div class="${CARD}">${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, 'audit')}</div></div>`;
   }
   function userCard(u) {
-    return `<div class="space-y-4"><div class="flex items-start gap-3"><span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-sidebar to-sidebar-deep text-sm font-semibold text-sidebar-foreground ring-2 ring-background">${u.username.slice(0, 2)}</span>
+    return `<div class="space-y-4"><div class="flex items-start gap-3"><span class="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep text-sm font-semibold text-on-fill ring-2 ring-background">${u.username.slice(0, 2)}</span>
       <div class="min-w-0"><div class="text-base font-semibold leading-tight">${esc(u.name)}</div><div class="text-sm text-muted-foreground">${u.username}</div>
       <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${u.status === 'Active' ? pill.success : pill.error}">${u.status}</span><span class="${u.role === 'Administrator' ? pill.warning : pill.info}">${u.role}</span></div></div></div>
       ${dl([['Linked Rating', u.sn || 'None'], ['Created', u.created], ['Last Sign In', u.last], ['Failed Attempts', `${u.attempts}`]])}
@@ -1269,8 +1455,9 @@
       palette: openPalette, 'close-palette': closePalette,
       close: () => closeDialog(),
       account: () => $('#account-menu').classList.toggle('hidden'),
-      'account-sheet': () => openDialog({ title: 'HICO Administrator', body: `<div class="mb-3 text-sm text-muted-foreground">HICO001 · Administrator</div><div class="flex flex-col gap-2"><a href="#ratings/my-details" data-act="close" class="${btn.outline} justify-start">${ic('user-round')}View My Details</a><a href="#admin/password" data-act="close" class="${btn.outline} justify-start">${ic('key-round')}Change Password</a><button type="button" data-act="lock" class="${btn.outline} justify-start">${ic('lock-keyhole')}Lock Screen</button><button type="button" data-act="sign-out" class="${btn.outline} justify-start text-destructive">${ic('log-out')}Sign Out</button></div>`, size: 'sm' }),
-      'sign-out': () => { closeDialog(); toast('Demo only: you stay signed in.'); },
+      'account-sheet': () => openDialog({ title: 'HICO Administrator', body: `<div class="mb-3 text-sm text-muted-foreground">HICO001 · Administrator</div><div class="flex flex-col gap-2"><a href="#ratings/my-details" data-act="close" class="${btn.outline} justify-start">${ic('user-round')}View My Details</a><a href="#admin/password" data-act="close" class="${btn.outline} justify-start">${ic('key-round')}Change Password</a><button type="button" data-act="lock" class="${btn.outline} justify-start">${ic('lock-keyhole')}Lock Screen</button><button type="button" data-act="theme" class="${btn.outline} justify-start">${themeItem()}</button><button type="button" data-act="sign-out" class="${btn.outline} justify-start text-destructive">${ic('log-out')}Sign Out</button></div>`, size: 'sm' }),
+      'sign-out': () => { closeDialog(); signOut(); },
+      theme: () => { closeDialog(); const m = $('#account-menu'); if (m) m.classList.add('hidden'); toggleTheme(); },
       more: openMore,
       export: () => $('#export-menu').classList.toggle('hidden'),
       'export-sheet': () => openDialog({ title: 'Export', size: 'sm', body: `<div class="flex flex-col gap-2">${[['copy', 'Copy Rows'], ['file-spreadsheet', 'Excel'], ['file-text', 'PDF'], ['file-text', 'CSV']].map(([i, l]) => `<button type="button" data-act="exported" class="${btn.outline} justify-start">${ic(i)}${l}</button>`).join('')}</div>` }),
@@ -1317,7 +1504,7 @@
           <tbody>${auditChanges(e).map(([f, b, a]) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 font-medium">${esc(f)}</td><td class="px-4 py-2.5">${b === '-' ? '<span class="text-muted-foreground">-</span>' : `<span class="rounded bg-error-soft px-1.5 py-0.5 text-error line-through decoration-error/50">${esc(b)}</span>`}</td><td class="px-4 py-2.5">${a === '-' ? '<span class="text-muted-foreground">-</span>' : `<span class="rounded bg-success-soft px-1.5 py-0.5 text-success">${esc(a)}</span>`}</td></tr>`).join('')}</tbody></table></div>` }); },
       lock: () => { closeDialog(); const m = $('#account-menu'); if (m) m.classList.add('hidden'); lockScreen('manual'); },
       'lock-eye': () => { const i = $('#lock-pass'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; el.innerHTML = ic(show ? 'eye-off' : 'eye'); el.setAttribute('aria-label', show ? 'Hide Password' : 'Show Password'); i.focus(); },
-      'lock-signout': () => { unlockScreen(); toast('Demo only: this returns to Sign In.'); },
+      'lock-signout': () => { unlockScreen({ announce: false }); signOut(); },
       'phone-preview': openPhone, 'close-phone': closePhone,
     };
     if (A[act]) A[act]();
@@ -1360,11 +1547,13 @@
   }
   function closePhone() { const f = $('#phone-frame'); f.classList.add('hidden'); f.classList.remove('flex'); $('#phone-iframe').src = 'about:blank'; }
   if (new URLSearchParams(location.search).get('frame')) $('#demo-bar').remove();
+  themeListeners.push(() => renderRail(route));
 
   lastRoute = location.hash.replace(/^#\/?/, '') || 'dashboard';
   const openNewAtStart = lastRoute === 'ratings/new';
   if (openNewAtStart) { lastRoute = 'ratings/current'; history.replaceState(null, '', '#ratings/current'); }
   render();
+  if (framed) { $('#login').classList.add('hidden'); } else showLogin();
   if (openNewAtStart) openNewRating();
   if (store.get()) lockScreen(store.get(), { announce: false });
 })();
