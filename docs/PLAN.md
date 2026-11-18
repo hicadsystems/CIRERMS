@@ -164,5 +164,8 @@ wave once the owner has merged.
   those are rebuilt.
 - **Advancement Approval and Close** are live code in the old system but missing from the live menu:
   either switched off or hidden from the owner's role. The owner confirms before WP8 starts.
+- **Report on Appraisal was never built** in the old system: its menu link opens the dashboard, and no
+  page, procedure or Crystal report produces it. When Naval Character Assessment is planned, the report
+  is designed new, with the appraisal periods (whose setup page the old menu switched off).
 - **Advancement and appraisals:** if advancement needs appraisal grades, the demo seeds them until
   Naval Character Assessment is built.
