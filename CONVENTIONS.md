@@ -55,6 +55,7 @@ CIRERMS/
 ├─ docs/PLAN.md                # the project plan: work packages, models, order, status
 ├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js
 │                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
+├─ docs/legacy/                 # map of the old system: README.md (how to trace a page), one file per module, sql/ (definitions only)
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
 ├─ migrate.js                   # migration CLI

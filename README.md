@@ -40,6 +40,8 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
 
 The approved layout and look is `docs/design/demo.html` (one file; open it in a browser). `docs/design/components.md` lists the shared components.
 
+The map of the old system (how it is built, one file per module, definitions from its 2017 backup) is in `docs/legacy/` (start at `docs/legacy/README.md`).
+
 ---
 
 ## 3. Demo Credentials
