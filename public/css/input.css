@@ -142,6 +142,16 @@
   }
 }
 
+@layer utilities {
+  /* A row that scrolls sideways with no scrollbar showing (tab strips, chip rows; js/ui/scroll-row.js). */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer components {
   /* An icon from the sprite: <svg class="icon"><use href="/assets/icons.svg#search"></use></svg>.
      1rem square by default; size it with h-* w-* or size-*. */

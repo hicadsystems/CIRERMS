@@ -287,6 +287,16 @@ const tabs = inPageTabs({
 tabs.el; tabs.setActive('nok'); tabs.setCount('nok', 3); tabs.active();
 ```
 
+## Scroll row
+
+`ui/scroll-row.js`: a row of tabs or chips that scrolls sideways with no scrollbar showing; a mouse wheel
+moves it too, then the page scrolls at either end. The module tabs, the record's tabs and the document
+category chips use it. Not for tables, which keep their scrollbar.
+
+```js
+scrollRow(h('div', { className: 'flex gap-2 overflow-x-auto' }, chips));
+```
+
 ## Stepper
 
 `ui/stepper.js`: New Rating's four steps. Keep all the steps' fields in the form and show only the

@@ -435,11 +435,11 @@
     const TABS = MODULE_TABS[moduleOf(route)];
     if (!TABS) { nav.innerHTML = ''; nav.className = 'flex-none'; return; }
     const cur = route.startsWith('ratings') ? tabRoute(route) : route;
-    const desk = `<div class="flex gap-1 overflow-x-auto border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
+    const desk = `<div class="flex gap-1 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
       const on = t.route === cur;
       return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-sidebar after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-sidebar' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
     }).join('')}</div>`;
-    const phone = route.startsWith('ratings/record') ? '' : `<div class="flex gap-2 overflow-x-auto border-b border-border/60 bg-background/70 px-3.5 py-2 backdrop-blur-xl desk:hidden">${TABS.map((t) => {
+    const phone = route.startsWith('ratings/record') ? '' : `<div class="flex gap-2 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/70 px-3.5 py-2 backdrop-blur-xl desk:hidden">${TABS.map((t) => {
       const on = t.route === cur;
       return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground'}">${esc(t.label)}</a>`;
     }).join('')}</div>`;
@@ -691,7 +691,7 @@
         </div>
         <div class="flex items-center gap-3 border-t border-border/70 bg-subtle/60 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(filled / 10)}" data-level="${level}"></div></div><span class="text-xs text-muted-foreground">Record <b class="${levelText}">${filled * 10}%</b> complete</span></div>
       </section>
-      <div class="mb-4 flex gap-1 overflow-x-auto border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.map(([k, label]) => {
+      <div class="mb-4 flex gap-1 overflow-x-auto scrollbar-none border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.map(([k, label]) => {
         const on = k === tab;
         return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-sidebar desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-sidebar phone:border-sidebar phone:bg-sidebar phone:text-sidebar-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${esc(label)}${tabCount(k)}</button>`;
       }).join('')}</div>
@@ -703,7 +703,7 @@
     const catName = (code) => (CATEGORIES.find(([c]) => c === code) || [, code])[1];
     if (sideBySide() && (!state.docPicked || !docs.some((x) => x.name === state.docPicked))) state.docPicked = docs[0] ? docs[0].name : null;
     const picked = docs.find((x) => x.name === state.docPicked);
-    const chips = `<div class="mb-3 flex gap-2 overflow-x-auto">${[['ALL', 'All']].concat(CATEGORIES).map(([code, label]) => {
+    const chips = `<div class="mb-3 flex gap-2 overflow-x-auto scrollbar-none">${[['ALL', 'All']].concat(CATEGORIES).map(([code, label]) => {
       const n = code === 'ALL' ? rec.documents.length : rec.documents.filter((x) => x.cat === code).length;
       const on = state.docCat === code;
       return `<button type="button" data-act="doc-cat" data-cat="${code}" class="inline-flex h-8 flex-none items-center gap-1.5 rounded-full border px-3 text-xs font-medium phone:h-9 ${on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'}">${label}<span class="${on ? 'text-sidebar-foreground' : 'text-muted-foreground'}">${n}</span></button>`;
@@ -1013,7 +1013,7 @@
           <span class="inline-block h-5 w-5 rounded-full bg-on-fill shadow transition-transform phone:h-7 phone:w-7 ${on ? 'translate-x-[22px] phone:translate-x-[26px]' : 'translate-x-0.5'}"></span></button>`; };
       return pageHeader('Manage Roles', 'What each role may open and change', `<button type="button" data-act="role-add" class="${btn.outline}">${ic('plus')}Add Role</button><button type="button" data-act="saved" class="${btn.primary}">${ic('check')}Save Changes</button>`)
         + `<div class="grid grid-cols-4 gap-4 phone:grid-cols-1">
-          <div class="${CARD} self-start p-2 phone:flex phone:gap-2 phone:overflow-x-auto phone:p-2">${ROLES.map((r) => `<button type="button" data-act="role-pick" data-role="${r}" class="flex w-full items-center gap-3 rounded-ctl px-3 py-2.5 text-left text-sm transition-colors phone:w-auto phone:flex-none ${r === role ? 'bg-sidebar text-sidebar-foreground shadow-md' : 'hover:bg-subtle'}">
+          <div class="${CARD} self-start p-2 phone:flex phone:gap-2 phone:overflow-x-auto scrollbar-none phone:p-2">${ROLES.map((r) => `<button type="button" data-act="role-pick" data-role="${r}" class="flex w-full items-center gap-3 rounded-ctl px-3 py-2.5 text-left text-sm transition-colors phone:w-auto phone:flex-none ${r === role ? 'bg-sidebar text-sidebar-foreground shadow-md' : 'hover:bg-subtle'}">
             ${ic(r === 'Administrator' ? 'shield-user' : r === 'Rating' ? 'user-round' : 'users', 'icon')}<span class="flex-1 whitespace-nowrap font-medium">${r}</span><span class="rounded-full px-2 text-2xs font-semibold ${r === role ? 'bg-sidebar-hover' : 'bg-muted text-muted-foreground'}">${count(r)}</span></button>`).join('')}</div>
           <section class="${CARD} col-span-3 overflow-hidden phone:col-span-1">
             <div class="flex items-center gap-3 border-b border-border/70 px-4 py-3"><h2 class="text-sm font-semibold">${role}</h2><span class="${pill.neutral}">${count(role)} ${count(role) === 1 ? 'user' : 'users'}</span>${role === 'Administrator' ? `<span class="${pill.warning} ml-auto">${ic('lock-keyhole', 'icon h-3 w-3')}Full access</span>` : ''}</div>

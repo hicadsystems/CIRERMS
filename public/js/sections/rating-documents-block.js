@@ -24,6 +24,7 @@ import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { field, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { isWide, onLayout } from '../ui/media.js';
+import { scrollRow } from '../ui/scroll-row.js';
 
 const DOC_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx';
 
@@ -44,7 +45,7 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}
   let picked = null;
   let previewUrl = null;
 
-  const chips = h('div', { className: 'mb-3 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Document categories' });
+  const chips = scrollRow(h('div', { className: 'mb-3 flex gap-2 overflow-x-auto', role: 'group', 'aria-label': 'Document categories' }));
   const listCard = h('div', { className: cx(CARD, 'self-start overflow-hidden') });
   const aside = h('aside', { className: cx(CARD, 'sticky top-0 self-start overflow-hidden'), 'aria-label': 'Document preview' });
   const grid = h('div', { className: 'grid grid-cols-1 gap-4' }, [listCard]);

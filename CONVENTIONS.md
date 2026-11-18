@@ -207,7 +207,9 @@ DROP TABLE ratings;
   `shadow-pop` (menus, dialogs) and `shadow-btn`; actions are gentle gradients (`bg-gradient-to-b
   from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-ring/15`.
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
-  translucent ivory (`.cirerms-scroll`).
+  translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
+  swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
+  keep theirs.
 - **Completeness bars** (`.cirerms-progress-track` / `.cirerms-progress-bar`) are thin and plain; set
   `data-level` with the width: `low` (red, 0 to 49%), `mid` (amber, 50 to 79%), `high` (green, 80 to 100%).
 - **Two layouts.** `phone:` is 760 px and below (and wins over `sm:` there); `desk:` is 761 px and up.

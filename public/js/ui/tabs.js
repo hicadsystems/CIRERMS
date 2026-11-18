@@ -8,9 +8,11 @@
  *     onChange(key)
  *   t.el  t.setActive(key)  t.setCount(key, n)  t.active()
  *
- * Arrow keys move between tabs. Phones: rounded chips that scroll sideways.
+ * Arrow keys move between tabs. The row scrolls sideways with no scrollbar showing
+ * (a mouse wheel moves it too). Phones: rounded chips.
  */
 import { cx, h } from './html.js';
+import { scrollRow } from './scroll-row.js';
 
 const ON = 'text-sidebar desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-sidebar phone:border-sidebar phone:bg-sidebar phone:text-sidebar-foreground';
 const OFF = 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground';
@@ -21,7 +23,7 @@ export function inPageTabs({ tabs = [], active, onChange = () => {} } = {}) {
   const buttons = new Map();
   const counts = new Map();
 
-  const el = h('div', { role: 'tablist', className: 'mb-4 flex gap-1 overflow-x-auto border-b border-border phone:gap-2 phone:border-0' });
+  const el = scrollRow(h('div', { role: 'tablist', className: 'mb-4 flex gap-1 overflow-x-auto border-b border-border phone:gap-2 phone:border-0' }));
   tabs.forEach((t) => {
     const count = h('span', { className: 'ml-1.5 hidden rounded-full bg-muted px-1.5 text-2xs font-semibold text-muted-foreground' });
     const b = h('button', { type: 'button', role: 'tab', dataset: { tab: t.key } }, [t.label, count]);
