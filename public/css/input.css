@@ -2,19 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * CIRERMS design tokens: the only place a colour is defined. tailwind.config.js
+ * turns each one into classes by its role (bg-background, text-muted-foreground,
+ * border-input, bg-sidebar, bg-primary hover:bg-primary-hover ...).
+ *
+ * Values are the legacy CIRERMS palette, pixel-sampled from the old system.
+ * Values marked "derived" are new and say where they come from. Every text
+ * pair carries its WCAG 2 contrast ratio, computed, not estimated: AA is 4.5:1
+ * for body text and 3:1 for large or bold text. Pairs under AA are the legacy
+ * look kept as it was, and are marked "under AA".
+ *
+ * Solid colours are "R G B" channels so Tailwind's opacity modifiers work
+ * (bg-primary/10). Colours with their own alpha are whole rgb() values and
+ * take no modifier.
+ */
 @layer base {
+  :root {
+    /* ---- Surfaces and text ---- */
+    --background: 255 255 255;            /* #ffffff: cards, bars, fields */
+    --foreground: 29 41 57;               /* #1d2939: text. 14.70:1 on background, 11.84:1 on muted, 13.72:1 on subtle, 12.41:1 on tab-idle */
+    --card: 255 255 255;                  /* #ffffff */
+    --card-foreground: 29 41 57;          /* #1d2939: 14.70:1 */
+    --popover: 255 255 255;               /* #ffffff: menus, dropdown lists */
+    --popover-foreground: 29 41 57;       /* #1d2939: 14.70:1 */
+    --muted: 228 231 234;                 /* #e4e7ea: the page canvas */
+    --muted-foreground: 99 110 123;       /* #636e7b: secondary text. 5.19:1 on background, 4.84:1 on subtle, 4.18:1 on muted (under AA) */
+    --subtle: 247 247 247;                /* #f7f7f7: the band under the top bar */
+    --tab-idle: 234 236 238;              /* #eaecee: a tab not chosen */
+    --track: 241 243 245;                 /* #f1f3f5: the progress bar's track */
+    --border: 211 215 219;                /* #d3d7db: dividers and card edges */
+    --input: 211 215 219;                 /* #d3d7db: field borders */
+    --ring: 66 139 202;                   /* #428bca: focus ring */
+
+    /* ---- Actions ---- */
+    --primary: 28 175 154;                /* #1caf9a: the main action (Save, Process) */
+    --primary-hover: 23 153 134;          /* #179986 */
+    --primary-foreground: 255 255 255;    /* #ffffff: 2.75:1 on primary, 3.54:1 on primary-hover (under AA) */
+    --secondary: 66 139 202;              /* #428bca: a second action (Print), links on white (3.63:1, under AA) */
+    --secondary-hover: 53 126 189;        /* #357ebd */
+    --secondary-foreground: 255 255 255;  /* #ffffff: 3.63:1 on secondary, 4.31:1 on secondary-hover (under AA) */
+    --destructive: 217 83 79;             /* #d9534f: delete */
+    --destructive-hover: 201 48 44;       /* #c9302c */
+    --destructive-foreground: 255 255 255; /* #ffffff: 3.96:1 on destructive (under AA), 5.33:1 on destructive-hover */
+
+    /* ---- Status: text on its soft fill (derived: Bootstrap 3's alert colours, the old system's framework) ---- */
+    --success: 60 118 61;                 /* #3c763d: 4.57:1 on success-soft */
+    --success-soft: 223 240 216;          /* #dff0d8 */
+    --warning: 138 109 59;                /* #8a6d3b: the legacy note colour. 4.54:1 on warning-soft */
+    --warning-soft: 252 248 227;          /* #fcf8e3 */
+    --info: 49 112 143;                   /* #31708f: 4.53:1 on info-soft */
+    --info-soft: 217 237 247;             /* #d9edf7 */
+    --error: 169 68 66;                   /* #a94442: 4.53:1 on error-soft */
+    --error-soft: 242 222 222;            /* #f2dede */
+
+    /* ---- Sidebar ---- */
+    --sidebar: 0 116 168;                 /* #0074a8 */
+    --sidebar-foreground: 255 255 255;    /* #ffffff: 5.17:1 on sidebar, 4.31:1 on sidebar-hover (under AA) */
+    --sidebar-muted: 149 207 236;         /* #95cfec, derived: sky-200 at 80% on sidebar, the group label as drawn today. 3.06:1 (under AA) */
+    --sidebar-accent: 255 255 255;        /* #ffffff: the open module */
+    --sidebar-accent-foreground: 29 41 57; /* #1d2939: 14.70:1 on sidebar-accent */
+    --sidebar-primary: 2 169 244;         /* #02a9f4: the current screen's pill */
+    --sidebar-primary-foreground: 255 255 255; /* #ffffff: 2.63:1 on sidebar-primary (under AA) */
+    --sidebar-hover: rgb(255 255 255 / 0.10);  /* #1a82b1 on sidebar */
+    --sidebar-border: rgb(255 255 255 / 0.15);
+
+    /* ---- Overlays ---- */
+    --scrim: rgb(0 0 0 / 0.5);            /* behind a modal */
+    --scrollbar: rgb(0 0 0 / 0.22);       /* thin scrollbar thumb */
+  }
+
   html,
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #1d2939;
-    background-color: #e4e7ea;
+    color: rgb(var(--foreground));
+    background-color: rgb(var(--muted));
     -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* An icon from the sprite: <svg class="icon"><use href="/assets/icons.svg#search"></use></svg>.
+     1rem square by default; size it with h-* w-* or size-*. */
+  .icon {
+    @apply inline-block h-4 w-4 shrink-0;
   }
 }
 
 /* Legacy CIRERMS diagonal-striped blue progress bar */
 .cirerms-progress-track {
-  background-color: #f1f3f5;
+  background-color: rgb(var(--track));
   border-radius: 2px;
   height: 14px;
   overflow: hidden;
@@ -23,7 +100,7 @@
 
 .cirerms-progress-bar {
   height: 100%;
-  background-color: #428bca;
+  background-color: rgb(var(--secondary));
   background-image: linear-gradient(
     45deg,
     rgba(255, 255, 255, 0.18) 25%,
@@ -40,7 +117,7 @@
 
 /* Standard CIRERMS form controls */
 .cirerms-input {
-  @apply w-full rounded border border-cirerms-border bg-white px-3 py-2 text-sm text-cirerms-ink shadow-sm transition focus:border-cirerms-blue focus:outline-none focus:ring-1 focus:ring-cirerms-blue disabled:bg-gray-100 disabled:text-gray-600;
+  @apply w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:bg-gray-100 disabled:text-gray-600;
 }
 
 .cirerms-label {
@@ -48,19 +125,19 @@
 }
 
 .cirerms-btn-teal {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-teal px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-teal-hover focus:outline-none focus:ring-2 focus:ring-cirerms-teal focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 .cirerms-btn-blue {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-blue px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-cirerms-blue-hover focus:outline-none focus:ring-2 focus:ring-cirerms-blue focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-secondary px-3.5 py-1.5 text-sm font-medium text-secondary-foreground shadow-sm transition hover:bg-secondary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 .cirerms-btn-danger {
-  @apply inline-flex items-center justify-center gap-1.5 rounded bg-cirerms-danger px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-cirerms-danger-hover focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-1.5 rounded bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground shadow-sm transition hover:bg-destructive-hover focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 .cirerms-dt-btn {
-  @apply border border-cirerms-border bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 active:bg-gray-100;
+  @apply border border-border bg-background px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 active:bg-gray-100;
 }
 
 /* Custom thin scrollbar for sidebar & wide tables */
@@ -69,6 +146,45 @@
   height: 6px;
 }
 .cirerms-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--scrollbar);
   border-radius: 3px;
+}
+
+/*
+ * Searchable dropdowns (js/core/choices.js) in the CIRERMS palette, matching
+ * .cirerms-input. The script draws its own colours (classes on its search box
+ * and a <style> it adds at run time), so these rules start with `html` and are
+ * marked important to win over both. Delete this block to get its own look back.
+ */
+html .custom-dropdown-search {
+  @apply rounded border-input bg-background text-sm text-foreground shadow-sm !important;
+}
+html .custom-dropdown-search:focus {
+  @apply border-ring ring-1 ring-ring !important;
+}
+html .custom-dropdown-search:disabled {
+  @apply bg-gray-100 text-gray-600 !important;
+}
+html .custom-dropdown-list {
+  @apply rounded border-border bg-popover text-sm text-popover-foreground !important;
+}
+html .custom-dropdown-item {
+  @apply border-muted !important;
+}
+html .custom-dropdown-item:hover,
+html .custom-dropdown-item.cdd-active {
+  @apply bg-secondary/10 !important;
+}
+html .custom-dropdown-item.cdd-selected {
+  @apply bg-secondary/20 font-medium !important;
+}
+html .custom-dropdown-item.cdd-placeholder {
+  @apply bg-transparent text-muted-foreground !important;
+}
+html .custom-dropdown-item.cdd-placeholder:hover,
+html .custom-dropdown-item.cdd-placeholder.cdd-active {
+  @apply bg-subtle !important;
+}
+html .custom-dropdown-clear:hover {
+  @apply text-destructive !important;
 }

@@ -86,3 +86,4 @@ Open **http://localhost:3000**. MySQL 8 starts, migrations and seeds run automat
 | `npm run migrate:make <name>` | Scaffold a new timestamped `.sql` migration file in `src/db/migrations/`. |
 | `npm run seed` | Run idempotent lookup & demo personnel seeds (`INSERT IGNORE` / `WHERE NOT EXISTS`). |
 | `npm run css:build` | Recompile minified Tailwind CSS (`public/css/input.css` → `public/css/output.css`). |
+| `npm run icons:build` | Rebuild the icon sprite (`public/assets/icons.svg`) from the Lucide icons listed in `scripts/build-icons.js`. |

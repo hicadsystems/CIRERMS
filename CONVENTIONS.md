@@ -16,7 +16,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap |
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
-| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), Nigerian Navy crest, sidebar, stat cards. Payroll-style SPA behaviour |
+| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). Nigerian Navy crest, sidebar, stat cards, Lucide icons. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. One admin role for the demo; screen IDs ready for permissions later |
 | Out of scope (for now) | Automated tests, Playwright, CI pipelines, non-Ratings sidebar modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
@@ -45,13 +45,14 @@ CIRERMS/
 │  ├─ index.html                # login (auth.login)
 │  ├─ app.html                  # shell: sidebar + header + <main>
 │  ├─ sections/<module>/<screen>.html
-│  ├─ js/core/                  # api, auth, dates, router, ui, filter-bar, table, modal, tabs, upload, rating-profile
+│  ├─ js/core/                  # api, auth, dates, router, ui, choices, icons, filter-bar, table, modal, tabs, upload, rating-profile
 │  ├─ js/sections/<module>/<screen>.js
-│  ├─ css/                      # tailwind input.css + compiled output.css
-│  └─ assets/                   # navy-logo.png
+│  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
+│  └─ assets/                   # navy-logo.png, icons.svg (built by scripts/build-icons.js)
+├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
 ├─ migrate.js                   # migration CLI
-├─ tailwind.config.js           # Tailwind config with CIRERMS colour tokens
+├─ tailwind.config.js           # names the colour tokens, the phone/desk screens and the shared sizes
 ├─ conventions.md
 ├─ README.md
 ├─ .env.example
@@ -173,7 +174,26 @@ DROP TABLE ratings;
   - modal (`modal.js`) & collapsible form panel (`ui.js` — "Add Next of Kin" style)
   - tabbed record (`tabs.js` + `rating-profile.js` — the 10-tab rating profile with 4 sub-steps & striped progress bar)
   - Excel upload flow (`upload.js` — download template → upload & validate → error/duplicate report → commit)
-- Tailwind with CIRERMS colours set as theme tokens. No other CSS framework or external CDN dependency.
+- **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
+  `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
+  canvas) and `text-muted-foreground`, `border-border` and `border-input`, `ring-ring`, `bg-primary` (teal,
+  the main action), `bg-secondary` (blue), `bg-destructive`, the status pairs `text-success bg-success-soft`
+  (and `warning`, `info`, `error`), and `bg-sidebar` with its `sidebar-*` parts. Each text pair records its
+  contrast ratio. New markup uses only these: no hex, no `rgb()`, no Tailwind palette colour (`gray-*`,
+  `red-*` ...). The older `cirerms-*` names map onto the same tokens until each screen moves to the role names.
+- **Two layouts.** `phone:` is 760 px and below (and wins over `sm:` there); `desk:` is 761 px and up.
+  Shared sizes: `h-tap` (44 px, the smallest touch target on a phone), `h-control` (36 px fields and buttons
+  on desktop), `w-rail` / `w-rail-collapsed` (the sidebar), `max-w-page` (1340 px content), `text-2xs`
+  (11 px labels), `rounded-ctl` (the CIRERMS corner).
+- **Icons** are Lucide, served from one sprite, `public/assets/icons.svg`, which holds only the icons listed
+  in `scripts/build-icons.js` (add a name there, then `npm run icons:build`). Use `icon('search')` from
+  `js/core/icons.js`, or `<svg class="icon"><use href="/assets/icons.svg#search"></use></svg>` in HTML.
+  Icons are decorative (`aria-hidden`); the button or link around one names the action.
+- **Selects** become searchable dropdowns: `js/core/choices.js` converts every `<select>` (add `data-native`
+  to keep one native). Look a select up with `querySelector('[name="…"]')` or its id, never
+  `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
+  it is on the page. Its look is set at the end of `input.css`.
+- No other CSS framework or external CDN dependency.
 
 ## Not carried over from the old app
 
