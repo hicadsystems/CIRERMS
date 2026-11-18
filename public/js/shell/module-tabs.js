@@ -24,7 +24,7 @@ export function renderModuleTabs(info) {
     return h('a', {
       href: `#${t.route}`,
       'aria-current': on ? 'page' : undefined,
-      className: cx('relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/15', on ? 'text-sidebar after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-sidebar' : 'text-muted-foreground hover:text-foreground'),
+      className: cx('relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/15', on ? 'text-brand after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand' : 'text-muted-foreground hover:text-foreground'),
       text: t.label,
     });
   })));
@@ -33,7 +33,7 @@ export function renderModuleTabs(info) {
     return h('a', {
       href: `#${t.route}`,
       'aria-current': on ? 'page' : undefined,
-      className: cx('inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium', on ? 'border-sidebar bg-sidebar text-sidebar-foreground' : 'border-border bg-background text-foreground'),
+      className: cx('inline-flex h-9 flex-none items-center rounded-full border px-3.5 text-sm font-medium', on ? 'border-brand bg-brand text-brand-foreground' : 'border-border bg-background text-foreground'),
       text: t.label,
     });
   })));

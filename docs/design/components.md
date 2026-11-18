@@ -70,7 +70,7 @@ card({ title: 'Recently Enlisted', actions: [button({ label: 'View All', variant
 `ui/stat-tile.js`
 
 ```js
-statTile({ label, value, icon, tone, foot })   // tone: 'primary' | 'destructive' | 'secondary' | 'sidebar'
+statTile({ label, value, icon, tone, foot })   // tone: 'primary' | 'destructive' | 'secondary' | 'brand'
 
 const t = statTile({ label: 'Members', value: 33, icon: 'users', tone: 'primary',
   foot: [h('a', { href: '#ratings/current' }, [h('b', { className: 'text-foreground', text: '25' }), ' current'])] });
@@ -356,4 +356,5 @@ openNewRating();                        // what #ratings/new and the phone's flo
 | `getLookups()`, `filterDenominations(lookups, religionId)`, `filterLgas(lookups, stateId)` | `core/lookups.js` | The dropdown lists, loaded once per visit |
 | `el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes` | `core/dom.js` | Small DOM helpers (`el` is `ui/html.js` `h`); `previewBlobModal` shows a PDF or image in the dialog |
 | `icon(name, className)` | `core/icons.js` | One icon from the sprite |
+| `currentTheme()`, `setTheme(theme)`, `toggleTheme()`, `onThemeChange(fn)`, `bindThemeButton(button)` | `core/theme.js` | Light or dark. `bindThemeButton` makes a button the switch: it shows a moon or a sun and says the mode it switches to. `core/theme-boot.js` (a plain script in each page's `<head>`) sets the first one before the page draws |
 

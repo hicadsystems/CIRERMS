@@ -14,7 +14,7 @@
 import { cx, h } from './html.js';
 import { scrollRow } from './scroll-row.js';
 
-const ON = 'text-sidebar desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-sidebar phone:border-sidebar phone:bg-sidebar phone:text-sidebar-foreground';
+const ON = 'text-brand desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground';
 const OFF = 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground';
 const BASE = 'inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5';
 

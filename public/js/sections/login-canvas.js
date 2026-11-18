@@ -1,27 +1,47 @@
 /*
- * The sign-in page's background (auth.login): a navy night sea. Faint stars twinkle in a
- * dark sky with a soft moon glow, over four layers of slow rolling waves, the farthest
- * pale and blue, the nearest deep navy, each with a light crest line. Colours come from
- * the --login-* and --on-fill tokens in css/input.css, so nothing here holds a colour.
+ * The sign-in page's background (auth.login): a sea under the sky. In light mode it is
+ * day, an ivory sky over pale blue water with a warm sun glow; in dark mode night, a black
+ * sky with twinkling stars and a moon glow over deep navy water. Four layers of slow
+ * rolling waves, each with a crest line. Every colour is a --login-* token in
+ * css/input.css (light in :root, dark under data-theme="dark"), so nothing here holds a
+ * colour, and the sea changes with the light / dark switch.
  *
  * It stays still for people who ask for reduced motion, pauses with the tab (the browser
  * stops animation frames in a hidden tab), and draws sharp on high-density screens.
  */
+import { onThemeChange } from '../core/theme.js';
+
 const canvas = document.getElementById('login-canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 
-// "R G B" token channels to an rgba() colour with the given alpha
-const root = getComputedStyle(document.documentElement);
-const channels = (name) => root.getPropertyValue(`--${name}`).trim().split(/\s+/).join(', ');
-const colour = (name, alpha = 1) => `rgba(${channels(name)}, ${alpha})`;
+// a token, "R G B" or "R G B / A", as channels and alpha
+function token(name) {
+  const [rgb, alpha] = getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).split('/');
+  return { rgb: rgb.trim().split(/\s+/).join(', '), a: alpha === undefined ? 1 : parseFloat(alpha) };
+}
+// the token's colour, its alpha scaled by k
+const rgba = (c, k = 1) => `rgba(${c.rgb}, ${c.a * k})`;
 
-// back to front: where the swell sits (share of the height), how tall it rolls, its colour
+// back to front: where the swell sits (share of the height), how tall it rolls, and how
+// strong its crest line is (a share of --login-crest)
 const WAVES = [
-  { level: 0.70, height: 0.022, length: 0.0042, speed: 0.00018, fill: ['login-dot', 0.10], crest: 0.18 },
-  { level: 0.76, height: 0.028, length: 0.0034, speed: -0.00024, fill: ['login-accent', 0.18], crest: 0.22 },
-  { level: 0.83, height: 0.034, length: 0.0027, speed: 0.00031, fill: ['login-to', 0.45], crest: 0.26 },
-  { level: 0.90, height: 0.040, length: 0.0021, speed: -0.00038, fill: ['login-deep', 0.92], crest: 0.30 },
+  { level: 0.70, height: 0.022, length: 0.0042, speed: 0.00018, crest: 0.60 },
+  { level: 0.76, height: 0.028, length: 0.0034, speed: -0.00024, crest: 0.73 },
+  { level: 0.83, height: 0.034, length: 0.0027, speed: 0.00031, crest: 0.87 },
+  { level: 0.90, height: 0.040, length: 0.0021, speed: -0.00038, crest: 1 },
 ];
+
+// the current theme's colours, read once and again on every switch
+let paint = null;
+function readPaint() {
+  paint = {
+    sky: ['login-from', 'login-via', 'login-to'].map(token),
+    waves: WAVES.map((_, i) => token(`login-wave-${i + 1}`)),
+    crest: token('login-crest'),
+    glow: token('login-glow'),
+    star: token('login-star'),
+  };
+}
 
 let width = 0;
 let height = 0;
@@ -57,40 +77,43 @@ function waveY(w, x, t) {
 }
 
 function draw(t) {
-  // the sky, dark at the top to navy at the sea
+  // the sky, from the top down to the sea
   const sky = ctx.createLinearGradient(0, 0, 0, height);
-  sky.addColorStop(0, colour('login-from'));
-  sky.addColorStop(0.55, colour('login-via'));
-  sky.addColorStop(1, colour('login-to'));
+  sky.addColorStop(0, rgba(paint.sky[0]));
+  sky.addColorStop(0.55, rgba(paint.sky[1]));
+  sky.addColorStop(1, rgba(paint.sky[2]));
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, width, height);
 
-  // a soft moon glow, high on the right
+  // the sun or the moon: a soft glow, high on the right
   const mx = width * 0.82;
   const my = height * 0.16;
   const glow = ctx.createRadialGradient(mx, my, 0, mx, my, Math.max(width, height) * 0.35);
-  glow.addColorStop(0, colour('login-dot', 0.16));
-  glow.addColorStop(0.3, colour('login-dot', 0.06));
-  glow.addColorStop(1, colour('login-dot', 0));
+  glow.addColorStop(0, rgba(paint.glow));
+  glow.addColorStop(0.3, rgba(paint.glow, 0.375));
+  glow.addColorStop(1, rgba(paint.glow, 0));
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
 
-  for (const s of stars) {
-    const twinkle = s.base * (0.6 + 0.4 * Math.sin(s.phase + t * s.rate));
-    ctx.fillStyle = colour('on-fill', twinkle);
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-    ctx.fill();
+  // stars, at night only (by day their token's alpha is 0)
+  if (paint.star.a > 0) {
+    for (const s of stars) {
+      const twinkle = s.base * (0.6 + 0.4 * Math.sin(s.phase + t * s.rate));
+      ctx.fillStyle = rgba(paint.star, twinkle);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   const step = 8;
-  for (const w of WAVES) {
+  WAVES.forEach((w, i) => {
     ctx.beginPath();
     ctx.moveTo(0, height);
     for (let x = 0; x <= width + step; x += step) ctx.lineTo(x, waveY(w, x, t));
     ctx.lineTo(width, height);
     ctx.closePath();
-    ctx.fillStyle = colour(w.fill[0], w.fill[1]);
+    ctx.fillStyle = rgba(paint.waves[i]);
     ctx.fill();
 
     ctx.beginPath();
@@ -99,10 +122,10 @@ function draw(t) {
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = colour('login-dot', w.crest);
+    ctx.strokeStyle = rgba(paint.crest, w.crest);
     ctx.lineWidth = 1.2;
     ctx.stroke();
-  }
+  });
 }
 
 let frame = null;
@@ -119,8 +142,11 @@ function start() {
 }
 
 if (ctx) {
+  readPaint();
   resize();
   start();
   window.addEventListener('resize', () => { resize(); if (still.matches) draw(0); });
   still.addEventListener('change', start);
+  // day or night: the tokens have changed, so read them again (and redraw a still sea)
+  onThemeChange(() => { readPaint(); if (still.matches) draw(0); });
 }

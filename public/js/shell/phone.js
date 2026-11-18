@@ -29,7 +29,7 @@ export function openMore() {
         className: 'relative flex flex-col items-center gap-1.5 rounded-card p-2 text-center text-2xs font-medium hover:bg-muted',
         'aria-label': m.soon ? `${m.label} (Soon)` : m.label,
       }, [
-        h('span', { className: cx('flex h-12 w-12 items-center justify-center rounded-2xl', m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-sidebar to-sidebar-deep text-sidebar-foreground shadow-md shadow-sidebar/30') }, icon(m.icon, 'icon h-6 w-6')),
+        h('span', { className: cx('flex h-12 w-12 items-center justify-center rounded-2xl', m.soon ? 'bg-muted text-muted-foreground' : 'bg-gradient-to-br from-brand-fill to-brand-deep text-on-fill shadow-md shadow-brand-fill/30') }, icon(m.icon, 'icon h-6 w-6')),
         m.short,
         m.soon ? h('span', { className: cx(pillClass('neutral'), 'absolute right-0 top-0'), text: 'Soon' }) : null,
       ]))),
@@ -62,9 +62,9 @@ function renderBottom(info) {
   const cur = bottomKeyFor(info);
   bar.replaceChildren(...BOTTOM.map((b) => {
     const on = b.key === cur;
-    const cls = cx('flex h-16 flex-col items-center justify-center gap-1 text-2xs focus-visible:outline-none', on ? 'font-semibold text-sidebar' : 'text-muted-foreground');
+    const cls = cx('flex h-16 flex-col items-center justify-center gap-1 text-2xs focus-visible:outline-none', on ? 'font-semibold text-brand' : 'text-muted-foreground');
     const inner = [
-      h('span', { className: cx('flex h-7 w-14 items-center justify-center rounded-full transition-colors', on && 'bg-sidebar/10') }, icon(b.icon, 'icon h-[22px] w-[22px]')),
+      h('span', { className: cx('flex h-7 w-14 items-center justify-center rounded-full transition-colors', on && 'bg-brand/10') }, icon(b.icon, 'icon h-[22px] w-[22px]')),
       h('span', { text: b.label }),
     ];
     return b.href

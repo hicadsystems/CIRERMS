@@ -7,6 +7,7 @@
 import { api } from '../core/api.js';
 import { describe } from '../core/nav.js';
 import { openSearch, setSearchHandler } from '../core/search.js';
+import { bindThemeButton } from '../core/theme.js';
 import { startRouter } from '../core/router.js';
 import { pageHeader } from '../ui/page-header.js';
 import { button } from '../ui/button.js';
@@ -83,6 +84,7 @@ function syncToggle() {
 }
 
 function bindChrome() {
+  bindThemeButton(document.getElementById('theme-toggle'));
   document.getElementById('rail-toggle')?.addEventListener('click', () => {
     setFolded(!isFolded());
     syncToggle();

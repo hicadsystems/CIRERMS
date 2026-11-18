@@ -2,7 +2,7 @@
  * stat tile: a dashboard number with a label, a coloured icon and a foot line.
  *
  *   statTile({ label, value, icon, tone, foot, href })
- *     tone   'primary' (teal) | 'destructive' (red) | 'secondary' (blue) | 'sidebar' (navy blue)
+ *     tone   'primary' (teal) | 'destructive' (red) | 'secondary' (blue) | 'brand' (navy blue)
  *     foot   node(s) under a divider ("12 current  3 former" links)
  *   Returns the tile; tile.setValue(v) updates the number.
  *
@@ -16,7 +16,7 @@ const TONES = {
   primary: ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'],
   destructive: ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'],
   secondary: ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'],
-  sidebar: ['from-sidebar to-sidebar-deep shadow-sidebar/30', 'bg-sidebar/10'],
+  brand: ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand-fill/10'],
 };
 
 export function statTile({ label, value = '--', icon = 'users', tone = 'primary', foot = null, className = '' } = {}) {

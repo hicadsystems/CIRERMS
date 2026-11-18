@@ -16,7 +16,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap |
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
-| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
+| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. One admin role for the demo; screen IDs ready for permissions later |
 | Out of scope (for now) | Automated tests and CI pipelines. On hold until the legacy system is available as reference: the session lock, Static Tables, Reports and System Administration (their look is agreed in `docs/design/demo.html`). The other non-Ratings modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
@@ -42,9 +42,10 @@ CIRERMS/
 │     ├─ ratings/               # ratings.routes.js  ratings.service.js  ratings.repo.js
 │     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
-│  ├─ index.html                # sign in (auth.login): the night sea canvas (js/sections/login-canvas.js), crest and form
+│  ├─ index.html                # sign in (auth.login): the sea canvas (js/sections/login-canvas.js; day or night), crest, form, light / dark switch
 │  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
-│  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices
+│  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices,
+│  │                            # theme-boot (light or dark before the page draws) and theme (the switch)
 │  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session
 │  ├─ js/ui/                    # the component kit (docs/design/components.md)
 │  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents),
@@ -199,12 +200,28 @@ DROP TABLE ratings;
   (ivory `#faf9f0`, sampled from the reference screen), text and icons on a coloured fill are `text-on-fill`
   (the same ivory), and faint tints on the sidebar are `bg-on-fill/10`. The app shell's `<body>` carries
   `app-canvas`, the page gradient (`--canvas-from` / `-via` / `-to`). The sign-in page has its own canvas
-  (`--login-*` tokens: a night sea, stars and a moon glow over four layers of rolling waves, drawn by `js/sections/login-canvas.js`,
-  still for people who ask for reduced motion), the large crest at the left and the form in a glass card;
-  its text is `text-on-fill`.
+  (`--login-*` tokens, drawn by `js/sections/login-canvas.js`, still for people who ask for reduced motion):
+  four layers of rolling waves under a day sky with a warm sun glow in light mode, under a night sky with
+  stars and a moon glow in dark mode. The large crest sits at the left and the form in a glass card
+  (`bg-login-glass`); its text is `text-login-ink`, the footer link `text-login-link`.
+- **Accents are `brand`, not `sidebar`.** The selected tab, chip and bottom-bar item, step circles, avatars
+  and icon badges use `text-brand`, `bg-brand text-brand-foreground` and `from-brand-fill to-brand-deep`.
+  The `sidebar-*` tokens are for the sidebar and the phone header only: in dark mode the sidebar is near
+  black and would vanish as an accent.
+- **Light and dark.** `:root` holds the light values; `:root[data-theme="dark"]` in `input.css` gives every
+  token its dark value, so markup never says `dark:`. `js/core/theme-boot.js` is the first script in the
+  `<head>` of every page, before the stylesheet: it sets `data-theme` before the page draws (the person's
+  choice, else the device's), so nothing flashes. `js/core/theme.js` switches it (`currentTheme`,
+  `setTheme`, `toggleTheme`, `onThemeChange`, `bindThemeButton`), keeps the choice in `localStorage`
+  (`cirerms-theme`), follows the device until a choice is made, and carries a choice to the other tabs.
+  The switches: the top bar's button (desktop), *Dark Mode* / *Light Mode* in the account menu (sidebar and
+  phone), and the button at the top right of the sign-in page; all share the one setting. A fill's text
+  is its `*-foreground` token (`bg-primary text-primary-foreground`): in dark mode the bright fills carry
+  dark text, so never put `text-on-fill` on `primary`, `secondary`, `destructive` or `brand`.
 - **Depth and corners.** `rounded-ctl` (8 px: fields, buttons), `rounded-card` (12 px: cards, panels,
   dropdown lists), `rounded-dialog` (16 px: dialogs); shadows `shadow-card`, `shadow-card-hover`,
-  `shadow-pop` (menus, dialogs) and `shadow-btn`; actions are gentle gradients (`bg-gradient-to-b
+  `shadow-pop` (menus, dialogs) and `shadow-btn`, each a token (`--shadow-*`: tinted with the text colour
+  in light mode, plain black in dark); actions are gentle gradients (`bg-gradient-to-b
   from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-ring/15`.
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by

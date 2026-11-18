@@ -31,11 +31,11 @@ export function stepper({ steps = [], current = 1, onStep = () => {} } = {}) {
         'aria-current': on ? 'step' : undefined,
         className: cx(
           'flex w-full items-center gap-2.5 rounded-ctl px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 phone:flex-col phone:gap-1 phone:px-1 phone:text-center phone:text-2xs',
-          on ? 'bg-sidebar/10 font-semibold text-foreground' : 'text-muted-foreground hover:bg-subtle'
+          on ? 'bg-brand/10 font-semibold text-foreground' : 'text-muted-foreground hover:bg-subtle'
         ),
       }, [
         h('span', {
-          className: cx('flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold', done ? 'bg-primary text-primary-foreground' : on ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-muted-foreground'),
+          className: cx('flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold', done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'),
         }, done ? icon('check') : String(n)),
         label,
       ]);
