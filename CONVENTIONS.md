@@ -86,7 +86,7 @@ Every module has three files, each with one job:
 - Routes: `/api/<module>/<resource>` — e.g. `GET /api/ratings`, `POST /api/ratings/:serviceNumber/next-of-kin`.
 - Success: `{ "data": ..., "meta": { "page", "pageSize", "total", "totalPages" } }` (`meta` only on lists).
 - Error: `{ "error": { "code": "DUPLICATE_OFFICIAL_NO", "message": "...", "fields": { ... } } }`.
-- Lists are paged, filtered and sorted on the server: `?page=1&pageSize=10&serviceNumber=...&name=...&status=current`.
+- Lists are paged (25), filtered and sorted on the server: `GET /api/ratings?status=current|former|all&q=<Official No or name>&rateId=&shipId=&page=1&pageSize=25`.
 - Exports (Excel/CSV/PDF) are server endpoints that use the same filters as the list; Copy copies the visible rows to the clipboard.
 
 ## Naming
@@ -168,8 +168,11 @@ DROP TABLE ratings;
 
 ## Frontend
 
-- `app.html` is the shell; the router loads `sections/<module>/<screen>.html` into `<main>`
-  and runs its matching `js/sections/<module>/<screen>.js` (payroll's `data-section` approach).
+- `app.html` is the shell; the router runs the route's mount function (`js/sections/app-shell.js` `SCREENS`),
+  which draws the whole screen, its page header included, with the kit in `js/ui/` (there are no HTML templates).
+- Every "add" opens in a dialog (a bottom sheet on a phone), New Rating included; Ctrl K opens the search palette
+  (`js/shell/search-palette.js`).
+- Date fields are typed and shown as dd/mm/yyyy (`core/dates.js` `parseDisplayDate`) and sent as YYYY-MM-DD.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
 - Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);
   the rail, the module tabs, the phone header, bottom bar and More sheet, and the router all read it.
@@ -227,12 +230,13 @@ DROP TABLE ratings;
 | Screen ID | Screen |
 |---|---|
 | `auth.login` | Login (`public/index.html`) |
-| `dashboard.home` | Dashboard — Members card live (`total`, `former`, `current`), others show `0` |
-| `ratings.list` | Current / Former Ratings List (one screen, `status` filter, server paging & exports, Print Report PDF) |
-| `ratings.new` | New Ratings / Edit Rating — 10-tab profile (basic/contact/health/official, next of kin, spouse, children, advancement, drafting, training, education, language, documents) |
-| `ratings.upload` | Batch Upload — `.xlsx` template, upload & validate, skip duplicate official numbers, error report, transactional commit |
-| `ratings.my-details` | View My Details — read-only 10-tab profile for the logged-in user's `service_number` |
-| `ratings.documents` | View Document — search by service number, filter by category, preview/download and upload files |
+| `dashboard.home` | Dashboard: Members tile live (`total`, `current`, `former`), the others `0`; Recently Enlisted; Current Ratings by Rate |
+| `ratings.list` | Current / Former Ratings (one screen, `status`): search, Rate and Ship filters, 25 a page, the picked rating beside the list (1280 px and up) or in a dialog or sheet; Export (Copy Rows, Excel, PDF, CSV) and New Rating |
+| `ratings.new` | New Rating: a dialog with the four steps (Basic Details, Contact, Health, Official); `#ratings/new` opens it over the current list |
+| `ratings.edit` | The rating's record: head row, completeness bar, ten tabs (Details as four cards with Edit dialogs; Next of Kin, Spouse, Children, Advancement, Drafting, Training, Education, Language with Add / Edit / Delete; Documents) |
+| `ratings.upload` | Batch Upload: Download Template, Upload Workbook, Review and Commit (duplicates and rows with errors skipped, the rest added in one transaction) |
+| `ratings.my-details` | My Details: the record read-only for the signed-in user's `service_number`, or a notice for an account with none |
+| `ratings.documents` | Documents: find a rating by Official No or name, then its files by category, preview, download and upload |
 
 Other sidebar menus (`Drafting`, `Special Drafting`, `Advancement Processing`, `Assessment of NAVAL Character & Efficiency`, `Disciplinary Action`, `Discharge Administration`) are visible in the sidebar as disabled items.
 

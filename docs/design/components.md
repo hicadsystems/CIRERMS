@@ -51,9 +51,8 @@ pageHeader({ title: 'Current Ratings', subtitle: 'Serving ratings on the nominal
   actions: [exportBtn, newBtn], phoneActions: 'hide' });
 ```
 
-The subtitle is hidden on phones. The shell already puts a page header at the top of each route's outlet,
-using the title and subtitle from `core/nav.js` `PAGES`. When step 4 rebuilds a screen with its own header,
-remove that screen's header from `app-shell.js` `beforeMount`.
+The subtitle is hidden on phones. Each screen draws its own page header (the titles and subtitles are in
+`core/nav.js` `PAGES`).
 
 ## Card
 
@@ -313,7 +312,7 @@ levelFor(64);                                 // 'mid'
 | What | Where |
 |---|---|
 | Areas, modules, tabs and every page's title, subtitle, back link and screen id | `public/js/core/nav.js` (`AREAS`, `MODULES`, `PAGES`, `describe(path)`) |
-| Ctrl K and the search buttons | `public/js/core/search.js`: `openSearch()` calls the handler registered with `setSearchHandler(fn)`; until step 5 registers one, it does nothing |
+| Ctrl K and the search buttons | `public/js/core/search.js`: `openSearch()` calls the handler registered with `setSearchHandler(fn)`; the shell registers the palette in `public/js/shell/search-palette.js` |
 | Signed-in user, sign out, account menu items | `public/js/shell/session.js` (`getUser()`, `signOut()`, `accountItems()`) |
 | Routes to screens | `public/js/sections/app-shell.js` `SCREENS` (pattern, template, mount) |
 | Rail, module tabs, phone header, bottom bar and More sheet | `public/js/shell/rail.js`, `module-tabs.js`, `phone.js` |
