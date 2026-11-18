@@ -87,7 +87,11 @@ are settled. Both modules keep their **Soon** label until then.
 | Ratings Management | Ratings Management | Employee: viewprofile (View My Details), Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents) | Done, approved | Done |
 | Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, ExcelUpload, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList, draftapproval, closedraftreview | D1 | WP7 |
 | Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report) | Later | Later |
-| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload (Advancementapproval and closeadvancement are in the code but not in the live menu: out of scope, as the live system) | D1 | WP8 |
+<<<<<<< HEAD
+| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement (in the code, not in the live menu; included by the owner's decision, 18/11/2026) | D1 | WP8 |
+=======
+| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement are in the code but not in the live menu (section 9) | D1 | WP8 |
+>>>>>>> origin/master
 | Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | Later | Later |
 | Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | D2 | WP4 |
 | Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | D2 | WP5 |
@@ -96,7 +100,7 @@ are settled. Both modules keep their **Soon** label until then.
 | Report | Reports | Report: personellistbybranch (ship history), personellistfilter (all personnel), PersonelReport (disposition); the Crystal reports WP0 finds still in use | Done, approved (D2 adds any Crystal reports WP0 finds in use) | WP9 |
 | System Administration | System Administration | Security/CreateNewUser (Manage Users), RoleManagement/roleList (Manage Roles), Security/ResetPasswordServiceNumber (Manage Password), Account/AuditTrail | Done, approved | WP1 (backend), WP3 (screens) |
 | (from the new app) | Session lock | Locks after idle time; unlocks with the password only | Done, approved | WP1 |
-| (from the new app) | Light and dark mode, sign-in page | The app has them; the demo gets them in the `demo-themes` job (section 8) | Done, awaiting merge | Done |
+| (from the new app) | Light and dark mode, sign-in page | The app has them; the demo got them in the `demo-themes` job (section 8) | Done | Done |
 
 Not in the old menu and out of scope: leave applications, medical history screens, the file
 explorer and the info routers. Their tables stay in WP0's map only.
@@ -111,7 +115,11 @@ Sonnet where screens follow patterns already in the kit.
 
 | Pkg | Branch | Scope | Model · effort | Needs merged first | Size |
 |---|---|---|---|---|---|
-| D1 | `design-drafting` | Drafting (its 10 pages), Training Drafting (5) and Advancement Processing (its 5 live pages): every page, step and dialog, by rule 13 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
+<<<<<<< HEAD
+| D1 | `design-drafting` | Drafting (its 10 pages), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 13 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
+=======
+| D1 | `design-drafting` | Drafting (its 10 pages), Training Drafting (5) and Advancement Processing (5, plus Approval and Close if the owner confirms them): every page, step and dialog, by rule 13 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
+>>>>>>> origin/master
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the Crystal reports WP0 finds still in use (under Reports), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
 
 ### Build packages
@@ -126,7 +134,11 @@ Sonnet where screens follow patterns already in the kit.
 | WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2, D2 | M |
 | WP6 | `training-drafting` | Process a training draft, training review, update training history (feeds the record's Training tab), the reports, upload from Excel | Sonnet 5.5 · high | WP2, D1 | M |
 | WP7 | `drafting` | Manning requirement per ship, draft proposal (who is due, by the old rules), review and print, upload, update WEF, batch and signal content, rate DOD history, draft report, approval, close; drafting updates the record's Drafting tab and current ship. Split into WP7a and WP7b if WP0 advises | Opus 5.5 · high | WP2, D1 | L |
-| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. If the rules read appraisal grades, the demo seeds them (Naval Character Assessment is later) | Opus 5.5 · high | WP2, WP4, D1 | L |
+<<<<<<< HEAD
+| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. If the rules read appraisal grades, the demo seeds them (Naval Character Assessment is later) | Opus 5.5 · high | WP2, WP4, D1 | L |
+=======
+| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review (approval and close if the owner confirms them, section 9), board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. If the rules read appraisal grades, the demo seeds them (Naval Character Assessment is later) | Opus 5.5 · high | WP2, WP4, D1 | L |
+>>>>>>> origin/master
 | WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, and the Crystal reports D2 designed, as PDF and Excel | Sonnet 5.5 · medium | WP7, D2 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
@@ -172,8 +184,8 @@ the next wave once the owner has merged.
 
 | Pkg | Status | Branch | Last report |
 |---|---|---|---|
-| `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Done, checked, ready to merge (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
-| WP0 | Not started | `legacy-map` | |
+| `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
+| WP0 | Running since 18/11/2026, Sonnet 5.5 · medium | `legacy-map` | |
 | D1 | Not started | `design-drafting` | |
 | WP1 | Not started | `foundation-access` | |
 | D2 | Not started | `design-casework` | |
@@ -189,6 +201,11 @@ the next wave once the owner has merged.
 
 ## 9. Open questions
 
+<<<<<<< HEAD
+=======
+- **Advancement Approval and Close** are live code in the old system but missing from the live menu:
+  either switched off or hidden from the owner's role. The owner confirms before D1 starts.
+>>>>>>> origin/master
 - **Memos and Mails** (a dashboard tile) has no menu item in the old system; WP0 looks for where it
   comes from. Until then the tile stays 0.
 - **Crystal reports:** the old system has 77; WP0 lists which ones its screens still open, and only
