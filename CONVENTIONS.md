@@ -42,7 +42,7 @@ CIRERMS/
 │     ├─ ratings/               # ratings.routes.js  ratings.service.js  ratings.repo.js
 │     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
-│  ├─ index.html                # sign in (auth.login): the animated canvas (js/sections/login-canvas.js), crest and form
+│  ├─ index.html                # sign in (auth.login): the night sea canvas (js/sections/login-canvas.js), crest and form
 │  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
 │  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices
 │  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session
@@ -199,7 +199,7 @@ DROP TABLE ratings;
   (ivory `#faf9f0`, sampled from the reference screen), text and icons on a coloured fill are `text-on-fill`
   (the same ivory), and faint tints on the sidebar are `bg-on-fill/10`. The app shell's `<body>` carries
   `app-canvas`, the page gradient (`--canvas-from` / `-via` / `-to`). The sign-in page has its own canvas
-  (`--login-*` tokens: a black-to-navy gradient with drifting linked dots, drawn by `js/sections/login-canvas.js`,
+  (`--login-*` tokens: a night sea, stars and a moon glow over four layers of rolling waves, drawn by `js/sections/login-canvas.js`,
   still for people who ask for reduced motion), the large crest at the left and the form in a glass card;
   its text is `text-on-fill`.
 - **Depth and corners.** `rounded-ctl` (8 px: fields, buttons), `rounded-card` (12 px: cards, panels,

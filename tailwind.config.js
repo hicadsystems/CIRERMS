@@ -52,7 +52,7 @@ module.exports = {
           border: 'var(--sidebar-border)',
         },
         scrim: 'var(--scrim)',
-        login: { from: token('login-from'), via: token('login-via'), to: token('login-to'), dot: token('login-dot'), accent: token('login-accent') },
+        login: { from: token('login-from'), via: token('login-via'), to: token('login-to'), deep: token('login-deep'), dot: token('login-dot'), accent: token('login-accent') },
         'on-fill': token('on-fill'),
         canvas: { from: token('canvas-from'), via: token('canvas-via'), to: token('canvas-to') },
 

@@ -73,11 +73,12 @@
     --sidebar-hover: rgb(var(--on-fill) / 0.10);
     --sidebar-border: rgb(var(--on-fill) / 0.15);
 
-    /* ---- Sign-in page (derived: the NAVY-PAYROLL sign-in canvas) ---- */
-    --login-from: 0 0 0;                  /* #000000: the canvas gradient, top left */
-    --login-via: 17 24 39;                /* #111827: the canvas gradient, middle */
-    --login-to: 30 64 175;                /* #1e40af: the canvas gradient, bottom right; on-fill 8.25:1 */
-    --login-dot: 59 130 246;              /* #3b82f6: the drifting dots, their links, the icon badge */
+    /* ---- Sign-in page: the night sea canvas (js/sections/login-canvas.js) ---- */
+    --login-from: 0 0 0;                  /* #000000: the sky, top */
+    --login-via: 17 24 39;                /* #111827: the sky, middle */
+    --login-to: 30 64 175;                /* #1e40af: the sky at the sea, the third wave; on-fill 8.25:1 */
+    --login-deep: 9 24 56;                /* #091838: the nearest wave, behind the footer; on-fill 16.57:1 */
+    --login-dot: 59 130 246;              /* #3b82f6: the farthest wave, wave crests, the moon glow, the icon badge */
     --login-accent: 37 99 235;            /* #2563eb: the Sign In button (to login-to); on-fill 4.89:1, and 8.25:1 at its navy end */
 
     /* ---- Overlays ---- */
