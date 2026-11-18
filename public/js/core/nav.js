@@ -94,7 +94,8 @@ export const PAGES = [
   { pattern: 'dashboard', module: 'dashboard', title: 'Dashboard', subtitle: 'Ratings at a glance', short: 'Home', screen: 'dashboard.home' },
   { pattern: 'ratings/current', module: 'ratings', tab: 'ratings/current', title: 'Current Ratings', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.list' },
   { pattern: 'ratings/former', module: 'ratings', tab: 'ratings/former', title: 'Former Ratings', subtitle: 'Retired and discharged ratings', screen: 'ratings.list' },
-  { pattern: 'ratings/new', module: 'ratings', tab: 'ratings/current', title: 'New Rating', subtitle: 'Add a rating to the nominal roll', back: 'ratings/current', screen: 'ratings.new' },
+  // the New Rating dialog over the current list
+  { pattern: 'ratings/new', module: 'ratings', tab: 'ratings/current', title: 'New Rating', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.new' },
   {
     pattern: 'ratings/edit/:serviceNumber',
     module: 'ratings',

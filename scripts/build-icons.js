@@ -16,7 +16,7 @@ const path = require('path');
 const ICONS = [
   // shell and navigation
   'house', 'layout-dashboard', 'layout-grid', 'menu', 'panel-left', 'panel-left-close', 'panel-left-open',
-  'search', 'bell', 'log-out', 'circle-user', 'ellipsis', 'ellipsis-vertical',
+  'search', 'bell', 'log-out', 'log-in', 'circle-user', 'ellipsis', 'ellipsis-vertical',
   'chevron-down', 'chevron-up', 'chevron-left', 'chevron-right', 'arrow-left',
   // modules (sidebar)
   'users', 'user', 'user-round', 'user-plus', 'briefcase', 'anchor', 'ship', 'trending-up', 'award',

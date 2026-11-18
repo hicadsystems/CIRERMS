@@ -5,6 +5,7 @@
  * the New Rating button bottom right on the ratings lists.
  *
  *   renderPhone(info)   openMore()
+ *   setPhoneTitle(text)   a record page names its rating once it has loaded
  */
 import { AREAS, BOTTOM, bottomKeyFor } from '../core/nav.js';
 import { icon } from '../core/icons.js';
@@ -49,7 +50,7 @@ function renderHeader(info) {
   attachMenu(account, accountItems, { title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
   header.replaceChildren(
     lead,
-    h('span', { className: 'min-w-0 flex-1 truncate px-1 text-base font-semibold', text: info ? info.short : 'CIRERMS' }),
+    h('span', { id: 'phone-title', className: 'min-w-0 flex-1 truncate px-1 text-base font-semibold', text: info ? info.short : 'CIRERMS' }),
     search,
     account
   );
@@ -73,10 +74,15 @@ function renderBottom(info) {
 
   const fab = document.getElementById('fab');
   if (fab) {
-    const show = info && (info.path === 'ratings/current' || info.path === 'ratings/former');
+    const show = info && ['ratings/current', 'ratings/former', 'ratings/new'].includes(info.path);
     fab.classList.toggle('hidden', !show);
     fab.classList.toggle('flex', !!show);
   }
+}
+
+export function setPhoneTitle(text) {
+  const t = document.getElementById('phone-title');
+  if (t) t.textContent = text;
 }
 
 export function renderPhone(info) {

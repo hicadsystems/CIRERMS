@@ -1,19 +1,16 @@
 /*
- * dom: the helpers the screens built before the component kit use. They now
- * draw with the kit (js/ui/), so they look like the rest of the app:
- *   el            = ui/html.js h()
- *   showToast     -> ui/toast.js
- *   confirmModal  -> ui/confirm.js
- *   previewBlobModal -> ui/dialog.js (a large dialog; a sheet on a phone)
- *   showFieldErrors / clearFieldErrors -> ui/field.js
- * New code should import from js/ui/ directly.
+ * dom: small helpers the screens share.
+ *   el                ui/html.js h()
+ *   clear(node)       empties a node
+ *   populateSelect(select, items, { placeholder, valueKey, labelKey, selectedValue })
+ *                     refills a select (or its searchable dropdown) from a lookup list
+ *   previewBlobModal({ title, blob, mimeType, fileName })
+ *                     a PDF or image in a large dialog (a sheet on a phone), with Download
+ *   formatBytes(n)    '182.4 KB'
  */
 import { h } from '../ui/html.js';
-import { toast } from '../ui/toast.js';
-import { confirmDialog } from '../ui/confirm.js';
 import { openDialog } from '../ui/dialog.js';
 import { button } from '../ui/button.js';
-import { setFieldErrors, clearFieldErrors as clearErrors } from '../ui/field.js';
 
 export const el = h;
 
@@ -42,28 +39,6 @@ export function populateSelect(
     }
     selectEl.appendChild(opt);
   }
-}
-
-export function clearFieldErrors(container) {
-  clearErrors(container);
-}
-
-export function showFieldErrors(container, fields = {}) {
-  if (!container) return;
-  setFieldErrors(container, fields || {});
-}
-
-export function showToast(message, type = 'success') {
-  return toast(message, type);
-}
-
-export function confirmModal({
-  title = 'Confirm Action',
-  message = 'Are you sure you want to proceed?',
-  confirmLabel = 'Confirm',
-  danger = false,
-} = {}) {
-  return confirmDialog({ title, message, confirmLabel, danger });
 }
 
 export function previewBlobModal({ title = 'Document Preview', blob, mimeType = '', fileName = 'document' }) {
