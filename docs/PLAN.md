@@ -39,6 +39,8 @@ are settled. Both modules keep their **Soon** label until then.
   difference is written down.
 - The old pages have faults (wrong labels, broken searches, missing checks). We port the rules, not
   the faults: WP0 lists them per module.
+- **No stored procedures.** The old system keeps much of its logic in SQL Server procedures; ours
+  keeps none. Their logic is rewritten as code (section 3, rule 10).
 
 ## 3. Rules for every session
 
@@ -60,24 +62,28 @@ are settled. Both modules keep their **Soon** label until then.
 9. **Design first.** Design packages change only `docs/design/` and rebuild the demo
    (`npm run demo:build`). Build packages make the app match the approved demo: same pages, steps,
    fields, labels and order. Anything the design lacks is raised in the report, not invented.
-10. Migrations go in the package's own number block: `src/db/migrations/20261120_WW####_name.sql`,
+10. **No stored procedures, functions, triggers or views in our database**, and none kept in this
+    repository, not even as reference copies (owner's decision, 18/11/2026). Logic lives in the
+    module's service (`*.service.js`), with plain parameterised SQL in its repo file (`*.repo.js`).
+    An old procedure is rewritten that way from the description of its logic in `docs/legacy/`.
+11. Migrations go in the package's own number block: `src/db/migrations/20261120_WW####_name.sql`,
     where `WW` is the package number (WP2 is `02`). Blocks follow the dependency order, so files
     always run in the right order. Never edit a merged migration.
-11. Touch only your module's files. Shared files (`public/js/core/nav.js`, `README.md`,
+12. Touch only your module's files. Shared files (`public/js/core/nav.js`, `README.md`,
     `CONVENTIONS.md`, the seeds, `docs/design/demo-src.html` for design packages) change only in
     your module's own lines or section. A change a shared component needs is named in the report,
     not slipped in.
-12. **A build package is done when** every old menu action of the module works on demo data and
+13. **A build package is done when** every old menu action of the module works on demo data and
     matches the demo; privileges are checked on every route and the screens hide what a person may
     not do; every write lands in the audit trail; demo seed data fills every page; a Playwright
     walk-through presses every action, on desktop and phone, in both themes, with no browser errors;
     README and CONVENTIONS describe what was built.
-13. **A design package is done when** every old menu page of its modules has its screen in the demo,
+14. **A design package is done when** every old menu page of its modules has its screen in the demo,
     with every step, dialog, confirmation, upload (template, preview, result), print preview, empty
     state and error state, filled with believable demo data; it works on desktop and phone in both
     themes with no browser errors; and `docs/design/README.md` lists, per module, what each old page
     became and what was changed from it and why.
-14. When done, send one report to the administrator session (section 7) and stop. Do not wait for a
+15. When done, send one report to the administrator session (section 7) and stop. Do not wait for a
     reply.
 
 ## 4. Module map (old menu to new)
@@ -111,14 +117,14 @@ Sonnet where screens follow patterns already in the kit.
 
 | Pkg | Branch | Scope | Model · effort | Needs merged first | Size |
 |---|---|---|---|---|---|
-| D1 | `design-drafting` | Drafting (its 10 pages), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 13 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
+| D1 | `design-drafting` | Drafting (its 10 pages), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the Crystal reports WP0 finds still in use (under Reports), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
 
 ### Build packages
 
 | Pkg | Branch | Scope | Model · effort | Needs merged first | Size |
 |---|---|---|---|---|---|
-| WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and the old pages' faults we should not copy); procedure, view and table definitions from the 2017 backup in `docs/legacy/sql/` (definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
+| WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and the old pages' faults we should not copy); the old tables and columns in `docs/legacy/sql/tables.md`, and what every procedure an in-scope page calls does, written in words in its module file (read from the 2017 backup, never copied as SQL; definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
 | WP1 | `foundation-access` | Users, roles and privileges modelled on the old ones (a privilege per screen and action: view, add, edit, delete, approve), checked on every route; menus, tabs and buttons hidden without the grant; the audit trail (table and a helper every write calls); the session lock as the demo shows it (password only); routes and screens registered from each module's own folder so later packages only add files; the admin role seeded with every privilege | Opus 5.5 · high | WP0 | L |
 | WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1 | M |
 | WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action), as the demo shows them | Sonnet 5.5 · medium | WP1 | M |
@@ -145,7 +151,7 @@ Sonnet where screens follow patterns already in the kit.
 
 A package starts only from a `master` that holds every package in its "Needs merged first" column.
 Two packages in the same wave never share files beyond their own lines in the shared ones (rule
-11), so they merge in either order. Changes the owner asks for in a design review are made on the
+12), so they merge in either order. Changes the owner asks for in a design review are made on the
 same design branch before it merges.
 
 ## 7. How a session runs and reports
@@ -164,7 +170,7 @@ When done, the session sends one message to the administrator session
 - for a design package, what the owner should look at first
 - what the next package should know
 
-The administrator checks the branch (author, no Claude mentions, rules 1 to 13 by reading the
+The administrator checks the branch (author, no Claude mentions, rules 1 to 14 by reading the
 diff), tells the owner it is ready to review or merge, updates the status table below, and starts
 the next wave once the owner has merged.
 

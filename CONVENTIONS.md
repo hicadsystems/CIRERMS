@@ -13,7 +13,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Backend | `src/` — everything server-side lives here, nothing at the project root except entry/config files |
 | Uploads | `storage/uploads/` (outside `public/`, configurable via `UPLOAD_DIR`), served only through authenticated API routes |
 | Serving | Express serves `public/` + `/api` from one process (Docker, cPanel Node app, VPS) |
-| Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap |
+| Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap. No stored procedures, functions, triggers or views: logic is code in `*.service.js` with plain parameterised SQL in `*.repo.js`, and the old system's procedures are rewritten that way |
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
