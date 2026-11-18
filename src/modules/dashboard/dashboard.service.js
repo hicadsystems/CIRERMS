@@ -3,10 +3,16 @@
 const dashboardRepo = require('./dashboard.repo');
 
 async function getSummary() {
-  const members = await dashboardRepo.getRatingsCounts();
+  const [members, byRate, recent] = await Promise.all([
+    dashboardRepo.getRatingsCounts(),
+    dashboardRepo.getCurrentByRate(),
+    dashboardRepo.getRecentlyEnlisted(5),
+  ]);
 
   return {
     members,
+    currentByRate: byRate,
+    recentlyEnlisted: recent,
     // Non-Ratings modules remain disabled/zeroed in the Ratings Management migration demo
     drafting: {
       postedLastThreeMonths: 0,
