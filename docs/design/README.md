@@ -42,7 +42,9 @@ the demo after `npm run demo:build`.
   blue, dark text on the bright buttons and pills). The first visit follows the device; the switch is at the
   top right of the desktop top bar and in the account menu (sidebar and phone), and the choice is kept. The
   sign-in page is a day sea in light mode and a night sea in dark mode, with its own switch at the top
-  right. This demo shows light mode only.
+  right. The demo shows all of it: it opens on the sign-in page (Sign In, or a demo account button then
+  Sign In, enters the dashboard; Sign Out in the account menu returns), and both modes work on every screen
+  and on the phone. Its choice is kept in the browser (`cirerms-theme`), as in the app.
 - **Sidebar Administration items** (Static Tables, Reports, System Administration) show as Soon until their
   screens are built.
 
