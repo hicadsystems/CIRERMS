@@ -1,17 +1,18 @@
 /*
- * pdf-preview: the app's own preview of a PDF. Every printout opens here, never in the browser's PDF
- * viewer (no browser toolbar in Chrome, Edge, Firefox or Safari): the pages are drawn by PDF.js, served
- * from our own origin (/vendor/pdfjs, from the pdfjs-dist package), in a large
- * dialog, with only our own Download PDF and Print buttons.
+ * pdf-preview: the app's own preview of a PDF, in a large dialog (a tall sheet on a phone), with only our own
+ * title, close, Download PDF and Print.
  *
  *   openPdfPreview({ url, title, filename })   fetches the PDF through the api client (session and all)
  *   openPdfPreview({ blob, title, filename })  or previews a PDF already in hand
  *   returns the dialog handle (see ui/dialog.js)
  *
- * The dialog follows the theme; the pages are drawn exactly as the PDF paints them (its own background).
- * The title and the page count are in the head; Download PDF saves the file under its name; Print
- * sends the pages to the browser's print dialog from a hidden frame, without showing any viewer.
- * Desktop: a large dialog. Phone: a tall bottom sheet, one page wide, no sideways scroll.
+ * Where the browser can show a PDF inline (navigator.pdfViewerEnabled: desktop Chrome, Edge, Firefox, Safari)
+ * the PDF is shown by the browser's own viewer in an iframe from a blob URL, with its toolbar hidden
+ * (#toolbar=0&navpanes=0), so it is exactly the PDF that is downloaded, as NAVY-PAYROLL does. Where it cannot
+ * (most phones), the pages are drawn by PDF.js from our own origin (/vendor/pdfjs, from the pdfjs-dist
+ * package) on canvases, at 2x to 3x resolution, with the PDF's own background.
+ * Download PDF saves the file under its name; Print prints the iframe's PDF (or the drawn pages from a
+ * hidden frame). The blob URL is revoked when the dialog closes.
  */
 import { api } from '../core/api.js';
 import { icon } from '../core/icons.js';
@@ -34,11 +35,14 @@ function loadPdfjs() {
   return pdfjsPromise;
 }
 
+const canInline = () => typeof navigator !== 'undefined' && navigator.pdfViewerEnabled === true;
+
 const canvasBlob = (canvas) => new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 
 export function openPdfPreview({ url, blob, title = 'Preview', filename = 'document.pdf' } = {}) {
   let objectUrl = null;
   let pdf = null;
+  let viewer = null; // the iframe, when the browser shows the PDF itself
   let printFrame = null;
   let closed = false;
   let resizer = null;
@@ -129,9 +133,38 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
 
   const stageWidth = () => Math.max(280, Math.min(pageBox.clientWidth || 700, 760));
 
+  /** The browser's own PDF viewer, toolbar hidden, in an iframe filling the dialog's body. */
+  async function showInline() {
+    const pdfBlob = source.type === 'application/pdf' ? source : new Blob([source], { type: 'application/pdf' });
+    objectUrl = URL.createObjectURL(pdfBlob);
+    const frame = h('iframe', {
+      title,
+      className: 'block h-full w-full border-0 bg-muted',
+      dataset: { pdfViewer: '' },
+    });
+    const loaded = new Promise((resolve) => { frame.addEventListener('load', resolve, { once: true }); });
+    frame.src = `${objectUrl}#toolbar=0&navpanes=0`;
+    viewer = frame;
+    stage.className = 'bg-muted';
+    stage.style.cssText = 'position:absolute;inset:0';
+    stage.replaceChildren(frame);
+    // the body fills the dialog, with no padding, and the iframe is its only content
+    Object.assign(dlg.body.style, { position: 'relative', overflow: 'hidden', padding: '0' });
+    stage.dataset.ready = '1';
+    stage.dataset.pdfInline = '1';
+    count.textContent = '';
+    await loaded;
+    if (closed) return true;
+    downloadBtn.disabled = false;
+    printBtn.disabled = false;
+    return true;
+  }
+
   async function run() {
     try {
       source = blob || (await api.fetchBlob(url)).blob;
+      if (closed) return;
+      if (canInline() && (await showInline())) return;
       if (closed) return;
       const [lib, bytes] = await Promise.all([loadPdfjs(), source.arrayBuffer()]);
       if (closed) return;
@@ -168,6 +201,16 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
 
   /** Print: the pages as images in a hidden frame, sent to the browser's print dialog; no viewer is shown. */
   async function print() {
+    if (viewer) {
+      try {
+        viewer.contentWindow.focus();
+        viewer.contentWindow.print();
+      } catch (err) {
+        // the browser refused to print the frame: open the PDF itself instead
+        window.open(objectUrl, '_blank', 'noopener');
+      }
+      return;
+    }
     if (!pdf) return;
     printBtn.disabled = true;
     try {
