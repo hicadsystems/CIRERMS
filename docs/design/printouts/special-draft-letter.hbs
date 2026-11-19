@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="portrait"}}
+</head>
+<body>
+{{> header}}
+<div class="letter">
+  <div class="refline"><span>Our ref: <b style="font-family:var(--font-mono)">{{ref}}</b></span><span>{{date letterDate}}</span></div>
+  <p>The Commanding Officer<br><b>{{rating.from}}</b></p>
+  <div class="subject">Special draft: {{rating.rate}} {{rating.name}} ({{rating.sn}})</div>
+  <p>1. I am directed to inform you that the rating named above, now serving in your ship or unit since {{date rating.since}}, is drafted with effect from <b>{{date draft.wef}}</b> as shown below.</p>
+</div>
+{{> facts items=facts cols=2}}
+{{> datatable table}}
+<div class="letter">
+  <p>2. The rating is to be released to report on or before the date shown, with the documents and records of service. Please acknowledge receipt.</p>
+</div>
+<p class="note">{{note}}</p>
+{{> signatures items=signatures}}
+</body>
+</html>

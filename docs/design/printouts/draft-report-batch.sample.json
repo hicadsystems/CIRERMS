@@ -1,0 +1,449 @@
+{
+  "title": "DRAFT REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "DOD-SM-ALL-ALL-000004",
+  "subtitle": "Closed batch",
+  "facts": [
+    {
+      "label": "Batch Number",
+      "value": "DOD-SM-ALL-ALL-000004",
+      "kind": "code"
+    },
+    {
+      "label": "Authority",
+      "value": "NHQ/DOP/DR/118/26",
+      "kind": "code"
+    },
+    {
+      "label": "Status",
+      "value": "Closed"
+    },
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Date Closed",
+      "value": "2026-11-02",
+      "kind": "date"
+    },
+    {
+      "label": "Ratings",
+      "value": "40"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "9%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "22%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "7%"
+      },
+      {
+        "label": "Old Ship",
+        "key": "from",
+        "w": "14%"
+      },
+      {
+        "label": "New Ship",
+        "key": "to",
+        "w": "14%"
+      },
+      {
+        "label": "Vice / Deployment",
+        "key": "vice",
+        "w": "18%"
+      },
+      {
+        "label": "Date Reported",
+        "key": "wef",
+        "kind": "date",
+        "w": "11%"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "C0311",
+        "name": "OKONKWO Danladi Ifeanyi",
+        "rate": "AB",
+        "from": "NNS UNITY",
+        "to": "NNS KADA",
+        "vice": "New vacancy",
+        "wef": "2026-04-20"
+      },
+      {
+        "sn": "B0319",
+        "name": "ADEYEMI Kehinde Samson",
+        "rate": "MCPO",
+        "from": "NNS DELTA",
+        "to": "NNS QUORRA",
+        "vice": "Vice AKPAN",
+        "wef": "2026-01-17"
+      },
+      {
+        "sn": "B0321",
+        "name": "BELLO Chidi Sunday",
+        "rate": "LS",
+        "from": "NNS BEECROFT",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-01-16"
+      },
+      {
+        "sn": "A0323",
+        "name": "EZE Ime Friday",
+        "rate": "PO",
+        "from": "NNS OKPABANA",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-09-05"
+      },
+      {
+        "sn": "B0332",
+        "name": "IBRAHIM Umar Peter",
+        "rate": "LS",
+        "from": "NNS OKPABANA",
+        "to": "NNS OKPABANA",
+        "vice": "Vice OKONKWO",
+        "wef": "2026-10-10"
+      },
+      {
+        "sn": "A0337",
+        "name": "OBI Danladi Ade",
+        "rate": "PO",
+        "from": "NNS LANA",
+        "to": "NNS LANA",
+        "vice": "New vacancy",
+        "wef": "2026-08-21"
+      },
+      {
+        "sn": "C0340",
+        "name": "NWACHUKWU Kehinde Friday",
+        "rate": "MPO",
+        "from": "NNS UNITY",
+        "to": "NNS ARADU",
+        "vice": "New vacancy",
+        "wef": "2026-07-25"
+      },
+      {
+        "sn": "B0354",
+        "name": "ABUBAKAR Danladi Peter",
+        "rate": "PO",
+        "from": "NNS UNITY",
+        "to": "NNS DELTA",
+        "vice": "Vice OGUNLEYE",
+        "wef": "2026-10-18"
+      },
+      {
+        "sn": "A0359",
+        "name": "OLADIPO Blessing Friday",
+        "rate": "AB",
+        "from": "NNS KADA",
+        "to": "NNS OKPABANA",
+        "vice": "Deployment",
+        "wef": "2026-08-03"
+      },
+      {
+        "sn": "A0374",
+        "name": "UDOH Tunde Ugochukwu",
+        "rate": "LS",
+        "from": "NNS PATHFINDER",
+        "to": "NNS UNITY",
+        "vice": "New vacancy",
+        "wef": "2026-06-05"
+      },
+      {
+        "sn": "B0382",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "OS",
+        "from": "NNS DELTA",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-04-22"
+      },
+      {
+        "sn": "C0392",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "CPO",
+        "from": "NNS PATHFINDER",
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "wef": "2026-05-12"
+      },
+      {
+        "sn": "C0406",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "AB",
+        "from": "NNS THUNDER",
+        "to": "NNS UNITY",
+        "vice": "Vice OKONKWO",
+        "wef": "2026-06-06"
+      },
+      {
+        "sn": "C0418",
+        "name": "AFOLABI Peter Michael",
+        "rate": "MCPO",
+        "from": "NNS KADA",
+        "to": "NNS DELTA",
+        "vice": "Vice NWACHUKWU",
+        "wef": "2026-10-08"
+      },
+      {
+        "sn": "B0427",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "OS",
+        "from": "NNS QUORRA",
+        "to": "NNS NGURU",
+        "vice": "Vice UDOH",
+        "wef": "2026-03-10"
+      },
+      {
+        "sn": "A0435",
+        "name": "ETIM Aminu Friday",
+        "rate": "MPO",
+        "from": "NNS PATHFINDER",
+        "to": "NNS KADA",
+        "vice": "Vice OKAFOR",
+        "wef": "2026-02-14"
+      },
+      {
+        "sn": "A0450",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "MPO",
+        "from": "NNS LANA",
+        "to": "NNS LANA",
+        "vice": "New vacancy",
+        "wef": "2026-03-14"
+      },
+      {
+        "sn": "C0460",
+        "name": "SANI Ime Friday",
+        "rate": "OS",
+        "from": "NNS QUORRA",
+        "to": "NNS QUORRA",
+        "vice": "New vacancy",
+        "wef": "2026-08-05"
+      },
+      {
+        "sn": "B0469",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "OS",
+        "from": "NNS UNITY",
+        "to": "NNS QUORRA",
+        "vice": "Vice ABUBAKAR",
+        "wef": "2026-09-22"
+      },
+      {
+        "sn": "B0485",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "AB",
+        "from": "NNS NGURU",
+        "to": "NNS NGURU",
+        "vice": "Deployment",
+        "wef": "2026-08-18"
+      },
+      {
+        "sn": "B0501",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "AB",
+        "from": "NNS UNITY",
+        "to": "NNS UNITY",
+        "vice": "New vacancy",
+        "wef": "2026-10-24"
+      },
+      {
+        "sn": "B0511",
+        "name": "LAWAL Grace Dauda",
+        "rate": "LS",
+        "from": "NNS SAPELE",
+        "to": "NNS SAPELE",
+        "vice": "Deployment",
+        "wef": "2026-05-19"
+      },
+      {
+        "sn": "C0523",
+        "name": "AMADI Chidi Abdul",
+        "rate": "MPO",
+        "from": "NNS SAPELE",
+        "to": "NNS OKPABANA",
+        "vice": "Vice OKAFOR",
+        "wef": "2026-02-16"
+      },
+      {
+        "sn": "C0538",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "LS",
+        "from": "NNS BEECROFT",
+        "to": "NNS PATHFINDER",
+        "vice": "New vacancy",
+        "wef": "2026-02-20"
+      },
+      {
+        "sn": "A0555",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "MCPO",
+        "from": "NNS UNITY",
+        "to": "NNS ARADU",
+        "vice": "New vacancy",
+        "wef": "2026-10-17"
+      },
+      {
+        "sn": "B0560",
+        "name": "EDET Effiong Michael",
+        "rate": "PO",
+        "from": "NNS PATHFINDER",
+        "to": "NNS BEECROFT",
+        "vice": "Vice OLADIPO",
+        "wef": "2026-02-12"
+      },
+      {
+        "sn": "B0574",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "LS",
+        "from": "NNS DELTA",
+        "to": "NNS BEECROFT",
+        "vice": "New vacancy",
+        "wef": "2026-05-13"
+      },
+      {
+        "sn": "B0578",
+        "name": "GARBA Umar Olusegun",
+        "rate": "LS",
+        "from": "NNS UNITY",
+        "to": "NNS LANA",
+        "vice": "Vice LAWAL",
+        "wef": "2026-07-11"
+      },
+      {
+        "sn": "A0592",
+        "name": "IGWE Segun Michael",
+        "rate": "MCPO",
+        "from": "NNS OKPABANA",
+        "to": "NNS KADA",
+        "vice": "New vacancy",
+        "wef": "2026-07-20"
+      },
+      {
+        "sn": "B0607",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "LS",
+        "from": "NNS THUNDER",
+        "to": "NNS PATHFINDER",
+        "vice": "Vice ABUBAKAR",
+        "wef": "2026-10-15"
+      },
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "rate": "AB",
+        "from": "NNS LANA",
+        "to": "NNS PATHFINDER",
+        "vice": "Vice BELLO",
+        "wef": "2026-06-09"
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "CPO",
+        "from": "NNS PATHFINDER",
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "wef": "2026-09-28"
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "AB",
+        "from": "NNS ARADU",
+        "to": "NNS UNITY",
+        "vice": "Vice GARBA",
+        "wef": "2026-10-19"
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "rate": "CPO",
+        "from": "NNS KADA",
+        "to": "NNS DELTA",
+        "vice": "New vacancy",
+        "wef": "2026-07-12"
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "OS",
+        "from": "NNS ARADU",
+        "to": "NNS QUORRA",
+        "vice": "Deployment",
+        "wef": "2026-10-22"
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "rate": "LS",
+        "from": "NNS THUNDER",
+        "to": "NNS KADA",
+        "vice": "Vice JOSEPH",
+        "wef": "2026-07-22"
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "LS",
+        "from": "NNS UNITY",
+        "to": "NNS UNITY",
+        "vice": "Vice NNAMDI",
+        "wef": "2026-04-08"
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "MCPO",
+        "from": "NNS LANA",
+        "to": "NNS KADA",
+        "vice": "Deployment",
+        "wef": "2026-10-26"
+      },
+      {
+        "sn": "B0703",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "rate": "AB",
+        "from": "NNS LANA",
+        "to": "NNS QUORRA",
+        "vice": "Deployment",
+        "wef": "2026-02-16"
+      },
+      {
+        "sn": "A0716",
+        "name": "UDOH Peter Olusegun",
+        "rate": "AB",
+        "from": "NNS SAPELE",
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "wef": "2026-04-17"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Drafting Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

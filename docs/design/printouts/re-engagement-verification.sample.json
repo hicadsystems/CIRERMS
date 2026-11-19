@@ -1,0 +1,105 @@
+{
+  "title": "RE-ENGAGEMENT VERIFICATION",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "subtitle": "Layout indicative: the owner supplies the real form",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Date Employed",
+      "value": "2008-03-12",
+      "kind": "date"
+    },
+    {
+      "label": "Length of Service",
+      "value": "18 years"
+    },
+    {
+      "label": "Age",
+      "value": "38 years"
+    },
+    {
+      "label": "Re-engagement Date",
+      "value": "2026-12-01",
+      "kind": "date"
+    },
+    {
+      "label": "Period",
+      "value": "60 months"
+    },
+    {
+      "label": "Ends",
+      "value": "2031-11-30",
+      "kind": "date"
+    }
+  ],
+  "table": {
+    "heading": "Particulars to verify",
+    "columns": [
+      {
+        "label": "Item",
+        "key": "i",
+        "w": "34%"
+      },
+      {
+        "label": "Particulars",
+        "key": "p"
+      },
+      {
+        "label": "Verified",
+        "kind": "check",
+        "w": "10%"
+      }
+    ],
+    "rows": [
+      {
+        "i": "Official number and name",
+        "p": "B0539 OKONKWO Chukwuemeka Ifeanyi"
+      },
+      {
+        "i": "Date employed",
+        "p": "12/03/2008"
+      },
+      {
+        "i": "Length of service at re-engagement",
+        "p": "18 years"
+      },
+      {
+        "i": "Re-engagement date and period",
+        "p": "01/12/2026 for 60 months"
+      },
+      {
+        "i": "Approved by",
+        "p": "CNS"
+      },
+      {
+        "i": "Earlier re-engagements",
+        "p": "01/12/2016 (60 months)"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Rating"
+    },
+    {
+      "role": "Verifying Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "title": "DISCIPLINARY CASE SHEET",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "DC/2026/0031",
+  "subtitle": "Concluded",
+  "rating": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Ship",
+      "value": "NNS THUNDER"
+    }
+  ],
+  "particulars": [
+    {
+      "label": "Case Number",
+      "value": "DC/2026/0031",
+      "kind": "code"
+    },
+    {
+      "label": "Status",
+      "value": "Concluded"
+    },
+    {
+      "label": "Offence",
+      "value": "Absence without leave"
+    },
+    {
+      "label": "Incident date",
+      "value": "2026-09-14",
+      "kind": "date"
+    },
+    {
+      "label": "What happened",
+      "value": "Failed to return to the ship after weekend leave and was absent for three days before reporting to the Naval Provost."
+    },
+    {
+      "label": "Reported by",
+      "value": "LT ADEYEMI Samuel"
+    },
+    {
+      "label": "Opened",
+      "value": "2026-09-17",
+      "kind": "date"
+    }
+  ],
+  "decision": [
+    {
+      "label": "Decision date",
+      "value": "2026-10-02",
+      "kind": "date"
+    },
+    {
+      "label": "Sanction",
+      "value": "14 days stoppage of leave"
+    },
+    {
+      "label": "Decision",
+      "value": "Charge proved. Sanction awarded after summary trial, with the Commanding Officer's remarks entered on the record."
+    },
+    {
+      "label": "Authority",
+      "value": "CO NNS THUNDER"
+    }
+  ],
+  "corrections": {
+    "heading": "Corrections",
+    "columns": [
+      {
+        "label": "Date",
+        "key": "at",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "By",
+        "key": "by",
+        "w": "22%"
+      },
+      {
+        "label": "Reason",
+        "key": "reason",
+        "w": "24%"
+      },
+      {
+        "label": "Changed",
+        "key": "changed"
+      }
+    ],
+    "rows": [
+      {
+        "at": "2026-10-05",
+        "by": "HICO001",
+        "reason": "Wrong incident date",
+        "changed": "Incident date: 12/09/2026 to 14/09/2026"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Reporting Officer",
+      "name": "LT ADEYEMI Samuel"
+    },
+    {
+      "role": "Authority",
+      "name": "CO NNS THUNDER"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

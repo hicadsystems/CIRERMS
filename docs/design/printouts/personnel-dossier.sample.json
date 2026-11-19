@@ -1,0 +1,644 @@
+{
+  "title": "PERSONNEL DOSSIER — B0539",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "subtitle": "OKONKWO Chukwuemeka Ifeanyi  |  Status: CURRENT",
+  "photo": "assets/sample-photo.svg",
+  "identity": [
+    {
+      "label": "Official Number",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Status",
+      "value": "Current"
+    },
+    {
+      "label": "Current Ship",
+      "value": "NNS THUNDER"
+    },
+    {
+      "label": "Command",
+      "value": "Western Naval Command"
+    }
+  ],
+  "basic": [
+    {
+      "label": "Official Number",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Title",
+      "value": "Mr"
+    },
+    {
+      "label": "Status",
+      "value": "Current"
+    },
+    {
+      "label": "Surname",
+      "value": "OKONKWO"
+    },
+    {
+      "label": "First Name",
+      "value": "Chukwuemeka"
+    },
+    {
+      "label": "Middle Name",
+      "value": "Ifeanyi"
+    },
+    {
+      "label": "Maiden Name",
+      "value": ""
+    },
+    {
+      "label": "Gender",
+      "value": "Male"
+    },
+    {
+      "label": "Date of Birth",
+      "value": "1988-06-21",
+      "kind": "date"
+    },
+    {
+      "label": "Marital Status",
+      "value": "Married"
+    },
+    {
+      "label": "Married to Military",
+      "value": "No"
+    },
+    {
+      "label": "Religion",
+      "value": "Christianity"
+    },
+    {
+      "label": "Denomination",
+      "value": "Catholic"
+    },
+    {
+      "label": "Tribe",
+      "value": "Igbo"
+    },
+    {
+      "label": "Current Ship",
+      "value": "NNS THUNDER"
+    }
+  ],
+  "contact": [
+    {
+      "label": "State of Origin",
+      "value": "Anambra"
+    },
+    {
+      "label": "Local Government",
+      "value": "Nnewi North"
+    },
+    {
+      "label": "Geo-Political Zone",
+      "value": "South East"
+    },
+    {
+      "label": "Place of Birth",
+      "value": "Nnewi"
+    },
+    {
+      "label": "Mother Base",
+      "value": "Western Naval Command"
+    },
+    {
+      "label": "Phone",
+      "value": "0803 555 0142"
+    },
+    {
+      "label": "Email Address",
+      "value": "c.okonkwo@example.org"
+    },
+    {
+      "label": "Home Address",
+      "value": "12 Navy Town Road, Ojo, Lagos"
+    },
+    {
+      "label": "ID Type",
+      "value": "National ID"
+    },
+    {
+      "label": "Identity Number",
+      "value": "2290 4471 835"
+    },
+    {
+      "label": "Driver License No.",
+      "value": "LAG-4417-2201"
+    },
+    {
+      "label": "License Expiry",
+      "value": "2029-04-30",
+      "kind": "date"
+    }
+  ],
+  "health": [
+    {
+      "label": "Weight (kg)",
+      "value": "78"
+    },
+    {
+      "label": "Height (m)",
+      "value": "1.76"
+    },
+    {
+      "label": "Chest (cm)",
+      "value": "96"
+    },
+    {
+      "label": "Blood Group",
+      "value": "O+"
+    },
+    {
+      "label": "Genotype",
+      "value": "AA"
+    },
+    {
+      "label": "Hair Color",
+      "value": "Black"
+    },
+    {
+      "label": "Eye Color",
+      "value": "Brown"
+    },
+    {
+      "label": "Complexion",
+      "value": "Dark"
+    },
+    {
+      "label": "Tribal Mark",
+      "value": "No"
+    },
+    {
+      "label": "Disability",
+      "value": "None"
+    },
+    {
+      "label": "Disability Comment",
+      "value": ""
+    },
+    {
+      "label": "Hobbies",
+      "value": "Football, reading"
+    }
+  ],
+  "service": [
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Command",
+      "value": "Western Naval Command"
+    },
+    {
+      "label": "Staff Branch",
+      "value": "Operations"
+    },
+    {
+      "label": "Specialisation",
+      "value": "Gunnery"
+    },
+    {
+      "label": "Entry Mode",
+      "value": "Direct entry"
+    },
+    {
+      "label": "Date Employed",
+      "value": "2008-03-12",
+      "kind": "date"
+    },
+    {
+      "label": "Seniority Date",
+      "value": "2017-07-15",
+      "kind": "date"
+    },
+    {
+      "label": "Exit Type",
+      "value": ""
+    },
+    {
+      "label": "Exit Date",
+      "value": ""
+    },
+    {
+      "label": "Exit Reason",
+      "value": ""
+    }
+  ],
+  "nextOfKin": {
+    "no": 5,
+    "heading": "Next of Kin",
+    "columns": [
+      {
+        "label": "First Name",
+        "key": "f",
+        "w": "26%"
+      },
+      {
+        "label": "Last Name",
+        "key": "l",
+        "w": "26%"
+      },
+      {
+        "label": "Mobile Number",
+        "key": "m",
+        "kind": "code",
+        "w": "24%"
+      },
+      {
+        "label": "Next of Kin Type",
+        "key": "t"
+      }
+    ],
+    "rows": [
+      {
+        "f": "Ngozi",
+        "l": "OKONKWO",
+        "m": "0803 555 0188",
+        "t": "Spouse"
+      },
+      {
+        "f": "Emmanuel",
+        "l": "OKONKWO",
+        "m": "0805 555 0107",
+        "t": "Father"
+      }
+    ]
+  },
+  "family": {
+    "no": 6,
+    "heading": "Spouse & Children",
+    "columns": [
+      {
+        "label": "Relation",
+        "key": "r",
+        "w": "14%"
+      },
+      {
+        "label": "Name",
+        "key": "n",
+        "w": "34%"
+      },
+      {
+        "label": "Phone Number",
+        "key": "p",
+        "kind": "code",
+        "w": "22%"
+      },
+      {
+        "label": "Email Address",
+        "key": "e"
+      }
+    ],
+    "rows": [
+      {
+        "r": "Spouse",
+        "n": "Ngozi OKONKWO",
+        "p": "0803 555 0188",
+        "e": "ngozi.o@example.org"
+      },
+      {
+        "r": "Child",
+        "n": "Chiamaka OKONKWO",
+        "p": "",
+        "e": ""
+      },
+      {
+        "r": "Child",
+        "n": "Somto OKONKWO",
+        "p": "",
+        "e": ""
+      }
+    ]
+  },
+  "advancement": {
+    "no": 7,
+    "heading": "Advancement History",
+    "columns": [
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "12%"
+      },
+      {
+        "label": "Start Date",
+        "key": "start",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "End Date",
+        "key": "end",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "Decoration",
+        "key": "dec",
+        "w": "20%"
+      },
+      {
+        "label": "Authority",
+        "key": "auth",
+        "kind": "code",
+        "w": "24%"
+      },
+      {
+        "label": "GCB No.",
+        "key": "gcb",
+        "kind": "code"
+      }
+    ],
+    "rows": [
+      {
+        "rate": "OS",
+        "start": "2008-03-12",
+        "end": "2010-03-11",
+        "dec": "Initial entry",
+        "auth": "NHQ/DOP/AR/09/08",
+        "gcb": "G0412"
+      },
+      {
+        "rate": "AB",
+        "start": "2010-03-12",
+        "end": "2013-05-31",
+        "dec": "Board 2010",
+        "auth": "NHQ/DOP/AR/22/10",
+        "gcb": "G1180"
+      },
+      {
+        "rate": "LS",
+        "start": "2013-06-01",
+        "end": "2017-07-14",
+        "dec": "Board 2013",
+        "auth": "NHQ/DOP/AR/31/13",
+        "gcb": "G2204"
+      },
+      {
+        "rate": "PO",
+        "start": "2017-07-15",
+        "end": "",
+        "dec": "Board 2017",
+        "auth": "NHQ/DOP/AR/47/17",
+        "gcb": "G3390"
+      }
+    ]
+  },
+  "drafting": {
+    "no": 8,
+    "heading": "Drafting History",
+    "columns": [
+      {
+        "label": "Ship / Unit",
+        "key": "ship",
+        "kind": "name",
+        "w": "24%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "10%"
+      },
+      {
+        "label": "Start Date",
+        "key": "start",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "End Date",
+        "key": "end",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "Remarks",
+        "key": "remarks"
+      }
+    ],
+    "rows": [
+      {
+        "ship": "NNS QUORRA",
+        "rate": "OS",
+        "start": "2008-03-10",
+        "end": "2009-10-20",
+        "remarks": "Joined on commissioning"
+      },
+      {
+        "ship": "NNS ARADU",
+        "rate": "AB",
+        "start": "2009-03-11",
+        "end": "2010-10-21",
+        "remarks": "Annual draft"
+      },
+      {
+        "ship": "NNS KADA",
+        "rate": "AB",
+        "start": "2010-03-12",
+        "end": "2011-10-22",
+        "remarks": "Sea time"
+      },
+      {
+        "ship": "NNS BEECROFT",
+        "rate": "LS",
+        "start": "2011-03-13",
+        "end": "2012-10-23",
+        "remarks": "Specialist posting"
+      },
+      {
+        "ship": "NNS LANA",
+        "rate": "LS",
+        "start": "2012-03-14",
+        "end": "2013-10-24",
+        "remarks": "Compassionate"
+      },
+      {
+        "ship": "NNS SAPELE",
+        "rate": "LS",
+        "start": "2013-03-15",
+        "end": "2014-10-25",
+        "remarks": "Normal rotation"
+      },
+      {
+        "ship": "NNS THUNDER",
+        "rate": "PO",
+        "start": "2014-03-16",
+        "end": "2015-10-26",
+        "remarks": "Joined on commissioning"
+      },
+      {
+        "ship": "NNS OKPABANA",
+        "rate": "PO",
+        "start": "2015-03-17",
+        "end": "2016-10-27",
+        "remarks": "Annual draft"
+      },
+      {
+        "ship": "NNS DELTA",
+        "rate": "PO",
+        "start": "2016-03-18",
+        "end": "2017-10-28",
+        "remarks": "Sea time"
+      },
+      {
+        "ship": "NNS UNITY",
+        "rate": "PO",
+        "start": "2017-03-10",
+        "end": "Present",
+        "remarks": "Specialist posting"
+      }
+    ]
+  },
+  "training": {
+    "no": 9,
+    "heading": "Training & Education",
+    "columns": [
+      {
+        "label": "Type",
+        "key": "kind",
+        "w": "11%"
+      },
+      {
+        "label": "Institution",
+        "key": "inst",
+        "w": "30%"
+      },
+      {
+        "label": "Qualification",
+        "key": "qual",
+        "w": "24%"
+      },
+      {
+        "label": "Class",
+        "key": "cls",
+        "w": "14%"
+      },
+      {
+        "label": "Period",
+        "key": "period"
+      }
+    ],
+    "rows": [
+      {
+        "kind": "Training",
+        "inst": "Naval Training Command, Onne",
+        "qual": "Basic Seamanship",
+        "cls": "Pass",
+        "start": "2008-03-12",
+        "end": "2008-09-26",
+        "period": "12/03/2008 – 26/09/2008"
+      },
+      {
+        "kind": "Training",
+        "inst": "Nigerian Navy School of Engineering",
+        "qual": "Damage Control",
+        "cls": "Credit",
+        "start": "2011-02-07",
+        "end": "2011-03-04",
+        "period": "07/02/2011 – 04/03/2011"
+      },
+      {
+        "kind": "Training",
+        "inst": "Naval Training Command, Onne",
+        "qual": "Leadership Course",
+        "cls": "Pass",
+        "start": "2015-05-04",
+        "end": "2015-06-12",
+        "period": "04/05/2015 – 12/06/2015"
+      },
+      {
+        "kind": "Training",
+        "inst": "Naval Maritime Warfare School",
+        "qual": "Gunnery Part II",
+        "cls": "Distinction",
+        "start": "2018-09-03",
+        "end": "2018-11-23",
+        "period": "03/09/2018 – 23/11/2018"
+      },
+      {
+        "kind": "Education",
+        "inst": "University of Lagos",
+        "qual": "B.Sc. Marine Science",
+        "cls": "Second Class Upper",
+        "start": "2012-10-01",
+        "end": "2016-07-30",
+        "period": "01/10/2012 – 30/07/2016"
+      },
+      {
+        "kind": "Education",
+        "inst": "Government College, Ibadan",
+        "qual": "SSCE",
+        "cls": "Credit",
+        "start": "2002-09-01",
+        "end": "2008-06-30",
+        "period": "01/09/2002 – 30/06/2008"
+      }
+    ]
+  },
+  "languages": {
+    "no": 10,
+    "heading": "Languages",
+    "columns": [
+      {
+        "label": "Language",
+        "key": "l",
+        "w": "40%"
+      },
+      {
+        "label": "Read",
+        "key": "r",
+        "kind": "ctr"
+      },
+      {
+        "label": "Write",
+        "key": "w",
+        "kind": "ctr"
+      },
+      {
+        "label": "Speak",
+        "key": "s",
+        "kind": "ctr"
+      }
+    ],
+    "rows": [
+      {
+        "l": "English",
+        "r": "Yes",
+        "w": "Yes",
+        "s": "Yes"
+      },
+      {
+        "l": "Igbo",
+        "r": "Yes",
+        "w": "Yes",
+        "s": "Yes"
+      },
+      {
+        "l": "Hausa",
+        "r": "No",
+        "w": "No",
+        "s": "Yes"
+      }
+    ]
+  }
+}

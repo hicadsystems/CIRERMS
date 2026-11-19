@@ -1,0 +1,108 @@
+{
+  "title": "ENGAGEMENT FORM",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "subtitle": "Layout indicative: the owner supplies the real form",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Date Employed",
+      "value": "2008-03-12",
+      "kind": "date"
+    },
+    {
+      "label": "Length of Service",
+      "value": "18 years"
+    },
+    {
+      "label": "Age",
+      "value": "38 years"
+    },
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Entry Mode",
+      "value": "Direct entry"
+    }
+  ],
+  "table": {
+    "heading": "Engagement history",
+    "columns": [
+      {
+        "label": "Engagement",
+        "key": "e",
+        "w": "26%"
+      },
+      {
+        "label": "Date",
+        "key": "d",
+        "kind": "date",
+        "w": "16%"
+      },
+      {
+        "label": "Period",
+        "key": "p",
+        "w": "16%"
+      },
+      {
+        "label": "Ends",
+        "key": "n",
+        "kind": "date",
+        "w": "16%"
+      },
+      {
+        "label": "Approved By",
+        "key": "a"
+      }
+    ],
+    "rows": [
+      {
+        "e": "First engagement",
+        "d": "2008-03-12",
+        "p": "",
+        "n": "",
+        "a": "Recruitment board"
+      },
+      {
+        "e": "Re-engagement 1",
+        "d": "2016-12-01",
+        "p": "60 months",
+        "n": "2021-11-30",
+        "a": "CNS"
+      },
+      {
+        "e": "Re-engagement 2",
+        "d": "2021-12-01",
+        "p": "60 months",
+        "n": "2026-11-30",
+        "a": "CNS"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Rating"
+    },
+    {
+      "role": "Divisional Officer"
+    },
+    {
+      "role": "Commanding Officer"
+    }
+  ]
+}

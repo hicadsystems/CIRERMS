@@ -1,0 +1,101 @@
+{
+  "title": "SPECIAL DRAFT LETTER",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "SD/2026/014/07",
+  "letterDate": "2026-11-19",
+  "subtitle": "Indicative layout",
+  "rating": {
+    "sn": "B0539",
+    "rate": "PO",
+    "name": "OKONKWO Chukwuemeka Ifeanyi",
+    "from": "NNS THUNDER",
+    "since": "2024-02-05"
+  },
+  "draft": {
+    "wef": "2026-12-07"
+  },
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "PO"
+    },
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Current Ship",
+      "value": "NNS THUNDER"
+    },
+    {
+      "label": "Joined the Ship",
+      "value": "2024-02-05",
+      "kind": "date"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Drafted To",
+        "key": "to",
+        "w": "18%"
+      },
+      {
+        "label": "Posting Type",
+        "key": "t",
+        "kind": "code",
+        "w": "12%"
+      },
+      {
+        "label": "Deployment / Vice",
+        "key": "v",
+        "w": "20%"
+      },
+      {
+        "label": "Authority",
+        "key": "a",
+        "kind": "code",
+        "w": "18%"
+      },
+      {
+        "label": "WEF",
+        "key": "w",
+        "kind": "date",
+        "w": "12%"
+      },
+      {
+        "label": "Remark",
+        "key": "r"
+      }
+    ],
+    "rows": [
+      {
+        "to": "NNS BEECROFT",
+        "t": "TY",
+        "v": "Vice ADEYEMI S.",
+        "a": "NHQ/DOP/DR/147/26",
+        "w": "2026-12-07",
+        "r": "Scheduled"
+      }
+    ]
+  },
+  "note": "The letter for one rating. Printing it does not mark the draft printed: print the form on Special Draft Report.",
+  "signatures": [
+    {
+      "role": "Drafting Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

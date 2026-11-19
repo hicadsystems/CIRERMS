@@ -1,0 +1,117 @@
+{
+  "title": "DRAFT HISTORY",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "PO"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Batch Number",
+        "key": "no",
+        "kind": "code",
+        "w": "26%"
+      },
+      {
+        "label": "Authority",
+        "key": "auth",
+        "kind": "code",
+        "w": "20%"
+      },
+      {
+        "label": "Old Ship",
+        "key": "old",
+        "w": "20%"
+      },
+      {
+        "label": "New Ship",
+        "key": "neu",
+        "w": "20%"
+      },
+      {
+        "label": "Date Reported",
+        "key": "wef",
+        "kind": "date"
+      }
+    ],
+    "rows": [
+      {
+        "no": "DOD-SM-ALL-ALL-000030",
+        "auth": "NHQ/DOP/DR/101/26",
+        "old": "NNS OKPABANA",
+        "neu": "NNS THUNDER",
+        "wef": "2026-01-06"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000027",
+        "auth": "NHQ/DOP/DR/118/26",
+        "old": "NNS KADA",
+        "neu": "NNS OKPABANA",
+        "wef": "2025-06-07"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000024",
+        "auth": "NHQ/DOP/DR/133/26",
+        "old": "NNS ARADU",
+        "neu": "NNS KADA",
+        "wef": "2024-11-08"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000021",
+        "auth": "NHQ/DOP/DR/147/26",
+        "old": "NNS BEECROFT",
+        "neu": "NNS ARADU",
+        "wef": "2023-04-09"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000018",
+        "auth": "NHQ/DOP/DR/101/26",
+        "old": "NNS LANA",
+        "neu": "NNS BEECROFT",
+        "wef": "2021-09-10"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000015",
+        "auth": "NHQ/DOP/DR/118/26",
+        "old": "NNS QUORRA",
+        "neu": "NNS LANA",
+        "wef": "2020-02-11"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000012",
+        "auth": "NHQ/DOP/DR/133/26",
+        "old": "NNS SAPELE",
+        "neu": "NNS QUORRA",
+        "wef": "2019-07-12"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000009",
+        "auth": "NHQ/DOP/DR/147/26",
+        "old": "NNS PATHFINDER",
+        "neu": "NNS SAPELE",
+        "wef": "2017-12-13"
+      },
+      {
+        "no": "DOD-SM-ALL-ALL-000006",
+        "auth": "NHQ/DOP/DR/101/26",
+        "old": "NNS DELTA",
+        "neu": "NNS PATHFINDER",
+        "wef": "2016-05-14"
+      }
+    ]
+  }
+}

@@ -396,3 +396,7 @@ openNewRating();                        // what #ratings/new and the phone's flo
 | `openChangePassword({ forced })` | `shell/password.js` | Change Password (account menu) and the forced change before anything else opens for a new or reset account |
 | `currentTheme()`, `setTheme(theme)`, `toggleTheme()`, `onThemeChange(fn)`, `bindThemeButton(button)` | `core/theme.js` | Light or dark. `bindThemeButton` makes a button the switch: it shows a moon or a sun and says the mode it switches to. `core/theme-boot.js` (a plain script in each page's `<head>`) sets the first one before the page draws |
 
+
+## Printouts
+
+Not a screen part: the printouts are Handlebars templates in `docs/design/printouts/` (see the "Printouts" section of `README.md`). The PDF preview above shows their pages (PDF.js); a printout's look comes from `printout.css`, not from the app's Tailwind tokens. The shared parts a template uses: `head` (page size, stylesheet), `header` (crest, name, title, subtitle, rule), `facts` (label and value rows), `datatable` (header row repeating on every page, rows kept whole, totals and group rows), `signatures`, and the Chromium footer template.

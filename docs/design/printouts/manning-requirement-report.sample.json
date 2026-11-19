@@ -1,0 +1,340 @@
+{
+  "title": "MANNING REQUIREMENT REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "As at 19/11/2026",
+  "facts": [
+    {
+      "label": "Ship or Unit",
+      "value": "All"
+    },
+    {
+      "label": "Requirements",
+      "value": "36"
+    },
+    {
+      "label": "Required",
+      "value": "146"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Rate",
+        "key": "rate",
+        "kind": "name",
+        "w": "14%"
+      },
+      {
+        "label": "Specialisation",
+        "key": "spec"
+      },
+      {
+        "label": "Required",
+        "key": "req",
+        "kind": "num",
+        "w": "14%"
+      },
+      {
+        "label": "Aboard",
+        "key": "aboard",
+        "kind": "num",
+        "w": "14%"
+      },
+      {
+        "label": "Difference",
+        "key": "diff",
+        "kind": "num",
+        "w": "14%"
+      }
+    ],
+    "rows": [
+      {
+        "group": "NNS THUNDER"
+      },
+      {
+        "rate": "AB",
+        "spec": "Cook",
+        "req": 8,
+        "aboard": 9,
+        "diff": "+1"
+      },
+      {
+        "rate": "OS",
+        "spec": "Signals",
+        "req": 2,
+        "aboard": 1,
+        "diff": "-1"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Signals",
+        "req": 7,
+        "aboard": 8,
+        "diff": "+1"
+      },
+      {
+        "rate": "MCPO",
+        "spec": "Electrician",
+        "req": 1,
+        "aboard": 1,
+        "diff": "0"
+      },
+      {
+        "group": "NNS OKPABANA"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Propulsion",
+        "req": 5,
+        "aboard": 7,
+        "diff": "+2"
+      },
+      {
+        "rate": "AB",
+        "spec": "Propulsion",
+        "req": 7,
+        "aboard": 7,
+        "diff": "0"
+      },
+      {
+        "rate": "AB",
+        "spec": "Steward",
+        "req": 2,
+        "aboard": 4,
+        "diff": "+2"
+      },
+      {
+        "rate": "LS",
+        "spec": "Propulsion",
+        "req": 1,
+        "aboard": 3,
+        "diff": "+2"
+      },
+      {
+        "group": "NNS KADA"
+      },
+      {
+        "rate": "LS",
+        "spec": "Survey",
+        "req": 4,
+        "aboard": 2,
+        "diff": "-2"
+      },
+      {
+        "rate": "PO",
+        "spec": "Cook",
+        "req": 4,
+        "aboard": 5,
+        "diff": "+1"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Gunnery",
+        "req": 2,
+        "aboard": 4,
+        "diff": "+2"
+      },
+      {
+        "rate": "LS",
+        "spec": "Radar",
+        "req": 4,
+        "aboard": 6,
+        "diff": "+2"
+      },
+      {
+        "group": "NNS ARADU"
+      },
+      {
+        "rate": "AB",
+        "spec": "Survey",
+        "req": 1,
+        "aboard": 1,
+        "diff": "0"
+      },
+      {
+        "rate": "LS",
+        "spec": "Steward",
+        "req": 2,
+        "aboard": 0,
+        "diff": "-2"
+      },
+      {
+        "rate": "MCPO",
+        "spec": "Gunnery",
+        "req": 6,
+        "aboard": 7,
+        "diff": "+1"
+      },
+      {
+        "rate": "LS",
+        "spec": "Gunnery",
+        "req": 5,
+        "aboard": 7,
+        "diff": "+2"
+      },
+      {
+        "group": "NNS BEECROFT"
+      },
+      {
+        "rate": "OS",
+        "spec": "Radar",
+        "req": 8,
+        "aboard": 10,
+        "diff": "+2"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Gunnery",
+        "req": 1,
+        "aboard": 1,
+        "diff": "0"
+      },
+      {
+        "rate": "CPO",
+        "spec": "Signals",
+        "req": 2,
+        "aboard": 4,
+        "diff": "+2"
+      },
+      {
+        "rate": "PO",
+        "spec": "Signals",
+        "req": 1,
+        "aboard": 1,
+        "diff": "0"
+      },
+      {
+        "group": "NNS LANA"
+      },
+      {
+        "rate": "AB",
+        "spec": "Clerical",
+        "req": 1,
+        "aboard": 3,
+        "diff": "+2"
+      },
+      {
+        "rate": "CPO",
+        "spec": "Signals",
+        "req": 8,
+        "aboard": 6,
+        "diff": "-2"
+      },
+      {
+        "rate": "CPO",
+        "spec": "Cook",
+        "req": 6,
+        "aboard": 6,
+        "diff": "0"
+      },
+      {
+        "rate": "PO",
+        "spec": "Survey",
+        "req": 2,
+        "aboard": 2,
+        "diff": "0"
+      },
+      {
+        "group": "NNS QUORRA"
+      },
+      {
+        "rate": "AB",
+        "spec": "Signals",
+        "req": 5,
+        "aboard": 4,
+        "diff": "-1"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Gunnery",
+        "req": 7,
+        "aboard": 5,
+        "diff": "-2"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Clerical",
+        "req": 7,
+        "aboard": 6,
+        "diff": "-1"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Steward",
+        "req": 4,
+        "aboard": 4,
+        "diff": "0"
+      },
+      {
+        "group": "NNS SAPELE"
+      },
+      {
+        "rate": "LS",
+        "spec": "Cook",
+        "req": 4,
+        "aboard": 5,
+        "diff": "+1"
+      },
+      {
+        "rate": "AB",
+        "spec": "Electrician",
+        "req": 1,
+        "aboard": 0,
+        "diff": "-1"
+      },
+      {
+        "rate": "MCPO",
+        "spec": "Clerical",
+        "req": 2,
+        "aboard": 2,
+        "diff": "0"
+      },
+      {
+        "rate": "OS",
+        "spec": "Survey",
+        "req": 2,
+        "aboard": 3,
+        "diff": "+1"
+      },
+      {
+        "group": "NNS PATHFINDER"
+      },
+      {
+        "rate": "OS",
+        "spec": "Survey",
+        "req": 6,
+        "aboard": 6,
+        "diff": "0"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Steward",
+        "req": 7,
+        "aboard": 6,
+        "diff": "-1"
+      },
+      {
+        "rate": "MCPO",
+        "spec": "Radar",
+        "req": 7,
+        "aboard": 7,
+        "diff": "0"
+      },
+      {
+        "rate": "MPO",
+        "spec": "Steward",
+        "req": 4,
+        "aboard": 5,
+        "diff": "+1"
+      }
+    ],
+    "totals": {
+      "rate": "Total",
+      "req": 146,
+      "aboard": 158,
+      "diff": "+12"
+    }
+  },
+  "note": "A negative difference is a shortage; a positive one is a surplus aboard."
+}
