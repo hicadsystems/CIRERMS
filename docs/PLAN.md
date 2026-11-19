@@ -71,6 +71,9 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
    person enters an official number to pick one rating, suggestions appear under the field after at least 2
    characters, by official number or name, 10 at a time from the server with the next 10 on scroll, narrowing as
    they type, each shown as `B0539 — PO OKONKWO CHUKWUEMEKA IFEANYI`.
+   **Details read as label and value on one row** (owner, 19/11/2026; WP3c): the label left in normal case, the value
+   right, a divider under each row, "N/A" when empty; on a wide page two panels with brand-coloured headings; never
+   small capital labels stacked above values. This wins over the demo.
    **Printouts open in the app's own PDF preview** (owner, 19/11/2026; pdfkit makes the PDFs on the server, PDF.js draws them in the page): a dialog (a sheet on a phone) with the
    pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
    from WP3).
@@ -214,7 +217,8 @@ the next wave once the owner has merged.
 | WP2 | Merged 19/11/2026, in two merges (Sonnet 5.5 · medium; about $11.77) | `static-tables` | 19/11/2026: 9b1c802; every field of section 9c confirmed; the Death seed and the held "(Inactive)" value fixed (a record reads the lists afresh when it opens); walkthrough restructured to the 5-minute rule. Administrator's run on a fresh database: access walkthrough 166 passed in 74 s, static tables walkthrough 1,444 passed in 92 s |
 | WP3 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $17.94) | `system-admin` | 19/11/2026: 01cf6df, Manage Users, Manage Roles, Manage Password, Audit Trail, Change Password; every account a rating; the app's own PDF preview (pdfkit makes, PDF.js draws) for every printout; Static Tables' Print List; checked on fresh databases: access 166, static tables 1,474, disciplinary 192, system admin 285 |
 | WP4 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $6.48) | `disciplinary` | 19/11/2026: fdd2698, Disciplinary Action (cases, rules, four pages, three PDFs and the Excel report, the Discipline tab); checked with WP3's a7c85e2 on fresh databases: access 166, static tables 1,452, disciplinary 189, system admin 271 |
-| WP3b | Done, checked; ready to merge (Sonnet 5.5 · medium) | `rating-search` | 19/11/2026: 7c31158, `GET /api/ratings/search` (10 a time, at least 2 characters, official number or any name part) and the kit's `ratingSearch`, used in Add Account, Manage Password, the Audit Trail filter, Initiate Incident, the Pending and Concluded filters and Documents; confirmed by WP3b on 15,000 ratings (5 to 20 ms a request) and by the administrator in the browser. Walkthrough steps in the system admin and disciplinary walkthroughs need updating (the next package) |
+| WP3b | Merged 19/11/2026 (Sonnet 5.5 · medium; about $2.02) | `rating-search` | 19/11/2026: 7c31158, the rating search select (10 a time, at least 2 characters) in Add Account, Manage Password, the Audit Trail filter, Initiate Incident, the Pending and Concluded filters and Documents; checked on 15,000 ratings and in the browser |
+| WP3c | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8Rfvj5QXdAWhBCrLbhPaC` (the owner's request: details as label and value on one row with a divider, not small capital labels above values; the app only, not the demo; no tests) | `detail-rows` | |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
 | WP7a | Not started | `drafting-cycle` | |
