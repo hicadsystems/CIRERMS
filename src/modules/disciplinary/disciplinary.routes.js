@@ -123,7 +123,8 @@ router.get('/report/excel', requirePrivilege('disciplinary.report', 'view'), asy
 }));
 
 router.get('/rating/:serviceNumber/cases', requirePrivilege('disciplinary.concluded', 'view'), asyncHandler(async (req, res) => {
-  res.json({ data: await service.casesOfRating(String(req.params.serviceNumber)) });
+  const r = await service.casesOfRating(String(req.params.serviceNumber), req.query);
+  res.json({ data: r.items, meta: r.meta });
 }));
 
 module.exports = router;

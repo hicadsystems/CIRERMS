@@ -8,17 +8,13 @@
  */
 const db = require('../../db');
 const audit = require('../../shared/audit');
-const { parseIsoDate, formatDisplayDate } = require('../../shared/dates');
+const { parseIsoDate } = require('../../shared/dates');
+const { dmy: formatDisplayDate, todayIso } = require('./disciplinary.format');
 const { validationError, conflict, notFound, badRequest } = require('../../shared/errors');
 const repo = require('./disciplinary.repo');
 const docs = require('./disciplinary.documents');
 
 const LIMITS = { what: 250, reportedBy: 150, decision: 250, authority: 150, reason: 200 };
-
-const pad = (n) => String(n).padStart(2, '0');
-function todayIso(now = new Date()) {
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-}
 
 const text = (v) => (v === undefined || v === null ? '' : String(v).trim());
 const intOrNull = (v) => {
@@ -165,10 +161,11 @@ function shapeCorrection(k) {
   return { id: k.id, at: k.corrected_at, by: k.corrected_by_name || '', reason: k.reason, changes: k.changes };
 }
 
-/** A rating's pending and concluded cases (the Discipline tab); a cancelled case is not shown. */
-async function casesOfRating(serviceNumber) {
-  const rows = await repo.allCases({ serviceNumber }, { order: 'rating', limit: 500 });
-  return rows.filter((c) => c.status !== 'cancelled').map(shape);
+/** A rating's pending and concluded cases (the Discipline tab), 25 a page; a cancelled case is not shown. */
+async function casesOfRating(serviceNumber, q = {}) {
+  const { page, pageSize } = paging(q);
+  const { items, total } = await repo.listCases({ serviceNumber, notCancelled: true }, { order: 'rating', page, pageSize });
+  return { items: items.map(shape), meta: meta(total, page, pageSize) };
 }
 
 // ---- the three actions ------------------------------------------------------

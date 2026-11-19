@@ -6,7 +6,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const config = require('../../config');
-const { formatDisplayDate } = require('../../shared/dates');
+const { dmy: formatDisplayDate } = require('./disciplinary.format');
 
 const LOGO = path.join(config.publicDir, 'assets', 'navy-logo.png');
 const INK = '#1d2939';
@@ -131,9 +131,9 @@ function signatures(doc, names) {
 async function pendingListPdf({ rows, offence, search, generatedBy }) {
   const doc = newDoc('landscape');
   header(doc, 'PENDING DISCIPLINARY CASES');
-  meta(doc, [['Cases', String(rows.length)], ['As at', d(new Date().toISOString().slice(0, 10))], ['Offence', offence || 'All'], ['Search', search || 'None']], 4);
+  meta(doc, [['Cases', String(rows.length)], ['As at', d(new Date())], ['Offence', offence || 'All'], ['Search', search || 'None']], 4);
   table(doc, [
-    { h: 'Case', w: 1.1, v: (c) => c.caseNumber }, { h: 'Official No', w: 1, v: (c) => c.serviceNumber },
+    { h: 'Case', w: 1.55, v: (c) => c.caseNumber }, { h: 'Official No', w: 1, v: (c) => c.serviceNumber },
     { h: 'Name', w: 2.2, v: nameOf }, { h: 'Ship', w: 1.5, v: (c) => c.ship },
     { h: 'Offence', w: 1.8, v: (c) => c.offence }, { h: 'Incident', w: 1, v: (c) => d(c.incidentDate) },
     { h: 'What Happened', w: 3, v: (c) => c.what }, { h: 'Reported By', w: 1.8, v: (c) => c.reportedBy },
@@ -143,7 +143,7 @@ async function pendingListPdf({ rows, offence, search, generatedBy }) {
 }
 
 const REPORT_COLS = [
-  { h: 'Case', w: 1.1, v: (c) => c.caseNumber }, { h: 'Official No', w: 1, v: (c) => c.serviceNumber },
+  { h: 'Case', w: 1.55, v: (c) => c.caseNumber }, { h: 'Official No', w: 1, v: (c) => c.serviceNumber },
   { h: 'Name', w: 2.1, v: nameOf }, { h: 'Ship', w: 1.4, v: (c) => c.ship },
   { h: 'Offence', w: 1.7, v: (c) => c.offence }, { h: 'Incident', w: 1, v: (c) => d(c.incidentDate) },
   { h: 'Decided', w: 1, v: (c) => d(c.decisionDate) }, { h: 'Sanction', w: 1.3, v: (c) => c.sanction },
@@ -175,7 +175,7 @@ async function caseSheetPdf({ c, generatedBy }) {
     doc.fillColor(BLUE).font('Helvetica-Bold').fontSize(9).text('CORRECTIONS', doc.page.margins.left, doc.y);
     doc.y += 4;
     table(doc, [{ h: 'Date', w: 1, v: (k) => d(k.at) }, { h: 'By', w: 1, v: (k) => k.by }, { h: 'Reason', w: 2, v: (k) => k.reason },
-      { h: 'Changed', w: 3, v: (k) => k.changes.map(([f, a, b]) => `${f}: ${a || '-'} → ${b || '-'}`).join('; ') }], c.corrections);
+      { h: 'Changed', w: 3, v: (k) => k.changes.map(([f, a, b]) => `${f}: ${a || '-'} -> ${b || '-'}`).join('; ') }], c.corrections);
   }
   signatures(doc, c.status === 'concluded' ? ['Reporting Officer', 'Authority', 'Director of Personnel (Navy)'] : ['Reporting Officer', 'Commanding Officer']);
   return finish(doc, generatedBy);

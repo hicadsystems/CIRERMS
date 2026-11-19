@@ -38,6 +38,7 @@ import { CHILD_TABS, childPanel } from './rating-children.js';
 import { documentsBlock } from './rating-documents-block.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
 import { ratingName, personName } from './rating-names.js';
+import { disciplinePanel } from './disciplinary-parts.js';
 
 const ALL_TABS = [{ key: 'details', label: 'Details' }, ...CHILD_TABS.map((t) => ({ key: t.key, label: t.label })), { key: 'documents', label: 'Documents' }];
 
@@ -63,7 +64,7 @@ export function photoAvatar(r, size = 'xl') {
  * Draws the record into `outlet`. data: { rating, children }.
  * Returns a cleanup function.
  */
-function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' }) {
+function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', disciplineCount = null }) {
   // what the person may do here (core/access.js); My Details is read-only and shows its own documents
   const may = {
     add: !readOnly && can('ratings.edit', 'add'),
@@ -73,7 +74,9 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
     upload: !readOnly && can('ratings.documents', 'add'),
     removeDoc: !readOnly && can('ratings.documents', 'delete'),
   };
-  const TABS = ALL_TABS.filter((t) => t.key !== 'documents' || may.docs);
+  // the Discipline tab (WP4): for whoever may view Concluded Cases, never on My Details, not counted in the completeness
+  const mayDiscipline = !readOnly && can('disciplinary.concluded', 'view');
+  const TABS = [...ALL_TABS.filter((t) => t.key !== 'documents' || may.docs), ...(mayDiscipline ? [{ key: 'discipline', label: 'Discipline' }] : [])];
   const state = { rating: data.rating, children: data.children || {}, tab: TABS.some((t) => t.key === initialTab) ? initialTab : 'details' };
   let docs = null;
 
@@ -83,6 +86,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
   const sn = () => state.rating.service_number;
 
   const count = (key) => {
+    if (key === 'discipline') return disciplineCount === null ? 0 : disciplineCount;
     if (key === 'documents') return (state.children.documents || []).length;
     const t = CHILD_TABS.find((x) => x.key === key);
     return t ? (state.children[t.bundleKey] || []).length : 0;
@@ -122,6 +126,10 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
   function drawBody() {
     if (docs) { docs.destroy(); docs = null; }
     if (state.tab === 'details') { fill(body, detailsTab()); return; }
+    if (state.tab === 'discipline') {
+      fill(body, disciplinePanel(sn(), { onLoaded: ({ meta }) => { disciplineCount = meta.total; tabs.setCount('discipline', meta.total); } }));
+      return;
+    }
     if (state.tab === 'documents') {
       docs = documentsBlock({
         serviceNumber: sn(),
@@ -254,8 +262,12 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
 export async function mountRatingRecord(outlet, { params = {}, query = {} } = {}) {
   outlet.replaceChildren(loadingNode());
   try {
-    const [lookups, res] = await Promise.all([getLookups(), api.get(`/api/ratings/${encodeURIComponent(params.serviceNumber)}`)]);
-    return recordView(outlet, { data: res.data, readOnly: false, lookups, initialTab: query.tab });
+    const [lookups, res, discipline] = await Promise.all([
+      getLookups(),
+      api.get(`/api/ratings/${encodeURIComponent(params.serviceNumber)}`),
+      can('disciplinary.concluded', 'view') ? api.get(`/api/disciplinary/rating/${encodeURIComponent(params.serviceNumber)}/cases`).catch(() => null) : null,
+    ]);
+    return recordView(outlet, { data: res.data, readOnly: false, lookups, initialTab: query.tab, disciplineCount: discipline ? discipline.meta.total : null });
   } catch (err) {
     fill(outlet, h('div', { className: CARD }, emptyState({
       icon: 'search',

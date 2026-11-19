@@ -31,6 +31,7 @@ function where(f = {}) {
   const sql = [];
   const params = [];
   if (f.status) { sql.push('c.status = ?'); params.push(f.status); }
+  if (f.notCancelled) sql.push("c.status <> 'cancelled'");
   if (f.serviceNumber) { sql.push('c.service_number = ?'); params.push(f.serviceNumber); }
   if (f.q) { const l = like(f.q); sql.push(NAME_SQL); params.push(l, l, l); }
   if (f.offenceId) { sql.push('c.offence_id = ?'); params.push(f.offenceId); }
