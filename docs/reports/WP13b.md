@@ -6,6 +6,10 @@
 - Done by: AI session for swizfcodes
 - Date: 19/11/2026
 
+## Update 2: NAVY-PAYROLL way (administrator's instruction, the owner's words: the preview "exactly as the downloaded pdf is")
+- Where `navigator.pdfViewerEnabled` is true, the preview shows the PDF in an iframe from the blob URL with `#toolbar=0&navpanes=0`, filling the dialog body (no padding), under our header and above our footer. Print calls `iframe.contentWindow.print()`, falling back to opening the blob. The blob URL is revoked on close. Without an inline viewer (most phones) the PDF.js drawing below is the fallback. This replaces the earlier "no iframe" rule, on the administrator's instruction; `CONVENTIONS.md` and the pdf-preview entry in `docs/design/components.md` are updated to match.
+- Looked at (harness, Chromium with the PDF viewer, 1440 px, dsf 2): the browser's viewer fills the dialog, toolbar hidden, the faint blue page and watermark as in the PDF; the surround is the viewer's own dark grey, not our token. On a 390 px phone with `pdfViewerEnabled` false: the drawn pages in the bottom sheet, no sideways scroll. Not looked at: Firefox and Safari (Firefox's viewer may ignore `toolbar=0`), dark theme, a real phone, the real Print Dossier, the Print dialog itself.
+
 ## Built (against the brief, page by page)
 - PDF preview (`public/js/ui/pdf-preview.js`): pages are drawn at a backing resolution of 2x to 3x their display size (never below 2x, 3x on dense screens, capped at 16 million pixels per page) and shown at their whole-pixel CSS width, so the browser scales them down, never up. Pages are drawn again when the dialog's width changes. The PDF now paints its own background (white only where it has none); the `--paper` fill is gone. Print renders at 3x, also without the paper fill.
 

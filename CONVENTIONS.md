@@ -305,10 +305,14 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   to keep one native). Look a select up with `querySelector('[name="…"]')` or its id, never
   `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
   it is on the page. Its look is set at the end of `input.css`.
-- **Printouts open in the app's own PDF preview, never the browser's PDF viewer** (`js/ui/pdf-preview.js`,
-  `openPdfPreview({ url, title, filename })`; `previewBlobModal` hands PDFs to it). PDF.js (`pdfjs-dist`) draws the
-  pages from our own origin (`/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN, no `<iframe>` or `<embed>` of a
-  PDF); only the app's Download PDF and Print buttons. The pages stay paper-coloured (`--paper`) in dark mode. Every
+- **Printouts open in the app's own preview dialog** (`js/ui/pdf-preview.js`, `openPdfPreview({ url, title, filename })`;
+  `previewBlobModal` hands PDFs to it). Where the browser can show a PDF inline (`navigator.pdfViewerEnabled`: desktop
+  Chrome, Edge, Firefox, Safari) the dialog shows the PDF in the browser's own viewer with its toolbar hidden, as
+  NAVY-PAYROLL does: the server's PDF is fetched as a blob and shown in an `<iframe>` from the blob URL with
+  `#toolbar=0&navpanes=0` (CSP `frame-src 'self' blob:`), so it is exactly the PDF that is downloaded; the blob URL is
+  revoked on close. Phones and other browsers without an inline PDF viewer get the pages drawn by PDF.js
+  (`pdfjs-dist`, from our own origin `/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN) at 2x to 3x resolution with
+  the PDF's own background. Only the app's own title, close, Download PDF and Print buttons. Every
   Static Table has **Print List** (`GET /api/tables/<slug>/print?q=&status=`, the `static-table-list` template: the crest, title,
   list columns, Active, row count, date printed and page numbers; the table's view privilege).
 - **Printouts are Handlebars templates, made into PDFs by Chromium** (owner's decision, 19/11/2026; WP13). The

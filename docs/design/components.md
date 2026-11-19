@@ -227,20 +227,21 @@ Toasts never cover a dialog's buttons: on a phone they show full width at the to
 
 ## PDF preview
 
-`ui/pdf-preview.js`: every printout opens here, never in the browser's PDF viewer (no browser toolbar in Chrome, Edge,
-Firefox or Safari). The pages are drawn by PDF.js (the `pdfjs-dist` package, served from our own origin at `/vendor/pdfjs`,
-with a `worker-src 'self' blob:` in the CSP; no CDN and no `<iframe>`/`<embed>` of the PDF).
+`ui/pdf-preview.js`: every printout opens in this dialog. Where the browser can show a PDF inline
+(`navigator.pdfViewerEnabled`: desktop Chrome, Edge, Firefox, Safari) the PDF is shown by the browser's own viewer in an
+`<iframe>` from a blob URL with `#toolbar=0&navpanes=0` (the toolbar hidden; as NAVY-PAYROLL does), so it is exactly the
+downloaded PDF. Where it cannot (most phones) the pages are drawn by PDF.js (the `pdfjs-dist` package, served from our own
+origin at `/vendor/pdfjs`, `worker-src 'self' blob:` in the CSP; no CDN) at 2x to 3x resolution with the PDF's own background.
 
 ```js
 openPdfPreview({ url, title, filename })    // fetched through the api client, so the session applies
 openPdfPreview({ blob, title, filename })   // or a PDF already in hand
 ```
 
-A large dialog on desktop and a tall sheet on a phone (one page wide, no sideways scroll), the title and the page count in
-the head, the pages on paper (the `--paper` token: the page stays paper-coloured in dark mode, the dialog follows the
-theme), and only **Download PDF** (saves the file under its name) and **Print** (sends the pages to the browser's print
-dialog from a hidden frame, with no viewer shown). `previewBlobModal` in `core/dom.js` hands a PDF to it, so every place that
-opened a PDF does too.
+A large dialog on desktop and a tall sheet on a phone (one page wide, no sideways scroll), the title in the head (and the
+page count when the pages are drawn), the dialog following the theme, and only **Download PDF** (saves the file under its
+name) and **Print** (prints the iframe's PDF, or the drawn pages from a hidden frame). `previewBlobModal` in `core/dom.js`
+hands a PDF to it, so every place that opened a PDF does too.
 
 ## Toolbar
 
