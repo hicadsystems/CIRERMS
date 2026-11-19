@@ -173,7 +173,7 @@ The administrator session creates each session with its model and effort, the re
 `hicadsystems/cirems` (read only) for the old code. Nobody watches a running session.
 
 When done, the session sends one message to the administrator session
-(`session_01G8RfviiqXAPPkGe8dkGyUw`) with:
+(`session_01G8RfvmysEhqqTQUZ45Qn5D`) with:
 
 - the branch and its last commit
 - what was built or designed: every page and action, against the module's row in section 4
@@ -192,9 +192,9 @@ the next wave once the owner has merged.
 |---|---|---|---|
 | `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
 | WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
-| D1 | Running since 19/11/2026, Sonnet 5.5 · high | `design-drafting` | |
-| WP1 | Done, checked, ready to merge (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
-| T1 | Not started | `fluid-type` | |
+| D1 | Designed; follow-up running (wide tables, section 9a decisions) | `design-drafting` | 19/11/2026: e2b5234, 21 pages, only `docs/design/`; checked by the administrator |
+| WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
+| T1 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
 | D2 | Not started | `design-casework` | |
 | WP2 | Not started | `static-tables` | |
 | WP3 | Not started | `system-admin` | |
@@ -223,6 +223,31 @@ the next wave once the owner has merged.
   (`docs/legacy/advancement.md`); WP8 settles it with the owner.
 - **The discharge upload template** is missing from the old repository; D2 designs one from the
   fields the old import reads.
+
+## 9a. Design decisions for Drafting, Training Drafting and Advancement
+
+Asked by D1, decided by the administrator at the owner's request (19/11/2026). The build packages
+(WP6, WP7a, WP7b, WP8) follow them; the owner can change any of them.
+
+1. **Manning requirement is advisory.** The proposal lists every due rating. The manning page shows
+   required, aboard and the difference per ship and rate; the draft review warns when a batch would
+   take a ship over or under its requirement. Nothing blocks.
+2. **Advancement goes one rate at a time.** The new rate takes effect on the board date (Board
+   Returns Update) or on upload. Remarks are optional.
+3. **Close and rejection.** Close takes one fully approved batch at a time. In review, a candidate
+   can be marked Not Recommended with a reason and leaves the batch, returning to the due list next
+   time. A closed batch is final; corrections are made on the rating's record, under the audit
+   trail. A training batch closes when its history is confirmed.
+4. **WEF.** The old posting ends the day before the WEF date and the new one starts on it; a future
+   WEF shows as scheduled and takes effect on its date.
+5. **Approval is a privilege** (the approve action on the approval pages). Rate groups come from the
+   Rates table, in its order; nothing hard-codes them.
+6. **Training.** Eligible: current ratings matching the course's branch or specialisation (and its
+   rates, if set), not already in an open batch for the course. Results: Distinction, Credit, Pass,
+   Fail; no result for a rating not attending. One start and end date per batch, changeable per
+   rating in Update Training History.
+7. **Due rules** stay placeholders until Hicad supplies the real ones (section 9). The build keeps
+   the thresholds as settings in the database, so the real values go in without a code change.
 
 ## 10. Notes for later phases
 
