@@ -120,7 +120,9 @@ avatar({ name: 'Okonkwo Chukwuemeka', size: 'xl' });   // shows "OC"
 `ui/facts.js`
 
 ```js
-facts([[label, value], ...], { columns = 2 })   // empty values show "-"; a value can be a node
+facts([[label, value], ...])   // one row per field: label left (about 40%), value right, divider under each row
+                              // empty values show "N/A"; a value can be a node; `columns` is accepted and ignored
+factPanels([{ title, rows, actions }])   // panels side by side on a wide page, brand-colour heading each; stack on a phone
 
 facts([['Current Ship', 'NNS ARADU'], ['Command', 'Western Naval Command']]);
 ```

@@ -23,7 +23,7 @@ import { button } from '../ui/button.js';
 import { card } from '../ui/card.js';
 import { pill } from '../ui/pill.js';
 import { avatar } from '../ui/avatar.js';
-import { facts } from '../ui/facts.js';
+import { factPanels } from '../ui/facts.js';
 import { emptyState } from '../ui/empty-state.js';
 import { pageHeader } from '../ui/page-header.js';
 import { inPageTabs } from '../ui/tabs.js';
@@ -167,17 +167,17 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
   function detailsTab() {
     const r = state.rating;
     const posting = (state.children.drafting || []).find((p) => !p.end_date);
-    return h('div', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1' }, SECTIONS.map((s) => {
+    return card({ body: factPanels(SECTIONS.map((s) => {
       const rows = displayRows(s, r);
       if (s.key === 'official') {
         rows.splice(5, 0, ['Current Ship', r.current_ship_name ? `${r.current_ship_name}${posting && posting.start_date ? ` (${durationSince(posting.start_date)})` : ''}` : '']);
       }
-      return card({
+      return {
         title: s.title,
         actions: !may.edit ? null : [button({ label: 'Edit', icon: 'pencil', variant: 'ghost', ariaLabel: `Edit ${s.title}`, onClick: () => editSection(s.key) })],
-        body: facts(rows),
-      });
-    }));
+        rows,
+      };
+    })) });
   }
 
   function editSection(key) {
