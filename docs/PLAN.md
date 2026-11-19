@@ -216,7 +216,7 @@ the next wave once the owner has merged.
 | WP7b | Not started | `drafting-reports` | |
 | WP8 | Not started | `advancement` | |
 | WP9 | Not started | `reports` | |
-| D3 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8Rfvj9QeAuEJNKNHHRpuq`; the owner's priority; decisions in section 9e | `design-special` | |
+| D3 | Done, checked; for the owner's review (Sonnet 5.5 · medium) | `design-special` | 19/11/2026: 91884e3, Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), appraisals under the record's Advancement tab, the Appraisals tile; only `docs/design/`; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling, no Soon items left |
 | WP11 | Not started | `special-drafting` | |
 | WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
@@ -405,6 +405,11 @@ WP12 follow them; the owner can change any of them.
    branch and grade, with the grade counts, as PDF and Excel.
 8. The rating's record shows its appraisals (as the old profile did) for someone who may view Recommendation and
    Grading; the dashboard's Appraisals tile counts appraisals this month.
+
+D3's questions, answered by the administrator (19/11/2026): a special draft moves the rating only once its form is
+printed (on its WEF), so Remove needs no undo; closing an appraisal period is final; the director's name and date are
+optional but go together, and the CO's name is required; the appraisals sit in a list under the record's Advancement
+tab rather than a twelfth tab. The meaning of the posting types TY and DW is for the owner (the demo shows the codes).
 
 ## 10. What is known of Special Drafting and Naval Character Assessment
 
