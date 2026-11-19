@@ -120,12 +120,14 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1 (fluid type), D1 (Drafting, Training Drafting, Advancement in the demo), the plan, the demo with light and dark mode |
-| `project-plan` | Section 9b and 9c decisions, wave C status. Owner to merge |
-| D1, T1 | Merged 19/11/2026; sessions archived |
-| D2 `design-casework` | Session `session_01G8RfvnRMAeYTMGRGgXUgG9` (Sonnet 5.5, medium), started 19/11/2026 with the section 9b decisions in its brief. On report: check, send the owner `demo.html` to review (Memos and Mails and Appraisals tiles are the owner's call), owner merges, archive |
-| WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA` (Sonnet 5.5, medium), started 19/11/2026 with the section 9c decisions in its brief. On report: check, run the access walkthrough and its own `tests/e2e/static-tables-walkthrough.js`, owner merges, archive |
-| Next, wave D | WP3 `system-admin` and WP4 `disciplinary` (both Sonnet 5.5, medium) once WP2 is merged (WP4 also needs D2). Later waves: E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
+| master | WP0, WP1, T1, D1, D2, WP2 (merged early at 540100d, see below), the plan |
+| `project-plan` | Even with master after the owner's merge of PR 16 |
+| D1, T1, D2 | Merged 19/11/2026; sessions archived |
+| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit), and told the owner's rule that every account belongs to an existing rating, HICO001 included (PLAN 9d). On report: check, run the three walkthroughs, owner merges, archive |
+| WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA`. The owner merged 540100d early; b971773 checked (rules clean, Death seed fixed, access 166 passed, static tables 1941 passed and 1 failed: the held inactive branch not marked "(Inactive)" in a rating's edit dialog). Sent back for that one fix (a short third session alongside WP3 and WP4). On report: check, owner merges `static-tables` again, archive |
+| WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
+| D3 `design-special` | Not started. The owner (19/11/2026) wants Special Drafting and Naval Character Assessment designed and built this phase: D3 (Sonnet 5.5, medium) in the first free slot after WP3 or WP4, with PLAN 9e in its brief; then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
+| Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`

@@ -1,7 +1,7 @@
 -- Disciplinary Action (WP4): demo cases for every page (pending, concluded, one corrected, cancelled),
 -- the old role "Disciplinary Actions" with every privilege of the module, and a role that may
 -- initiate and view but not conclude, cancel or correct (for the walkthrough). Safe to rerun.
--- Demo accounts (password Admin@123, as HICO001): NAVPERS01 (Disciplinary Actions), NAVPERS02 (Disciplinary Initiator).
+-- Demo accounts (password Admin@123, as HICO001), each belonging to a rating: NAVPERS01 (B0541, Disciplinary Actions), NAVPERS02 (B0588, Disciplinary Initiator).
 
 INSERT IGNORE INTO roles (name, description, full_access) VALUES
   ('Disciplinary Actions', 'The old Disciplinary Actions role: initiate, conclude, cancel and correct cases, and the lists and report', 0),
@@ -18,8 +18,8 @@ SELECT r.id, p.id FROM roles r JOIN privileges p
  WHERE r.name = 'Disciplinary Initiator';
 
 INSERT IGNORE INTO users (username, password_hash, full_name, role_id, service_number, is_active) VALUES
-  ('NAVPERS01', '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42', 'Personnel Office One', (SELECT id FROM roles WHERE name = 'Disciplinary Actions'), NULL, 1),
-  ('NAVPERS02', '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42', 'Personnel Office Two', (SELECT id FROM roles WHERE name = 'Disciplinary Initiator'), NULL, 1);
+  ('NAVPERS01', '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42', 'Personnel Office One', (SELECT id FROM roles WHERE name = 'Disciplinary Actions'), 'B0541', 1),
+  ('NAVPERS02', '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42', 'Personnel Office Two', (SELECT id FROM roles WHERE name = 'Disciplinary Initiator'), 'B0588', 1);
 
 INSERT INTO discipline_cases
   (case_number, service_number, rate_id, ship_id, incident_date, offence_id, what_happened, reported_by, status,

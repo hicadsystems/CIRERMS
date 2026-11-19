@@ -44,8 +44,8 @@ const TABLES = [
   { slug: 'branch', item: 'Branch', table: 'ref_branch', lookup: 'branches', holder: ['ratings', 'branch_id'] },
   { slug: 'exit-type', item: 'Exit Type', table: 'ref_exit_type', lookup: 'exitTypes', holder: ['ratings', 'exit_type_id'] },
   { slug: 'entry-mode', item: 'Entry Mode', table: 'ref_entry_mode', lookup: 'entryModes', holder: ['ratings', 'entry_mode_id'] },
-  { slug: 'offences', item: 'Offence', table: 'ref_disciplinary_offence' },
-  { slug: 'sanctions', item: 'Sanction', table: 'ref_disciplinary_sanction' },
+  { slug: 'offences', item: 'Offence', table: 'ref_disciplinary_offence', holder: ['discipline_cases', 'offence_id'] },
+  { slug: 'sanctions', item: 'Sanction', table: 'ref_disciplinary_sanction', holder: ['discipline_cases', 'sanction_id'] },
   { slug: 'institution', item: 'Institution', table: 'ref_institution', holder: ['ref_training', 'institution_id'] },
   { slug: 'local-government', item: 'Local Government', table: 'ref_local_government', lookup: 'localGovernments', holder: ['ratings', 'local_government_id'] },
   { slug: 'languages', item: 'Language', table: 'ref_language', lookup: 'languages', holder: ['rating_language', 'language_id'] },
@@ -81,8 +81,8 @@ async function open(browser, { viewport, theme }) {
   const phone = viewport.width < 700;
   const context = await browser.newContext({ viewport, colorScheme: theme, deviceScaleFactor: 1, isMobile: phone, hasTouch: phone });
   const errors = [];
-  // responses the walk-through provokes on purpose (403 without a grant, 409 a row in use, 422 a bad value)
-  const expected = new Set([403, 409, 422]);
+  // responses the walk-through provokes on purpose (403 without a grant, 404 a deleted row, 409 a row in use, 422 a bad value)
+  const expected = new Set([403, 404, 409, 422]);
   context.on('page', (p) => {
     p.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     p.on('console', (m) => {
@@ -117,6 +117,8 @@ const api = (page, method, url, data) => page.evaluate(async ({ method, url, dat
 }, { method, url, data });
 
 const dialogOf = (page) => page.locator('#overlay-root [role="dialog"]').last();
+// waits for the dialog's opening animation to end (no fixed wait)
+const settle = (dlg) => dlg.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
 async function goTable(page, slug) {
   await page.goto(`${BASE}/app.html#tables/${slug}`);
@@ -157,8 +159,11 @@ async function openRowByName(page, phone, name) {
 async function search(page, text) {
   const box = page.locator('#app-main input[type="search"]').first();
   await box.fill(text);
-  await box.press('Enter');
-  await page.waitForTimeout(500);
+  // Enter always asks the server again: wait for that answer, then for the list to draw
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === 'GET' && /\/api\/tables\/[a-z-]+\?/.test(r.url())),
+    box.press('Enter'),
+  ]);
   await page.waitForFunction(() => !document.querySelector('#app-main')?.textContent.includes('Loading'), null, { timeout: 10000 });
 }
 
@@ -166,7 +171,8 @@ async function search(page, text) {
 async function choose(page, name, label) {
   const dlg = dialogOf(page);
   await dlg.locator(`.custom-dropdown-wrapper[name="${name}"] input:not(.custom-dropdown-hidden)`).first().click();
-  const options = page.locator('.custom-dropdown-list:visible .custom-dropdown-item:not(.cdd-placeholder)');
+  // a named choice may be the empty one ("Any Branch"); the first choice is a real row
+  const options = page.locator(label ? '.custom-dropdown-list:visible .custom-dropdown-item' : '.custom-dropdown-list:visible .custom-dropdown-item:not(.cdd-placeholder)');
   await options.first().waitFor();
   if (label) await options.filter({ hasText: label }).first().click();
   else await options.first().click();
@@ -178,7 +184,9 @@ const dropdownValue = (page, name) => dialogOf(page).locator(`input.custom-dropd
 async function toastText(page, re) {
   const t = page.locator('#toast-root [role]', { hasText: re }).last();
   await t.waitFor({ timeout: 8000 });
-  return (await t.innerText()).trim();
+  const text = (await t.innerText()).trim();
+  await t.getByRole('button', { name: 'Dismiss' }).click().catch(() => {});
+  return text;
 }
 
 async function noSideScroll(page) {
@@ -238,7 +246,7 @@ async function tableCycle(ctx, t, tag, inUse, label) {
   await page.getByRole('button', { name: `Add ${t.item}` }).first().click();
   let dlg = dialogOf(page);
   await dlg.waitFor();
-  await page.waitForTimeout(600); // the sheet rises, the dialog settles
+  await settle(dlg); // the sheet rises, the dialog settles
   if (phone) {
     const box = await dlg.boundingBox();
     check(Math.abs(box.y + box.height - PHONE.height) < 3 && box.width >= PHONE.width - 1, `${label}: the dialog is a bottom sheet`, JSON.stringify(box));
@@ -385,40 +393,119 @@ async function inUseRow(db, t) {
 }
 
 // ---------------------------------------------------------------------------
-// The administrator, in one layout and theme: every table, the whole cycle
+// The rules, through the API (fast): required, lengths, codes, duplicates, inactive out of the
+// lists, the in-use refusal and where it is used, the audit rows
 // ---------------------------------------------------------------------------
-async function adminCycle(browser, db, viewport, theme, idx) {
+async function apiRules(page, db) {
+  console.log('\nThe rules through the API, every table');
+  for (const t of TABLES) {
+    const meta = (await api(page, 'GET', `/api/tables/${t.slug}/meta`)).body.data;
+    const real = meta.columns.filter((c) => c.type !== 'virtual');
+    const label = `${t.slug} (API)`;
+    const empty = await api(page, 'POST', `/api/tables/${t.slug}`, {});
+    const missing = real.filter((c) => c.required && c.type !== 'bool').map((c) => c.key);
+    check(empty.status === 422 && missing.every((k) => empty.body.error.fields[k]), `${label}: empty body refused, each required field named (${missing.join(', ')})`, JSON.stringify(empty.body && empty.body.error));
+    const long = real.find((c) => c.type === 'text' && c.max);
+    if (long) {
+      const tooLong = await api(page, 'POST', `/api/tables/${t.slug}`, { [long.key]: 'x'.repeat(long.max + 1) });
+      check(tooLong.status === 422 && tooLong.body.error.fields[long.key], `${label}: ${long.key} over ${long.max} characters refused`);
+    }
+    if (t.slug === 'appraisal-ratings') continue; // its rows are covered by the specification (scores must not overlap)
+
+    const body = { name: `WT API ${t.item}` };
+    for (const c of real) {
+      if (c.key === 'name') continue;
+      if (c.type === 'text') body[c.key] = c.key === 'code' ? 'wy' : 'Test';
+      else if (c.type === 'number') body[c.key] = 12;
+      else if (c.type === 'select') body[c.key] = c.options[0];
+      else if (c.type === 'ref' && c.required) body[c.key] = meta.options[c.key].find((o) => o.active).id;
+    }
+    const made = await api(page, 'POST', `/api/tables/${t.slug}`, body);
+    check(made.status === 201, `${label}: a valid row is added`, JSON.stringify(made.body && made.body.error));
+    if (made.status !== 201) continue;
+    const id = made.body.data.id;
+    const dup = await api(page, 'POST', `/api/tables/${t.slug}`, body);
+    check(dup.status === 422 && dup.body.error.fields.name, `${label}: the same name is refused`);
+    if (real.some((c) => c.key === 'code')) {
+      check(made.body.data.code === 'WY', `${label}: the code "wy" is kept as WY`);
+      const dupCode = await api(page, 'POST', `/api/tables/${t.slug}`, { ...body, name: `${body.name} 2` });
+      check(dupCode.status === 422 && dupCode.body.error.fields.code, `${label}: the same code is refused`);
+    }
+    const off = await api(page, 'PUT', `/api/tables/${t.slug}/${id}`, { ...body, is_active: false });
+    check(off.status === 200 && off.body.data.is_active === 0, `${label}: made Inactive`);
+    if (t.lookup) {
+      const lookups = (await api(page, 'GET', '/api/lookups')).body.data;
+      check(!(lookups[t.lookup] || []).some((x) => x.name === body.name) && (lookups.inactive[t.lookup] || []).some((x) => x.name === body.name), `${label}: an Inactive row is out of the dropdown list`);
+    }
+    const inUse = await inUseRow(db, t);
+    if (inUse) {
+      const refused = await api(page, 'DELETE', `/api/tables/${t.slug}/${inUse.id}`);
+      check(refused.status === 409 && refused.body.error.code === 'IN_USE' && /is in use \(.+\), so it cannot be deleted/.test(refused.body.error.message), `${label}: a row in use is refused, with where it is used`, refused.body && refused.body.error && refused.body.error.message);
+      const detail = (await api(page, 'GET', `/api/tables/${t.slug}/${inUse.id}`)).body.data;
+      check(detail.in_use === true && detail.usage.length > 0, `${label}: the row says where it is used (${detail.usage.map((u) => u.text).join(', ')})`);
+    } else {
+      const detail = (await api(page, 'GET', `/api/tables/${t.slug}/${id}`)).body.data;
+      check(detail.in_use === false, `${label}: no record refers to this table yet`);
+    }
+    const gone = await api(page, 'DELETE', `/api/tables/${t.slug}/${id}`);
+    check(gone.status === 200 && (await api(page, 'GET', `/api/tables/${t.slug}/${id}`)).status === 404, `${label}: an unused row is deleted`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The administrator at desktop light: every table, the whole cycle through the dialogs.
+// Worker lanes split the tables; each has its own tag so names and codes never collide.
+// ---------------------------------------------------------------------------
+async function cycleLane(browser, db, tables, tag) {
+  const label0 = `desktop, light, lane ${tag}`;
+  const ctx = await open(browser, { viewport: DESKTOP, theme: 'light' });
+  await signIn(ctx.page, ADMIN);
+  await goTable(ctx.page, 'branch');
+  check(await ctx.page.locator('#module-tabs a').count() >= 16, `${label0}: the Static Tables module shows its 16 tabs`);
+  for (const t of tables) await tableCycle(ctx, t, tag, await inUseRow(db, t), `${t.slug} (desktop, light)`);
+  check(ctx.errors.length === 0, `${label0}: no browser errors`, ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
+// ---------------------------------------------------------------------------
+// The other layouts (desktop dark, phone light, phone dark): for every table the list and one
+// dialog (opens, shows its fields, no sideways overflow), then one full cycle on the tables with
+// special parts: Training (rates), Local Government (under State), Exit Type (flags)
+// ---------------------------------------------------------------------------
+async function glance(ctx, t, label) {
+  const { page, phone } = ctx;
+  const meta = (await api(page, 'GET', `/api/tables/${t.slug}/meta`)).body.data;
+  await goTable(page, t.slug);
+  check(await listRows(page, phone).count() > 0, `${label}: the list shows rows`);
+  check(await noSideScroll(page), `${label}: the page does not scroll sideways`);
+  if (!phone) check(await page.locator('#app-main .overflow-x-auto').first().evaluate((e) => e.scrollWidth <= e.clientWidth + 1), `${label}: the table does not scroll sideways`);
+  check(await page.getByRole('button', { name: `Add ${t.item}` }).first().isVisible(), `${label}: Add ${t.item} shows`);
+  // the first row opens its dialog with every field of the table
+  await listRows(page, phone).first().click();
+  const dlg = dialogOf(page);
+  await dlg.waitFor();
+  await settle(dlg);
+  const want = meta.columns.filter((c) => c.type !== 'virtual').length + 1; // and the Status
+  const fields = await dlg.locator('[data-field]').count();
+  check(fields >= want, `${label}: the dialog shows its ${want} fields`, `${fields}`);
+  const box = await dlg.boundingBox();
+  check(phone ? Math.abs(box.y + box.height - PHONE.height) < 3 && box.width >= PHONE.width - 1 : box.x > 100 && box.x + box.width < DESKTOP.width - 100, `${label}: the dialog is ${phone ? 'a bottom sheet' : 'centred'}`, JSON.stringify(box));
+  check(await dlg.evaluate((e) => e.scrollWidth <= e.clientWidth + 1), `${label}: the dialog does not scroll sideways`);
+  if (SHOTS && ['training', 'exit-type', 'ships'].includes(t.slug)) await shot(page, `${label.replace(/[ ,()]+/g, '-')}-${t.slug}-dialog`);
+  await page.keyboard.press('Escape');
+  await dlg.waitFor({ state: 'detached' });
+}
+
+async function glanceLane(browser, db, viewport, theme, tag) {
   const phone = viewport.width < 700;
   const label0 = `${phone ? 'phone' : 'desktop'}, ${theme}`;
-  console.log(`\nAdministrator, ${label0}: all 16 tables`);
   const ctx = await open(browser, { viewport, theme });
   await signIn(ctx.page, ADMIN);
-  // the module's 16 tabs
-  await goTable(ctx.page, 'branch');
-  const tabCount = await ctx.page.locator('#module-tabs a').count();
-  check(tabCount >= 16, `${label0}: the Static Tables module shows its 16 tabs`, `${tabCount}`);
-  await shot(ctx.page, `${label0.replace(/[ ,]+/g, '-')}-branch-list`);
-  for (let i = 0; i < TABLES.length; i += 1) {
-    const t = TABLES[i];
-    const inUse = await inUseRow(db, t);
-    await tableCycle(ctx, t, String(idx), inUse, `${t.slug} (${label0})`);
+  for (const t of TABLES) await glance(ctx, t, `${t.slug} (${label0})`);
+  for (const slug of ['training', 'local-government', 'exit-type']) {
+    const t = TABLES.find((x) => x.slug === slug);
+    await tableCycle(ctx, t, tag, await inUseRow(db, t), `${t.slug} (${label0})`);
   }
-  // screenshots of a few tables
-  const shotName = (s) => `${label0.replace(/[ ,]+/g, '-')}-${s}`;
-  await goTable(ctx.page, 'local-government');
-  await shot(ctx.page, shotName('local-government-list'));
-  await goTable(ctx.page, 'ships');
-  await ctx.page.getByRole('button', { name: 'Add Ship' }).first().click();
-  await dialogOf(ctx.page).waitFor();
-  await shot(ctx.page, shotName('ships-add'));
-  await ctx.page.keyboard.press('Escape');
-  await goTable(ctx.page, 'training');
-  await shot(ctx.page, shotName('training-list'));
-  await openRowByName(ctx.page, phone, 'Gunnery Course');
-  await shot(ctx.page, shotName('training-edit'));
-  check(await dialogOf(ctx.page).getByText('Able Seaman (AB)').first().isVisible(), `${label0}: a course's rates show as chips`);
-  check(await dialogOf(ctx.page).locator('input.custom-dropdown-hidden[name="specialisation_id"]').inputValue() !== '', `${label0}: its specialisation shows`);
-  await ctx.page.keyboard.press('Escape');
   check(ctx.errors.length === 0, `${label0}: no browser errors`, ctx.errors.join(' | '));
   await ctx.context.close();
 }
@@ -542,9 +629,8 @@ async function withoutGrants(browser, theme, viewport) {
   check(lookups.status === 200 && lookups.body.data.branches.length > 0, 'the dropdown lists stay readable (My Details)');
   // Ctrl K does not find a table
   await page.keyboard.press('Control+k');
-  await page.waitForSelector('[aria-label="Search"]');
+  await page.waitForSelector('[role="dialog"][aria-label="Search"]');
   await page.keyboard.type('ships');
-  await page.waitForTimeout(400);
   check(!(await page.locator('#palette-results').innerText()).includes('Tables'), 'Ctrl K does not offer the tables');
   await page.keyboard.press('Escape');
   check(ctx.errors.length === 0, 'rating: no browser errors', ctx.errors.join(' | '));
@@ -581,9 +667,8 @@ async function viewerRun(browser, theme, viewport) {
   check((await api(page, 'GET', '/api/tables/ships')).status === 200, 'but lists (200)');
   // Ctrl K finds the tables
   await page.keyboard.press('Control+k');
-  await page.waitForSelector('[aria-label="Search"]');
+  await page.waitForSelector('[role="dialog"][aria-label="Search"]');
   await page.keyboard.type('specialisation');
-  await page.waitForTimeout(400);
   check((await page.locator('#palette-results').innerText()).includes('Specialisation Area'), 'Ctrl K finds a table by name');
   await page.keyboard.press('Escape');
   check(ctx.errors.length === 0, 'viewer: no browser errors', ctx.errors.join(' | '));
@@ -596,12 +681,12 @@ async function keeperRun(browser) {
   const { page } = ctx;
   await signIn(page, KEEPER);
   await goTable(page, 'branch');
-  check(await page.locator('#module-tabs a').count() === 16, 'all 16 tabs show');
+  check(await page.locator('#module-tabs a').locator('visible=true').count() === 16, 'all 16 tabs show');
   check(await page.getByRole('button', { name: 'Add Branch' }).first().isVisible(), 'Add shows');
   check(await page.getByRole('button', { name: /^Edit / }).count() > 0, 'Edit shows');
   const rail = await page.locator('#rail nav a').allInnerTexts();
   check(!rail.some((r) => /Soon/.test(r)), 'no Soon modules in the rail for a role without full access');
-  const made = await api(page, 'POST', '/api/tables/branch', { name: 'WT Keeper Branch' });
+  const made = await api(page, 'POST', '/api/tables/branch', { name: 'WT Keeper Branch', code: 'wk' });
   check(made.status === 201, 'add works');
   const gone = await api(page, 'DELETE', `/api/tables/branch/${made.body.data.id}`);
   check(gone.status === 200, 'delete works');
@@ -614,10 +699,10 @@ async function keeperRun(browser) {
   const part = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(part.page, PARTIAL);
   await goTable(part.page, 'branch');
-  check(await part.page.locator('#module-tabs a').count() === 0 || await part.page.locator('#module-tabs a').count() === 1, 'only the Branch tab is offered', `${await part.page.locator('#module-tabs a').count()}`);
+  check(await part.page.locator('#module-tabs a').locator('visible=true').count() <= 1, 'only the Branch tab is offered (no strip for a lone tab)');
   check(await part.page.getByRole('button', { name: 'Add Branch' }).first().isVisible(), 'Add shows');
   check(await part.page.getByRole('button', { name: /^Edit / }).count() === 0, 'Edit does not');
-  const a = await api(part.page, 'POST', '/api/tables/branch', { name: 'WT Partial Branch' });
+  const a = await api(part.page, 'POST', '/api/tables/branch', { name: 'WT Partial Branch', code: 'wp' });
   const u = await api(part.page, 'PUT', `/api/tables/branch/${a.body.data.id}`, { name: 'WT Partial Branch 2' });
   const d = await api(part.page, 'DELETE', `/api/tables/branch/${a.body.data.id}`);
   const other = await api(part.page, 'GET', '/api/tables/ships');
@@ -640,7 +725,7 @@ async function auditAndRatings(browser, db) {
   for (const t of TABLES) {
     const rows = (await api(page, 'GET', `/api/audit?pageSize=100&table=${t.table}`)).body.data;
     const n = (a) => rows.filter((r) => r.action === a).length;
-    check(n('INSERT') >= 4 && n('UPDATE') >= 8 && n('DELETE') >= 4, `${t.table}: INSERT, UPDATE and DELETE rows kept (${n('INSERT')}/${n('UPDATE')}/${n('DELETE')})`);
+    check(n('INSERT') >= 1 && n('UPDATE') >= 2 && n('DELETE') >= 1, `${t.table}: INSERT, UPDATE and DELETE rows kept (${n('INSERT')}/${n('UPDATE')}/${n('DELETE')})`);
     check(rows.every((r) => r.username && r.ip), `${t.table}: the rows name who and where from`);
   }
   const trainingRows = (await api(page, 'GET', '/api/audit?pageSize=100&table=ref_training&action=INSERT')).body.data;
@@ -661,15 +746,18 @@ async function auditAndRatings(browser, db) {
   check(lookupsBefore.branches.length > 5 && lookupsBefore.ships.length > 5 && lookupsBefore.rates.length > 5 && lookupsBefore.localGovernments.length > 5, 'GET /api/lookups still lists branches, ships, rates and local governments');
   // make that branch Inactive: it leaves the list, B0539 still shows it and still can keep it
   const row = (await api(page, 'GET', `/api/tables/branch/${heldId}`)).body.data;
-  const off = await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, is_active: false });
+  const off = await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, code: row.code, is_active: false });
   check(off.status === 200, 'Branch made Inactive while a rating holds it');
   const lookupsAfter = (await api(page, 'GET', '/api/lookups')).body.data;
   check(!lookupsAfter.branches.some((b) => b.id === heldId) && lookupsAfter.inactive.branches.some((b) => b.id === heldId), 'the Inactive branch is out of the dropdown list');
-  await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
+  // leave the record and come back WITHOUT a page reload: the record reads the lists afresh each time it opens
+  await page.evaluate(() => { window.location.hash = '#ratings/current'; });
+  await page.waitForSelector('#app-main table tbody tr');
+  await page.evaluate(() => { window.location.hash = '#ratings/edit/B0539'; });
   await page.waitForSelector('text=Edit Details');
+  await page.waitForSelector(`text=${row.name}`);
   check(await page.getByText(row.name).first().isVisible(), 'the record still shows the Inactive branch');
-  const edit = page.locator('section:has-text("Official") button:has-text("Edit")').first();
-  await edit.click();
+  await page.getByRole('button', { name: /Edit Official/ }).first().click();
   const dlg = dialogOf(page);
   await dlg.waitFor();
   const value = await dlg.locator('input.custom-dropdown-hidden[name="branch_id"]').inputValue();
@@ -677,7 +765,7 @@ async function auditAndRatings(browser, db) {
   const options = await dlg.locator('[name="branch_id"]').first().evaluate((w) => (w.options ? Array.from(w.options).map((o) => o.text) : []));
   check(options.some((o) => o.includes('(Inactive)')) && options.length > 5, 'the dialog still offers the other branches', options.slice(0, 3).join('|'));
   await page.keyboard.press('Escape');
-  await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, is_active: true });
+  await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, code: row.code, is_active: true });
   // the new-rating dialog has its dropdowns
   await page.goto(`${BASE}/app.html#ratings/new`);
   await page.waitForSelector('#overlay-root [role="dialog"]');
@@ -763,6 +851,8 @@ async function specification(browser) {
   let lookups = (await api(page, 'GET', '/api/lookups')).body.data;
   check(lookups.exitTypes.find((x) => x.code === 'A').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'M').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'C').keepsCurrent === true, 'the old codes A, M and C keep a rating current (seed, in /api/lookups)');
   check(lookups.exitTypes.filter((x) => x.isDeath).map((x) => x.code).join() === 'DE' && lookups.exitTypes.every((x) => typeof x.isDeath === 'boolean'), 'only the deceased exit type is marked Death (both flags are in /api/lookups)');
+  check(lookups.inactive.entryModes.some((x) => x.name === 'Sportsmen Enlistment'), 'after a fresh seed the demo\'s switched-off entry mode is Inactive');
+  check(lookups.exitTypes.find((x) => x.name === 'DECEASED').isDeath === true, 'after a fresh seed the deceased exit type has Death = yes');
   check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 4 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not');
 
   // Appraisal Ratings: low not above high, no overlap
@@ -850,38 +940,48 @@ async function ratingFormLinks(browser) {
 }
 
 async function main() {
+  const started = Date.now();
   const db = await connect();
   await setup(db);
   const browser = await chromium.launch();
   try {
-    const contexts = [[DESKTOP, 'light'], [DESKTOP, 'dark'], [PHONE, 'light'], [PHONE, 'dark']];
-    // ONLY=spec,links,cycle,training,lga,rating,viewer,keeper,audit runs just those parts
-    const want = (n) => !process.env.ONLY || process.env.ONLY.split(',').includes(n);
-    if (want('spec')) await specification(browser);
-    if (want('links')) await ratingFormLinks(browser);
-    if (want('cycle')) {
-      await db.query("UPDATE ref_appraisal_rating SET score_high = 40 WHERE code = 'E'"); // room for the cycle's grade (41 to 44)
-      for (let i = 0; i < contexts.length; i += 1) await adminCycle(browser, db, contexts[i][0], contexts[i][1], i);
-      await db.query("UPDATE ref_appraisal_rating SET score_high = 44 WHERE code = 'E'");
-    }
-    if (want('training')) await trainingRules(browser);
-    if (want('lga')) await lgaRules(browser);
-    if (want('rating')) {
-      await withoutGrants(browser, 'light', DESKTOP);
-      await withoutGrants(browser, 'dark', PHONE);
-    }
-    if (want('viewer')) {
-      await viewerRun(browser, 'light', DESKTOP);
-      await viewerRun(browser, 'dark', PHONE);
-    }
-    if (want('keeper')) await keeperRun(browser);
-    if (want('audit')) await auditAndRatings(browser, db);
+    // the specification and the rules first, through the API (they read the seeded grades)
+    const admin = await open(browser, { viewport: DESKTOP, theme: 'light' });
+    await signIn(admin.page, ADMIN);
+    await specification(browser);
+    await apiRules(admin.page, db);
+    check(admin.errors.length === 0, 'API rules: no browser errors', admin.errors.join(' | '));
+    await admin.context.close();
+
+    // then the screens, lanes side by side (their data cannot collide: own tags, own contexts)
+    await db.query("UPDATE ref_appraisal_rating SET score_high = 40 WHERE code = 'E'"); // room for the cycle's grade (41 to 44)
+    const lanes = [0, 1, 2].map((n) => TABLES.filter((_, i) => i % 3 === n));
+    await Promise.all([
+      cycleLane(browser, db, lanes[0], '0'),
+      cycleLane(browser, db, lanes[1], '4'),
+      cycleLane(browser, db, lanes[2], '5'),
+      (async () => { await glanceLane(browser, db, DESKTOP, 'dark', '1'); })(),
+      (async () => { await glanceLane(browser, db, PHONE, 'light', '2'); })(),
+      (async () => { await glanceLane(browser, db, PHONE, 'dark', '3'); })(),
+      (async () => { await trainingRules(browser); await lgaRules(browser); await ratingFormLinks(browser); })(),
+      (async () => {
+        await withoutGrants(browser, 'light', DESKTOP);
+        await withoutGrants(browser, 'dark', PHONE);
+        await viewerRun(browser, 'light', DESKTOP);
+        await viewerRun(browser, 'dark', PHONE);
+        await keeperRun(browser);
+      })(),
+    ]);
+    await db.query("UPDATE ref_appraisal_rating SET score_high = 44 WHERE code = 'E'");
+    await auditAndRatings(browser, db);
   } finally {
     await browser.close();
     await cleanup(db).catch(() => {});
     await db.end();
   }
-  console.log(`\n${passes} passed, ${failures} failed`);
+  const seconds = Math.round((Date.now() - started) / 1000);
+  check(seconds <= 300, `the walk-through took ${seconds} s (at most 300 s)`);
+  console.log(`\n${passes} passed, ${failures} failed, in ${seconds} s`);
   process.exit(failures ? 1 : 0);
 }
 

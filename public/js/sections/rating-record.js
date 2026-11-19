@@ -262,8 +262,9 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
 export async function mountRatingRecord(outlet, { params = {}, query = {} } = {}) {
   outlet.replaceChildren(loadingNode());
   try {
+    // the lists are read afresh each time a record opens: a value made inactive meanwhile is still offered
     const [lookups, res, discipline] = await Promise.all([
-      getLookups(),
+      getLookups({ force: true }),
       api.get(`/api/ratings/${encodeURIComponent(params.serviceNumber)}`),
       can('disciplinary.concluded', 'view') ? api.get(`/api/disciplinary/rating/${encodeURIComponent(params.serviceNumber)}/cases`).catch(() => null) : null,
     ]);
@@ -282,7 +283,7 @@ export async function mountRatingRecord(outlet, { params = {}, query = {} } = {}
 export async function mountMyDetails(outlet, { query = {} } = {}) {
   outlet.replaceChildren(loadingNode());
   try {
-    const [lookups, res] = await Promise.all([getLookups(), api.get('/api/ratings/me')]);
+    const [lookups, res] = await Promise.all([getLookups({ force: true }), api.get('/api/ratings/me')]);
     const me = res.data;
     if (!me.linked) {
       fill(outlet, [

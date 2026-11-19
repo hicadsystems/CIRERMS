@@ -695,7 +695,7 @@ async function main_() {
   await db.query("INSERT INTO roles (name, description) VALUES ('WTDREPORT', 'Walk-through: the report only')");
   const [[{ id: roleId }]] = [await db.query("SELECT id FROM roles WHERE name = 'WTDREPORT'").then(([r]) => r)];
   await db.query("INSERT INTO role_privileges (role_id, privilege_id) SELECT ?, id FROM privileges WHERE screen = 'disciplinary.report' AND action = 'view'", [roleId]);
-  await db.query('INSERT INTO users (username, password_hash, full_name, role_id, is_active) VALUES (?, ?, ?, ?, 1)', [REPORTER.username, await bcrypt.hash(REPORTER.password, 10), 'Walk-through Reporter', roleId]);
+  await db.query('INSERT INTO users (username, password_hash, full_name, role_id, service_number, is_active) VALUES (?, ?, ?, ?, ?, 1)', [REPORTER.username, await bcrypt.hash(REPORTER.password, 10), 'Walk-through Reporter', roleId, 'B0601F']);
 
   const browser = await chromium.launch();
   const state = {};
