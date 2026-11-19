@@ -121,7 +121,8 @@ const dialogOf = (page) => page.locator('#overlay-root [role="dialog"]').last();
 async function goTable(page, slug) {
   await page.goto(`${BASE}/app.html#tables/${slug}`);
   await page.waitForFunction(() => document.querySelector('#app-main h1') && !document.querySelector('#app-main')?.textContent.includes('Loading'), null, { timeout: 15000 });
-  await page.waitForSelector('#app-main table tbody tr, #app-main [role="status"]', { timeout: 15000 });
+  // a row of the table (desktop) or a card (phone) that is on screen
+  await page.waitForFunction(() => Array.from(document.querySelectorAll('#app-main table tbody tr, #app-main .desk\\:hidden > div > button, #app-main .desk\\:hidden > div > div')).some((e) => e.offsetParent !== null), null, { timeout: 15000 });
 }
 
 /** Rows of the list as the person sees them: the desktop table, or the cards on a phone. */
