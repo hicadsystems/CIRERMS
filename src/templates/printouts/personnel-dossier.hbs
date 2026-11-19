@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="portrait"}}
+</head>
+<body>
+{{> header}}
+<div class="idblock">
+  {{#if photo}}<img class="photo" src="{{photo}}" alt="">{{else}}<div class="photo"></div>{{/if}}
+  {{> facts items=identity cols=2}}
+</div>
+<h2 class="sec"><span class="n">1</span>Basic Details</h2>
+{{> facts items=basic cols=2}}
+<h2 class="sec"><span class="n">2</span>Contact &amp; Identification</h2>
+{{> facts items=contact cols=2}}
+<h2 class="sec"><span class="n">3</span>Health Information</h2>
+{{> facts items=health cols=2}}
+<h2 class="sec"><span class="n">4</span>Official Service Details</h2>
+{{> facts items=service cols=2}}
+{{> datatable nextOfKin}}
+{{> datatable family}}
+{{> datatable advancement}}
+{{> datatable drafting}}
+{{> datatable training}}
+{{> datatable languages}}
+</body>
+</html>

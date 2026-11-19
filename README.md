@@ -13,7 +13,7 @@ Modernised **Ratings Management** slice of the **Centralised Integrated Ratings 
 | Bootstrap 3 + Legacy Custom CSS | **Tailwind CSS v3** (`public/css/output.css`) | Precompiled single stylesheet. Colours are tokens in `public/css/input.css`: the CIRERMS naval palette (`#0074a8`, `#02a9f4`, `#1caf9a`, `#428bca`, `#d9534f`, `#1d2939`) with ivory surfaces on an ivory-to-pale-blue gradient (no white anywhere), light and dark mode ("Navy Night", following the device until the person chooses), rounded corners, soft shadows and theme-blue scrollbars. |
 | ASP.NET MVC Controllers + Services | **Node.js 20 + Express 4** (`routes` → `service` → `repo`) | Strict 3-layer separation: HTTP concerns in `*.routes.js`, validation & transactions in `*.service.js`, parameterised SQL in `*.repo.js`. |
 | Entity Framework / SQL Server | **MySQL 8 (`mysql2/promise`)** + `migrate.js` | Explicit `-- UP` / `-- DOWN` SQL migrations with SHA-256 checksum drift detection, advisory `GET_LOCK` concurrency safety, and idempotent seeds. |
-| Server-side Reports & Imports | **`exceljs` + `pdfkit` + `multer` v2** | Streaming `.xlsx` / `.csv` exports, `.xlsx` batch template & transactional bulk import, official Nigerian Navy PDF dossiers, and magic-byte validated uploads. |
+| Server-side Reports & Imports | **`exceljs` + `handlebars` + `puppeteer-core` / `@sparticuz/chromium` + `multer` v2** | Streaming `.xlsx` / `.csv` exports, `.xlsx` batch template & transactional bulk import, official Nigerian Navy PDFs made by Chromium from HTML (Handlebars) templates (see section 7), and magic-byte validated uploads. |
 
 ---
 
@@ -59,7 +59,7 @@ The map of the old system (how it is built, one file per module, definitions fro
 - **Rules (server side; the dialogs show each message under its field):** only a current rating can have a case opened; incident date not in the future and not before the rating's date employed; decision date not before the incident and not in the future; sanction and offence from the tables (an inactive one only if the case already holds it); the same rating, offence and incident date is refused while another case, pending or concluded, has it; Conclude only a pending case, Cancel only a pending case, Correct only a concluded case (409 otherwise); Correct needs at least one change and a reason, and keeps `[[field, from, to], ...]` and the reason in `discipline_case_corrections`.
 - **Routes** `/api/disciplinary`: `options`, `ratings?q=`, `cases` (POST), `cases/pending`, `cases/pending/pdf`, `cases/concluded`, `cases/:id` and `cases/:id/pdf`, `cases/:id/conclude|cancel|correct`, `report`, `report/pdf`, `report/excel`, `rating/:serviceNumber/cases` (the Discipline tab). Every route is guarded (see `disciplinary.routes.js` for which). A single case is read by whoever may view the list it is on (a pending case by Pending Cases or Concluded Cases, a concluded one by Concluded Cases or the Report). The dropdown rows (`options`) are the module's own source, because `/api/lookups` is for the ratings screens.
 - **Audit:** opening is an INSERT of the case, conclude, cancel and correct are UPDATEs of it (with the cancel reason), and a correction is also an INSERT of its row with the reason and the changes.
-- **Printouts:** Pending Cases list, Disciplinary Report and Case Sheet as PDFs (`disciplinary.documents.js`, pdfkit) and the report as an Excel workbook; the screen, the PDF and the Excel file read one filtered query.
+- **Printouts:** Pending Cases list, Disciplinary Report and Case Sheet as PDFs (`disciplinary.documents.js` shapes the data, the templates `disciplinary-pending-cases`, `disciplinary-report` and `disciplinary-case-sheet` make them) and the report as an Excel workbook; the screen, the PDF and the Excel file read one filtered query.
 - **Demo data (seed 006):** 15 cases (6 pending, 7 concluded with one corrected, 2 cancelled); the old role **Disciplinary Actions** with every privilege of the module (account `B0575`, user name = the rating's official number), and **Disciplinary Initiator**, which may initiate and view but not conclude, cancel or correct (account `B0588`); both with the password `Admin@123`.
 - **For Discharge (WP5):** a pending case for a rating is `SELECT ... FROM discipline_cases WHERE service_number = ? AND status = 'pending'`; either read it directly in the discharge repo, or call `GET /api/disciplinary/rating/:serviceNumber/cases` (needs Concluded Cases view). Nothing in this module blocks a discharge.
 
@@ -214,7 +214,7 @@ Open **http://localhost:3000**. MySQL 8 starts, migrations and seeds run automat
 
 ## 6. Walk-through Tests
 
-`tests/e2e/access-walkthrough.js` signs in as the administrator and as `B0539` on desktop and phone, in light and dark mode: what each sees, the 403s, the audit rows every rating write leaves, and the session lock (Lock Screen, idle time, wrong and right password, other tabs, Sign Out). It uses the Playwright installed on the machine:
+`tests/e2e/access-walkthrough.js` signs in as the administrator and as `B0539` on desktop and phone, in light and dark mode: what each sees, the 403s, the audit rows every rating write leaves, and the session lock (Lock Screen, idle time, wrong and right password, other tabs, Sign Out), and the ratings printouts (the dossier, a tab and the nominal roll open in the app's preview with their pages, and the roll downloads). It uses the Playwright installed on the machine:
 
 ```bash
 npm run migrate:fresh
@@ -247,3 +247,40 @@ npm start
 NODE_PATH=$(npm root -g) node tests/e2e/disciplinary-walkthrough.js
 ```
 
+---
+
+## 7. Printouts (PDFs made by Chromium)
+
+Every PDF the app makes is an HTML (Handlebars) template in `src/templates/printouts/` turned into a PDF by Chromium (`renderPdf` in `src/shared/printouts/`), as the owner's NAVY-PAYROLL does. The templates are D4's approved designs (`docs/design/printouts/` keeps the design record and the sample PDFs). They open in the app's own preview.
+
+| Printout | Template | Made by |
+|---|---|---|
+| Personnel Dossier (Print Dossier, Print Report) | `personnel-dossier` | `ratings.printouts.js` |
+| One tab of a rating's record (Advancement, Drafting, Training, Education; Print) | `rating-report` | `ratings.printouts.js` |
+| Current and Former Ratings list, Export, PDF | `ratings-list` | `ratings.printouts.js` |
+| Static Tables, Print List (all 16; landscape over four columns) | `static-table-list` | `tables.service.js` |
+| Disciplinary: Pending Cases, Report, Case Sheet | `disciplinary-pending-cases`, `disciplinary-report`, `disciplinary-case-sheet` | `disciplinary.documents.js` |
+
+The other templates in the folder (drafting, advancement, discharge, appraisal and so on) are ready for the packages that build those screens. How to add a printout is in `CONVENTIONS.md` (Frontend).
+
+**The page.** A4, the header (crest, "NIGERIAN NAVY — CIRERMS", title) on page 1 only; on every page the footer "RESTRICTED — Nigerian Navy CIRERMS | Generated by: <name> | dd/mm/yyyy hh:mm" (Nigerian time, WAT) and "Page X of Y". Table headers repeat on each page. Fonts (Inter, Libre Baskerville) and the crest are the app's own files; nothing is fetched from the internet while a PDF is made.
+
+**What the server needs.** Node 20+ and a Chromium that can run headless:
+- *Where Chromium is.* Set `PDF_CHROMIUM_PATH` in `.env` to a system Chromium or Chrome (`/usr/bin/chromium` on Debian, Ubuntu and Alpine after `apt install chromium` / `apk add chromium`; the Dockerfile does this). Leave it empty and the app uses the binary that ships inside `@sparticuz/chromium` (as NAVY-PAYROLL does on its shared host): that needs a writable temporary folder (`PDF_TEMP_DIR`, default the system's), about 200 MB of free space the first time it unpacks, and the libraries that package bundles for Amazon Linux-like hosts. If a render fails with a launch error, check the log line `[printouts] ...` and use a system Chromium.
+- *Memory.* One Chromium, about 150 to 300 MB while busy. It starts on the first printout, stays open while PDFs are being made, closes after `PDF_BROWSER_IDLE_MS` without one and is restarted after `PDF_BROWSER_MAX_PAGES` pages. On a small host keep `PDF_TAB_POOL_SIZE` at 1 or 2.
+- *Fonts.* The templates bring their own; install any basic font package (for example `ttf-liberation` or `fonts-liberation`) so the monospaced figures and codes have a fallback.
+
+**Settings** (all optional, in `.env`; read by `src/config/index.js`, listed in `.env.example`):
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `PDF_CHROMIUM_PATH` | empty | Path of the Chromium or Chrome to run; empty uses `@sparticuz/chromium` |
+| `PDF_TAB_POOL_SIZE` | `2` | PDFs made at the same time (the rest wait their turn) |
+| `PDF_BROWSER_IDLE_MS` | `60000` | The browser closes after this long without a PDF |
+| `PDF_BROWSER_MAX_PAGES` | `300` | The browser restarts (when idle) after this many PDFs |
+| `PDF_TIMEOUT_MS` | `60000` | A PDF that takes longer fails with a message |
+| `PDF_FONT_WAIT_MS` | `5000` | The longest wait for the fonts to load |
+| `PDF_MAX_HTML_MB` | `10` | The largest page it will make; a longer list is refused and asks for a narrower one |
+| `PDF_TEMP_DIR` | system temp | Where `@sparticuz/chromium` unpacks and keeps its profile |
+
+A failed render is logged (`[printouts] <template> failed ...`) and the person gets "The printout could not be made. Try again in a moment."; the server never waits on it for ever.

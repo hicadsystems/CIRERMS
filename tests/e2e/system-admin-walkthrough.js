@@ -148,6 +148,14 @@ async function listReady(page) {
 
 const rowsOf = (page, phone) => (phone ? page.locator('#app-main .desk\\:hidden > div > button') : page.locator('#app-main table tbody tr[tabindex]'));
 
+/** The rating search select: type into it, then choose the suggestion (its list is drawn over the page, not inside the dialog). */
+async function pickRating(page, scope, label, text, sn) {
+  await scope.getByRole('combobox', { name: label }).fill(text);
+  const option = page.locator(`[role="listbox"] [data-rating="${sn}"]`);
+  await option.waitFor();
+  await option.click();
+}
+
 async function go(page, route) {
   await page.goto(`${BASE}/app.html#${route}`);
   await listReady(page);
@@ -344,21 +352,19 @@ async function adminSuite(browser, viewport, theme, idx) {
   await search(page, '');
   await page.getByRole('button', { name: 'Add Account' }).first().click();
   dlg = dialogOf(page);
-  await dlg.locator('input[name="ratingSearch"]').waitFor();
+  await dlg.getByRole('combobox', { name: 'Rating' }).waitFor();
   await shot(page, `users-add-${phone ? 'phone' : 'desktop'}-${theme}`);
   await dlg.getByRole('button', { name: 'Add Account' }).click();
   await dlg.locator('[data-field-error]:not(.hidden)').first().waitFor();
   check((await dlg.locator('[data-field-error]:not(.hidden)').allInnerTexts()).some((t) => /Find the rating/.test(t)), 'Add Account: with no rating the form is refused');
-  await dlg.locator('input[name="ratingSearch"]').fill('NOSUCH99');
-  await dlg.getByText('No rating matches').waitFor();
+  await dlg.getByRole('combobox', { name: 'Rating' }).fill('NOSUCH99');
+  await page.locator('[role="listbox"]').getByText('No ratings found').waitFor();
   check(true, 'Add Account: an official number no rating has finds nothing');
-  await dlg.locator('input[name="ratingSearch"]').fill('B0541');
-  const taken = dlg.locator('[data-rating="B0541"]');
-  await taken.waitFor();
-  check(await taken.isDisabled() && /Has account B0541/.test(await taken.innerText()), 'Add Account: a rating that already has an account cannot be picked');
-  await dlg.locator('input[name="ratingSearch"]').fill(linked.slice(0, 4));
-  await dlg.locator(`[data-rating="${linked}"]`).click();
-  check(/B0588|B0601F|B0614|B0627/.test(await dlg.locator('[data-rating-chosen]').innerText()), 'Add Account: picking a rating shows it');
+  await dlg.getByRole('combobox', { name: 'Rating' }).fill('B0541');
+  await page.locator('[role="listbox"]').getByText('No ratings found').waitFor();
+  check(await page.locator('[role="listbox"] [data-rating]').count() === 0, 'Add Account: a rating that already has an account is not offered');
+  await pickRating(page, dlg, 'Rating', linked.slice(0, 4), linked);
+  check(/B0588|B0601F|B0614|B0627/.test(await dlg.getByRole('combobox', { name: 'Rating' }).inputValue()), 'Add Account: picking a rating shows it');
   check((await dlg.locator('input[name="fullName"]').count()) === 0, 'Add Account: there is no separate full-name field');
   await choose(page, 'roleId', 'Records Clerk');
   await dlg.locator('input[name="email"]').fill('not-an-email');
@@ -499,19 +505,17 @@ async function adminSuite(browser, viewport, theme, idx) {
   await go(page, 'admin/password');
   await shot(page, `password-${phone ? 'phone' : 'desktop'}-${theme}`);
   check(await noSideScroll(page), 'Manage Password: no sideways scroll');
-  await page.fill('#app-main input[name="q"]', 'NOBODY1');
-  await page.getByRole('button', { name: 'Find Account' }).click();
-  await page.locator('#app-main').getByText('No account has').waitFor();
-  check(true, 'Manage Password: an unknown official number or user name is refused');
-  await page.fill('#app-main input[name="q"]', linked);
-  await page.getByRole('button', { name: 'Find Account' }).click();
+  const finder = page.locator('#app-main').getByRole('combobox', { name: 'Official Number or Name' });
+  await finder.fill('NOBODY1');
+  await page.locator('[role="listbox"]').getByText('No ratings found').waitFor();
+  check(true, 'Manage Password: an official number no account has finds nothing');
   const result = page.locator('[data-result]');
+  await pickRating(page, page.locator('#app-main'), 'Official Number or Name', linked, linked);
   await result.getByText(newUser).first().waitFor();
-  check(/AONDOAKAA/.test(await result.innerText()) && /Must be chosen at next sign-in/.test(await result.innerText()), 'Manage Password: found by official number (not the user name), with its details');
-  await page.fill('#app-main input[name="q"]', newUser.toLowerCase());
-  await page.getByRole('button', { name: 'Find Account' }).click();
+  check(/AONDOAKAA/.test(await result.innerText()) && /Must be chosen at next sign-in/.test(await result.innerText()), 'Manage Password: found by official number, with its details');
+  await pickRating(page, page.locator('#app-main'), 'Official Number or Name', 'AONDOAKAA', linked);
   await result.getByText(newUser).first().waitFor();
-  check(true, 'Manage Password: found by user name');
+  check(true, 'Manage Password: found by name');
   await shot(page, `password-found-${phone ? 'phone' : 'desktop'}-${theme}`);
   await page.getByRole('button', { name: 'Reset Password' }).click();
   await page.locator('#overlay-root [role="dialog"]', { hasText: /Reset the password of/ }).last().getByRole('button', { name: 'Reset Password' }).click();
@@ -524,8 +528,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   check(login3.status === 200, 'Manage Password: the new one-time password works');
   await anon(page, 'POST', '/api/auth/logout');
   // the old password gave way to the new one: cookies from that anon login must not leak into this page
-  await page.fill('#app-main input[name="q"]', 'HICO001');
-  await page.getByRole('button', { name: 'Find Account' }).click();
+  await pickRating(page, page.locator('#app-main'), 'Official Number or Name', 'HICO001', 'HICO001');
   await result.getByText('MWO ADMINISTRATOR HICO').first().waitFor();
   check(await page.getByRole('button', { name: 'Reset Password' }).isDisabled() && /your own account/.test(await result.innerText()), 'Manage Password: your own account cannot be reset here');
 
@@ -659,7 +662,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await auditGo(page, 'Search');
   let pills = await rowsOf(page, phone).allInnerTexts();
   check(pills.length > 0 && pills.every((t) => /INSERT/.test(t)), 'Audit filter: by action', `${pills.length}`);
-  await filterIn('record').fill(newUser);
+  await pickRating(page, page.locator('#app-main'), 'Official No', newUser, newUser);
   await auditGo(page, 'Search');
   check((await rowsOf(page, phone).count()) === 1, 'Audit filter: by record (the new account’s INSERT)');
   await rowsOf(page, phone).first().click();
@@ -674,7 +677,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await dlg.waitFor({ state: 'detached' });
   await auditGo(page, 'Reset');
   await selectFilter('action', 'UPDATE');
-  await filterIn('record').fill(newUser);
+  await pickRating(page, page.locator('#app-main'), 'Official No', newUser, newUser);
   await filterIn('user').fill('HICO001');
   await filterIn('from').fill(new Date().toLocaleDateString('en-GB'));
   await filterIn('to').fill(new Date().toLocaleDateString('en-GB'));
@@ -791,8 +794,8 @@ async function glance(browser, viewport, theme) {
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Add Account' }).first().click();
   dlg = dialogOf(page);
-  await dlg.locator('input[name="ratingSearch"]').fill('B05');
-  await dlg.locator('[data-rating]').first().waitFor();
+  await dlg.getByRole('combobox', { name: 'Rating' }).fill('B05');
+  await page.locator('[role="listbox"] [data-rating]').first().waitFor();
   check(await dialogFits(dlg), 'Add Account: the dialog fits, with the rating results');
   await shot(page, `users-add-${kind}-${theme}`);
   await page.keyboard.press('Escape');
@@ -809,8 +812,7 @@ async function glance(browser, viewport, theme) {
 
   await go(page, 'admin/password');
   check(await noSideScroll(page), 'Manage Password: no sideways scroll');
-  await page.fill('#app-main input[name="q"]', 'B0541');
-  await page.getByRole('button', { name: 'Find Account' }).click();
+  await pickRating(page, page.locator('#app-main'), 'Official Number or Name', 'B0541', 'B0541');
   await page.locator('[data-result]').getByText('Records Clerk').first().waitFor();
   await shot(page, `password-found-${kind}-${theme}`);
 
@@ -1025,8 +1027,7 @@ async function viewOnly(browser, viewport, theme) {
   check(await dlg.locator('[data-screen] button:not([disabled])').count() === 0, 'the role grid cannot be toggled');
   await dlg.getByRole('button', { name: 'Close' }).first().click();
   await go(page, 'admin/password');
-  await page.fill('#app-main input[name="q"]', 'B0541');
-  await page.getByRole('button', { name: 'Find Account' }).click();
+  await pickRating(page, page.locator('#app-main'), 'Official Number or Name', 'B0541', 'B0541');
   await page.locator('[data-result]').getByText('Records Clerk').first().waitFor();
   check(await page.getByRole('button', { name: 'Reset Password' }).isDisabled(), 'Manage Password: Reset Password is off without the edit grant');
   await go(page, 'admin/audit');

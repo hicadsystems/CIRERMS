@@ -69,7 +69,7 @@ router.get(
   '/export',
   requirePrivilege('ratings.list', 'view'),
   asyncHandler(async (req, res) => {
-    const out = await ratingsService.exportRatingsList(req.query, req.user.username);
+    const out = await ratingsService.exportRatingsList(req.query, req.user.fullName || req.user.username);
     const disposition = out.inline ? 'inline' : 'attachment';
     res.setHeader('Content-Type', out.mimeType);
     res.setHeader('Content-Disposition', `${disposition}; filename="${out.fileName}"`);
@@ -145,7 +145,7 @@ router.get(
   '/:serviceNumber/pdf',
   requirePrivilege('ratings.edit', 'view', { own: ownRecord }),
   asyncHandler(async (req, res) => {
-    const out = await ratingsService.exportRatingDossierPdf(req.params.serviceNumber, req.user.username);
+    const out = await ratingsService.exportRatingDossierPdf(req.params.serviceNumber, req.user.fullName || req.user.username);
     const disp = req.query.download === '1' ? 'attachment' : 'inline';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `${disp}; filename="${out.fileName}"`);
@@ -161,7 +161,7 @@ router.get(
     const out = await ratingsService.exportRatingTabPdf(
       req.params.serviceNumber,
       req.params.tabKey,
-      req.user.username
+      req.user.fullName || req.user.username
     );
     const disp = req.query.download === '1' ? 'attachment' : 'inline';
     res.setHeader('Content-Type', 'application/pdf');

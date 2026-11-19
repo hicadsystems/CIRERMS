@@ -147,6 +147,24 @@ async function openFilters(page, phone) {
   const panelHidden = await page.locator('#app-main [data-filters] > div').last().isHidden();
   if (panelHidden) await page.locator('#app-main [data-filters] button', { hasText: 'Filters' }).click();
 }
+/** The rating search select: type into it, choose the suggestion (its list is drawn over the page, not inside any dialog). */
+async function pickRating(page, scope, label, text, sn) {
+  await scope.getByRole('combobox', { name: label }).fill(text);
+  const option = page.locator(`[role="listbox"] [data-rating="${sn}"]`);
+  await option.waitFor();
+  await option.click();
+}
+/** A list's rating filter: pick one rating (by a part of the name or number); '' clears it. */
+async function pickFilter(page, phone, text, sn) {
+  await openFilters(page, phone);
+  await pickRating(page, page.locator('#app-main [data-filters]'), 'Official No or Name', text, sn);
+  await waitRows(page);
+}
+async function clearRatingFilter(page, phone) {
+  await openFilters(page, phone);
+  const clear = page.locator('#app-main [data-filters] [aria-label="Clear rating"]');
+  if (await clear.isVisible()) { await clear.click(); await waitRows(page); }
+}
 async function setFilter(page, phone, name, value) {
   await openFilters(page, phone);
   const input = page.locator(`#app-main [data-filters] input[name="${name}"]`);
@@ -155,8 +173,9 @@ async function setFilter(page, phone, name, value) {
   await waitRows(page);
 }
 async function clearFilters(page, phone) {
+  await clearRatingFilter(page, phone);
   await openFilters(page, phone);
-  for (const name of ['q', 'from', 'to']) {
+  for (const name of ['from', 'to']) {
     const input = page.locator(`#app-main [data-filters] input[name="${name}"]`);
     if (await input.count()) { await input.fill(''); await input.press('Enter'); }
   }
@@ -215,21 +234,19 @@ async function adminFlow(browser, state) {
   // ---- Initiate Incident
   await go(page, 'disciplinary/initiate');
   check(/Find a Rating/.test(await main(page).innerText()), 'Initiate: starts with "Find a Rating"');
-  const q = main(page).locator('input[name="q"]');
-  await q.fill('dafe'); await q.press('Enter'); await main(page).getByText('No Current Rating Found').waitFor();
-  let text = await main(page).innerText();
-  check(/No Current Rating Found/.test(text) && /left the service/.test(text), 'Initiate: a former rating is not offered, and the page says why');
-  await q.fill('zzzzzz'); await q.press('Enter'); await main(page).getByText('Check the Official Number').waitFor();
-  check(/Check the Official Number/.test(await main(page).innerText()), 'Initiate: no match says so');
-  await q.fill('okon'); await q.press('Enter'); await rowsOf(page, false).first().waitFor();
-  const found = await rowTexts(page, false);
-  check(found.length === 1 && /B0539/.test(found[0]) && /OKONKWO/.test(found[0]) && /1 current rating found/.test(await main(page).innerText()), 'Initiate: a partial name finds the current rating', found.join('|'));
-  const row = rowsOf(page, false).first();
-  await row.hover();
-  await page.locator('[role="tooltip"]', { hasText: 'View Details' }).waitFor({ state: 'visible' });
-  check(await page.locator('[role="tooltip"]:visible', { hasText: 'View Details' }).count() === 1, 'a row shows the View Details tooltip on hover');
+  const q = main(page).getByRole('combobox', { name: 'Official No or Name' });
+  const noRating = page.locator('[role="listbox"]').getByText('No ratings found');
+  await q.fill('dafe'); await noRating.waitFor();
+  check(true, 'Initiate: a former rating is not offered (only current ratings are listed)');
+  await q.fill('zzzzzz'); await noRating.waitFor();
+  check(true, 'Initiate: no match says so');
+  await q.fill('okon');
+  const offered = page.locator('[role="listbox"] [data-rating]');
+  await offered.first().waitFor();
+  const found = await offered.allInnerTexts();
+  check(found.length === 1 && /B0539/.test(found[0]) && /OKONKWO/.test(found[0]), 'Initiate: a partial name offers the current rating', found.join('|'));
   await shot(page, 'desktop-light-initiate');
-  await row.click();
+  await offered.first().click();
   await dialogOf(page).waitFor();
   check(/already has a pending case/.test(await dialogOf(page).innerText()), 'the rating dialog warns of the pending case (nothing blocks)');
   await dialogOf(page).getByRole('button', { name: 'Open Case' }).click();
@@ -283,15 +300,15 @@ async function adminFlow(browser, state) {
   // ---- Pending Cases
   await go(page, 'disciplinary/pending'); await waitRows(page);
   check(/\d+ cases are waiting for a decision/.test(await main(page).innerText()), 'Pending: the count line');
-  await setFilter(page, false, 'q', 'okon');
+  await pickFilter(page, false, 'okon', 'B0539');
   let texts = await rowTexts(page, false);
   check(texts.length === 2 && texts.every((t) => /B0539/.test(t)), 'Pending: the name filter', `${texts.length}`);
   await filterSelect(page, 'offenceId', 'Insubordination'); await waitRows(page);
   texts = await rowTexts(page, false);
   check(texts.length === 1 && texts[0].includes(newNo), 'Pending: the offence filter', texts.join('|'));
-  await setFilter(page, false, 'q', 'zzzz');
+  await pickFilter(page, false, 'briggs', 'B0562');
   check(/No Pending Cases/.test(await main(page).innerText()), 'Pending: nothing matching shows the empty state');
-  await setFilter(page, false, 'q', '');
+  await clearRatingFilter(page, false);
   await filterSelect(page, 'offenceId', 'All Offences'); await waitRows(page);
   check((await rowTexts(page, false)).length >= 7, 'Pending: filters cleared');
 
@@ -312,14 +329,14 @@ async function adminFlow(browser, state) {
   await closeTop(page);
 
   // a case with a pending list that has other cases and the one we opened: Case Sheet, then Conclude
-  await setFilter(page, false, 'q', 'okon');
+  await pickFilter(page, false, 'okon', 'B0539');
   await rowsOf(page, false).first().click();
   await dialogOf(page).waitFor();
   const dlgText = await dialogOf(page).innerText();
   check(dlgText.includes(newNo) && /Rate at the Time/i.test(dlgText) && /Ship at the Time/i.test(dlgText) && /Walk-through incident/.test(dlgText), 'the case dialog shows the case, with the rate and ship at the time');
   for (const b of ['Conclude', 'Cancel Case', 'Print Case', 'Open Record']) check(await dialogOf(page).getByRole('button', { name: b }).count() === 1, `the case dialog offers ${b}`);
   await shot(page, 'desktop-light-case-dialog');
-  const mine = (await api(page, 'GET', '/api/disciplinary/cases/pending?q=okon')).body.data.find((c) => c.caseNumber === newNo);
+  const mine = (await api(page, 'GET', '/api/disciplinary/cases/pending?serviceNumber=B0539')).body.data.find((c) => c.caseNumber === newNo);
   state.id = mine.id;
   const sheet = await fileHead(page, `/api/disciplinary/cases/${mine.id}/pdf`);
   check(sheet.head === '%PDF' && sheet.status === 200, 'Case Sheet is a PDF');
@@ -360,7 +377,7 @@ async function adminFlow(browser, state) {
   check(r.status === 201, 'API: a case opens');
   const cancelNo = r.body.data.caseNumber; const cancelId = r.body.data.id;
   await go(page, 'disciplinary/pending'); await waitRows(page);
-  await setFilter(page, false, 'q', 'briggs');
+  await pickFilter(page, false, 'briggs', 'B0562');
   await rowsOf(page, false).first().click();
   await dialogOf(page).waitFor();
   await dialogOf(page).getByRole('button', { name: 'Cancel Case' }).click();
@@ -375,16 +392,16 @@ async function adminFlow(browser, state) {
   check(!(await rowTexts(page, false)).some((t) => t.includes(cancelNo)), 'a cancelled case leaves Pending Cases');
   const cancelled = (await api(page, 'GET', `/api/disciplinary/cases/${cancelId}`)).body.data;
   check(cancelled.status === 'cancelled' && /opened by mistake/.test(cancelled.cancelReason) && cancelled.cancelledBy === 'HICO001', 'the cancelled case keeps its reason and who cancelled it (nothing deleted)');
-  await setFilter(page, false, 'q', '');
+  await clearRatingFilter(page, false);
 
   // ---- Concluded Cases
   await go(page, 'disciplinary/concluded'); await waitRows(page);
   texts = await rowTexts(page, false);
   check(texts.length === 8 && texts[0].includes(newNo), 'Concluded: the new case is first (8 cases)', `${texts.length}`);
   check(!texts.some((t) => t.includes(cancelNo)), 'Concluded: a cancelled case is not listed');
-  await setFilter(page, false, 'q', 'musa');
-  check((await rowTexts(page, false)).length === 1, 'Concluded: the name filter');
-  await setFilter(page, false, 'q', '');
+  await pickFilter(page, false, 'musa', 'B0541');
+  check((await rowTexts(page, false)).length === 1, 'Concluded: the rating filter');
+  await clearRatingFilter(page, false);
   await filterSelect(page, 'offenceId', 'Absence without leave'); await waitRows(page);
   check((await rowTexts(page, false)).length === 1, 'Concluded: the offence filter');
   await filterSelect(page, 'offenceId', 'All Offences');
@@ -431,7 +448,7 @@ async function adminFlow(browser, state) {
   check(/extra duties/.test(corrBlock) && /Sanction: Reprimand → Extra duties/.test(corrBlock) && /HICO001/.test(corrBlock), 'the correction shows its reason, who and the before and after', corrBlock.replace(/\s+/g, ' '));
   await shot(page, 'desktop-light-corrections');
   await closeTop(page);
-  const seededCorrected = (await api(page, 'GET', '/api/disciplinary/cases/concluded?q=briggs')).body.data[0];
+  const seededCorrected = (await api(page, 'GET', '/api/disciplinary/cases/concluded?serviceNumber=B0562')).body.data[0];
   const seeded = (await api(page, 'GET', `/api/disciplinary/cases/${seededCorrected.id}`)).body.data;
   check(seeded.corrections.length === 1 && seeded.corrections[0].changes.length === 2, 'the seeded corrected case shows its correction');
   const rating = await api(page, 'POST', `/api/disciplinary/cases/${state.id}/correct`, { offence_id: 1, incident_date: '2026-11-10', what_happened: 'a', reported_by: 'b', decision_date: '2026-11-16', sanction_id: 1, decision: 'c', authority: 'd', reason: 'r', serviceNumber: 'B0541' });
@@ -553,12 +570,11 @@ async function layoutPass(browser, viewport, theme) {
   }
   // each page's main dialog: Initiate (rating, then the case form), a pending case, a concluded case
   await go(page, 'disciplinary/initiate');
-  const q = main(page).locator('input[name="q"]');
-  await q.fill('bassey'); await q.press('Enter');
-  await rowsOf(page, phone).first().waitFor();
-  await noOverflow(page, 'Initiate results');
+  await main(page).getByRole('combobox', { name: 'Official No or Name' }).fill('bassey');
+  await page.locator('[role="listbox"] [data-rating]').first().waitFor();
+  await noOverflow(page, 'Initiate suggestions');
   await shot(page, `${tag}-initiate-results`);
-  await rowsOf(page, phone).first().click();
+  await page.locator('[role="listbox"] [data-rating]').first().click();
   await dialogOf(page).waitFor();
   await shot(page, `${tag}-initiate-rating`);
   await dialogOf(page).getByRole('button', { name: 'Open Case' }).click();
@@ -578,7 +594,7 @@ async function layoutPass(browser, viewport, theme) {
   await closeAll(page);
   if (phone) { await openFilters(page, true); await shot(page, `${tag}-pending-filters`); }
   await go(page, 'disciplinary/concluded'); await waitRows(page);
-  await setFilter(page, phone, 'q', 'briggs');
+  await pickFilter(page, phone, 'briggs', 'B0562');
   await rowsOf(page, phone).first().click(); await dialogOf(page).waitFor();
   await shot(page, `${tag}-concluded-case`);
   await closeAll(page);
@@ -618,9 +634,9 @@ async function limitedRoles(browser, db) {
   check(await dialogOf(s.page).getByRole('button', { name: 'Correct' }).count() === 0, 'without edit: no Correct');
   await closeAll(s.page);
   await go(s.page, 'disciplinary/initiate');
-  const q = main(s.page).locator('input[name="q"]');
-  await q.fill('suleiman'); await q.press('Enter'); await rowsOf(s.page, false).first().waitFor();
-  await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
+  await main(s.page).getByRole('combobox', { name: 'Official No or Name' }).fill('suleiman');
+  await s.page.locator('[role="listbox"] [data-rating]').first().waitFor();
+  await s.page.locator('[role="listbox"] [data-rating]').first().click(); await dialogOf(s.page).waitFor();
   await dialogOf(s.page).getByRole('button', { name: 'Open Case' }).click(); await dialogOf(s.page).locator('form').waitFor();
   await dialogOf(s.page).locator('[name="incident_date"]').fill('16/11/2026');
   await choose(s.page, dialogOf(s.page), 'offence_id', 'Absence without leave');

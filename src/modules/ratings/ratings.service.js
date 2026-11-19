@@ -7,18 +7,14 @@ const db = require('../../db');
 const audit = require('../../shared/audit');
 const ratingsRepo = require('./ratings.repo');
 const lookupsRepo = require('../lookups/lookups.repo');
-const { parseIsoDate, formatDisplayDate } = require('../../shared/dates');
+const { parseIsoDate } = require('../../shared/dates');
 const {
   buildBatchTemplateWorkbook,
   parseBatchUploadBuffer,
   buildRatingsExcelBuffer,
   buildRatingsCsvString,
 } = require('../../shared/excel');
-const {
-  buildRatingsListPdf,
-  buildRatingTabPdf,
-  buildRatingDossierPdf,
-} = require('../../shared/pdf');
+const printouts = require('./ratings.printouts');
 const {
   badRequest,
   validationError,
@@ -1015,7 +1011,7 @@ async function exportRatingsList(queryParams = {}, generatedBy = '') {
   }
 
   if (format === 'pdf' || format === 'print') {
-    const pdfBuf = await buildRatingsListPdf({ status, rows: items, search: filterSummary, generatedBy });
+    const pdfBuf = await printouts.listPdf({ status, rows: items, filter: filterSummary, generatedBy });
     return {
       buffer: pdfBuf,
       mimeType: 'application/pdf',
@@ -1035,62 +1031,65 @@ async function exportRatingsList(queryParams = {}, generatedBy = '') {
 
 async function exportRatingDossierPdf(serviceNumberRaw, generatedBy = '') {
   const { rating, children } = await getFullDossier(serviceNumberRaw);
-  const buffer = await buildRatingDossierPdf({ rating, children, generatedBy });
+  const buffer = await printouts.dossierPdf({ rating, children, generatedBy });
   return {
     buffer,
     fileName: `CIRERMS_Dossier_${rating.service_number}.pdf`,
   };
 }
 
+// the columns of each tab's printout (label, key, kind and width as the rating-report template reads them)
 const TAB_PDF_SPECS = Object.freeze({
   advancement: {
     title: 'Advancement',
     listFn: ratingsRepo.listAdvancement,
     columns: [
-      { header: 'S/N', weight: 0.5, value: (_, i) => i + 1 },
-      { header: 'Rate', key: 'rate_name', weight: 1.9 },
-      { header: 'Start Date', weight: 1.2, value: (r) => formatDisplayDate(r.start_date) },
-      { header: 'End Date', weight: 1.2, value: (r) => formatDisplayDate(r.end_date) },
-      { header: 'Decoration', key: 'decoration', weight: 1.4 },
-      { header: 'Authority', key: 'authority', weight: 1.4 },
-      { header: 'GCB No.', key: 'gcbno', weight: 1.0 },
+      { label: 'S/N', kind: 'index', w: '6%' },
+      { label: 'Rate', key: 'rate_name', w: '18%' },
+      { label: 'Start Date', key: 'start_date', kind: 'date', w: '12%' },
+      { label: 'End Date', key: 'end_date', kind: 'date', w: '12%' },
+      { label: 'Decoration', key: 'decoration', w: '18%' },
+      { label: 'Authority', key: 'authority', kind: 'code', w: '20%' },
+      { label: 'GCB No.', key: 'gcbno', kind: 'code' },
     ],
   },
   drafting: {
     title: 'Drafting',
     listFn: ratingsRepo.listDrafting,
     columns: [
-      { header: 'S/N', weight: 0.5, value: (_, i) => i + 1 },
-      { header: 'Ship / Unit', key: 'ship_name', weight: 1.9 },
-      { header: 'Rate', key: 'rate_name', weight: 1.7 },
-      { header: 'Start Date', weight: 1.2, value: (r) => formatDisplayDate(r.start_date) },
-      { header: 'End Date', weight: 1.2, value: (r) => (r.end_date ? formatDisplayDate(r.end_date) : 'Present') },
-      { header: 'Remarks', key: 'remarks', weight: 2.1 },
+      { label: 'S/N', kind: 'index', w: '6%' },
+      { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '22%' },
+      { label: 'Rate', key: 'rate_name', w: '14%' },
+      { label: 'Start Date', key: 'start_date', kind: 'date', w: '13%' },
+      { label: 'End Date', key: 'end_date', kind: 'date', w: '13%' },
+      { label: 'Remarks', key: 'remarks' },
     ],
+    // a drafting with no end date is the present one
+    shape: (r) => ({ ...r, end_date: r.end_date || 'Present' }),
   },
   training: {
     title: 'Training',
     listFn: ratingsRepo.listTraining,
     columns: [
-      { header: 'S/N', weight: 0.5, value: (_, i) => i + 1 },
-      { header: 'Name', key: 'rating_name', weight: 1.7 },
-      { header: 'Institution', key: 'institution', weight: 2.2 },
-      { header: 'Qualification', key: 'qualification', weight: 1.8 },
-      { header: 'Class', key: 'classification', weight: 1.0 },
-      { header: 'Start Date', weight: 1.1, value: (r) => formatDisplayDate(r.start_date) },
-      { header: 'End Date', weight: 1.1, value: (r) => formatDisplayDate(r.end_date) },
+      { label: 'S/N', kind: 'index', w: '6%' },
+      { label: 'Name', key: 'rating_name', w: '16%' },
+      { label: 'Institution', key: 'institution', w: '22%' },
+      { label: 'Qualification', key: 'qualification', w: '20%' },
+      { label: 'Class', key: 'classification', w: '10%' },
+      { label: 'Start Date', key: 'start_date', kind: 'date', w: '12%' },
+      { label: 'End Date', key: 'end_date', kind: 'date' },
     ],
   },
   education: {
     title: 'Education',
     listFn: ratingsRepo.listEducation,
     columns: [
-      { header: 'S/N', weight: 0.5, value: (_, i) => i + 1 },
-      { header: 'Institution', key: 'institution', weight: 2.4 },
-      { header: 'Qualification', key: 'qualification', weight: 2.0 },
-      { header: 'Class', key: 'classification', weight: 1.1 },
-      { header: 'Start Date', weight: 1.2, value: (r) => formatDisplayDate(r.start_date) },
-      { header: 'End Date', weight: 1.2, value: (r) => formatDisplayDate(r.end_date) },
+      { label: 'S/N', kind: 'index', w: '6%' },
+      { label: 'Institution', key: 'institution', w: '28%' },
+      { label: 'Qualification', key: 'qualification', w: '24%' },
+      { label: 'Class', key: 'classification', w: '12%' },
+      { label: 'Start Date', key: 'start_date', kind: 'date', w: '13%' },
+      { label: 'End Date', key: 'end_date', kind: 'date' },
     ],
   },
 });
@@ -1102,11 +1101,11 @@ async function exportRatingTabPdf(serviceNumberRaw, tabKey, generatedBy = '') {
   }
   const rating = await ensureRatingExists(serviceNumberRaw);
   const rows = await spec.listFn(rating.service_number);
-  const buffer = await buildRatingTabPdf({
+  const buffer = await printouts.tabPdf({
     rating,
-    tabTitle: spec.title,
+    title: spec.title,
     columns: spec.columns,
-    rows,
+    rows: spec.shape ? rows.map(spec.shape) : rows,
     generatedBy,
   });
 

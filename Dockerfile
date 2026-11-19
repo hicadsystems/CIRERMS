@@ -11,6 +11,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
+# printouts are made by Chromium
+RUN apk add --no-cache chromium ttf-liberation
+ENV PDF_CHROMIUM_PATH=/usr/bin/chromium
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/public ./public

@@ -1,0 +1,15 @@
+{{#if heading}}<h2 class="sec">{{#if no}}<span class="n">{{no}}</span>{{/if}}{{heading}}</h2>{{/if}}
+{{#if note}}<div class="sec-note">{{note}}</div>{{/if}}
+<table class="data{{#if dense}} dense{{/if}}{{#if blank}} blank{{/if}}">
+  <thead><tr>{{headCells columns}}</tr></thead>
+  <tbody>
+  {{#each rows as |row|}}
+    {{#if row.group}}<tr class="group"><td colspan="{{len ../columns}}">{{row.group}}</td></tr>
+    {{else}}<tr{{#if row.struck}} class="struck"{{/if}}>{{rowCells row ../columns @index}}</tr>
+    {{/if}}
+  {{else}}
+    <tr class="none"><td colspan="{{len columns}}">{{#if empty}}{{empty}}{{else}}No records.{{/if}}</td></tr>
+  {{/each}}
+  {{#if totals}}<tr class="total">{{totalCells totals columns}}</tr>{{/if}}
+  </tbody>
+</table>

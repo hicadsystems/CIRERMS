@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="landscape"}}
+</head>
+<body>
+{{> header}}
+{{> facts items=facts cols=3}}
+<div class="two-col keep">
+  <div>
+    <h2 class="sec">Character grades</h2>
+    <div class="summary" style="margin-top:0">{{#each charGrades}}<div class="item"><div class="label">{{label}}</div><div class="value">{{value}}</div></div>{{/each}}</div>
+  </div>
+  <div>
+    <h2 class="sec">Efficiency grades</h2>
+    <div class="summary" style="margin-top:0">{{#each effGrades}}<div class="item"><div class="label">{{label}}</div><div class="value">{{value}}</div></div>{{/each}}</div>
+  </div>
+</div>
+<h2 class="sec">Appraisals</h2>
+{{> datatable table}}
+{{#if signatures}}{{> signatures items=signatures}}{{/if}}
+</body>
+</html>

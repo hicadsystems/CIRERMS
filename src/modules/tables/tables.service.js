@@ -6,7 +6,7 @@
  */
 const db = require('../../db');
 const audit = require('../../shared/audit');
-const { buildStaticTableListPdf } = require('../../shared/pdf');
+const { renderPdf, today } = require('../../shared/printouts');
 const { bySlug, stem } = require('./tables.config');
 const repo = require('./tables.repo');
 const { conflict, notFound, validationError } = require('../../shared/errors');
@@ -237,17 +237,35 @@ async function printList(slug, query = {}, generatedBy = '') {
   const status = ['active', 'inactive'].includes(query.status) ? query.status : '';
   const rows = (await repo.list(cfg, { search, status, limit: MAX_PRINT_ROWS, offset: 0 })).map((r) => decorate(cfg, r));
   const meta = await getMeta(slug);
-  // the screen's columns: the name first, then the other list columns (the code among them)
+  // the screen's columns: the name first, then the other list columns (the code among them), then Active
   const listed = meta.columns.filter((c) => c.list).sort((a, b) => (b.key === 'name') - (a.key === 'name'));
   const cell = (c, row) => (c.type === 'ref' ? row[c.name] : c.type === 'bool' ? (row[c.key] ? 'Yes' : 'No') : row[c.key]);
   const columns = [
-    ...listed.map((c) => ({ header: c.label, weight: c.key === 'name' ? 2.2 : 1.2, value: (row) => cell(c, row) })),
-    { header: 'Active', weight: 0.8, value: (row) => (row.is_active ? 'Yes' : 'No') },
+    { label: 'No', kind: 'index', w: '6%' },
+    ...listed.map((c, i) => ({
+      label: c.label, key: `c${i}`,
+      kind: c.key === 'name' ? 'name' : c.key === 'code' ? 'code' : c.type === 'bool' ? 'ctr' : c.type === 'date' ? 'date' : c.type === 'number' ? 'num' : undefined,
+    })),
+    { label: 'Active', key: 'active', kind: 'ctr', w: '9%' },
   ];
-  const notes = [];
-  if (search) notes.push(`Search "${search}"`);
-  if (status) notes.push(status === 'active' ? 'Active only' : 'Inactive only');
-  const buffer = await buildStaticTableListPdf({ title: meta.title, columns, rows, filterNote: notes.join(', '), generatedBy });
+  const shaped = rows.map((row) => ({
+    ...Object.fromEntries(listed.map((c, i) => [`c${i}`, cell(c, row)])),
+    active: row.is_active ? 'Yes' : 'No',
+  }));
+  const data = {
+    title: String(meta.title).toUpperCase(),
+    generatedBy,
+    subtitle: `${rows.length} ${rows.length === 1 ? 'entry' : 'entries'}  |  Printed ${today()}`,
+    // wide tables print landscape
+    orientation: columns.length - 1 > 4 ? 'landscape' : 'portrait',
+    facts: [
+      { label: 'List', value: meta.title },
+      { label: 'Search', value: search || 'None' },
+      { label: 'Status', value: status === 'active' ? 'Active only' : status === 'inactive' ? 'Inactive only' : 'All' },
+    ],
+    table: { columns, rows: shaped },
+  };
+  const buffer = await renderPdf('static-table-list', data);
   return { buffer, fileName: `CIRERMS_${slug}_list.pdf` };
 }
 
