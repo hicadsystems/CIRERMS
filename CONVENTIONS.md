@@ -228,7 +228,7 @@ DROP TABLE ratings;
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
-  keep theirs.
+  keep their vertical scrollbar and never scroll sideways (Wide tables, below).
 - **Wide tables never scroll sideways** (owner's decision, 19/11/2026). A list whose columns would
   overflow the screen shows only its most informative columns, the ones a person scans to find a
   row; the rest go in the record. Every row is clickable and opens the full record in a dialog (a
