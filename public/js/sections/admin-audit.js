@@ -135,7 +135,7 @@ export async function mountAdminAudit(outlet, { info } = {}) {
         ['Table', entry.table],
         ['Record', entry.recordId],
         ['IP Address', entry.ip],
-        ['Browser', h('span', { className: cx('break-words text-xs'), text: entry.userAgent || '-' })],
+        ['Browser', h('span', { className: cx('break-words text-xs'), text: entry.userAgent || 'N/A' })],
       ]),
       h('h3', { className: 'text-2xs font-semibold uppercase tracking-widest text-muted-foreground', text: 'What Changed' }),
       list,

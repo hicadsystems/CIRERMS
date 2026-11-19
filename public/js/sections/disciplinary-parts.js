@@ -227,8 +227,8 @@ export async function caseDialog(row, { readOnly = false, onChange = () => {} } 
   const finished = (msg) => { closeAllDialogs(); if (msg) toast(msg); onChange(); };
   const body = h('div', {}, [
     c.status === 'concluded' ? h('div', { className: 'mb-4' }, notice('info', 'info', ['A concluded case is final. A mistake is changed with ', h('b', { text: 'Correct' }), ', which needs a reason and is recorded in the audit trail.'])) : null,
-    facts(caseRows(c).filter(([k]) => !LONG.has(k)), { columns: 2 }),
-    facts(caseRows(c).filter(([k]) => LONG.has(k)), { columns: 1, className: 'mt-3' }),
+    facts(caseRows(c).filter(([k]) => !LONG.has(k))),
+    facts(caseRows(c).filter(([k]) => LONG.has(k)), { className: 'mt-3' }),
     correctionsBlock(c),
   ]);
   const dlg = openDialog({ title: `${c.caseNumber} · ${c.serviceNumber}`, size: 'lg', body });

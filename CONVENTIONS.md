@@ -198,6 +198,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   which draws the whole screen, its page header included, with the kit in `js/ui/` (there are no HTML templates).
 - Every "add" opens in a dialog (a bottom sheet on a phone), New Rating included; Ctrl K opens the search palette
   (`js/shell/search-palette.js`).
+- Details read as label and value on one row with a divider (`facts`, `factPanels`), never small capital labels above values.
 - Date fields are typed and shown as dd/mm/yyyy (`core/dates.js` `parseDisplayDate`) and sent as YYYY-MM-DD.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
 - Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);

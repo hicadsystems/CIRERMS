@@ -88,7 +88,7 @@ export async function mountInitiate(outlet, { info } = {}) {
       title: r.name, size: 'md',
       body: h('div', {}, [
         r.pendingCases ? h('div', { className: 'mb-4 flex gap-2 rounded-ctl bg-warning-soft px-3 py-2 text-sm text-warning' }, [icon('triangle-alert', 'icon mt-0.5 flex-none'), `${r.name} already has ${r.pendingCases === 1 ? 'a pending case' : `${r.pendingCases} pending cases`}. A new incident opens a separate case.`]) : null,
-        facts([['Official No', r.serviceNumber], ['Rate', r.rate], ['Branch', r.branch], ['Current Ship', r.ship], ['Command', r.command], ['Date Enlisted', fmt(r.dateEmployed)], ['Cases on File', String(r.cases)]], { columns: 2, className: 'phone:grid-cols-1' }),
+        facts([['Official No', r.serviceNumber], ['Rate', r.rate], ['Branch', r.branch], ['Current Ship', r.ship], ['Command', r.command], ['Date Enlisted', fmt(r.dateEmployed)], ['Cases on File', String(r.cases)]]),
       ]),
     });
     const acts = [button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() })];
