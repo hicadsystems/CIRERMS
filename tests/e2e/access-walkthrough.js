@@ -300,6 +300,49 @@ async function adminPhone(browser, theme) {
 }
 
 // ---------------------------------------------------------------------------
+// The ratings printouts (Chromium, from the templates): each opens in the app's own preview with its pages.
+// ---------------------------------------------------------------------------
+async function printouts(browser) {
+  console.log('\nPrintouts: dossier, a tab and the nominal roll, desktop, light');
+  const { context, page, errors } = await open(browser, { viewport: DESKTOP, theme: 'light' });
+  await signIn(page, BASE, ADMIN);
+  const dlg = () => page.locator('#overlay-root [role="dialog"]').last();
+  const previews = async (label, heading) => {
+    await dlg().locator('[data-pdf-stage][data-ready="1"]').waitFor({ timeout: 30000 });
+    const pages = await dlg().locator('canvas[data-pdf-page]').count();
+    check(pages >= 1 && new RegExp(`${pages} pages?`).test(await dlg().locator('[data-pdf-count]').innerText()), `${label}: the preview draws its pages itself and shows the count`, `${pages}`);
+    check(heading.test(await dlg().innerText()), `${label}: the preview is titled`);
+    check((await dlg().locator('iframe, embed, object').count()) === 0, `${label}: no browser PDF viewer in the preview`);
+    await page.keyboard.press('Escape');
+    await dlg().waitFor({ state: 'detached' });
+    return pages;
+  };
+  await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
+  await page.getByRole('button', { name: 'Print Dossier' }).click();
+  const dossierPages = await previews('Personnel Dossier', /Dossier: B0539/);
+  check(dossierPages >= 2, 'Personnel Dossier: a full record runs to more than one page', `${dossierPages}`);
+  await page.locator('[role="tab"]', { hasText: 'Drafting' }).click();
+  await page.getByRole('button', { name: 'Print', exact: true }).click();
+  await previews('Drafting record', /Drafting: B0539/);
+  for (const format of ['current', 'former']) {
+    const r = await page.evaluate(async (status) => {
+      const res = await fetch(`/api/ratings/export?status=${status}&format=pdf`, { credentials: 'include' });
+      const buf = new Uint8Array(await res.arrayBuffer());
+      return { status: res.status, head: String.fromCharCode(...buf.slice(0, 4)), size: buf.length, type: res.headers.get('content-type') };
+    }, format);
+    check(r.status === 200 && r.head === '%PDF' && /pdf/.test(r.type) && r.size > 1500, `the ${format} ratings list exports as a PDF`, JSON.stringify(r));
+  }
+  await page.goto(`${BASE}/app.html#ratings/current`);
+  await page.waitForSelector('#app-main table tbody tr');
+  await page.getByRole('button', { name: 'Export' }).first().click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: 'PDF' }).click();
+  check(/\.pdf$/.test((await download).suggestedFilename()), 'Export, PDF: the nominal roll downloads as a PDF file');
+  check(errors.length === 0, 'no browser errors', errors.join(' | '));
+  await context.close();
+}
+
+// ---------------------------------------------------------------------------
 // B0539, the Rating role: View My Details only; 403 from every other API.
 // ---------------------------------------------------------------------------
 async function ratingRole(browser, viewport, theme) {
@@ -442,6 +485,7 @@ async function serverIdle(browser) {
     await adminDesktop(browser, 'dark');
     await adminPhone(browser, 'light');
     await adminPhone(browser, 'dark');
+    await printouts(browser);
     await ratingRole(browser, DESKTOP, 'light');
     await ratingRole(browser, DESKTOP, 'dark');
     await ratingRole(browser, PHONE, 'light');

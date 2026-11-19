@@ -81,8 +81,8 @@ async function caseSheetPdf({ c, generatedBy }) {
     decision,
     corrections: {
       heading: 'Corrections',
-      columns: [{ label: 'Date', key: 'at', kind: 'date', w: '14%' }, { label: 'By', key: 'by', w: '22%' }, { label: 'Reason', key: 'reason', w: '24%' }, { label: 'Changed', key: 'changed' }],
-      rows: (c.corrections || []).map((k) => ({ at: k.at, by: k.by, reason: k.reason, changed: k.changes.map(([fld, a, b]) => `${fld}: ${a || '-'} to ${b || '-'}`).join('; ') })),
+      columns: [{ label: 'Date', key: 'at', w: '14%' }, { label: 'By', key: 'by', w: '22%' }, { label: 'Reason', key: 'reason', w: '24%' }, { label: 'Changed', key: 'changed' }],
+      rows: (c.corrections || []).map((k) => ({ at: d(k.at), by: k.by, reason: k.reason, changed: k.changes.map(([fld, a, b]) => `${fld}: ${a || '-'} to ${b || '-'}`).join('; ') })),
     },
     signatures: concluded
       ? [{ role: 'Reporting Officer', name: c.reportedBy }, { role: 'Authority', name: c.authority }, { role: 'Director of Personnel (Navy)' }]

@@ -241,6 +241,8 @@ export function ratingSearch({
     else if (term.length >= MIN_CHARS && input.value.trim() === term && (items.length || failed)) { open(); draw(); }
   });
   input.addEventListener('blur', () => { close(); });
+  // the text field's own `change` (fired on blur) is not a choice: only the picker's own `change` event, fired when a rating is chosen or cleared, reaches the form
+  input.addEventListener('change', (e) => e.stopPropagation());
 
   input.addEventListener('keydown', (e) => {
     const move = (to) => {

@@ -120,6 +120,8 @@ async function tabPdf({ rating, title, columns, rows, generatedBy }) {
   return renderPdf('rating-report', data);
 }
 
+const distinct = (rows, key) => new Set(rows.map((r) => r[key]).filter(Boolean)).size;
+
 /** The nominal roll of current or former ratings, one row per rating, landscape. */
 async function listPdf({ status, rows, filter, generatedBy }) {
   const former = status === 'former';
@@ -138,7 +140,11 @@ async function listPdf({ status, rows, filter, generatedBy }) {
     title: former ? 'FORMER RATINGS NOMINAL ROLL' : 'CURRENT RATINGS NOMINAL ROLL',
     generatedBy,
     subtitle: filter ? `Total matching records: ${rows.length} | Filter: "${filter}"` : `Total records: ${rows.length}`,
-    summary: [{ label: 'Ratings', value: rows.length }],
+    summary: former ? [{ label: 'Ratings', value: rows.length }] : [
+      { label: 'Ratings', value: rows.length },
+      { label: 'Ships', value: distinct(rows, 'current_ship_name') },
+      { label: 'Commands', value: distinct(rows, 'command_name') },
+    ],
     facts: [f('Status', former ? 'Former' : 'Current'), f('Filter', filter), f('Printed', todayIso(), 'date')],
     table: { columns, rows },
   };

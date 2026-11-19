@@ -8,7 +8,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Topic | Decision |
 |---|---|
 | Stack | HTML / Tailwind CSS v3 / vanilla JS (SPA) + Node.js 20 (CommonJS) / Express 4 |
-| Libraries | `mysql2` (parameterised SQL, no ORM), `bcryptjs` + `jsonwebtoken` (auth), `helmet` (headers), `multer` (uploads), `exceljs` (Excel/CSV export & batch upload), `pdfkit` (server PDF reports), `dotenv` (config) |
+| Libraries | `mysql2` (parameterised SQL, no ORM), `bcryptjs` + `jsonwebtoken` (auth), `helmet` (headers), `multer` (uploads), `exceljs` (Excel/CSV export & batch upload), `handlebars` + `puppeteer-core` + `@sparticuz/chromium` (printouts: HTML templates turned into PDFs by Chromium), `dotenv` (config) |
 | Frontend | `public/` (with pre-compiled `public/css/output.css` so no build step is needed to run) |
 | Backend | `src/` — everything server-side lives here, nothing at the project root except entry/config files |
 | Uploads | `storage/uploads/` (outside `public/`, configurable via `UPLOAD_DIR`), served only through authenticated API routes |
@@ -35,7 +35,8 @@ CIRERMS/
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
 │  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
-│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, pdf.js, dates.js, errors.js
+│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js
+│  ├─ templates/printouts/      # the printout templates (.hbs), partials, printout.css, helpers.js, fonts: D4's approved design
 │  └─ modules/
 │     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
 │     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js
@@ -305,8 +306,31 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   `openPdfPreview({ url, title, filename })`; `previewBlobModal` hands PDFs to it). PDF.js (`pdfjs-dist`) draws the
   pages from our own origin (`/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN, no `<iframe>` or `<embed>` of a
   PDF); only the app's Download PDF and Print buttons. The pages stay paper-coloured (`--paper`) in dark mode. Every
-  Static Table has **Print List** (`GET /api/tables/<slug>/print?q=&status=`, a pdfkit PDF with the crest, title,
+  Static Table has **Print List** (`GET /api/tables/<slug>/print?q=&status=`, the `static-table-list` template: the crest, title,
   list columns, Active, row count, date printed and page numbers; the table's view privilege).
+- **Printouts are Handlebars templates, made into PDFs by Chromium** (owner's decision, 19/11/2026; WP13). The
+  templates, partials, `printout.css`, helpers and fonts are in `src/templates/printouts/` (D4's approved design,
+  kept as a record in `docs/design/printouts/` with a `<name>.sample.json` for each template and the sample PDFs);
+  the renderer is `src/shared/printouts/` (`renderPdf(template, data, { landscape })` returns a Buffer; settings
+  `PDF_*` in `.env`, see README section 7). No pdfkit; no HTML written by hand for a PDF; nothing fetched from the
+  internet while rendering. **To add a printout** (a package's brief names the template it needs, usually already
+  in the folder): (1) read the template's `.sample.json` in `docs/design/printouts/`: it is the data shape the
+  template reads; (2) in your module write `<module>.printouts.js` (or the module's documents file) that turns
+  the service's data into that shape and returns `renderPdf('<template>', data)`; (3) pass `generatedBy` (the
+  signed-in person's name, `req.user.fullName`) and optionally `generatedAt` (default now) in the data: the footer
+  prints them with the time in Nigerian time; (4) the route sends it with `Content-Type: application/pdf`,
+  `Content-Disposition: inline; filename="..."` and `X-Content-Type-Options: nosniff`, and the screen opens it with
+  `openPdfPreview`; (5) hand the template its facts, `{ label, value, kind }` (kind `code` or `date`), and its
+  table, `{ columns: [{ label, key, kind, w }], rows }` (kinds: text, code, name, num, date, ctr, yesno, index,
+  check, fill; a row may be `{ group }`, `struck` or a `totals` row): dates may be ISO strings (the template
+  writes `dd/mm/yyyy`), empty details read "N/A" in facts and "-" in tables, so hand it empty values, not
+  your own placeholders; a list with an orientation of its own sets `orientation` in the data (or passes
+  `{ landscape }`), as `static-table-list` does; (6) a new layout is a new `<name>.hbs` using the same partials
+  (`head`, `header`, `facts`, `datatable`, `signatures`) and the same `printout.css`: change the shared CSS or
+  partials only with the owner's approval, as they are the approved look; (7) a photo goes in as a data URI
+  (the page cannot read the app's files) and every other file the template names must be in
+  `src/templates/printouts/`; (8) add a check to your walkthrough that the printout opens in the preview with
+  pages (`[data-pdf-stage][data-ready="1"]`, `canvas[data-pdf-page]`, `[data-pdf-count]`).
 - **Toasts never cover a dialog's buttons** (`js/ui/toast.js`). On a phone they show full width at the top, under
   the header; on desktop they stay at the bottom right, and show at the top right while a dialog is open. They
   sit above a dialog's scrim.
