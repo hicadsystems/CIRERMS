@@ -2417,7 +2417,7 @@
     } else if (tab === 'advancement') {
       body = tableCard(['From', 'To', 'Effective'], rec.advancement.map((a) => [esc(a.from), esc(a.to), fmt(a.date)]), 'trending-up', 'No Advancement Recorded', 'Add Advancement');
     } else if (tab === 'drafting') {
-      body = `<div class="${CARD} p-4"><ol class="relative ml-2 border-l-2 border-border">${rec.drafting.slice().reverse().map((p) => `<li class="relative pb-5 pl-5 last:pb-0">
+      body = `<div class="${CARD} p-4"><ol class="relative ml-2 border-l-2 border-border">${r.sched ? `<li class="relative pb-5 pl-5"><span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-background bg-warning"></span><div class="flex flex-wrap items-center gap-2"><b class="text-sm">Drafted to ${esc(r.sched.to)} wef ${fmt(r.sched.date)}</b><span class="${pill.info}">Scheduled</span></div><div class="text-xs text-muted-foreground">The ship changes on ${fmt(r.sched.date)}</div></li>` : ''}${rec.drafting.slice().reverse().map((p) => `<li class="relative pb-5 pl-5 last:pb-0">
           <span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-background ${p.to ? 'bg-border' : 'bg-primary'}"></span>
           <div class="flex flex-wrap items-center gap-2"><b class="text-sm">${esc(p.ship)}</b>${p.to ? '' : `<span class="${pill.success}">Current</span>`}</div>
           <div class="text-xs text-muted-foreground">${fmt(p.from)} to ${p.to ? fmt(p.to) : 'date'} · ${since(p.from)}${p.to ? '' : ' so far'}</div></li>`).join('')}</ol>
@@ -2863,6 +2863,13 @@
   const SPEC_NAMES = TABLES.find((t) => t.slug === 'specialisation').rows.map((r) => r[0]);
   const INSTITUTIONS = TABLES.find((t) => t.slug === 'institution').rows.map((r) => r[0]);
   const COURSES = TABLES.find((t) => t.slug === 'training').rows.map((r, i) => ({ id: i + 1, name: r[0], place: r[1], weeks: r[2] }));
+  // what a course is open to (the course sets a branch or a specialisation, and its rates; none set = every current rating)
+  const COURSE_RULES = { 'Basic Seamanship': { rates: ['Ordinary Seaman (OS)'] }, 'Leading Rate Course': { rates: ['Able Seaman (AB)'] }, 'Petty Officer Course': { rates: ['Leading Seaman (LS)'] }, 'Marine Engineering Artificer': { branch: 'Marine Engineering' },
+    'Gunnery Course': { branch: 'Seaman' }, 'Damage Control and Firefighting': {}, 'Navigation Basic': { spec: 'Navigation' }, 'ICT Fundamentals': { branch: 'Information Technology' } };
+  COURSES.forEach((c) => { c.rule = COURSE_RULES[c.name] || {}; });
+  const courseEligible = (c, r) => r.status === 'current' && (!c.rule.branch || r.branch === c.rule.branch) && (!c.rule.spec || r.spec === c.rule.spec) && (!c.rule.rates || c.rule.rates.includes(r.rate));
+  const courseRuleText = (c) => { const p = []; if (c.rule.branch) p.push(`${c.rule.branch} branch`); if (c.rule.spec) p.push(`${c.rule.spec} specialisation`); if (c.rule.rates) p.push(`${c.rule.rates.map(short).join(', ')} rates`); return p.length ? `Open to current ratings of the ${p.join(' and ')}` : 'Open to every current rating'; };
+  const RATE_COLS = RATES.map(short);
   const BR_CODE = { Seaman: 'SM', 'Marine Engineering': 'ME', 'Weapon Engineering': 'WE', Logistics: 'LG', Medical: 'MD', 'Information Technology': 'IT', Education: 'ED', 'Naval Police': 'NP' };
   const SPEC_OF = { Seaman: ['Gunnery', 'Navigation', 'Communications', 'Radar Plotter'], 'Marine Engineering': ['Marine Propulsion', 'Hull Maintenance'], 'Weapon Engineering': ['Electrical / Weapon Systems'], Logistics: ['Stores & Supply', 'Catering'], Medical: ['Medical Assistant'], 'Information Technology': ['ICT / Cyber'], Education: ['Writer (Admin)'], 'Naval Police': ['Regulating (Provost)'] };
   const specCode = (s) => (!s || s === 'All' ? 'ALL' : s.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase());
@@ -2910,19 +2917,23 @@
     return b;
   }
   const rowsOf = (b) => b.rows.map((x) => ({ ...x, r: bySn(x.sn) })).filter((x) => x.r);
-  const inOpenBatch = (flow, sn) => FLOWS[flow].batches.find((b) => b.status === 'open' && b.rows.some((x) => x.sn === sn));
+  const liveRows = (b) => rowsOf(b).filter((x) => !x.rejected);
+  const liveN = (b) => b.rows.filter((x) => !x.rejected).length;
+  const inOpenBatch = (flow, sn) => FLOWS[flow].batches.find((b) => b.status === 'open' && b.rows.some((x) => x.sn === sn && !x.rejected));
   const openBatches = (flow) => FLOWS[flow].batches.filter((b) => b.status === 'open');
   const signalBatches = (flow) => FLOWS[flow].batches.filter((b) => b.status === 'closed' && b.signal);
   const dateField = (flow) => (flow === 'DOD' ? 'wef' : 'date');
-  const reportedN = (b) => b.rows.filter((x) => x[dateField(b.flow)]).length;
-  const specsOf = (b) => [...new Set(b.rows.map((x) => bySn(x.sn).spec))];
+  const reportedN = (b) => b.rows.filter((x) => !x.rejected && x[dateField(b.flow)]).length;
+  const specsOf = (b) => [...new Set(b.rows.filter((x) => !x.rejected).map((x) => bySn(x.sn).spec))];
   const apprOf = (flow, spec) => FLOWS[flow].appr[spec];
-  const batchReady = (b) => b.rows.length > 0 && b.rows.every((x) => x.to) && specsOf(b).every((s) => apprOf(b.flow, s));
+  const batchReady = (b) => { const l = b.rows.filter((x) => !x.rejected); return l.length > 0 && l.every((x) => x.to) && specsOf(b).every((s) => apprOf(b.flow, s)); };
   const batchLabel = (b) => `${b.no} · ${b.branch === 'All' ? 'All branches' : b.branch}${b.rate === 'All' ? '' : ` · ${short(b.rate)}`}`;
   const isUsedSignal = (flow, s) => FLOWS[flow].batches.find((b) => b.signal && b.signal.toLowerCase() === s.toLowerCase());
 
   // the rating's own record follows the posting, the rate and the course
+  const isSched = (x) => !!x.wef && x.wef > TODAY;
   function applyWef(r, row, date) {
+    if (date > TODAY) { r.sched = { to: row.to, date }; row.wef = date; return; }
     const h = postings(r); const open = h.find((p) => !p.to);
     if (open) open.to = addDays(date, -1);
     h.push({ ship: row.to, from: date, to: null });
@@ -2951,7 +2962,7 @@
         sigN[flow] += 1;
         const o = codeOf(list[0]);
         const b = makeBatch(flow, { ...o, status: 'closed', init: addDays(closed, -24), by: ['NAVPERS01', 'NAVPERS02'][sigN[flow] % 2], closed, closedBy: 'HICO001', signal: `NHQ/NP/${flow}/${sigN[flow]}/${closed.getFullYear()}`,
-          rows: list.map((it) => (flow === 'DOD' ? { sn: it.r.sn, from: it.from, to: it.to, vice: '', remark: '', request: '', wef: it.date } : { sn: it.r.sn, from: it.from, to: it.to, reason: '', remark: '', date: it.date })) });
+          rows: list.map((it) => (flow === 'DOD' ? { sn: it.r.sn, from: it.from, to: it.to, vice: '', remark: '', request: '', wef: it.date } : { sn: it.r.sn, from: it.from, to: it.to, remark: '', date: it.date })) });
         return b;
       });
     };
@@ -2972,7 +2983,8 @@
     const br = (b) => current().filter((r) => r.branch === b);
     makeBatch('DOD', { branch: 'Seaman', init: d(2026, 11, 4), by: 'NAVPERS01', rows: dod(br('Seaman').slice(0, 4), 2) });
     makeBatch('DOD', { branch: 'Marine Engineering', init: d(2026, 11, 9), by: 'NAVPERS02', rows: dod(br('Marine Engineering')) });
-    makeBatch('DOD', { branch: 'Education', init: d(2026, 11, 12), by: 'NAVPERS01', rows: dod(br('Education'), 3) });
+    const edu = makeBatch('DOD', { branch: 'Education', init: d(2026, 11, 12), by: 'NAVPERS01', rows: dod(br('Education'), 3) });
+    edu.rows[2].rejected = 'Medical board pending';
     const c1 = makeBatch('DOD', { branch: 'Logistics', init: d(2026, 10, 20), by: 'NAVPERS02', status: 'closed', closed: d(2026, 11, 6), closedBy: 'HICO001', signal: 'NHQ/NP/DOD/131/2026', rows: dod(br('Logistics')) });
     makeBatch('DOD', { branch: 'Naval Police', init: d(2026, 10, 26), by: 'NAVPERS01', status: 'closed', closed: d(2026, 11, 12), closedBy: 'HICO001', signal: 'NHQ/NP/DOD/134/2026', rows: dod(br('Naval Police')) });
     c1.rows.slice(0, 2).forEach((x) => applyWef(bySn(x.sn), x, d(2026, 11, 14)));
@@ -2980,15 +2992,16 @@
     ['Marine Propulsion', 'Hull Maintenance'].forEach((s) => { FLOWS.DOD.appr[s] = { rank: 'LTCDR', name: 'Amaka Eze', appt: 'Director of Personnel (Navy)', date: d(2026, 11, 12) }; });
 
     const ladder = (rate) => nextRates(rate)[0] || '';
-    const adv = (rate, setN) => { const list = current().filter((r) => r.rate === rate && rateMo(r) >= 48 && !inOpenBatch('DOA', r.sn)); return list.map((r, j) => ({ sn: r.sn, from: r.rate, to: j < setN ? ladder(r.rate) : '', reason: j === 0 ? 'Outstanding' : '', remark: '', date: null })); };
+    const adv = (rate, setN) => { const list = current().filter((r) => r.rate === rate && rateMo(r) >= 48 && !inOpenBatch('DOA', r.sn)); return list.map((r, j) => ({ sn: r.sn, from: r.rate, to: j < setN ? ladder(r.rate) : '', remark: j === 0 ? 'Outstanding performance' : '', date: null })); };
     const a2rows = adv('Leading Seaman (LS)', 99);
     makeBatch('DOA', { rate: 'Leading Seaman (LS)', init: d(2026, 11, 10), by: 'NAVPERS01', rows: a2rows });
-    makeBatch('DOA', { rate: 'Able Seaman (AB)', init: d(2026, 11, 3), by: 'NAVPERS01', rows: adv('Able Seaman (AB)', 2) });
+    const a1 = makeBatch('DOA', { rate: 'Able Seaman (AB)', init: d(2026, 11, 3), by: 'NAVPERS01', rows: adv('Able Seaman (AB)', 2) });
+    a1.rows[a1.rows.length - 1].rejected = 'Disciplinary action pending'; a1.rows[a1.rows.length - 1].to = '';
     a2rows.forEach((x) => { const s = bySn(x.sn).spec; FLOWS.DOA.appr[s] = FLOWS.DOA.appr[s] || { rank: 'CDR', name: 'Ibrahim Danladi', appt: 'Chief of Naval Personnel', date: d(2026, 11, 13) }; });
     const pos = current().filter((r) => r.rate === 'Petty Officer (PO)' && rateMo(r) >= 48 && !a2rows.some((x) => x.sn === r.sn)).slice(0, 3);
-    makeBatch('DOA', { rate: 'Petty Officer (PO)', init: d(2026, 10, 14), by: 'NAVPERS02', status: 'closed', closed: d(2026, 11, 5), closedBy: 'HICO001', signal: 'NHQ/NP/DOA/052/2026', rows: pos.map((r) => ({ sn: r.sn, from: r.rate, to: 'Chief Petty Officer (CPO)', reason: '', remark: '', date: null })) });
+    makeBatch('DOA', { rate: 'Petty Officer (PO)', init: d(2026, 10, 14), by: 'NAVPERS02', status: 'closed', closed: d(2026, 11, 5), closedBy: 'HICO001', signal: 'NHQ/NP/DOA/052/2026', rows: pos.map((r) => ({ sn: r.sn, from: r.rate, to: 'Chief Petty Officer (CPO)', remark: '', date: null })) });
     const oss = current().filter((r) => r.rate === 'Ordinary Seaman (OS)').slice(0, 2);
-    const a4 = makeBatch('DOA', { rate: 'Ordinary Seaman (OS)', init: d(2026, 8, 24), by: 'NAVPERS01', status: 'closed', closed: d(2026, 9, 15), closedBy: 'HICO001', signal: 'NHQ/NP/DOA/041/2026', rows: oss.map((r) => ({ sn: r.sn, from: r.rate, to: 'Able Seaman (AB)', reason: '', remark: '', date: null })) });
+    const a4 = makeBatch('DOA', { rate: 'Ordinary Seaman (OS)', init: d(2026, 8, 24), by: 'NAVPERS01', status: 'closed', closed: d(2026, 9, 15), closedBy: 'HICO001', signal: 'NHQ/NP/DOA/041/2026', rows: oss.map((r) => ({ sn: r.sn, from: r.rate, to: 'Able Seaman (AB)', remark: '', date: null })) });
     a4.rows.forEach((x) => applyBoard(bySn(x.sn), x, d(2026, 10, 1)));
   })();
 
@@ -3015,15 +3028,34 @@
   const dotBatch = (no) => DOT.find((b) => b.no === no);
   const dotOpen = () => DOT.filter((b) => b.status === 'open');
 
-  // ---- Manning requirement ----
+  // ---- Manning requirement: advisory. Aboard counts the current postings to that ship, rate and specialisation ----
   const MANNING = [];
+  const aboardN = (ship, rate, spec) => current().filter((r) => r.ship === ship && r.rate === rate && r.spec === spec).length;
   (function manning() {
-    const pickSpec = { 'Able Seaman (AB)': ['Gunnery', 'Navigation', 'Communications'], 'Leading Seaman (LS)': ['Gunnery', 'Radar Plotter', 'Marine Propulsion'], 'Petty Officer (PO)': ['Navigation', 'Hull Maintenance', 'Stores & Supply'], 'Ordinary Seaman (OS)': ['Catering', 'Gunnery', 'Stores & Supply'], 'Chief Petty Officer (CPO)': ['Electrical / Weapon Systems', 'Communications', 'ICT / Cyber'] };
-    const rates = Object.keys(pickSpec);
-    let n = 1;
-    SHIPS.forEach((ship, s) => { for (let j = 0; j < 3; j += 1) { const rate = rates[(s + j * 2) % rates.length]; MANNING.push({ sn: n, ship, rate, spec: pickSpec[rate][(s + j) % 3], qty: 2 + ((s * 3 + j * 5) % 9) }); n += 1; } });
-    MANNING.push({ sn: n, ship: 'NNS QUORRA', rate: 'Petty Officer (PO)', spec: 'Navigation', qty: 4 });
+    const seen = new Set(); const delta = [0, 1, 0, 2, -1, 1, 0, 3]; let n = 1;
+    current().forEach((r, k) => { const key = `${r.ship}|${r.rate}|${r.spec}`; if (seen.has(key)) return; seen.add(key); MANNING.push({ sn: n, ship: r.ship, rate: r.rate, spec: r.spec, qty: Math.max(1, aboardN(r.ship, r.rate, r.spec) + delta[k % delta.length]) }); n += 1; });
+    const more = [['Able Seaman (AB)', 'Navigation'], ['Leading Seaman (LS)', 'Gunnery'], ['Petty Officer (PO)', 'Stores & Supply'], ['Ordinary Seaman (OS)', 'Catering']];
+    SHIPS.forEach((ship, s) => { const [rate, spec] = more[s % more.length]; const key = `${ship}|${rate}|${spec}`; if (seen.has(key)) return; seen.add(key); MANNING.push({ sn: n, ship, rate, spec, qty: 2 + ((s * 3) % 7) }); n += 1; });
   })();
+  // seed: let some proposals land on a ship that would end up over or under its requirement
+  (function seedProposals() {
+    let over = 0; let under = 0; let n = Math.max(...MANNING.map((m) => m.sn)) + 1;
+    const need = (ship, q, qty) => { const m = MANNING.find((y) => y.ship === ship && y.rate === q.rate && y.spec === q.spec); if (m) m.qty = qty; else { MANNING.push({ sn: n, ship, rate: q.rate, spec: q.spec, qty }); n += 1; } };
+    openBatches('DOD').forEach((b) => b.rows.filter((x) => x.to).forEach((x) => {
+      const q = bySn(x.sn);
+      const mate = current().find((y) => y.rate === q.rate && y.spec === q.spec && y.ship !== q.ship && y.sn !== q.sn && !inOpenBatch('DOD', y.sn));
+      if (over < 1 && mate) { x.to = mate.ship; need(mate.ship, q, aboardN(mate.ship, q.rate, q.spec)); over += 1; } else if (under < 2) { need(x.to, q, aboardN(x.to, q.rate, q.spec) + 3); under += 1; }
+    }));
+  })();
+  const mnReq = (ship, rate, spec) => MANNING.find((m) => m.ship === ship && m.rate === rate && m.spec === spec);
+  // what a ship will have once every open draft batch is carried out
+  function mnProjected(ship, r) {
+    const m = mnReq(ship, r.rate, r.spec); if (!m) return null;
+    let will = aboardN(ship, r.rate, r.spec);
+    openBatches('DOD').forEach((b) => b.rows.filter((x) => !x.rejected && x.to).forEach((x) => { const q = bySn(x.sn); if (!q || q.rate !== r.rate || q.spec !== r.spec) return; if (x.to === ship && q.ship !== ship) will += 1; if (q.ship === ship && x.to !== ship) will -= 1; }));
+    return { need: m.qty, will, diff: will - m.qty };
+  }
+  const mnPill = (ship, r) => { const p = ship ? mnProjected(ship, r) : null; if (!p || !p.diff) return ''; return `<span class="${pill.warning}">${p.diff > 0 ? `Over by ${p.diff}` : `Under by ${-p.diff}`}</span>`; };
 
   // ---- small builders ----
   const TH3 = TH.replace('px-4', 'px-3');
@@ -3124,7 +3156,7 @@
           <div class="text-right text-muted-foreground">Printed ${fmt(TODAY)}<br />Page ${n} of ${chunks.length}</div></div>
         ${n === 1 && meta.length ? `<dl class="mt-3 grid grid-cols-3 gap-x-4 gap-y-1.5">${meta.map(([k, v]) => `<div><dt class="text-muted-foreground">${esc(k)}</dt><dd class="font-semibold">${esc(v)}</dd></div>`).join('')}</dl>` : ''}
         <table class="mt-3 w-full border-collapse"><thead><tr>${cols.map((c) => `<th class="border border-border bg-subtle px-1.5 py-1 text-left font-semibold">${esc(c)}</th>`).join('')}</tr></thead>
-        <tbody>${chunk.map((r) => `<tr>${r.map((c) => `<td class="border border-border px-1.5 py-1">${esc(c)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length}" class="border border-border px-1.5 py-3 text-center text-muted-foreground">No rows</td></tr>`}</tbody></table>
+        <tbody>${chunk.map((r) => `<tr class="${r.struck ? 'text-muted-foreground line-through' : ''}">${r.map((c) => `<td class="border border-border px-1.5 py-1">${esc(c)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length}" class="border border-border px-1.5 py-3 text-center text-muted-foreground">No rows</td></tr>`}</tbody></table>
         ${n === chunks.length && note ? `<p class="mt-3 text-muted-foreground">${esc(note)}</p>` : ''}
         ${n === chunks.length && sign.length ? `<div class="mt-8 grid grid-cols-${sign.length} gap-6">${sign.map((s) => `<div class="border-t border-foreground/60 pt-1">${esc(s)}</div>`).join('')}</div>` : ''}
         <div class="mt-5 flex justify-between border-t border-border pt-2 text-muted-foreground"><span>${esc(file)}</span><span>CIRERMS · HICO001</span></div></div></div>`;
@@ -3145,10 +3177,13 @@
     const r = findRating(sn);
     if (!r) { box.innerHTML = notice('error', 'circle-alert', `No rating has Official Number <b>${esc(sn)}</b>.`); return; }
     if (r.status !== 'current') { box.innerHTML = notice('error', 'circle-alert', `${esc(fullName(r))} has left the service and cannot be added.`); return; }
-    const inBatch = ctx.batch.rows.some((x) => x.sn === r.sn);
+    const inBatch = ctx.batch.rows.some((x) => x.sn === r.sn && !x.rejected);
+    const dupCourse = ctx.kind === 'DOT' ? DOT.find((b) => b.status === 'open' && b !== ctx.batch && b.course.id === ctx.batch.course.id && b.rows.some((x) => x.sn === r.sn)) : null;
     const other = ctx.kind === 'DOT' ? null : inOpenBatch(ctx.kind, r.sn);
     if (inBatch) { box.innerHTML = notice('warning', 'circle-alert', `${esc(fullName(r))} is already in this batch.`); return; }
     if (other) { box.innerHTML = notice('warning', 'circle-alert', `${esc(fullName(r))} is already in open batch <b>${esc(other.no)}</b>.`); return; }
+    if (ctx.kind === 'DOT' && !courseEligible(ctx.batch.course, r)) { box.innerHTML = notice('error', 'circle-alert', `${esc(fullName(r))} is not eligible for ${esc(ctx.batch.course.name)}. ${esc(courseRuleText(ctx.batch.course))}.`); return; }
+    if (dupCourse) { box.innerHTML = notice('warning', 'circle-alert', `${esc(fullName(r))} is already in open batch <b>${esc(dupCourse.no)}</b> for this course.`); return; }
     S.found = r;
     box.innerHTML = `<div class="flex items-center gap-3 rounded-card border border-border bg-subtle/60 p-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${r.sn} · ${esc(r.rate)} · ${esc(r.ship)}</span></div>${ctx.kind === 'DOA' ? ratePill(rateMo(r)) : shipPill(shipMo(r))}</div>`;
   };
@@ -3161,22 +3196,23 @@
     { route: 'drafting/batches', label: 'Batch/Signal Content' }, { route: 'drafting/history', label: 'Rate DOD History' }, { route: 'drafting/report', label: 'Draft Report' },
   ];
   const RANKS = ['S/LT', 'LT', 'LTCDR', 'CDR', 'CAPT', 'CDRE', 'R/ADM', 'ADM'];
-  const RATE_COLS = ['OS', 'AB', 'LS', 'PO', 'CPO', 'WO', 'MWO', 'NWO'];
   const shipOptions = (r) => SHIP_NAMES.filter((s) => s !== r.ship);
 
   // ---- 1. Update Manning Requirement ----
+  const mnDiff = (m) => { const d = aboardN(m.ship, m.rate, m.spec) - m.qty; return d === 0 ? `<span class="${pill.success}">Full</span>` : d < 0 ? `<span class="${pill.warning}">Short by ${-d}</span>` : `<span class="${pill.info}">Over by ${d}</span>`; };
   function viewManning() {
     const f = S.f.manning || {};
     const rows = MANNING.filter((m) => (!f.ship || m.ship === f.ship) && (!f.rate || m.rate === f.rate) && (!f.spec || m.spec === f.spec));
     const add = `<button type="button" data-d1="manning-add" class="${btn.outline}">${ic('plus')}Add Requirement</button>`;
-    return pageHeader('Update Manning Requirement', 'The ratings each ship or unit needs, by rate and specialisation', `<button type="button" data-d1="manning-print" class="${btn.blue}">${ic('printer')}Print</button><button type="button" data-d1="manning-add" class="${btn.primary}">${ic('plus')}Add Requirement</button>`)
+    const aboard = rows.reduce((a, m) => a + aboardN(m.ship, m.rate, m.spec), 0);
+    return pageHeader('Update Manning Requirement', 'What each ship or unit needs, and who is aboard now. It advises; it never blocks a draft', `<button type="button" data-d1="manning-print" class="${btn.blue}">${ic('printer')}Print</button><button type="button" data-d1="manning-add" class="${btn.primary}">${ic('plus')}Add Requirement</button>`)
       + d1Filters('manning', [{ name: 'ship', label: 'Ship', list: SHIP_NAMES, ph: 'All Ships' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates' }, { name: 'spec', label: 'Specialisation', list: SPEC_NAMES, ph: 'All Specialisations', w: 'w-60' }])
-      + stat3([['Requirements', rows.length], ['Ratings Required', rows.reduce((a, m) => a + m.qty, 0), 'text-primary-hover'], ['Ships and Units', new Set(rows.map((m) => m.ship)).size]])
+      + stat3([['Requirements', rows.length], ['Required', rows.reduce((a, m) => a + m.qty, 0), 'text-primary-hover'], ['Aboard', aboard]])
       + d1Table('manning', rows, {
-        cols: [['Ship', (m) => `<b class="font-medium">${esc(m.ship)}</b>`], ['Rate', (m) => esc(short(m.rate))], ['Specialisation', (m) => esc(m.spec)], ['Quantity', (m) => `<b>${m.qty}</b>`, 'text-right']],
-        title: (m) => `${m.ship} · ${short(m.rate)} ${m.spec}`, all: (m) => [['No', m.sn], ['Ship or Unit', esc(m.ship)], ['Rate', esc(m.rate)], ['Specialisation', esc(m.spec)], ['Quantity', `<b>${m.qty}</b>`]],
+        cols: [['Ship', (m) => `<b class="font-medium">${esc(m.ship)}</b>`], ['Rate and Specialisation', (m) => esc(short(m.rate)) + subl(esc(m.spec))], ['Required', (m) => `<b>${m.qty}</b>`, 'text-center'], ['Aboard', (m) => aboardN(m.ship, m.rate, m.spec), 'text-center'], ['Difference', mnDiff]],
+        title: (m) => `${m.ship} · ${short(m.rate)} ${m.spec}`, all: (m) => [['No', m.sn], ['Ship or Unit', esc(m.ship)], ['Rate', esc(m.rate)], ['Specialisation', esc(m.spec)], ['Required', `<b>${m.qty}</b>`], ['Aboard', aboardN(m.ship, m.rate, m.spec)], ['Difference', mnDiff(m)]],
         acts: (m) => sbtn('manning-del', m.sn, 'Delete', 'trash-2', 'outline', 'text-destructive') + sbtn('manning-edit', m.sn, 'Edit', 'pencil', 'primary'),
-        card: (m) => ({ t: esc(m.ship), s: `${esc(m.rate)} · ${esc(m.spec)}`, r: `<span class="${pill.info}">${m.qty} needed</span>` }),
+        card: (m) => ({ t: esc(m.ship), s: `${esc(m.rate)} · ${esc(m.spec)}`, r: mnDiff(m), body: `Required ${m.qty} · aboard ${aboardN(m.ship, m.rate, m.spec)}` }),
         empty: ['search', 'No Requirement Matches', 'Change the filters, or add a requirement for the ship.', add],
       });
   }
@@ -3201,7 +3237,7 @@
   D1ACT['manning-del'] = (el) => { const m = MANNING.find((x) => x.sn === +el.dataset.id); confirmBox({ title: 'Delete Requirement', text: `Delete the requirement for <b>${esc(short(m.rate))} ${esc(m.spec)}</b> on <b>${esc(m.ship)}</b>? Its ${m.qty} places are removed from the ship's manning.`, label: 'Delete Requirement', icon: 'trash-2', tone: 'danger', run: () => { MANNING.splice(MANNING.indexOf(m), 1); return { done: 'Requirement deleted.' }; } }); };
   D1ACT['manning-print'] = () => d1Form({ title: 'Print Manning Requirement', size: 'sm', body: fld('Ship or Unit', sel('ship', SHIP_NAMES, (S.f.manning || {}).ship || '', 'All ships and units'), 'ship', { opt: true }), submit: 'Preview PDF', icon: 'printer', onSubmit: () => {
     const ship = dv('ship'); const list = MANNING.filter((m) => !ship || m.ship === ship);
-    return { then: () => d1Pdf({ title: 'Manning Requirement Report', file: 'Manning Requirement.pdf', meta: [['Ship or Unit', ship || 'All'], ['Requirements', String(list.length)], ['Ratings Required', String(list.reduce((a, m) => a + m.qty, 0))]], cols: ['Ship', 'Rate', 'Specialisation', 'Quantity'], rows: list.map((m) => [m.ship, m.rate, m.spec, String(m.qty)]) }) };
+    return { then: () => d1Pdf({ title: 'Manning Requirement Report', file: 'Manning Requirement.pdf', meta: [['Ship or Unit', ship || 'All'], ['Requirements', String(list.length)], ['Required', String(list.reduce((a, m) => a + m.qty, 0))]], cols: ['Ship', 'Rate', 'Specialisation', 'Required', 'Aboard', 'Difference'], rows: list.map((m) => { const a = aboardN(m.ship, m.rate, m.spec); return [m.ship, m.rate, m.spec, String(m.qty), String(a), String(a - m.qty)]; }) }) };
   } });
 
   // ---- 2. Print Draft Proposal: who is due; the batch is made only when the button is pressed ----
@@ -3245,7 +3281,7 @@
       onSubmit: () => {
         const mk = (r) => (flow === 'DOD' ? { sn: r.sn, from: r.ship, to: '', vice: '', remark: '', request: '', wef: null } : { sn: r.sn, from: r.rate, to: '', reason: '', remark: '', date: null });
         const b = existing || makeBatch(flow, { branch: f.branch || 'All', spec: f.spec || 'All', rate: f.rate || 'All', init: TODAY, by: 'HICO001', rows: [] });
-        fresh.forEach((r) => b.rows.push(mk(r)));
+        b.rows = b.rows.filter((x) => !(x.rejected && fresh.some((r) => r.sn === x.sn))); fresh.forEach((r) => b.rows.push(mk(r)));
         S.pick[flow === 'DOD' ? 'dodReview' : 'advReview'] = b.no;
         return { done: `${existing ? 'Added to' : 'Created'} batch ${b.no}: ${fresh.length} ${fresh.length === 1 ? 'rating' : 'ratings'}.`, go: reviewRoute };
       } });
@@ -3256,24 +3292,35 @@
   function viewDraftReview() {
     const list = openBatches('DOD'); const b = pickedBatch('dodReview', list);
     const rows = b ? rowsOf(b) : [];
-    const set = rows.filter((x) => x.to).length;
+    const set = rows.filter((x) => x.to).length; const live = rows.filter((x) => !x.rejected).length;
     const acts = b ? `<button type="button" data-d1="dod-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button><button type="button" data-d1="dod-print" class="${btn.blue}">${ic('printer')}Print Draft</button>
       <button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button><button type="button" data-d1="dod-clear" class="${btn.outline} text-destructive">${ic('trash-2')}Clear Draft</button>` : '';
     let body;
     if (!list.length) body = `<div class="${CARD}">${emptyBox('briefcase', 'No Open Draft Batches', 'Make a batch from the ratings who are due, then review it here.', `<a href="#drafting/proposal" class="${btn.primary}">${ic('plus')}Print Draft Proposal</a>`)}</div>`;
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick an open batch to review its ratings.')}</div>`;
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Branch', esc(b.branch === 'All' ? 'All branches' : b.branch)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Status', batchPill(b)]])
-      + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(rows.length ? set / rows.length : 0)}" data-level="${rows.length && set === rows.length ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${rows.length} have a proposed ship</span></div>`
+      + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(live ? set / live : 0)}" data-level="${live && set === live ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${live} have a proposed ship</span></div>`
       + d1Table('dodReview', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(x.r.ship))], ['On Ship', (x) => shipPill(shipMo(x.r))], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : `<span class="${pill.warning}">Not set</span>`)]],
-        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Sex', esc(x.r.gender)], ['Current Ship', esc(x.r.ship)], ['DOJ Ship', fmt(x.r.shipSince)], ['On Ship', shipPill(shipMo(x.r))], ['Proposed Ship', x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Vice/Deployment', esc(x.vice || '-')], ['Remark', esc(x.remark || '-')], ['Request', esc(x.request || '-')]],
-        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('dod-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + sbtn('dod-edit', x.sn, 'Edit Posting', 'pencil', 'primary'),
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.r.ship)}`, r: shipPill(shipMo(x.r)), body: x.to ? `Drafted to <b class="text-foreground">${esc(x.to)}</b>` : `<span class="${pill.warning}">No proposed ship</span>` }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameX(x) + subl(esc(x.r.ship))], ['On Ship', (x) => shipPill(shipMo(x.r))], ['Proposed Ship', (x) => (x.rejected ? rejCell(x) : x.to ? `<b class="font-medium">${esc(x.to)}</b>${mnPill(x.to, x.r) ? `<span class="mt-0.5 block">${mnPill(x.to, x.r)}</span>` : ''}` : `<span class="${pill.warning}">Not set</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => { const p = x.to ? mnProjected(x.to, x.r) : null; return [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Sex', esc(x.r.gender)], ['Current Ship', esc(x.r.ship)], ['DOJ Ship', fmt(x.r.shipSince)], ['On Ship', shipPill(shipMo(x.r))], ['Proposed Ship', x.rejected ? rejCell(x) : x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Manning at the Proposed Ship', p ? `Needs ${p.need}, will have ${p.will} ${mnPill(x.to, x.r)}` : '-'], ['Vice/Deployment', esc(x.vice || '-')], ['Remark', esc(x.remark || '-')], ['Request', esc(x.request || '-')]]; },
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('dod-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + (x.rejected ? '' : sbtn('dod-reject', x.sn, 'Not Recommended', 'triangle-alert', 'outline', 'text-destructive') + sbtn('dod-edit', x.sn, 'Edit Posting', 'pencil', 'primary')),
+        card: (x) => ({ t: x.rejected ? `<s class="text-muted-foreground">${esc(fullName(x.r))}</s>` : esc(fullName(x.r)), s: `${x.sn} · ${esc(x.r.ship)}`, r: x.rejected ? `<span class="${pill.error}">Not recommended</span>` : shipPill(shipMo(x.r)), body: x.rejected ? esc(x.rejected) : x.to ? `Drafted to <b class="text-foreground">${esc(x.to)}</b> ${mnPill(x.to, x.r)}` : `<span class="${pill.warning}">No proposed ship</span>` }),
         empty: ['users', 'This Batch Is Empty', 'Add personnel by Official Number, or make a new proposal.', `<button type="button" data-d1="dod-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button>`],
       });
     return pageHeader('Review/Print Draft', 'Choose where each rating is drafted to', acts) + (list.length ? batchPicker('dodReview', list, b, { labelOf: batchLabel }) : '') + body;
   }
   const batchPill = (b) => `<span class="${b.status === 'open' ? pill.warning : pill.success}">${b.status === 'open' ? 'Open' : 'Closed'}</span>`;
+  const nameX = (x) => (x.rejected ? `<s class="font-medium text-muted-foreground">${esc(fullName(x.r))}</s>` : nameB(x.r));
+  const rejCell = (x) => `<span class="${pill.error}">Not recommended</span>${subl(esc(x.rejected))}`;
+  // a candidate the officer does not recommend: out of the batch, struck out with the reason, back on the due list next time
+  function rejectDialog(b, sn) {
+    const r = bySn(sn);
+    d1Form({ title: 'Not Recommended', size: 'md', submit: 'Not Recommended', icon: 'triangle-alert', tone: 'danger',
+      body: `<div class="flex items-center gap-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${r.sn} · ${esc(b.no)}</span></div></div>`
+        + fld('Reason', inp('reason', '', 'Why the rating is not recommended'), 'reason') + notice('info', 'info', 'The rating is taken out of the batch and shown struck out with this reason, on the printout too. It returns to the due list next time.'),
+      onSubmit: () => { const v = dv('reason'); if (!v) return { errors: { reason: 'Give the reason.' } }; const x = b.rows.find((y) => y.sn === sn); x.rejected = v; x.to = ''; return { done: `${fullName(r)} is not recommended.` }; } });
+  }
+  D1ACT['dod-reject'] = (el) => rejectDialog(reviewBatch(), el.dataset.id);
   const reviewBatch = () => pickedBatch('dodReview', openBatches('DOD'));
   D1ACT['dod-edit'] = (el) => {
     const b = reviewBatch(); const x = b.rows.find((y) => y.sn === el.dataset.id); const r = bySn(x.sn);
@@ -3292,23 +3339,23 @@
     S.addCtx = { kind, batch: b }; S.found = null;
     d1Form({ title: 'Add Personnel', size: 'md',
       body: `<div><span class="${LABEL}">Official Number</span><div class="flex gap-2"><input name="sn" type="text" placeholder="e.g. B0539" autocomplete="off" class="${INPUT}" /><button type="button" data-d1="find" class="${btn.blue} flex-none">${ic('search')}Find</button></div><span data-err="sn" class="mt-1 hidden text-xs font-medium text-error"></span></div>
-        <div id="d1-found"></div>${kind === 'DOD' ? fld('Request', sel('request', ['Medical', 'Special Requests', 'Others'], '', '-- Select Request --'), 'request', { opt: true }) : kind === 'DOA' ? fld('Reason', sel('reason', ['Outstanding', 'Special Requests', 'Others'], '', '-- Select Reason --'), 'reason', { opt: true }) : ''}`,
+        <div id="d1-found"></div>${kind === 'DOD' ? fld('Request', sel('request', ['Medical', 'Special Requests', 'Others'], '', '-- Select Request --'), 'request', { opt: true }) : kind === 'DOA' ? fld('Remarks', inp('remark', '', ''), 'remark', { opt: true }) : ''}`,
       submit: 'Add to Batch', icon: 'user-plus',
       onSubmit: () => {
         if (!S.found) return { errors: { sn: 'Find the rating first.' } };
-        const r = S.found; const row = kind === 'DOD' ? { sn: r.sn, from: r.ship, to: '', vice: '', remark: '', request: dv('request'), wef: null } : kind === 'DOA' ? { sn: r.sn, from: r.rate, to: '', reason: dv('reason'), remark: '', date: null } : { sn: r.sn, attended: true, start: null, end: null, place: '', result: '' };
-        b.rows.push(row); return { done: `${fullName(r)} added to ${b.no}.` };
+        const r = S.found; const row = kind === 'DOD' ? { sn: r.sn, from: r.ship, to: '', vice: '', remark: '', request: dv('request'), wef: null } : kind === 'DOA' ? { sn: r.sn, from: r.rate, to: '', remark: dv('remark'), date: null } : { sn: r.sn, attended: true, start: null, end: null, place: '', result: '' };
+        b.rows = b.rows.filter((x) => !(x.rejected && x.sn === r.sn)); b.rows.push(row); return { done: `${fullName(r)} added to ${b.no}.` };
       } });
   }
   D1ACT['dod-add'] = () => addPersonnel('DOD', reviewBatch(), true);
-  D1ACT['dod-print'] = () => { const b = reviewBatch(); d1Pdf({ title: 'Draft Form', file: `Draft ${b.no}.pdf`, meta: [['Batch Number', b.no], ['Branch', b.branch === 'All' ? 'All' : b.branch], ['Specialisation', b.spec === 'All' ? 'All' : b.spec], ['Initiated By', b.by], ['Date', fmt(b.init)], ['Ratings', String(b.rows.length)]],
-    cols: ['Official No', 'Name', 'Rate', 'Sex', 'Current Ship', 'Months', 'Proposed Ship', 'Vice/Deployment', 'Remark'], rows: rowsOf(b).map((x) => [x.sn, upperName(x.r), short(x.r.rate), x.r.gender, x.r.ship, String(shipMo(x.r)), x.to || '-', x.vice || '-', x.remark || '-']), sign: ['Drafting Officer', 'Director of Personnel (Navy)'] }); };
+  D1ACT['dod-print'] = () => { const b = reviewBatch(); d1Pdf({ title: 'Draft Form', file: `Draft ${b.no}.pdf`, meta: [['Batch Number', b.no], ['Branch', b.branch === 'All' ? 'All' : b.branch], ['Specialisation', b.spec === 'All' ? 'All' : b.spec], ['Initiated By', b.by], ['Date', fmt(b.init)], ['Ratings', String(liveN(b))]],
+    cols: ['Official No', 'Name', 'Rate', 'Sex', 'Current Ship', 'Months', 'Proposed Ship', 'Vice/Deployment', 'Remark'], rows: rowsOf(b).map((x) => Object.assign([x.sn, upperName(x.r), short(x.r.rate), x.r.gender, x.r.ship, String(shipMo(x.r)), x.rejected ? `NOT RECOMMENDED: ${x.rejected}` : x.to || '-', x.vice || '-', x.remark || '-'], { struck: !!x.rejected })), sign: ['Drafting Officer', 'Director of Personnel (Navy)'] }); };
 
   // ---- 4 and 5, shared with Advancement: department approval and close ----
   const flowOf = () => (route.startsWith('advancement') ? 'DOA' : 'DOD');
   function deptRows(flow) {
     const map = {};
-    openBatches(flow).forEach((b) => rowsOf(b).forEach((x) => { (map[x.r.spec] = map[x.r.spec] || []).push({ ...x, batch: b }); }));
+    openBatches(flow).forEach((b) => liveRows(b).forEach((x) => { (map[x.r.spec] = map[x.r.spec] || []).push({ ...x, batch: b }); }));
     return Object.keys(map).sort().map((spec) => {
       const rows = map[spec]; const counts = {}; rows.forEach((x) => { const rt = flow === 'DOD' ? x.r.rate : x.to; if (rt) { const c = short(rt); counts[c] = (counts[c] || 0) + 1; } });
       return { spec, rows, counts, appr: apprOf(flow, spec) };
@@ -3358,22 +3405,22 @@
     const adv = flow === 'DOA'; const list = openBatches(flow);
     return pageHeader(adv ? 'Close' : 'Close Draft', adv ? 'Close a reviewed and approved batch with its authority' : 'Close a reviewed and approved draft with its authority', `<button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel All Departments</button>`)
       + d1Table(`${flow}close`, list, {
-        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>` + subl(esc(b.branch === 'All' ? 'All branches' : b.branch))], ['Ratings', (b) => b.rows.length, 'text-center'], ['Ready', (b) => (batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`)]],
-        title: (b) => b.no, all: (b) => [['Batch Number', esc(b.no)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Ratings', b.rows.length], [adv ? 'New Rate Set' : 'Ship Proposed', `${b.rows.filter((x) => x.to).length} of ${b.rows.length}`], ['Departments Approved', `${specsOf(b).filter((s) => apprOf(flow, s)).length} of ${specsOf(b).length}`], ['Ready', batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`]],
+        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>` + subl(esc(b.branch === 'All' ? 'All branches' : b.branch))], ['Ratings', (b) => liveN(b), 'text-center'], ['Ready', (b) => (batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`)]],
+        title: (b) => b.no, all: (b) => [['Batch Number', esc(b.no)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Ratings', liveN(b)], [adv ? 'New Rate Set' : 'Ship Proposed', `${b.rows.filter((x) => x.to).length} of ${liveN(b)}`], ['Departments Approved', `${specsOf(b).filter((s) => apprOf(flow, s)).length} of ${specsOf(b).length}`], ['Ready', batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`]],
         acts: (b) => sbtn('close-batch', b.no, adv ? 'Close Batch' : 'Close Draft', 'lock', 'primary'),
-        card: (b) => ({ t: esc(b.no), s: `${esc(b.branch)} · ${b.rows.length} ratings`, r: batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>` }),
+        card: (b) => ({ t: esc(b.no), s: `${esc(b.branch)} · ${liveN(b)} ratings`, r: batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>` }),
         empty: ['lock', 'Nothing to Close', `There are no open ${adv ? 'advancement' : 'draft'} batches.`, `<a href="#${adv ? 'advancement/due' : 'drafting/proposal'}" class="${btn.primary}">${ic('plus')}${adv ? 'Rates due for Advancement' : 'Print Draft Proposal'}</a>`],
       });
   }
   D1ACT['close-batch'] = (el) => {
     const flow = flowOf(); const adv = flow === 'DOA'; const b = batchOf(flow, el.dataset.id);
-    const noTo = b.rows.filter((x) => !x.to).length; const waiting = specsOf(b).filter((s) => !apprOf(flow, s));
-    const problems = [b.rows.length ? '' : 'The batch has no ratings.', noTo ? `${noTo} ${noTo === 1 ? 'rating has' : 'ratings have'} no ${adv ? 'new rate' : 'proposed ship'}.` : '', waiting.length ? `Not yet approved: ${waiting.join(', ')}.` : ''].filter(Boolean);
+    const noTo = b.rows.filter((x) => !x.rejected && !x.to).length; const waiting = specsOf(b).filter((s) => !apprOf(flow, s));
+    const problems = [liveN(b) ? '' : 'The batch has no ratings.', noTo ? `${noTo} ${noTo === 1 ? 'rating has' : 'ratings have'} no ${adv ? 'new rate' : 'proposed ship'}.` : '', waiting.length ? `Not yet approved: ${waiting.join(', ')}.` : ''].filter(Boolean);
     d1Form({ title: `Close ${b.no}`, size: 'md', submit: adv ? 'Close Batch' : 'Close Draft', icon: 'lock', disabled: problems.length > 0,
-      body: `<dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm phone:grid-cols-2"><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Ratings</dt><dd class="mt-0.5">${b.rows.length}</dd></div><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Departments</dt><dd class="mt-0.5">${specsOf(b).length}</dd></div><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Initiated</dt><dd class="mt-0.5">${fmt(b.init)}</dd></div></dl>`
+      body: `<dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm phone:grid-cols-2"><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Ratings</dt><dd class="mt-0.5">${liveN(b)}</dd></div><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Departments</dt><dd class="mt-0.5">${specsOf(b).length}</dd></div><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Initiated</dt><dd class="mt-0.5">${fmt(b.init)}</dd></div></dl>`
         + (problems.length ? notice('error', 'circle-alert', `<b>This batch cannot be closed yet.</b><ul class="mt-1 list-disc pl-4">${problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`) : '')
         + fld('Authority', inp('signal', '', `e.g. NHQ/NP/${flow}/135/2026`), 'signal', { hint: 'The signal that authorises it. Each authority is used once.' }) + fld('Close Date', inp('date', fmt(TODAY), 'dd/mm/yyyy'), 'date')
-        + notice('warning', 'triangle-alert', 'A closed batch cannot be changed.'),
+        + notice('warning', 'triangle-alert', 'A closed batch is final and is never reopened. A correction is made on the rating\'s record, and the audit trail records it.'),
       onSubmit: () => {
         const s = dv('signal'); const dt = parseDate(dv('date')); const errors = {};
         if (!s) errors.signal = 'Enter the authority.'; else if (isUsedSignal(flow, s)) errors.signal = `${s} is already used by batch ${isUsedSignal(flow, s).no}. Use a different authority.`;
@@ -3386,43 +3433,44 @@
 
   // ---- 7. Update WEF ----
   function viewWef() {
-    const list = signalBatches('DOD').filter((b) => b.rows.length && (reportedN(b) < b.rows.length || b.closed >= addDays(TODAY, -30)));
+    const list = signalBatches('DOD').filter((b) => liveN(b) && (reportedN(b) < liveN(b) || b.closed >= addDays(TODAY, -30)));
     const b = pickedBatch('wef', list); const specs = b ? specsOf(b) : [];
     const dept = specs.includes(S.pick.wefDept) ? S.pick.wefDept : '';
-    const rows = b ? rowsOf(b).filter((x) => !dept || x.r.spec === dept) : [];
+    const rows = b ? liveRows(b).filter((x) => !dept || x.r.spec === dept) : [];
     const pending = rows.filter((x) => !x.wef && x.to).length;
     const picker = `<section class="${CARD} mb-4 p-4"><div class="flex flex-wrap items-end gap-3 phone:gap-2"><div class="min-w-0 flex-1 phone:w-full phone:flex-none"><span class="${LABEL}">Batch Number</span><select name="d1p-wef"><option value="">-- Select Batch --</option>${list.map((x) => `<option value="${esc(x.no)}"${b && x.no === b.no ? ' selected' : ''}>${esc(`${x.no} · ${x.signal}`)}</option>`).join('')}</select></div>
       <div class="w-72 phone:w-full"><span class="${LABEL}">Department</span><select name="d1p-wefDept">${options(specs, dept, 'All Departments')}</select></div></div></section>`;
     let body;
     if (!list.length) body = `<div class="${CARD}">${emptyBox('calendar', 'No Batch Is Waiting for a WEF', 'A batch appears here once it is closed with its authority.', `<a href="#drafting/close" class="${btn.primary}">${ic('lock')}Close Draft</a>`)}</div>`;
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick a closed batch to date its postings.')}</div>`;
-    else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Reported', `<b>${reportedN(b)}</b> of ${b.rows.length}`]])
+    else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Dated', `<b>${reportedN(b)}</b> of ${liveN(b)}`]])
       + d1Table('wef', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(x.wef ? x.from : x.r.ship))], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Status', (x) => (x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`)]],
-        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Current Ship', esc(x.wef ? x.from : x.r.ship)], ['Proposed Ship', esc(x.to || '-')], ['Authority', esc(wefBatch().signal)], ['WEF', x.wef ? fmt(x.wef) : '-'], ['Status', x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`]],
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(x.wef ? x.from : x.r.ship))], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Status', (x) => wefStatus(x)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Current Ship', esc(x.wef ? x.from : x.r.ship)], ['Proposed Ship', esc(x.to || '-')], ['Authority', esc(wefBatch().signal)], ['WEF', x.wef ? fmt(x.wef) : '-'], ['Status', wefStatus(x)]],
         acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + (!x.wef && x.to ? sbtn('wef-row', x.sn, 'Set WEF', 'calendar', 'primary') : ''),
         card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.to || 'No ship proposed')}`, r: x.wef ? `<span class="${pill.success}">Reported</span>` : `<span class="${pill.warning}">Pending</span>`, body: x.wef ? `WEF ${fmt(x.wef)}` : '' }),
         empty: ['users', 'No Ratings Here', 'This department has no ratings in the batch.'],
       });
     return pageHeader('Update WEF', 'Date each posting: the rating moves to the new ship from that date', b ? `<button type="button" data-d1="wef-dept" ${pending ? '' : 'disabled'} class="${btn.primary} disabled:opacity-50">${ic('calendar')}Set WEF for Department</button>` : '') + picker + body;
   }
-  const wefBatch = () => { const list = signalBatches('DOD').filter((b) => b.rows.length && (reportedN(b) < b.rows.length || b.closed >= addDays(TODAY, -30))); return pickedBatch('wef', list); };
-  function wefCheck(b, text) { const dt = parseDate(text); if (!dt) return { err: 'Enter the date as dd/mm/yyyy.' }; if (dt < b.closed) return { err: `The WEF cannot be before the authority date (${fmt(b.closed)}).` }; return { dt }; }
+  const wefStatus = (x) => (isSched(x) ? `<span class="${pill.info}">Scheduled</span>` : x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`);
+  const wefBatch = () => { const list = signalBatches('DOD').filter((b) => liveN(b) && (reportedN(b) < liveN(b) || b.closed >= addDays(TODAY, -30))); return pickedBatch('wef', list); };
+  function wefCheck(b, text) { const dt = parseDate(text); if (!dt) return { err: 'Enter the date as dd/mm/yyyy.' }; if (dt < b.closed) return { err: `The WEF cannot be before the authority date (${fmt(b.closed)}).` }; if (dt > addDays(TODAY, 365)) return { err: 'The WEF cannot be more than a year ahead.' }; return { dt }; }
   D1ACT['wef-row'] = (el) => {
     const b = wefBatch(); const x = b.rows.find((y) => y.sn === el.dataset.id); const r = bySn(x.sn);
     d1Form({ title: 'Set WEF', size: 'md', submit: 'Save WEF', icon: 'calendar',
       body: `<div class="flex items-center gap-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${esc(r.ship)} to <b class="text-foreground">${esc(x.to)}</b></span></div></div>`
-        + fld('WEF Date', inp('date', '', 'dd/mm/yyyy'), 'date', { hint: `On this date the rating moves to ${x.to}. Authority ${b.signal}.` }) + notice('info', 'info', `Saving ends the posting on ${esc(r.ship)}, starts one on ${esc(x.to)} and adds it to the rating's Drafting tab.`),
-      onSubmit: () => { const c = wefCheck(b, dv('date')); if (c.err) return { errors: { date: c.err } }; applyWef(r, x, c.dt); return { done: `${fullName(r)} is on ${x.to} from ${fmt(c.dt)}.` }; } });
+        + fld('WEF Date', inp('date', '', 'dd/mm/yyyy'), 'date', { hint: `On this date the rating moves to ${x.to}. Authority ${b.signal}.` }) + notice('info', 'info', `The posting on ${esc(r.ship)} ends the day before the WEF and the one on ${esc(x.to)} starts on it, on the rating's Drafting tab. A WEF ahead of today shows as scheduled ("Drafted to ${esc(x.to)} wef ...") and the ship changes on that date.`),
+      onSubmit: () => { const c = wefCheck(b, dv('date')); if (c.err) return { errors: { date: c.err } }; applyWef(r, x, c.dt); return { done: c.dt > TODAY ? `${fullName(r)} will be on ${x.to} from ${fmt(c.dt)}.` : `${fullName(r)} is on ${x.to} from ${fmt(c.dt)}.` }; } });
   };
   D1ACT['wef-dept'] = () => {
     const b = wefBatch(); const specs = specsOf(b); const dept = specs.includes(S.pick.wefDept) ? S.pick.wefDept : '';
     d1Form({ title: 'Set WEF for Department', size: 'md', submit: 'Save WEF', icon: 'calendar',
       body: fld('Department', sel('dept', specs, dept, 'All departments'), 'dept', { opt: true }) + fld('WEF Date', inp('date', '', 'dd/mm/yyyy'), 'date')
-        + notice('warning', 'triangle-alert', 'Every pending rating in the department gets this date and moves to the proposed ship. Ratings with no proposed ship are left out.'),
+        + notice('warning', 'triangle-alert', 'Every pending rating in the department gets this date and moves to the proposed ship on it. Ratings with no proposed ship are left out.'),
       onSubmit: () => {
         const c = wefCheck(b, dv('date')); if (c.err) return { errors: { date: c.err } };
-        const dep = dv('dept'); const targets = rowsOf(b).filter((x) => !x.wef && x.to && (!dep || x.r.spec === dep));
+        const dep = dv('dept'); const targets = liveRows(b).filter((x) => !x.wef && x.to && (!dep || x.r.spec === dep));
         if (!targets.length) return { errors: { dept: 'No pending rating with a proposed ship in this selection.' } };
         targets.forEach((x) => applyWef(x.r, x, c.dt)); return { done: `WEF ${fmt(c.dt)} saved for ${targets.length} ${targets.length === 1 ? 'rating' : 'ratings'}.` };
       } });
@@ -3437,10 +3485,10 @@
   function batchListTable(flow, base) {
     const adv = flow === 'DOA'; const rows = batchList(flow);
     return d1Table(`${flow}list`, rows, {
-      cols: [['Signal Code', (b) => (b.signal ? `<b class="font-medium">${esc(b.signal)}</b>` : '<span class="text-muted-foreground">-</span>')], ['Batch Number', (b) => esc(b.no) + subl(esc(b.branch))], ['Status', batchPill], [adv ? 'Promoted' : 'Reported', (b) => `${reportedN(b)} of ${b.rows.length}`, 'text-center']],
-      title: (b) => b.no, all: (b) => [['Signal Code', esc(b.signal || '-')], ['Batch Number', esc(b.no)], ['Status', batchPill(b)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Total', b.rows.length], [adv ? 'Promoted' : 'Reported', reportedN(b)], [adv ? 'Not Yet Promoted' : 'Not Reported', b.rows.length - reportedN(b)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-']],
+      cols: [['Signal Code', (b) => (b.signal ? `<b class="font-medium">${esc(b.signal)}</b>` : '<span class="text-muted-foreground">-</span>')], ['Batch Number', (b) => esc(b.no) + subl(esc(b.branch))], ['Status', batchPill], [adv ? 'Promoted' : 'Reported', (b) => `${reportedN(b)} of ${liveN(b)}`, 'text-center']],
+      title: (b) => b.no, all: (b) => [['Signal Code', esc(b.signal || '-')], ['Batch Number', esc(b.no)], ['Status', batchPill(b)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Total', liveN(b)], [adv ? 'Promoted' : 'Reported', reportedN(b)], [adv ? 'Not Yet Promoted' : 'Not Reported', liveN(b) - reportedN(b)], ['Not Recommended', b.rows.length - liveN(b)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-']],
       acts: (b) => lbtn(`${base}/${b.no}`, 'Open Contents', 'list'),
-      card: (b) => ({ t: esc(b.no), s: `${esc(b.signal || 'No authority yet')} · ${b.rows.length} ratings`, r: batchPill(b), body: `${adv ? 'Promoted' : 'Reported'} ${reportedN(b)} of ${b.rows.length} · started ${fmt(b.init)}` }),
+      card: (b) => ({ t: esc(b.no), s: `${esc(b.signal || 'No authority yet')} · ${liveN(b)} ratings`, r: batchPill(b), body: `${adv ? 'Promoted' : 'Reported'} ${reportedN(b)} of ${liveN(b)} · started ${fmt(b.init)}` }),
       empty: ['search', 'Nothing Found'],
     });
   }
@@ -3451,7 +3499,7 @@
       + batchListTable('DOD', 'drafting/batches');
   }
   D1ACT['list-pdf'] = (el) => { const flow = el.dataset.id; const rows = batchList(flow); d1Pdf({ title: flow === 'DOD' ? 'Draft Batch Summary' : 'Batch Summary Report for Advancement', file: flow === 'DOD' ? 'Draft Batch Summary.pdf' : 'Batch Summary Report For Advancement.pdf', meta: [['Batches', String(rows.length)]],
-    cols: ['Signal Code', 'Batch Number', 'Branch', 'Rate', 'Status', 'Total', flow === 'DOD' ? 'Reported' : 'Promoted', 'Date Closed'], rows: rows.map((b) => [b.signal || '-', b.no, b.branch, b.rate === 'All' ? 'All' : short(b.rate), b.status === 'open' ? 'Open' : 'Closed', String(b.rows.length), String(reportedN(b)), fmt(b.closed)]) }); };
+    cols: ['Signal Code', 'Batch Number', 'Branch', 'Rate', 'Status', 'Total', flow === 'DOD' ? 'Reported' : 'Promoted', 'Date Closed'], rows: rows.map((b) => [b.signal || '-', b.no, b.branch, b.rate === 'All' ? 'All' : short(b.rate), b.status === 'open' ? 'Open' : 'Closed', String(liveN(b)), String(reportedN(b)), fmt(b.closed)]) }); };
   function viewBatchDetail(flow, no, base, backLabel) {
     const b = batchOf(flow, no); const adv = flow === 'DOA';
     if (!b) return backLink(base, backLabel) + `<div class="${CARD}">${emptyBox('search', 'Batch Not Found', `No batch has the number ${no}.`, `<a href="#${base}" class="${btn.outline}">Back to List</a>`)}</div>`;
@@ -3459,21 +3507,21 @@
     const rows = rowsOf(b).filter((x) => (!f.sn || x.sn.toLowerCase().includes(f.sn.toLowerCase())) && (!f.name || `${x.r.surname} ${x.r.first} ${x.r.middle}`.toLowerCase().includes(f.name.toLowerCase())));
     return backLink(base, backLabel)
       + pageHeader(`Batch ${b.no}`, b.signal ? `Authority ${b.signal}` : 'Open: no authority yet', `<button type="button" data-d1="detail-pdf" data-id="${esc(b.no)}" class="${btn.blue}">${ic('printer')}${adv ? 'Print Advancement Report' : 'Print Draft Report'}</button><button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button>`)
-      + factStrip([['Signal Code', esc(b.signal || '-')], ['Status', batchPill(b)], ['Branch', esc(b.branch)], [adv ? 'Rate' : 'Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-'], ['Total', `<b>${b.rows.length}</b>`], [adv ? 'Promoted' : 'Reported', `<b>${reportedN(b)}</b>`]])
+      + factStrip([['Signal Code', esc(b.signal || '-')], ['Status', batchPill(b)], ['Branch', esc(b.branch)], [adv ? 'Rate' : 'Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-'], ['Total', `<b>${liveN(b)}</b>`], [adv ? 'Promoted' : 'Reported', `<b>${reportedN(b)}</b>`]])
       + d1Filters(`${flow}detail`, [{ name: 'sn', label: 'Official No', type: 'text', ph: 'e.g. B0539', w: 'w-44' }, { name: 'name', label: 'Name', type: 'text', ph: 'Surname or first name', w: 'w-64' }])
       + d1Table(`${flow}detail`, rows, {
-        cols: [['Official No', (x) => x.sn], ['Full Name', (x) => nameB(x.r)], [adv ? 'New Rate' : 'New Ship', (x) => (x.to ? `<b class="font-medium">${esc(adv ? short(x.to) : x.to)}</b>` : '-')], [adv ? 'Date Advanced' : 'Date Reported', (x) => (x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`)]],
-        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Full Name', esc(upperName(x.r))], [adv ? 'Old Rate' : 'Old Ship', esc(x.from || '-')], [adv ? 'New Rate' : 'New Ship', esc(x.to || '-')], ...(adv ? [['Reason', esc(x.reason || '-')]] : [['Vice/Deployment', esc(x.vice || '-')]]), [adv ? 'Date Advanced' : 'Date Reported', x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`], ['Batch', esc(b.no)]],
+        cols: [['Official No', (x) => x.sn], ['Full Name', (x) => nameX(x)], [adv ? 'New Rate' : 'New Ship', (x) => (x.rejected ? rejCell(x) : x.to ? `<b class="font-medium">${esc(adv ? short(x.to) : x.to)}</b>` : '-')], [adv ? 'Date Advanced' : 'Date Reported', (x) => (x.rejected ? '-' : x[dateField(flow)] ? fmt(x[dateField(flow)]) + (isSched(x) ? ' <span class="' + pill.info + '">Scheduled</span>' : '') : `<span class="${pill.warning}">Pending</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Full Name', esc(upperName(x.r))], [adv ? 'Old Rate' : 'Old Ship', esc(x.from || '-')], [adv ? 'New Rate' : 'New Ship', esc(x.to || '-')], ...(adv ? [['Remarks', esc(x.remark || '-')]] : [['Vice/Deployment', esc(x.vice || '-')]]), ['Not Recommended', x.rejected ? esc(x.rejected) : '-'], [adv ? 'Date Advanced' : 'Date Reported', x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`], ['Batch', esc(b.no)]],
         acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card'),
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.from || '-')} to ${esc(x.to || '-')}`, r: x[dateField(flow)] ? `<span class="${pill.success}">${fmt(x[dateField(flow)])}</span>` : `<span class="${pill.warning}">Pending</span>` }),
+        card: (x) => ({ t: x.rejected ? `<s class="text-muted-foreground">${esc(fullName(x.r))}</s>` : esc(fullName(x.r)), s: `${x.sn} · ${esc(x.from || '-')} to ${esc(x.to || '-')}`, r: x.rejected ? `<span class="${pill.error}">Not recommended</span>` : x[dateField(flow)] ? `<span class="${pill.success}">${fmt(x[dateField(flow)])}</span>` : `<span class="${pill.warning}">Pending</span>`, body: x.rejected ? esc(x.rejected) : '' }),
         empty: ['search', 'No Ratings Match', 'Clear the Official No or name.', `<button type="button" data-d1="reset" data-key="${flow}detail" class="${btn.outline}">${ic('rotate-ccw')}Reset</button>`],
       });
   }
   D1ACT['detail-pdf'] = (el) => {
     const b = batchOf(el.dataset.id.startsWith('DOA') ? 'DOA' : 'DOD', el.dataset.id); const adv = b.flow === 'DOA';
-    d1Pdf({ title: adv ? 'Advancement Report' : 'Draft Report', file: adv ? 'Advancement Report.pdf' : 'draft Report.pdf', meta: [['Batch Number', b.no], ['Authority', b.signal || '-'], ['Status', b.status === 'open' ? 'Open' : 'Closed'], ['Branch', b.branch], ['Date Closed', fmt(b.closed)], ['Ratings', String(b.rows.length)]],
+    d1Pdf({ title: adv ? 'Advancement Report' : 'Draft Report', file: adv ? 'Advancement Report.pdf' : 'draft Report.pdf', meta: [['Batch Number', b.no], ['Authority', b.signal || '-'], ['Status', b.status === 'open' ? 'Open' : 'Closed'], ['Branch', b.branch], ['Date Closed', fmt(b.closed)], ['Ratings', String(liveN(b))]],
       cols: adv ? ['Official No', 'Name', 'Old Rate', 'New Rate', 'Date Advanced'] : ['Official No', 'Name', 'Rate', 'Old Ship', 'New Ship', 'Vice/Deployment', 'Date Reported'],
-      rows: rowsOf(b).map((x) => (adv ? [x.sn, upperName(x.r), short(x.from), x.to ? short(x.to) : '-', x.date ? fmt(x.date) : 'Pending'] : [x.sn, upperName(x.r), short(x.r.rate), x.from || '-', x.to || '-', x.vice || '-', x.wef ? fmt(x.wef) : 'Pending'])) });
+      rows: rowsOf(b).map((x) => Object.assign(adv ? [x.sn, upperName(x.r), short(x.from), x.rejected ? `NOT RECOMMENDED: ${x.rejected}` : x.to ? short(x.to) : '-', x.date ? fmt(x.date) : x.rejected ? '-' : 'Pending'] : [x.sn, upperName(x.r), short(x.r.rate), x.from || '-', x.rejected ? `NOT RECOMMENDED: ${x.rejected}` : x.to || '-', x.vice || '-', x.wef ? fmt(x.wef) : x.rejected ? '-' : 'Pending'], { struck: !!x.rejected })) });
   };
 
   // ---- 9. Rate DOD History: one rating's drafts ----
@@ -3488,8 +3536,8 @@
     else if (!r) body = `<div class="${CARD}">${emptyBox('circle-alert', 'No Rating Found', `No rating has Official Number ${sn}. Check the number and search again.`)}</div>`;
     else body = `<section class="${CARD} mb-4 flex flex-wrap items-center gap-4 p-4">${avatar(r, 'h-12 w-12 text-base')}<div class="min-w-0 flex-1"><div class="text-base font-semibold">${esc(fullName(r))}</div><div class="text-sm text-muted-foreground">${r.sn} · ${esc(r.rate)} · ${esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`)}</div></div><a href="#ratings/record/${r.sn}" class="${btn.outline}">${ic('id-card')}Open Record</a></section>`
       + d1Table('history', rows, {
-        cols: [['Batch Number', ({ b }) => esc(b.no)], ['New Ship', ({ x }) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Date Reported', ({ x }) => (x.wef ? fmt(x.wef) : '-')], ['Status', ({ b, x }) => (x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`)]],
-        title: ({ b }) => b.no, all: ({ b, x }) => [['Batch Number', esc(b.no)], ['Authority', esc(b.signal || '-')], ['Old Ship', esc(x.from || '-')], ['New Ship', esc(x.to || '-')], ['Vice/Deployment', esc(x.vice || '-')], ['Date Reported', x.wef ? fmt(x.wef) : '-'], ['Status', x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`]],
+        cols: [['Batch Number', ({ b }) => esc(b.no)], ['New Ship', ({ x }) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Date Reported', ({ x }) => (x.wef ? fmt(x.wef) : '-')], ['Status', ({ b, x }) => (x.rejected ? `<span class="${pill.error}">Not recommended</span>` : isSched(x) ? `<span class="${pill.info}">Scheduled</span>` : x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`)]],
+        title: ({ b }) => b.no, all: ({ b, x }) => [['Batch Number', esc(b.no)], ['Authority', esc(b.signal || '-')], ['Old Ship', esc(x.from || '-')], ['New Ship', esc(x.to || '-')], ['Vice/Deployment', esc(x.vice || '-')], ['Date Reported', x.wef ? fmt(x.wef) : '-'], ['Status', x.rejected ? `<span class="${pill.error}">Not recommended</span>` + subl(esc(x.rejected)) : isSched(x) ? `<span class="${pill.info}">Scheduled</span>` : x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`]],
         acts: ({ b }) => lbtn(`drafting/batches/${b.no}`, 'Open Batch', 'list'),
         card: ({ b, x }) => ({ t: esc(`${x.from || '-'} to ${x.to || 'not set'}`), s: `${esc(b.no)} · ${esc(b.signal || 'No authority yet')}`, r: x.wef ? `<span class="${pill.success}">${fmt(x.wef)}</span>` : `<span class="${pill.warning}">Pending</span>` }),
         empty: ['history', 'No Drafts Yet', 'This rating has not been through a draft batch.'],
@@ -3503,7 +3551,7 @@
   const dojOf = (r, x) => { const h = postings(r); const i = h.findIndex((p) => +p.from === +x.wef); return i > 0 ? h[i - 1].from : null; };
   function draftReportRows() {
     const f = S.f.report || {}; const from = parseDate(f.from); const to = parseDate(f.to);
-    return FLOWS.DOD.batches.flatMap((b) => b.rows.filter((x) => x.wef).map((x) => ({ b, x, r: bySn(x.sn) }))).filter(({ b, x, r }) => (!f.spec || r.spec === f.spec) && (!f.signal || (b.signal || '').toLowerCase().includes(f.signal.toLowerCase())) && (!from || x.wef >= from) && (!to || x.wef <= to)).sort((a, c) => c.x.wef - a.x.wef || a.r.surname.localeCompare(c.r.surname));
+    return FLOWS.DOD.batches.flatMap((b) => b.rows.filter((x) => x.wef && !isSched(x)).map((x) => ({ b, x, r: bySn(x.sn) }))).filter(({ b, x, r }) => (!f.spec || r.spec === f.spec) && (!f.signal || (b.signal || '').toLowerCase().includes(f.signal.toLowerCase())) && (!from || x.wef >= from) && (!to || x.wef <= to)).sort((a, c) => c.x.wef - a.x.wef || a.r.surname.localeCompare(c.r.surname));
   }
   function viewReport() {
     const f = S.f.report || {}; const from = parseDate(f.from); const to = parseDate(f.to);
@@ -3551,14 +3599,15 @@
   function trainPanelPick(b) {
     const mem = new Set(b ? b.rows.map((x) => x.sn) : []);
     S.tw.mem = mem;
-    return `<div class="grid grid-cols-3 gap-4 phone:grid-cols-1">${fld('Branch', sel('tw-branch', BRANCHES, '', 'All Branches'), 'tw-branch', { opt: true })}${fld('Specialisation', sel('tw-spec', SPEC_NAMES, '', 'All Specialisations'), 'tw-spec', { opt: true })}${fld('Rate', sel('tw-rate', RATES, '', 'All Rates'), 'tw-rate', { opt: true })}</div>
+    return `<div id="tw-rule" class="mb-4"></div><div class="grid grid-cols-3 gap-4 phone:grid-cols-1">${fld('Branch', sel('tw-branch', BRANCHES, '', 'All Branches'), 'tw-branch', { opt: true })}${fld('Specialisation', sel('tw-spec', SPEC_NAMES, '', 'All Specialisations'), 'tw-spec', { opt: true })}${fld('Rate', sel('tw-rate', RATES, '', 'All Rates'), 'tw-rate', { opt: true })}</div>
       <div id="tw-count" class="mt-4"></div>`;
   }
-  const twEligible = () => current().filter((r) => !S.tw.mem.has(r.sn) && (!dv('tw-branch') || r.branch === dv('tw-branch')) && (!dv('tw-spec') || r.spec === dv('tw-spec')) && (!dv('tw-rate') || r.rate === dv('tw-rate')));
+  const twEligible = () => current().filter((r) => S.tw.course && courseEligible(S.tw.course, r) && !S.tw.mem.has(r.sn) && !DOT.some((b) => b.status === 'open' && b.course.id === S.tw.course.id && b.rows.some((x) => x.sn === r.sn)) && (!dv('tw-branch') || r.branch === dv('tw-branch')) && (!dv('tw-spec') || r.spec === dv('tw-spec')) && (!dv('tw-rate') || r.rate === dv('tw-rate')));
   function twCount() {
     const box = document.querySelector('#tw-count'); if (!box) return;
     const n = twEligible().length;
-    box.innerHTML = n ? notice('info', 'users', `<b>${n}</b> ${n === 1 ? 'rating matches' : 'ratings match'} and ${n === 1 ? 'is' : 'are'} added to the batch.`) : notice('warning', 'circle-alert', 'No rating matches these filters, or all of them are already in the batch.');
+    const rule = document.querySelector('#tw-rule'); if (rule && S.tw.course) rule.innerHTML = notice('info', 'info', `<b>${esc(S.tw.course.name)}.</b> ${esc(courseRuleText(S.tw.course))}, not already in an open batch for it. Narrow the list below if you wish.`);
+    box.innerHTML = n ? notice('info', 'users', `<b>${n}</b> ${n === 1 ? 'rating matches' : 'ratings match'} and ${n === 1 ? 'is' : 'are'} added to the batch.`) : notice('warning', 'circle-alert', 'No eligible rating matches these filters, or all of them are already in a batch for this course.');
   }
   function twFoot() {
     const s = S.tw.step; const add = !!S.tw.b;
@@ -3570,7 +3619,7 @@
       return `<li class="flex items-center gap-2.5 rounded-ctl px-3 py-2 text-sm ${on ? 'bg-brand/10 font-semibold text-foreground' : 'text-muted-foreground'}"><span class="flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span>${label}</li>`; }).join('')}</ol>`;
   }
   function trainDialog(b) {
-    S.tw = { b: b || null, step: b ? 2 : 1, mem: new Set() };
+    S.tw = { b: b || null, step: b ? 2 : 1, mem: new Set(), course: b ? b.course : null };
     const p1 = `<div data-tpanel="1" class="grid gap-4">${fld('Training', sel('tw-course', COURSES.map((c) => c.name), '', '-- Select Training --'), 'tw-course')}
       <div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${fld('Month', sel('tw-month', MONTHS, '', '-- Select Month --'), 'tw-month')}${fld('Year', sel('tw-year', ['2025', '2026', '2027'], '2026', '-- Select Year --'), 'tw-year')}</div></div>`;
     openDialog({ title: b ? `Add Ratings to ${b.no}` : 'New Training Batch', size: 'lg', body: `<form onsubmit="return false"><div id="tw-stepper">${b ? '' : twStepper()}</div>${b ? '' : p1}<div data-tpanel="2" class="${b ? '' : 'hidden'}">${trainPanelPick(b)}</div></form>`, foot: twFoot() });
@@ -3585,7 +3634,7 @@
   }
   D1ACT.tnew = () => trainDialog(null);
   D1ACT.tadd = (el) => trainDialog(dotBatch(el.dataset.id));
-  D1ACT.tstep = (el) => { const to = +el.dataset.id; if (to === 2 && !twCheck().ok) return; S.tw.step = to; twSync(); };
+  D1ACT.tstep = (el) => { const to = +el.dataset.id; if (to === 2) { const c = twCheck(); if (!c.ok) return; S.tw.course = c.course; } S.tw.step = to; twSync(); };
   D1ACT.tcreate = () => {
     if (S.tw.b) { const list = twEligible(); if (!list.length) { feClear(); twCount(); return; } list.forEach((r) => S.tw.b.rows.push({ sn: r.sn, attended: true, start: null, end: null, place: '', result: '' })); S.pick.trainReview = S.tw.b.no; closeDialog(); toast(`${list.length} added to ${S.tw.b.no}.`); location.hash = '#training/review'; return; }
     const c = twCheck(); if (!c.ok) { S.tw.step = 1; twSync(); twCheck(); return; }
@@ -3624,9 +3673,9 @@
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick the batch whose course has been attended.')}</div>`;
     else body = factStrip([['Training', `<b>${esc(b.course.name)}</b>`], ['Period', `${MONTHS[b.month - 1]} ${b.year}`], ['Ratings', `${rows.length}`], ['Attending', `<b>${att}</b> of ${rows.length}`]])
       + d1Table('trainHistory', rows, {
-        cols: [['Attended', (x) => `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-4 w-4 rounded border-input accent-primary" />`], ['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r)], ['This Course', (x) => (x.attended ? `<span class="${pill.info}">Will be recorded</span>` : `<span class="${pill.neutral}">Left out</span>`)]],
-        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Last Course', courseCell(prevCourse(x.r, x))], ['Attended', x.attended ? 'Yes' : 'No'], ['This Course', x.attended ? `<span class="${pill.info}">Will be recorded</span>` : `<span class="${pill.neutral}">Left out</span>`]],
-        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card'),
+        cols: [['Attended', (x) => `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-4 w-4 rounded border-input accent-primary" />`], ['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r)], ['This Course', (x) => (x.attended ? `<span class="${pill.info}">${x.ownStart ? `${fmt(x.ownStart)} to ${fmt(x.ownEnd)}` : 'Batch dates'}</span>` : `<span class="${pill.neutral}">Left out</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Last Course', courseCell(prevCourse(x.r, x))], ['Attended', x.attended ? 'Yes' : 'No'], ['Dates', x.attended ? (x.ownStart ? `${fmt(x.ownStart)} to ${fmt(x.ownEnd)} (own dates)` : 'The batch dates') : '-']],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + (x.attended ? sbtn('tdates', x.sn, 'Change Dates', 'calendar', 'primary') : ''),
         card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))}`, r: `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-5 w-5 rounded border-input accent-primary" />`, body: courseCell(prevCourse(x.r, x)) }),
         empty: ['users', 'This Batch Is Empty', 'Add ratings in Training Review first.', `<a href="#training/review" class="${btn.outline}">Training Review</a>`],
       });
@@ -3634,18 +3683,34 @@
       + (list.length ? batchPicker('trainHistory', list, b, { labelOf: dotLabel }) : '') + body;
   }
   D1ACT.tatt = (el) => { const b = trainPicked('trainHistory'); const x = b.rows.find((y) => y.sn === el.dataset.id); x.attended = el.checked; render(); };
+  // one rating's own dates: the batch has one start and end, a rating's can differ
+  D1ACT.tdates = (el) => {
+    const b = trainPicked('trainHistory'); const x = b.rows.find((y) => y.sn === el.dataset.id); const r = bySn(x.sn);
+    d1Form({ title: 'Change Dates', size: 'md', submit: 'Save Dates', icon: 'calendar',
+      body: `<div class="flex items-center gap-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${r.sn} · ${esc(b.course.name)}</span></div></div>`
+        + `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${fld('Start Date', inp('start', x.ownStart ? fmt(x.ownStart) : '', 'dd/mm/yyyy'), 'start')}${fld('End Date', inp('end', x.ownEnd ? fmt(x.ownEnd) : '', 'dd/mm/yyyy'), 'end')}</div>` + notice('info', 'info', 'Leave both empty to use the dates of the batch.'),
+      onSubmit: () => {
+        const a = dv('start'); const z = dv('end');
+        if (!a && !z) { x.ownStart = null; x.ownEnd = null; return { done: 'This rating uses the batch dates.' }; }
+        const s = parseDate(a); const e = parseDate(z); const errors = {};
+        if (!s) errors.start = 'Enter the start date as dd/mm/yyyy.'; if (!e) errors.end = 'Enter the end date as dd/mm/yyyy.';
+        if (s && e && s > e) errors.end = 'The end date is before the start date.'; else if (e && e > TODAY) errors.end = 'The course has not ended yet.';
+        if (Object.keys(errors).length) return { errors };
+        x.ownStart = s; x.ownEnd = e; return { done: 'Dates saved for this rating.' };
+      } });
+  };
   D1ACT.tconfirm = () => {
     const b = trainPicked('trainHistory'); const go = b.rows.filter((x) => x.attended); const out = b.rows.length - go.length;
     d1Form({ title: `Confirm ${b.course.name}`, size: 'md', submit: 'Update Training History', icon: 'check',
-      body: notice('info', 'info', `<b>${go.length}</b> ${go.length === 1 ? 'rating gets' : 'ratings get'} a Training record for <b>${esc(b.course.name)}</b>${out ? `; ${out} left out because ${out === 1 ? 'they were' : 'they were'} marked as not attending` : ''}. The batch is then closed.`)
-        + fld('Institution', sel('inst', INSTITUTIONS, b.course.place), 'inst') + `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${fld('Start Date', inp('start', '', 'dd/mm/yyyy'), 'start')}${fld('End Date', inp('end', '', 'dd/mm/yyyy'), 'end')}</div>` + fld('Result', sel('result', ['Pass', 'Credit', 'Distinction', 'Attended'], 'Pass'), 'result'),
+      body: notice('info', 'info', `<b>${go.length}</b> ${go.length === 1 ? 'rating gets' : 'ratings get'} a Training record for <b>${esc(b.course.name)}</b>${out ? `; ${out} left out as not attending, with no result` : ''}. The batch is then closed.`)
+        + fld('Institution', sel('inst', INSTITUTIONS, b.course.place), 'inst') + `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${fld('Batch Start Date', inp('start', '', 'dd/mm/yyyy'), 'start')}${fld('Batch End Date', inp('end', '', 'dd/mm/yyyy'), 'end')}</div>` + (go.some((x) => x.ownStart) ? notice('info', 'info', `${go.filter((x) => x.ownStart).length} ${go.filter((x) => x.ownStart).length === 1 ? 'rating keeps' : 'ratings keep'} their own dates.`) : '') + fld('Result', sel('result', ['Distinction', 'Credit', 'Pass', 'Fail'], 'Pass'), 'result', { hint: 'A rating not ticked as attending gets no result.' }),
       onSubmit: () => {
         const s = parseDate(dv('start')); const e = parseDate(dv('end')); const errors = {};
         if (!dv('inst')) errors.inst = 'Choose the institution.';
         if (!s) errors.start = 'Enter the start date as dd/mm/yyyy.'; if (!e) errors.end = 'Enter the end date as dd/mm/yyyy.';
         if (s && e && s > e) errors.end = 'The end date is before the start date.'; else if (e && e > TODAY) errors.end = 'The course has not ended yet. Confirm it after the end date.';
         if (Object.keys(errors).length) return { errors };
-        go.forEach((x) => applyTraining(bySn(x.sn), b, x, { place: dv('inst'), from: s, to: e, result: dv('result') }));
+        go.forEach((x) => applyTraining(bySn(x.sn), b, x, { place: dv('inst'), from: x.ownStart || s, to: x.ownEnd || e, result: dv('result') }));
         b.status = 'closed'; b.closed = TODAY; S.pick.trainReports = b.no;
         return { done: `${go.length} training ${go.length === 1 ? 'record' : 'records'} added. ${b.no} is closed.`, go: `training/reports/${b.no}` };
       } });
@@ -3707,45 +3772,47 @@
   // ---- 2. Advancement Review ----
   const advBatch = () => pickedBatch('advReview', openBatches('DOA'));
   function viewAdvReview() {
-    const list = openBatches('DOA'); const b = advBatch(); const rows = b ? rowsOf(b) : []; const set = rows.filter((x) => x.to).length;
+    const list = openBatches('DOA'); const b = advBatch(); const rows = b ? rowsOf(b) : []; const set = rows.filter((x) => x.to).length; const live = rows.filter((x) => !x.rejected).length;
     const acts = b ? `<button type="button" data-d1="doa-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button><button type="button" data-d1="doa-print" class="${btn.blue}">${ic('printer')}Print Form</button><button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button><button type="button" data-d1="doa-clear" class="${btn.outline} text-destructive">${ic('trash-2')}Clear Batch</button>` : '';
     let body;
     if (!list.length) body = `<div class="${CARD}">${emptyBox('trending-up', 'No Open Advancement Batch', 'Make a batch from the ratings who are due, then review it here.', `<a href="#advancement/due" class="${btn.primary}">${ic('plus')}Rates due for Advancement</a>`)}</div>`;
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick an open batch to review its ratings.')}</div>`;
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Current Rate', esc(b.rate === 'All' ? 'All rates' : b.rate)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Status', batchPill(b)]])
-      + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(rows.length ? set / rows.length : 0)}" data-level="${rows.length && set === rows.length ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${rows.length} have a new rate</span></div>`
+      + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(live ? set / live : 0)}" data-level="${live && set === live ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${live} have a new rate</span></div>`
       + d1Table('advReview', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(`${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`)], ['Months in Rate', (x) => ratePill(rateMo(x.r))], ['New Rate', (x) => (x.to ? `<b class="font-medium">${esc(short(x.to))}</b>` : `<span class="${pill.warning}">Not set</span>`)]],
-        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['In Rate Since', fmt(x.r.rateSince)], ['Age', years(x.r.dob)], ['LOS (yrs)', years(x.r.enlisted)], ['Current Rate', esc(x.r.rate)], ['Months in Rate', ratePill(rateMo(x.r))], ['New Rate', x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Reason', esc(x.reason || '-')], ['Remark', esc(x.remark || '-')]],
-        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('doa-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + sbtn('doa-edit', x.sn, 'Set New Rate', 'pencil', 'primary'),
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`, r: ratePill(rateMo(x.r)), body: x.to ? `New rate <b class="text-foreground">${esc(x.to)}</b>` : `<span class="${pill.warning}">No new rate</span>` }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameX(x) + subl(`${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`)], ['Months in Rate', (x) => ratePill(rateMo(x.r))], ['New Rate', (x) => (x.rejected ? rejCell(x) : x.to ? `<b class="font-medium">${esc(short(x.to))}</b>` : `<span class="${pill.warning}">Not set</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['In Rate Since', fmt(x.r.rateSince)], ['Age', years(x.r.dob)], ['LOS (yrs)', years(x.r.enlisted)], ['Current Rate', esc(x.r.rate)], ['Months in Rate', ratePill(rateMo(x.r))], ['New Rate', x.rejected ? rejCell(x) : x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Remarks', esc(x.remark || '-')], ['Not Recommended', x.rejected ? esc(x.rejected) : '-']],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('doa-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + (x.rejected ? '' : sbtn('doa-reject', x.sn, 'Not Recommended', 'triangle-alert', 'outline', 'text-destructive') + sbtn('doa-edit', x.sn, 'Set New Rate', 'pencil', 'primary')),
+        card: (x) => ({ t: x.rejected ? `<s class="text-muted-foreground">${esc(fullName(x.r))}</s>` : esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`, r: x.rejected ? `<span class="${pill.error}">Not recommended</span>` : ratePill(rateMo(x.r)), body: x.rejected ? esc(x.rejected) : x.to ? `New rate <b class="text-foreground">${esc(x.to)}</b>` : `<span class="${pill.warning}">No new rate</span>` }),
         empty: ['users', 'This Batch Is Empty', 'Add personnel by Official Number, or make a new proposal.', `<button type="button" data-d1="doa-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button>`],
       });
-    return pageHeader('Advancement Review', 'Choose the new rate for each rating', acts) + (list.length ? batchPicker('advReview', list, b, { labelOf: batchLabel }) : '') + body;
+    return pageHeader('Advancement Review', 'Set each rating\'s next rate, or mark it not recommended', acts) + (list.length ? batchPicker('advReview', list, b, { labelOf: batchLabel }) : '') + body;
   }
   D1ACT['doa-edit'] = (el) => {
-    const b = advBatch(); const x = b.rows.find((y) => y.sn === el.dataset.id); const r = bySn(x.sn); const up = nextRates(r.rate);
-    d1Form({ title: 'New Rate', size: 'md',
+    const b = advBatch(); const x = b.rows.find((y) => y.sn === el.dataset.id); const r = bySn(x.sn); const next = nextRates(r.rate)[0];
+    d1Form({ title: 'New Rate', size: 'md', submit: 'Set New Rate', icon: 'check',
       body: `<div class="flex items-center gap-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${r.sn} · ${esc(r.rate)} since ${fmt(r.rateSince)}</span></div></div>`
-        + fld('New Rate', sel('rate', up, x.to || up[0] || '', '-- Select Rate --'), 'rate') + fld('Reason', sel('reason', ['Outstanding', 'Special Requests', 'Others'], x.reason, '-- Select Reason --'), 'reason', { opt: true }) + fld('Remark', inp('remark', x.remark, ''), 'remark', { opt: true }),
-      onSubmit: () => { const v = dv('rate'); if (!v) return { errors: { rate: 'Choose the new rate.' } }; if (!up.includes(v)) return { errors: { rate: `The new rate must be above ${short(r.rate)}.` } }; x.to = v; x.reason = dv('reason'); x.remark = dv('remark'); return { done: 'New rate saved.' }; } });
+        + `<div class="rounded-card border border-border bg-subtle/60 px-4 py-3"><span class="${LABEL}">New Rate</span><b class="text-sm">${esc(next)}</b><span class="mt-1 block text-xs text-muted-foreground">A rating advances one rate at a time. It takes effect on the board date entered in Board Returns Update.</span></div>`
+        + fld('Remarks', inp('remark', x.remark, ''), 'remark', { opt: true }),
+      onSubmit: () => { x.to = next; x.remark = dv('remark'); return { done: `New rate ${short(next)} set.` }; } });
   };
+  D1ACT['doa-reject'] = (el) => rejectDialog(advBatch(), el.dataset.id);
   D1ACT['doa-remove'] = (el) => { const b = advBatch(); const r = bySn(el.dataset.id); confirmBox({ title: 'Remove from Batch', text: `Remove <b>${esc(fullName(r))}</b> from <b>${esc(b.no)}</b>? They stay on their rate and can be proposed again later.`, label: 'Remove Rating', icon: 'trash-2', tone: 'danger', run: () => { b.rows = b.rows.filter((x) => x.sn !== r.sn); return { done: 'Removed from the batch.' }; } }); };
   D1ACT['doa-clear'] = () => { const b = advBatch(); confirmBox({ title: 'Clear Batch', text: `Remove all <b>${b.rows.length}</b> ratings from <b>${esc(b.no)}</b>? The batch stays open and empty, and every new rate is lost.`, label: 'Clear Batch', icon: 'trash-2', tone: 'danger', run: () => { b.rows = []; return { done: 'Batch cleared.' }; } }); };
   D1ACT['doa-add'] = () => addPersonnel('DOA', advBatch(), false);
-  D1ACT['doa-print'] = () => { const b = advBatch(); d1Pdf({ title: 'Advancement Form', file: 'Advancement Form.pdf', meta: [['Batch Number', b.no], ['Current Rate', b.rate === 'All' ? 'All' : b.rate], ['Initiated By', b.by], ['Date', fmt(b.init)], ['Ratings', String(b.rows.length)]],
-    cols: ['Official No', 'Name', 'Current Rate', 'In Rate (months)', 'New Rate', 'Reason'], rows: rowsOf(b).map((x) => [x.sn, upperName(x.r), short(x.r.rate), String(rateMo(x.r)), x.to ? short(x.to) : '-', x.reason || '-']), sign: ['Personnel Officer', 'Chief of Naval Personnel'] }); };
+  D1ACT['doa-print'] = () => { const b = advBatch(); d1Pdf({ title: 'Advancement Form', file: 'Advancement Form.pdf', meta: [['Batch Number', b.no], ['Current Rate', b.rate === 'All' ? 'All' : b.rate], ['Initiated By', b.by], ['Date', fmt(b.init)], ['Ratings', String(liveN(b))]],
+    cols: ['Official No', 'Name', 'Current Rate', 'In Rate (months)', 'New Rate', 'Remarks'], rows: rowsOf(b).map((x) => Object.assign([x.sn, upperName(x.r), short(x.r.rate), String(rateMo(x.r)), x.rejected ? 'NOT RECOMMENDED' : x.to ? short(x.to) : '-', x.rejected || x.remark || '-'], { struck: !!x.rejected })), sign: ['Personnel Officer', 'Chief of Naval Personnel'] }); };
 
   // ---- 5. Board Returns Update: the date the board approved each advancement ----
-  const boardList = () => signalBatches('DOA').filter((b) => b.rows.length && (reportedN(b) < b.rows.length || b.closed >= addDays(TODAY, -30)));
+  const boardList = () => signalBatches('DOA').filter((b) => liveN(b) && (reportedN(b) < liveN(b) || b.closed >= addDays(TODAY, -30)));
   const boardBatch = () => pickedBatch('advBoard', boardList());
   function boardCheck(b, r, text) { const dt = parseDate(text); if (!dt) return { err: 'Enter the date as dd/mm/yyyy.' }; if (dt > TODAY) return { err: 'The board date cannot be in the future.' }; if (dt < r.rateSince) return { err: `The date cannot be before ${fullName(r)} joined the current rate (${fmt(r.rateSince)}).` }; return { dt }; }
   function viewAdvBoard() {
-    const list = boardList(); const b = boardBatch(); const rows = b ? rowsOf(b) : []; const pending = rows.filter((x) => !x.date).length;
+    const list = boardList(); const b = boardBatch(); const rows = b ? liveRows(b) : []; const pending = rows.filter((x) => !x.date).length;
     let body;
     if (!list.length) body = `<div class="${CARD}">${emptyBox('calendar', 'No Batch Is Waiting for Board Returns', 'A batch appears here once it is closed with its authority.', `<a href="#advancement/close" class="${btn.primary}">${ic('lock')}Close</a>`)}</div>`;
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick a closed batch to enter the board dates.')}</div>`;
-    else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Dated', `<b>${reportedN(b)}</b> of ${b.rows.length}`]])
+    else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Dated', `<b>${reportedN(b)}</b> of ${liveN(b)}`]])
       + d1Table('advBoard', rows, {
         cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(short(x.from)))], ['New Rate', (x) => `<b class="font-medium">${esc(short(x.to))}</b>`], ['Board Approval', (x) => (x.date ? `${fmt(x.date)}` : `<span class="${pill.warning}">Pending</span>`)]],
         title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Department', esc(x.r.spec)], ['Age', years(x.r.dob)], ['LOS (yrs)', years(x.r.enlisted)], ['Current Rate', esc(x.from)], ['Months in Rate', x.date ? '-' : ratePill(rateMo(x.r))], ['New Rate', esc(x.to)], ['Board Approval Date', x.date ? `${fmt(x.date)} <span class="${pill.success}">Advanced</span>` : `<span class="${pill.warning}">Pending</span>`]],
@@ -3767,7 +3834,7 @@
     d1Form({ title: 'Set Date for Batch', size: 'md', submit: 'Save Date', icon: 'calendar',
       body: fld('Board Approval Date', inp('date', '', 'dd/mm/yyyy'), 'date') + notice('warning', 'triangle-alert', `Every rating in ${esc(b.no)} with no date yet gets this date and moves to its new rate. Dates already entered stay as they are.`),
       onSubmit: () => {
-        const targets = rowsOf(b).filter((x) => !x.date); const dt = parseDate(dv('date'));
+        const targets = liveRows(b).filter((x) => !x.date); const dt = parseDate(dv('date'));
         if (!dt) return { errors: { date: 'Enter the date as dd/mm/yyyy.' } }; if (dt > TODAY) return { errors: { date: 'The board date cannot be in the future.' } };
         const early = targets.find((x) => dt < x.r.rateSince); if (early) return { errors: { date: `${fullName(early.r)} joined the current rate on ${fmt(early.r.rateSince)}. Enter the dates one by one for ratings like this.` } };
         targets.forEach((x) => applyBoard(x.r, x, dt)); return { done: `Date ${fmt(dt)} saved for ${targets.length} ${targets.length === 1 ? 'rating' : 'ratings'}.` };
