@@ -342,12 +342,15 @@ module.exports = {
   `/api/tables/<slug>` (list, `meta`, one row, add, edit, delete), each guarded by that screen. The screen
   is `js/sections/static-table.js`, which draws every table from its `meta` (a list of 25 a page from the
   server with search, Add and Edit in a dialog, Delete after a confirmation). **A row nothing uses is deleted;
-  a row in use is refused with 409 `IN_USE` and says where it is used** (the config's `usedBy`: table, column,
-  noun); it is made Inactive instead. To add a table: its `ref_` migration, an entry in `TABLES` in
-  `tables.config.js` and in `js/core/nav.js`, and its seed. To add a column: the migration and an entry in
-  its `columns` (`text`, `select`, `number`, `ref`, `multi`, with `required`, `max`, `unique`, `list`). A
-  package that adds a table pointing at a static table (WP4's incidents at Offences and Sanctions, WP6's
-  training history at Training) adds its `usedBy` entry. Codes only where the demo shows a Code column.
+  a row in use is refused with 409 `IN_USE` and says where it is used**; it is made Inactive instead. "In
+  use" is read from the database's declared foreign keys (`information_schema`, cascading links excepted):
+  **declare a foreign key for every link you add** and the check covers it (WP4's incidents at Offences and
+  Sanctions, WP6's training history at Training). To add a table: its `ref_` migration, an entry in `TABLES`
+  in `tables.config.js` and in `js/core/nav.js`, and its seed. To add a column: the migration and an entry in
+  its `columns` (`text`, `select`, `number`, `bool`, `ref`, `multi`, with `required`, `max`, `upper`,
+  `unique`, `list`). Every table carries the codes, flags and links the other modules need and every old
+  column that held real data (PLAN 9c); codes are trimmed, upper case and unique. `/api/lookups` carries
+  them (codes, flags, links) for the forms and later modules.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
