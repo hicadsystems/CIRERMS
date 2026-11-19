@@ -280,26 +280,53 @@ Decided by the administrator before D2 started, at the owner's request (19/11/20
 
 ## 9c. Decisions for Static Tables (WP2)
 
-Decided by the administrator before WP2 started, at the owner's request (19/11/2026).
+Decided by the administrator before WP2 started, at the owner's request (19/11/2026), and widened the same day
+at the owner's instruction: the static tables drive the other modules, so each carries everything those modules
+need.
 
-1. **One engine for the 16 tables**, as the demo shows them (columns, Active state, add and edit in a dialog). Five
-   have no table yet and WP2 creates them with the demo's columns: Appraisal Ratings, Disciplinary Offence,
-   Disciplinary Sanction, Institution, Training.
+1. **One engine for the 16 tables**, as the demo shows them (Active state, add and edit in a dialog). Five have no
+   table yet and WP2 creates them: Appraisal Ratings, Disciplinary Offence, Disciplinary Sanction, Institution,
+   Training.
 2. **Delete only what nothing uses.** A row in use cannot be deleted (the message says where it is used); it can be
    made inactive, which takes it out of the dropdowns while records that hold it still show it. A row not in use is
-   deleted after a confirmation.
+   deleted after a confirmation. "In use" is read from the database's declared foreign keys, so a later module's
+   tables are covered as soon as they declare theirs.
 3. **A privilege per table**: screen `tables.<slug>` with view, add, edit and delete; Manage Roles groups them under
    Static Tables. The dropdown lists (`/api/lookups`) stay readable by anyone who may open a ratings screen, My
-   Details included.
-4. **A Training course says who may attend** (9a decision 6): Course, Institution (from the Institution table),
-   Weeks, Branch (or Any), Specialisation (or Any) and Rates (none means every rate). The list shows Course,
-   Institution and Weeks; the rest is in the row's dialog. The demo lacks the three fields; this decision stands in
-   for its design.
-5. **Codes** only where the demo shows a Code column (Appraisal Ratings, Offences). The old codes that carry meaning
-   (Exit Type A/M/C, Branch, State and others in `docs/legacy/static-tables.md` 17) are settled before the import of
-   the old records.
-6. **Relationship** is the next-of-kin type table (`ref_next_of_kin_type`). Rates and the other dropdown tables that
-   are not among the 16 stay seeded by SQL, as in the old system.
+   Details included, and carry each table's codes, flags and links for the forms and modules that use them.
+4. **Every table carries what the other modules need, and every old column that held real data**, so the import of
+   the old records loses nothing; the old dead columns (never saved) are dropped. Codes are required where marked,
+   unique, trimmed and upper case. The table below is the specification; the demo shows fewer fields and this
+   decision stands in for its design. Lists show the demo's columns plus the code (four at most); everything else
+   is in the row's dialog.
+5. **Relationship** is the next-of-kin type table (`ref_next_of_kin_type`).
+
+| # | Table (new or existing) | Fields | Why |
+|---|---|---|---|
+| 1 | Appraisal Ratings (new) | Code (5, required), Grade (50, required), lowest and highest score (0 to 100, not overlapping another grade) | Naval Character Assessment grades |
+| 2 | Branch (`ref_branch`) | Name, Code (2, required) | the code is in the drafting and advancement batch numbers (`DOD-SM...`) |
+| 3 | Exit Type (`ref_exit_type`) | Name, Code (2, required), **Rating stays current** (yes for the old A, M and C) | decides Current or Former; Discharge offers only the exit types that do not keep a rating current |
+| 4 | Entry Mode (`ref_entry_mode`) | Name, Code (5, required) | old code kept for the import |
+| 5 | Disciplinary Offence (new) | Name, Code (required), Category (Conduct, Discipline, Duty, Property) | Disciplinary cases (WP4) |
+| 6 | Disciplinary Sanction (new) | Name, Severity (Minor, Major) | Disciplinary cases (WP4) |
+| 7 | Institution (new) | Code (30, as UNIBEN), Name (100, required), Location, Type (University, Polytechnic, College, Secondary School, Training Centre, Training Base, Other) | training courses, and the record's Education and Training entries |
+| 8 | Local Government (`ref_local_government`) | Name, State (required), Code (10) | the old code kept for the import |
+| 9 | Languages (`ref_language`) | Name | |
+| 10 | Relationship (`ref_next_of_kin_type`) | Name, Code (5) | old code kept for the import |
+| 11 | Staff Branch (`ref_staff_branch`) | Name, Code (20), Command (from Commands), Department (20), CDR (20) | the rating form's Staff Branch list follows the chosen Command, as in the old form |
+| 12 | Specialisation Area (`ref_specialisation`) | Name, Code (15, required), Second Description (20) | the code is in the batch numbers; the specialisation is the "department" whose approval Drafting and Advancement ask for |
+| 13 | Ships (`ref_ship`) | Name, Type (Ship, Base, Training: the old Sea, Land, Training), Command (from Commands), Description (150) | where a rating serves; sea or shore time may enter the due rules; printouts show the command |
+| 14 | States (`ref_state`) | Name, Code (5, required), Geo-Political Zone | the rating form fills the zone from the state |
+| 15 | Title (`ref_title`) | Name, Description (50) | old description kept for the import |
+| 16 | Training (new) | Code (10), Course (60, required), Qualification awarded (50), Institution (from Institutions), Weeks (1 to 104), Branch (or Any), Specialisation (or Any), Rates (none means every rate) | who may attend a course (9a decision 6); the training batches and the record's Training entries point to it |
+
+Also, outside the 16 screens (seeded by SQL, as in the old system):
+- **Rates** (`ref_rate`) gain a Code (5, required, as PO); their order (`sort_order`, lowest rate first) decides the
+  next rate in Advancement and the rate groups in the approval totals; the code goes in the advancement batch
+  numbers.
+- **The rating's Education and Training entries point to the tables**: `institution_id` on both and
+  `training_course_id` on Training (nullable; an old entry keeps its text until the import maps it), and their
+  dialogs pick the institution and the course from the tables.
 
 ## 10. Notes for later phases
 
