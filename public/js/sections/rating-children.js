@@ -27,6 +27,7 @@ import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from 
 import { optionsWithHeld } from '../core/lookups.js';
 import { readForm, dateField } from './rating-fields.js';
 import { scheduledMoves } from './drafting-record.js';
+import { scheduledAdvancements } from './advancement-record.js';
 
 const YES_NO = [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }];
 const opts = (list = []) => list.map((x) => ({ value: x.id, label: x.name }));
@@ -195,7 +196,10 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   }
 
   if (!rows.length) {
-    return h('div', { className: CARD }, emptyState({ icon: tab.icon, title: `No ${tab.label} Recorded`, action: addBtn() }));
+    return h('div', { className: cx(CARD, tab.key === 'advancement' && 'overflow-hidden') }, [
+      tab.key === 'advancement' ? scheduledAdvancements(serviceNumber) : null, // a rate change still to come (WP8)
+      emptyState({ icon: tab.icon, title: `No ${tab.label} Recorded`, action: addBtn() }),
+    ]);
   }
 
   const band = (!canAdd && !tab.pdf) ? null : h('div', { className: 'flex items-center justify-end gap-2 border-b border-border px-4 py-2.5' }, [printBtn(), addBtn()]);
@@ -245,6 +249,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   const value = (v) => (v === null || v === undefined || v === '' ? '-' : v);
   return h('div', { className: cx(CARD, 'overflow-hidden') }, [
     band,
+    tab.key === 'advancement' ? scheduledAdvancements(serviceNumber) : null, // a rate change still to come (WP8)
     h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-sm' }, [
       h('thead', { className: 'bg-subtle' }, h('tr', {}, [...cols.map(([label]) => h('th', { className: TH, scope: 'col', text: label })), !canEdit && !canDelete ? null : h('th', { className: TH, scope: 'col' }, h('span', { className: 'sr-only', text: 'Actions' }))])),
       h('tbody', {}, rows.map((r) => h('tr', { className: 'border-t border-border' }, [

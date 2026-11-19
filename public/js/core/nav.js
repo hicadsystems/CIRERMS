@@ -98,7 +98,23 @@ export const AREAS = [
     key: 'records',
     label: 'Records',
     modules: [
-      { key: 'advancement', label: 'Advancement Processing', short: 'Advance', icon: 'trending-up', soon: true },
+      {
+        key: 'advancement',
+        label: 'Advancement Processing',
+        short: 'Advance',
+        icon: 'trending-up',
+        href: 'advancement/due',
+        // the advancement cycle (WP8)
+        tabs: [
+          { route: 'advancement/due', label: 'Rates due for Advancement', icon: 'users', screen: 'advancement.due' },
+          { route: 'advancement/review', label: 'Advancement Review', icon: 'list', screen: 'advancement.review' },
+          { route: 'advancement/approval', label: 'Approval', icon: 'shield-check', screen: 'advancement.approval' },
+          { route: 'advancement/close', label: 'Close', icon: 'lock', screen: 'advancement.close' },
+          { route: 'advancement/board', label: 'Board Returns Update', icon: 'calendar', screen: 'advancement.board' },
+          { route: 'advancement/promoted', label: 'Report on Promoted Rates', icon: 'file-text', screen: 'advancement.promoted' },
+          { route: 'advancement/upload', label: 'Upload Advanced Rates', icon: 'file-up', screen: 'advancement.upload' },
+        ],
+      },
       { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
       {
         key: 'disciplinary',
@@ -202,6 +218,15 @@ export const PAGES = [
   { pattern: 'drafting/approval', module: 'drafting', tab: 'drafting/approval', title: 'Draft Approval', subtitle: 'Approve each department\u2019s draft before its batch is closed', short: 'Draft Approval', screen: 'drafting.approval', view: { file: 'drafting.js', mount: 'mountApproval' } },
   { pattern: 'drafting/close', module: 'drafting', tab: 'drafting/close', title: 'Close Draft', subtitle: 'Close a reviewed and approved draft with its authority', short: 'Close Draft', screen: 'drafting.close', view: { file: 'drafting.js', mount: 'mountClose' } },
   { pattern: 'drafting/wef', module: 'drafting', tab: 'drafting/wef', title: 'Update WEF', subtitle: 'Date each posting: the rating moves to the new ship from that date', short: 'Update WEF', screen: 'drafting.wef', view: { file: 'drafting.js', mount: 'mountWef' } },
+  // Advancement Processing (WP8): the advancement cycle, each page needs view
+  { pattern: 'advancement/due', module: 'advancement', tab: 'advancement/due', title: 'Rates due for Advancement', subtitle: 'Ratings due for the next rate; make a batch of them for review', short: 'Rates Due', screen: 'advancement.due', view: { file: 'advancement.js', mount: 'mountDue' } },
+  { pattern: 'advancement/review', module: 'advancement', tab: 'advancement/review', title: 'Advancement Review', subtitle: 'Set each rating\u2019s next rate, or mark it not recommended', short: 'Review', screen: 'advancement.review', view: { file: 'advancement.js', mount: 'mountReview' } },
+  { pattern: 'advancement/approval', module: 'advancement', tab: 'advancement/approval', title: 'Approval', subtitle: 'Approve each department\u2019s advancement list before its batch is closed', short: 'Approval', screen: 'advancement.approval', view: { file: 'advancement.js', mount: 'mountApproval' } },
+  { pattern: 'advancement/close', module: 'advancement', tab: 'advancement/close', title: 'Close', subtitle: 'Close a reviewed and approved advancement batch with its authority', short: 'Close', screen: 'advancement.close', view: { file: 'advancement.js', mount: 'mountClose' } },
+  { pattern: 'advancement/board', module: 'advancement', tab: 'advancement/board', title: 'Board Returns Update', subtitle: 'Enter the date the board approved each advancement', short: 'Board Returns', screen: 'advancement.board', view: { file: 'advancement.js', mount: 'mountBoard' } },
+  { pattern: 'advancement/promoted', module: 'advancement', tab: 'advancement/promoted', title: 'Report on Promoted Rates', subtitle: 'Every advancement batch, its authority and how many were promoted', short: 'Promoted Rates', screen: 'advancement.promoted', view: { file: 'advancement.js', mount: 'mountPromoted' } },
+  { pattern: 'advancement/promoted/:batchId', module: 'advancement', tab: 'advancement/promoted', title: 'Report on Promoted Rates', subtitle: 'A batch and its ratings', short: 'Batch', back: 'advancement/promoted', screen: 'advancement.promoted', view: { file: 'advancement.js', mount: 'mountPromotedBatch' } },
+  { pattern: 'advancement/upload', module: 'advancement', tab: 'advancement/upload', title: 'Upload Advanced Rates', subtitle: 'Load past advancements for ratings from a workbook', short: 'Upload', screen: 'advancement.upload', view: { file: 'advancement.js', mount: 'mountUpload' } },
   // Disciplinary Action (WP4): Initiate Incident needs add; the others need view
   { pattern: 'disciplinary/initiate', module: 'disciplinary', tab: 'disciplinary/initiate', title: 'Initiate Incident', subtitle: 'Open a disciplinary case against a current rating', short: 'Initiate Incident', screen: 'disciplinary.initiate', action: 'add', view: { file: 'disciplinary.js', mount: 'mountInitiate' } },
   { pattern: 'disciplinary/pending', module: 'disciplinary', tab: 'disciplinary/pending', title: 'Pending Cases', subtitle: 'Incidents waiting for a decision', short: 'Pending Cases', screen: 'disciplinary.pending', view: { file: 'disciplinary.js', mount: 'mountPending' } },
