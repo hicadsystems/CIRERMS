@@ -166,7 +166,8 @@ async function search(page, text) {
 async function choose(page, name, label) {
   const dlg = dialogOf(page);
   await dlg.locator(`.custom-dropdown-wrapper[name="${name}"] input:not(.custom-dropdown-hidden)`).first().click();
-  const options = page.locator('.custom-dropdown-list:visible .custom-dropdown-item:not(.cdd-placeholder)');
+  // a named choice may be the empty one ("Any Branch"); the first choice is a real row
+  const options = page.locator(label ? '.custom-dropdown-list:visible .custom-dropdown-item' : '.custom-dropdown-list:visible .custom-dropdown-item:not(.cdd-placeholder)');
   await options.first().waitFor();
   if (label) await options.filter({ hasText: label }).first().click();
   else await options.first().click();
@@ -542,7 +543,7 @@ async function withoutGrants(browser, theme, viewport) {
   check(lookups.status === 200 && lookups.body.data.branches.length > 0, 'the dropdown lists stay readable (My Details)');
   // Ctrl K does not find a table
   await page.keyboard.press('Control+k');
-  await page.waitForSelector('[aria-label="Search"]');
+  await page.waitForSelector('[role="dialog"][aria-label="Search"]');
   await page.keyboard.type('ships');
   await page.waitForTimeout(400);
   check(!(await page.locator('#palette-results').innerText()).includes('Tables'), 'Ctrl K does not offer the tables');
@@ -581,7 +582,7 @@ async function viewerRun(browser, theme, viewport) {
   check((await api(page, 'GET', '/api/tables/ships')).status === 200, 'but lists (200)');
   // Ctrl K finds the tables
   await page.keyboard.press('Control+k');
-  await page.waitForSelector('[aria-label="Search"]');
+  await page.waitForSelector('[role="dialog"][aria-label="Search"]');
   await page.keyboard.type('specialisation');
   await page.waitForTimeout(400);
   check((await page.locator('#palette-results').innerText()).includes('Specialisation Area'), 'Ctrl K finds a table by name');
@@ -596,12 +597,12 @@ async function keeperRun(browser) {
   const { page } = ctx;
   await signIn(page, KEEPER);
   await goTable(page, 'branch');
-  check(await page.locator('#module-tabs a').count() === 16, 'all 16 tabs show');
+  check(await page.locator('#module-tabs a').locator('visible=true').count() === 16, 'all 16 tabs show');
   check(await page.getByRole('button', { name: 'Add Branch' }).first().isVisible(), 'Add shows');
   check(await page.getByRole('button', { name: /^Edit / }).count() > 0, 'Edit shows');
   const rail = await page.locator('#rail nav a').allInnerTexts();
   check(!rail.some((r) => /Soon/.test(r)), 'no Soon modules in the rail for a role without full access');
-  const made = await api(page, 'POST', '/api/tables/branch', { name: 'WT Keeper Branch' });
+  const made = await api(page, 'POST', '/api/tables/branch', { name: 'WT Keeper Branch', code: 'wk' });
   check(made.status === 201, 'add works');
   const gone = await api(page, 'DELETE', `/api/tables/branch/${made.body.data.id}`);
   check(gone.status === 200, 'delete works');
@@ -614,10 +615,10 @@ async function keeperRun(browser) {
   const part = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(part.page, PARTIAL);
   await goTable(part.page, 'branch');
-  check(await part.page.locator('#module-tabs a').count() === 0 || await part.page.locator('#module-tabs a').count() === 1, 'only the Branch tab is offered', `${await part.page.locator('#module-tabs a').count()}`);
+  check(await part.page.locator('#module-tabs a').locator('visible=true').count() <= 1, 'only the Branch tab is offered (no strip for a lone tab)');
   check(await part.page.getByRole('button', { name: 'Add Branch' }).first().isVisible(), 'Add shows');
   check(await part.page.getByRole('button', { name: /^Edit / }).count() === 0, 'Edit does not');
-  const a = await api(part.page, 'POST', '/api/tables/branch', { name: 'WT Partial Branch' });
+  const a = await api(part.page, 'POST', '/api/tables/branch', { name: 'WT Partial Branch', code: 'wp' });
   const u = await api(part.page, 'PUT', `/api/tables/branch/${a.body.data.id}`, { name: 'WT Partial Branch 2' });
   const d = await api(part.page, 'DELETE', `/api/tables/branch/${a.body.data.id}`);
   const other = await api(part.page, 'GET', '/api/tables/ships');
@@ -661,15 +662,14 @@ async function auditAndRatings(browser, db) {
   check(lookupsBefore.branches.length > 5 && lookupsBefore.ships.length > 5 && lookupsBefore.rates.length > 5 && lookupsBefore.localGovernments.length > 5, 'GET /api/lookups still lists branches, ships, rates and local governments');
   // make that branch Inactive: it leaves the list, B0539 still shows it and still can keep it
   const row = (await api(page, 'GET', `/api/tables/branch/${heldId}`)).body.data;
-  const off = await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, is_active: false });
+  const off = await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, code: row.code, is_active: false });
   check(off.status === 200, 'Branch made Inactive while a rating holds it');
   const lookupsAfter = (await api(page, 'GET', '/api/lookups')).body.data;
   check(!lookupsAfter.branches.some((b) => b.id === heldId) && lookupsAfter.inactive.branches.some((b) => b.id === heldId), 'the Inactive branch is out of the dropdown list');
   await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
   await page.waitForSelector('text=Edit Details');
   check(await page.getByText(row.name).first().isVisible(), 'the record still shows the Inactive branch');
-  const edit = page.locator('section:has-text("Official") button:has-text("Edit")').first();
-  await edit.click();
+  await page.getByRole('button', { name: /Edit Official/ }).first().click();
   const dlg = dialogOf(page);
   await dlg.waitFor();
   const value = await dlg.locator('input.custom-dropdown-hidden[name="branch_id"]').inputValue();
@@ -677,7 +677,7 @@ async function auditAndRatings(browser, db) {
   const options = await dlg.locator('[name="branch_id"]').first().evaluate((w) => (w.options ? Array.from(w.options).map((o) => o.text) : []));
   check(options.some((o) => o.includes('(Inactive)')) && options.length > 5, 'the dialog still offers the other branches', options.slice(0, 3).join('|'));
   await page.keyboard.press('Escape');
-  await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, is_active: true });
+  await api(page, 'PUT', `/api/tables/branch/${heldId}`, { name: row.name, code: row.code, is_active: true });
   // the new-rating dialog has its dropdowns
   await page.goto(`${BASE}/app.html#ratings/new`);
   await page.waitForSelector('#overlay-root [role="dialog"]');
