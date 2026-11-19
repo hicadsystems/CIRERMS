@@ -86,6 +86,13 @@ dates.
 - *Placeholders are real choices.* "All" is a separate, labelled option; the old pages let "--Select" pass as a value.
 - *Every add, edit and process step is a dialog* (a bottom sheet on a phone), with its errors under the field, a
   confirmation for anything that removes or closes, and a toast after. Lists are 25 a page with cards on a phone.
+- *Wide tables never scroll sideways* (the owner's rule, `CONVENTIONS.md` on `project-plan`). Every list shows only the
+  columns a person scans to find a row (about four); everything else is in the row's **record dialog** (a bottom
+  sheet on a phone), with the row's actions. Every row opens it on a click or Enter, has the pointer cursor and the
+  hover tint, and shows a **View Details** tooltip just below the pointer on desktop; on a phone the list is cards and
+  a tap opens the sheet. The old per-row Edit and Remove buttons are in the dialog now. The attendance checkboxes in
+  Update Training History stay in the table and do not open the dialog. Names in lists are plain text; the dialog has
+  Open Record. Approval and the batch lists open the department or batch facts first, with a button to the contents.
 - *Printouts* open as a **PDF preview** in a large dialog: a paper sheet with the crest, title, facts, the table,
   signature lines and page count, with Download PDF and Print. The server will make the real file; the preview shows
   the fields each printout carries (taken from the Crystal reports' datasets, whose layouts are binary). They are

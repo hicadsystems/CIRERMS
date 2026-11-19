@@ -1473,19 +1473,44 @@
   const tbtn = (act, id, label, iconName, tone = '') => `<button type="button" data-d1="${act}" data-id="${esc(id)}" class="${btn.ghost} ${tone}">${ic(iconName)}${esc(label)}</button>`;
   const sbtn = (act, id, label, iconName, tone = 'outline', extra = '') => `<button type="button" data-d1="${act}" data-id="${esc(id)}" class="${btn[tone]} ${extra}">${ic(iconName)}${esc(label)}</button>`;
 
-  // a table on desktop and cards on a phone, 25 a page; cols: [head, cell(row) -> html, class]
+  // a table on desktop and cards on a phone, 25 a page. A table shows only the columns a person scans to find a row (cols:
+  // [head, cell(row) -> html, class]); every row opens its full record in a dialog (all(row) -> [[label, html]], acts(row) -> buttons),
+  // with a "View Details" tooltip on desktop. A table never scrolls sideways.
+  const TBL = {};
+  const lbtn = (href, label, iconName, extra = '') => `<a href="#${href}" ${extra} class="${btn.outline}">${ic(iconName)}${esc(label)}</a>`;
+  const nameB = (r) => `<b class="font-medium">${esc(fullName(r))}</b>`;
+  const MUTED_HEAD = /^(#|Official No|Row)$/;
   function d1Table(key, rows, o) {
     const pg = paged(key, rows);
+    TBL[key] = { o, shown: pg.shown };
+    const at = (i) => `data-d1="row-open" data-rk="${esc(key)}" data-ri="${i}" tabindex="0"`;
     const head = o.cols.map(([h, , c]) => `<th class="${TH3} ${c || ''}">${esc(h)}</th>`).join('');
-    const body = pg.shown.map((r) => `<tr ${o.row ? o.row(r) : ''} class="border-t border-border/70 transition-colors ${o.row ? 'cursor-pointer hover:bg-subtle/70' : 'hover:bg-subtle/70'}">${o.cols.map(([, f, c], i) => `<td class="whitespace-nowrap px-3 py-2.5 ${i === 0 ? 'text-muted-foreground' : ''} ${c || ''}">${f(r)}</td>`).join('')}</tr>`).join('');
+    const body = pg.shown.map((r, i) => `<tr ${at(i)} class="cursor-pointer border-t border-border/70 transition-colors hover:bg-subtle/70 focus-visible:bg-subtle/70 focus-visible:outline-none">${o.cols.map(([h, f, c]) => `<td class="px-3 py-2.5 ${c && c.includes('whitespace-normal') ? '' : 'whitespace-nowrap'} ${MUTED_HEAD.test(h) ? 'text-muted-foreground' : ''} ${c || ''}">${f(r)}</td>`).join('')}</tr>`).join('');
     const empt = o.empty ? emptyBox(o.empty[0], o.empty[1], o.empty[2], o.empty[3]) : emptyBox('search', 'Nothing Found');
-    const table = `<div class="${CARD} overflow-hidden phone:hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="${o.cols.length}">${empt}</td></tr>`}</tbody></table></div>
+    const table = `<div class="${CARD} overflow-hidden phone:hidden"><table class="w-full text-sm"><thead class="text-left"><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="${o.cols.length}">${empt}</td></tr>`}</tbody></table>
       ${rows.length ? pager(pg.page, pg.pages, pg.from, pg.to, rows.length, key) : ''}</div>`;
-    const cards = `<div class="space-y-2 desk:hidden">${pg.shown.map((r) => { const c = o.card(r); return `<div ${o.row ? o.row(r) : ''} class="${CARD} p-3 ${o.row ? 'cursor-pointer active:bg-subtle' : ''}"><div class="flex items-start gap-3"><span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${c.t}</b><span class="block text-xs text-muted-foreground">${c.s}</span></span>${c.r || ''}</div>
-        ${c.body ? `<div class="mt-2 text-xs text-muted-foreground">${c.body}</div>` : ''}${c.acts ? `<div class="mt-2 flex flex-wrap gap-2">${c.acts}</div>` : ''}</div>`; }).join('') || `<div class="${CARD}">${empt}</div>`}
+    const cards = `<div class="space-y-2 desk:hidden">${pg.shown.map((r, i) => { const c = o.card(r); return `<div ${at(i)} class="${CARD} cursor-pointer p-3 active:bg-subtle"><div class="flex items-start gap-3"><span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${c.t}</b><span class="block text-xs text-muted-foreground">${c.s}</span></span>${c.r || ''}</div>
+        ${c.body ? `<div class="mt-2 text-xs text-muted-foreground">${c.body}</div>` : ''}</div>`; }).join('') || `<div class="${CARD}">${empt}</div>`}
         ${rows.length ? `<div class="${CARD}">${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, key)}</div>` : ''}</div>`;
     return table + cards;
   }
+  D1ACT['row-open'] = (el, e) => {
+    const t = TBL[el.dataset.rk]; const r = t && t.shown[+el.dataset.ri]; if (!r) return;
+    tip.classList.add('hidden');
+    if (t.o.open) { t.o.open(r); return; }
+    openDialog({ title: t.o.title(r), size: t.o.size || 'md',
+      body: `<dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm phone:grid-cols-1">${t.o.all(r).map(([k, v]) => `<div class="min-w-0"><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(k)}</dt><dd class="mt-0.5 break-words">${v === '' || v == null ? '-' : v}</dd></div>`).join('')}</dl>`,
+      foot: `<button type="button" data-act="close" class="${btn.outline}">Close</button>${t.o.acts ? t.o.acts(r) : ''}` });
+  };
+  // the "View Details" tooltip: just below the pointer, on a list row, on desktop only
+  const tip = document.createElement('div');
+  tip.className = 'pointer-events-none fixed z-[45] hidden whitespace-nowrap rounded-ctl bg-foreground px-2 py-1 text-xs text-background shadow-pop';
+  tip.textContent = 'View Details'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip);
+  const tipAt = (e) => { tip.style.left = `${Math.min(e.clientX + 10, window.innerWidth - tip.offsetWidth - 8)}px`; tip.style.top = `${e.clientY + 18}px`; };
+  document.addEventListener('mouseover', (e) => { const r = e.target.closest && e.target.closest('tr[data-rk]'); if (!r || isPhone() || !$('#overlay').classList.contains('hidden')) { tip.classList.add('hidden'); return; } tip.classList.remove('hidden'); tipAt(e); });
+  document.addEventListener('mousemove', (e) => { if (!tip.classList.contains('hidden')) tipAt(e); });
+  document.addEventListener('mouseout', (e) => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('tr[data-rk]')) tip.classList.add('hidden'); });
+  document.addEventListener('click', () => tip.classList.add('hidden'));
 
   // filters above a list: values stay in S.f[key]; Search applies them
   const fval = (key, name) => (S.f[key] || {})[name] || '';
@@ -1577,9 +1602,10 @@
       + d1Filters('manning', [{ name: 'ship', label: 'Ship', list: SHIP_NAMES, ph: 'All Ships' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates' }, { name: 'spec', label: 'Specialisation', list: SPEC_NAMES, ph: 'All Specialisations', w: 'w-60' }])
       + stat3([['Requirements', rows.length], ['Ratings Required', rows.reduce((a, m) => a + m.qty, 0), 'text-primary-hover'], ['Ships and Units', new Set(rows.map((m) => m.ship)).size]])
       + d1Table('manning', rows, {
-        cols: [['#', (m) => m.sn], ['Ship', (m) => `<b class="font-medium">${esc(m.ship)}</b>`], ['Rate', (m) => esc(m.rate)], ['Specialisation', (m) => esc(m.spec)], ['Quantity', (m) => `<b>${m.qty}</b>`, 'text-right'],
-          ['', (m) => tbtn('manning-edit', m.sn, 'Edit', 'pencil') + tbtn('manning-del', m.sn, 'Delete', 'trash-2', 'text-destructive'), 'text-right']],
-        card: (m) => ({ t: esc(m.ship), s: `${esc(m.rate)} · ${esc(m.spec)}`, r: `<span class="${pill.info}">${m.qty} needed</span>`, acts: sbtn('manning-edit', m.sn, 'Edit', 'pencil') + sbtn('manning-del', m.sn, 'Delete', 'trash-2', 'outline', 'text-destructive') }),
+        cols: [['Ship', (m) => `<b class="font-medium">${esc(m.ship)}</b>`], ['Rate', (m) => esc(short(m.rate))], ['Specialisation', (m) => esc(m.spec)], ['Quantity', (m) => `<b>${m.qty}</b>`, 'text-right']],
+        title: (m) => `${m.ship} · ${short(m.rate)} ${m.spec}`, all: (m) => [['No', m.sn], ['Ship or Unit', esc(m.ship)], ['Rate', esc(m.rate)], ['Specialisation', esc(m.spec)], ['Quantity', `<b>${m.qty}</b>`]],
+        acts: (m) => sbtn('manning-del', m.sn, 'Delete', 'trash-2', 'outline', 'text-destructive') + sbtn('manning-edit', m.sn, 'Edit', 'pencil', 'primary'),
+        card: (m) => ({ t: esc(m.ship), s: `${esc(m.rate)} · ${esc(m.spec)}`, r: `<span class="${pill.info}">${m.qty} needed</span>` }),
         empty: ['search', 'No Requirement Matches', 'Change the filters, or add a requirement for the ship.', add],
       });
   }
@@ -1615,8 +1641,10 @@
       + d1Filters('proposal', [{ name: 'branch', label: 'Branch', list: BRANCHES, ph: 'All Branches' }, { name: 'spec', label: 'Specialisation', list: SPEC_NAMES, ph: 'All Specialisations', w: 'w-60' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates' }])
       + `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ${rows.length === 1 ? 'rating is' : 'ratings are'} due${rows.filter((r) => inOpenBatch('DOD', r.sn)).length ? `, ${rows.filter((r) => inOpenBatch('DOD', r.sn)).length} already in an open batch` : ''}</div>`
       + d1Table('proposal', rows, {
-        cols: [['Official No', (r) => r.sn], ['Name', (r) => nameLink(r) + subl(esc(r.gender))], ['Current Ship', (r) => `<b class="font-medium">${esc(r.ship)}</b>`], ['DOJ Ship', (r) => fmt(r.shipSince)], ['On Ship', (r) => shipPill(shipMo(r))], ['Batch', (r) => { const b = inOpenBatch('DOD', r.sn); return b ? `<a href="#drafting/review" data-d1="to-review" data-id="${b.no}" class="${pill.neutral}">${esc(b.no)}</a>` : '-'; }], ['Last Ship 1', (r) => esc(lastShip(r, 1))], ['Last Ship 2', (r) => esc(lastShip(r, 2))], ['Authority', (r) => esc(prevAuth(r)), 'text-muted-foreground']],
-        card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.ship)}`, r: shipPill(shipMo(r)), body: `Joined ${fmt(r.shipSince)} · last ships ${esc(lastShip(r, 1))}, ${esc(lastShip(r, 2))}${inOpenBatch('DOD', r.sn) ? ` · in ${esc(inOpenBatch('DOD', r.sn).no)}` : ''}` }),
+        cols: [['Official No', (r) => r.sn], ['Name', (r) => nameB(r) + subl(`${esc(r.gender)}${inOpenBatch('DOD', r.sn) ? ' · in a batch' : ''}`)], ['Current Ship', (r) => esc(r.ship)], ['On Ship', (r) => shipPill(shipMo(r))]],
+        title: fullName, all: (r) => [['Official No', r.sn], ['Name', esc(fullName(r))], ['Sex', esc(r.gender)], ['Current Ship', esc(r.ship)], ['DOJ Ship', fmt(r.shipSince)], ['On Ship', shipPill(shipMo(r))], ['Last Ship 1', esc(lastShip(r, 1))], ['Last Ship 2', esc(lastShip(r, 2))], ['Authority', esc(prevAuth(r))], ['Batch', inOpenBatch('DOD', r.sn) ? esc(inOpenBatch('DOD', r.sn).no) : '-']],
+        acts: (r) => (inOpenBatch('DOD', r.sn) ? lbtn('drafting/review', 'Go to Review', 'list', `data-d1="to-review" data-id="${inOpenBatch('DOD', r.sn).no}"`) : '') + lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card'),
+        card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.ship)}`, r: shipPill(shipMo(r)), body: `Joined ${fmt(r.shipSince)}${inOpenBatch('DOD', r.sn) ? ` · in ${esc(inOpenBatch('DOD', r.sn).no)}` : ''}` }),
         empty: ['users', 'Nobody Is Due', 'No rating matches these filters. Widen the branch, specialisation or rate.', `<button type="button" data-d1="reset" data-key="proposal" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
       });
   }
@@ -1666,10 +1694,10 @@
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Branch', esc(b.branch === 'All' ? 'All branches' : b.branch)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Status', batchPill(b)]])
       + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(rows.length ? set / rows.length : 0)}" data-level="${rows.length && set === rows.length ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${rows.length} have a proposed ship</span></div>`
       + d1Table('dodReview', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r) + subl(esc(x.r.gender))], ['Current Ship', (x) => esc(x.r.ship) + subl(`since ${fmt(x.r.shipSince)}`)], ['On Ship', (x) => shipPill(shipMo(x.r))],
-          ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : `<span class="${pill.warning}">Not set</span>`)], ['Vice/Deployment', (x) => esc(x.vice || '-')], ['Remark', (x) => esc(x.remark || '-')],
-          ['', (x) => tbtn('dod-edit', x.sn, 'Edit', 'pencil') + tbtn('dod-remove', x.sn, 'Remove', 'trash-2', 'text-destructive'), 'text-right']],
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.r.ship)}`, r: shipPill(shipMo(x.r)), body: x.to ? `Drafted to <b class="text-foreground">${esc(x.to)}</b>${x.vice ? ` · ${esc(x.vice)}` : ''}` : `<span class="${pill.warning}">No proposed ship</span>`, acts: sbtn('dod-edit', x.sn, 'Edit', 'pencil') + sbtn('dod-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(x.r.ship))], ['On Ship', (x) => shipPill(shipMo(x.r))], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : `<span class="${pill.warning}">Not set</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Sex', esc(x.r.gender)], ['Current Ship', esc(x.r.ship)], ['DOJ Ship', fmt(x.r.shipSince)], ['On Ship', shipPill(shipMo(x.r))], ['Proposed Ship', x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Vice/Deployment', esc(x.vice || '-')], ['Remark', esc(x.remark || '-')], ['Request', esc(x.request || '-')]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('dod-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + sbtn('dod-edit', x.sn, 'Edit Posting', 'pencil', 'primary'),
+        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.r.ship)}`, r: shipPill(shipMo(x.r)), body: x.to ? `Drafted to <b class="text-foreground">${esc(x.to)}</b>` : `<span class="${pill.warning}">No proposed ship</span>` }),
         empty: ['users', 'This Batch Is Empty', 'Add personnel by Official Number, or make a new proposal.', `<button type="button" data-d1="dod-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button>`],
       });
     return pageHeader('Review/Print Draft', 'Choose where each rating is drafted to', acts) + (list.length ? batchPicker('dodReview', list, b, { labelOf: batchLabel }) : '') + body;
@@ -1721,24 +1749,25 @@
     return pageHeader(adv ? 'Approval' : 'Draft Approval', adv ? 'Approve each department\'s advancement list before its batch is closed' : 'Approve each department\'s draft before its batch is closed', `<button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel All Departments</button>`)
       + (rows.length ? stat3([['Departments', rows.length], ['Approved', rows.length - pending, 'text-primary-hover'], ['Waiting', pending, pending ? 'text-warning' : '']]) : '')
       + d1Table(`${flow}appr`, rows, {
-        cols: [['Department', (d) => `<b class="font-medium">${esc(d.spec)}</b>`], ['Total', (d) => `<b>${d.rows.length}</b>`, 'text-center'], ...RATE_COLS.map((c) => [c, (d) => d.counts[c] || '<span class="text-muted-foreground/60">-</span>', 'text-center']),
-          ['Status', (d) => (d.appr ? `<span class="${pill.success}">Approved</span>` : `<span class="${pill.warning}">Waiting</span>`)], ['Approved By', (d) => (d.appr ? `${esc(d.appr.rank)} ${esc(d.appr.name)}${subl(`${esc(d.appr.appt)} · ${fmt(d.appr.date)}`)}` : '-')]],
-        row: (d) => `data-d1="dept-open" data-id="${esc(d.spec)}" tabindex="0"`,
+        cols: [['Department', (d) => `<b class="font-medium">${esc(d.spec)}</b>`], ['Total', (d) => `<b>${d.rows.length}</b>`, 'text-center'], ['Status', (d) => (d.appr ? `<span class="${pill.success}">Approved</span>` : `<span class="${pill.warning}">Waiting</span>`)], ['Approved By', (d) => (d.appr ? `${esc(d.appr.rank)} ${esc(d.appr.name)}` : '-')]],
+        open: (d) => deptDialog(flow, d.spec),
         card: (d) => ({ t: esc(d.spec), s: `${d.rows.length} ${d.rows.length === 1 ? 'rating' : 'ratings'}`, r: d.appr ? `<span class="${pill.success}">Approved</span>` : `<span class="${pill.warning}">Waiting</span>`, body: d.appr ? `${esc(d.appr.rank)} ${esc(d.appr.name)} · ${fmt(d.appr.date)}` : 'Tap to review and approve' }),
         empty: ['shield-check', adv ? 'No Advancement Waiting' : 'No Draft Waiting', 'There are no open batches. Make one from the due list first.', `<a href="#${adv ? 'advancement/due' : 'drafting/proposal'}" class="${btn.primary}">${ic('plus')}${adv ? 'Rates due for Advancement' : 'Print Draft Proposal'}</a>`],
       });
   }
-  D1ACT['dept-open'] = (el) => {
-    const flow = flowOf(); const d = deptRows(flow).find((x) => x.spec === el.dataset.id); if (!d) return; const adv = flow === 'DOA';
+  function deptDialog(flow, spec) {
+    const d = deptRows(flow).find((x) => x.spec === spec); if (!d) return; const adv = flow === 'DOA';
     const rows = d.rows.map((x) => (adv ? [x.sn, fullName(x.r), `${rateMo(x.r)} mo`, x.to || 'Not set', x.batch.no] : [x.sn, fullName(x.r), x.r.ship, x.to || 'Not set', x.batch.no]));
     const missing = d.rows.filter((x) => !x.to).length;
     openDialog({ title: `${adv ? 'Advancement' : 'Draft'} for ${d.spec}`, size: 'xl',
-      body: (d.appr ? notice('success', 'circle-check', `Approved by <b>${esc(d.appr.rank)} ${esc(d.appr.name)}</b>, ${esc(d.appr.appt)}, on ${fmt(d.appr.date)}.`) + '<div class="h-3"></div>' : '')
+      body: `<dl class="mb-3 grid grid-cols-4 gap-x-4 gap-y-3 text-sm phone:grid-cols-2"><div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Total</dt><dd class="mt-0.5">${d.rows.length}</dd></div>${RATE_COLS.filter((c) => d.counts[c]).map((c) => `<div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${adv ? 'New ' : ''}${c}</dt><dd class="mt-0.5">${d.counts[c]}</dd></div>`).join('')}</dl>`
+        + (d.appr ? notice('success', 'circle-check', `Approved by <b>${esc(d.appr.rank)} ${esc(d.appr.name)}</b>, ${esc(d.appr.appt)}, on ${fmt(d.appr.date)}.`) + '<div class="h-3"></div>' : '')
         + (missing ? notice('warning', 'circle-alert', `${missing} ${missing === 1 ? 'rating has' : 'ratings have'} no ${adv ? 'new rate' : 'proposed ship'}. Finish the review before approving.`) + '<div class="h-3"></div>' : '')
         + `<div class="overflow-hidden rounded-card border border-border/70"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Official No', 'Name', adv ? 'In Rate' : 'Current Ship', adv ? 'New Rate' : 'Proposed Ship', 'Batch'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
           <tbody>${rows.map((r) => `<tr class="border-t border-border/70">${r.map((c, i) => `<td class="whitespace-nowrap px-4 py-2 ${i === 0 ? 'text-muted-foreground' : ''}">${c === 'Not set' ? `<span class="${pill.warning}">Not set</span>` : esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`,
       foot: `<button type="button" data-act="close" class="${btn.outline}">Close</button><button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button><button type="button" data-d1="appr-form" data-id="${esc(d.spec)}" class="${btn.primary}">${ic('shield-check')}${d.appr ? 'Approve Again' : 'Approve Department'}</button>` });
-  };
+  }
+  D1ACT['dept-open'] = (el) => deptDialog(flowOf(), el.dataset.id);
   D1ACT['appr-form'] = (el) => {
     const flow = flowOf(); const spec = el.dataset.id; const d = deptRows(flow).find((x) => x.spec === spec); const missing = d.rows.filter((x) => !x.to).length;
     d1Form({ title: `Approve ${spec}`, size: 'md', disabled: missing > 0,
@@ -1758,10 +1787,10 @@
     const adv = flow === 'DOA'; const list = openBatches(flow);
     return pageHeader(adv ? 'Close' : 'Close Draft', adv ? 'Close a reviewed and approved batch with its authority' : 'Close a reviewed and approved draft with its authority', `<button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel All Departments</button>`)
       + d1Table(`${flow}close`, list, {
-        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>`], ['Branch', (b) => esc(b.branch)], ['Rate', (b) => esc(b.rate === 'All' ? 'All' : short(b.rate))], ['Ratings', (b) => b.rows.length, 'text-center'],
-          [adv ? 'New Rate Set' : 'Ship Proposed', (b) => `${b.rows.filter((x) => x.to).length} of ${b.rows.length}`, 'text-center'], ['Departments Approved', (b) => `${specsOf(b).filter((s) => apprOf(flow, s)).length} of ${specsOf(b).length}`, 'text-center'],
-          ['Ready', (b) => (batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`)], ['Initiated', (b) => `${fmt(b.init)} · ${esc(b.by)}`], ['', (b) => tbtn('close-batch', b.no, 'Close', 'lock'), 'text-right']],
-        card: (b) => ({ t: esc(b.no), s: `${esc(b.branch)} · ${b.rows.length} ratings`, r: batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`, acts: sbtn('close-batch', b.no, 'Close', 'lock', 'primary') }),
+        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>` + subl(esc(b.branch === 'All' ? 'All branches' : b.branch))], ['Ratings', (b) => b.rows.length, 'text-center'], ['Ready', (b) => (batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`)]],
+        title: (b) => b.no, all: (b) => [['Batch Number', esc(b.no)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Ratings', b.rows.length], [adv ? 'New Rate Set' : 'Ship Proposed', `${b.rows.filter((x) => x.to).length} of ${b.rows.length}`], ['Departments Approved', `${specsOf(b).filter((s) => apprOf(flow, s)).length} of ${specsOf(b).length}`], ['Ready', batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>`], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`]],
+        acts: (b) => sbtn('close-batch', b.no, adv ? 'Close Batch' : 'Close Draft', 'lock', 'primary'),
+        card: (b) => ({ t: esc(b.no), s: `${esc(b.branch)} · ${b.rows.length} ratings`, r: batchReady(b) ? `<span class="${pill.success}">Ready</span>` : `<span class="${pill.warning}">Not ready</span>` }),
         empty: ['lock', 'Nothing to Close', `There are no open ${adv ? 'advancement' : 'draft'} batches.`, `<a href="#${adv ? 'advancement/due' : 'drafting/proposal'}" class="${btn.primary}">${ic('plus')}${adv ? 'Rates due for Advancement' : 'Print Draft Proposal'}</a>`],
       });
   }
@@ -1798,9 +1827,10 @@
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick a closed batch to date its postings.')}</div>`;
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Reported', `<b>${reportedN(b)}</b> of ${b.rows.length}`]])
       + d1Table('wef', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r)], ['Rate', (x) => short(x.r.rate)], ['Current Ship', (x) => esc(x.wef ? x.from : x.r.ship)], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['WEF', (x) => (x.wef ? fmt(x.wef) : '-')],
-          ['Status', (x) => (x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`)], ['', (x) => (!x.wef && x.to ? tbtn('wef-row', x.sn, 'Set WEF', 'calendar') : ''), 'text-right']],
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.to || 'No ship proposed')}`, r: x.wef ? `<span class="${pill.success}">Reported</span>` : `<span class="${pill.warning}">Pending</span>`, body: x.wef ? `WEF ${fmt(x.wef)}` : '', acts: !x.wef && x.to ? sbtn('wef-row', x.sn, 'Set WEF', 'calendar', 'primary') : '' }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(x.wef ? x.from : x.r.ship))], ['Proposed Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Status', (x) => (x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Current Ship', esc(x.wef ? x.from : x.r.ship)], ['Proposed Ship', esc(x.to || '-')], ['Authority', esc(wefBatch().signal)], ['WEF', x.wef ? fmt(x.wef) : '-'], ['Status', x.wef ? `<span class="${pill.success}">Reported</span>` : x.to ? `<span class="${pill.warning}">Pending</span>` : `<span class="${pill.error}">No ship proposed</span>`]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + (!x.wef && x.to ? sbtn('wef-row', x.sn, 'Set WEF', 'calendar', 'primary') : ''),
+        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.to || 'No ship proposed')}`, r: x.wef ? `<span class="${pill.success}">Reported</span>` : `<span class="${pill.warning}">Pending</span>`, body: x.wef ? `WEF ${fmt(x.wef)}` : '' }),
         empty: ['users', 'No Ratings Here', 'This department has no ratings in the batch.'],
       });
     return pageHeader('Update WEF', 'Date each posting: the rating moves to the new ship from that date', b ? `<button type="button" data-d1="wef-dept" ${pending ? '' : 'disabled'} class="${btn.primary} disabled:opacity-50">${ic('calendar')}Set WEF for Department</button>` : '') + picker + body;
@@ -1836,12 +1866,11 @@
   function batchListTable(flow, base) {
     const adv = flow === 'DOA'; const rows = batchList(flow);
     return d1Table(`${flow}list`, rows, {
-      cols: [['Signal Code', (b) => (b.signal ? `<b class="font-medium">${esc(b.signal)}</b>` : '<span class="text-muted-foreground">-</span>')], ['Branch', (b) => esc(b.branch)], ['Rate', (b) => esc(b.rate === 'All' ? 'All' : short(b.rate))], ['Batch Number', (b) => esc(b.no)], ['Status', batchPill],
-        ['Total', (b) => b.rows.length, 'text-center'], [adv ? 'Promoted' : 'Reported', (b) => reportedN(b), 'text-center'], [adv ? 'Not Yet Promoted' : 'Not Reported', (b) => b.rows.length - reportedN(b), 'text-center'],
-        ['Initiated', (b) => fmt(b.init) + subl(esc(b.by))], ['Closed', (b) => (b.closed ? fmt(b.closed) + subl(esc(b.closedBy)) : '-')]],
-      row: (b) => `data-d1="open-detail" data-id="${esc(b.no)}" data-base="${base}" tabindex="0"`,
+      cols: [['Signal Code', (b) => (b.signal ? `<b class="font-medium">${esc(b.signal)}</b>` : '<span class="text-muted-foreground">-</span>')], ['Batch Number', (b) => esc(b.no) + subl(esc(b.branch))], ['Status', batchPill], [adv ? 'Promoted' : 'Reported', (b) => `${reportedN(b)} of ${b.rows.length}`, 'text-center']],
+      title: (b) => b.no, all: (b) => [['Signal Code', esc(b.signal || '-')], ['Batch Number', esc(b.no)], ['Status', batchPill(b)], ['Branch', esc(b.branch)], ['Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Total', b.rows.length], [adv ? 'Promoted' : 'Reported', reportedN(b)], [adv ? 'Not Yet Promoted' : 'Not Reported', b.rows.length - reportedN(b)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-']],
+      acts: (b) => lbtn(`${base}/${b.no}`, 'Open Contents', 'list'),
       card: (b) => ({ t: esc(b.no), s: `${esc(b.signal || 'No authority yet')} · ${b.rows.length} ratings`, r: batchPill(b), body: `${adv ? 'Promoted' : 'Reported'} ${reportedN(b)} of ${b.rows.length} · started ${fmt(b.init)}` }),
-      empty: ['search', 'No Batch Matches', 'Change the filters to see more batches.', `<button type="button" data-d1="reset" data-key="${flow}list" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      empty: ['search', 'Nothing Found'],
     });
   }
   D1ACT['open-detail'] = (el) => { location.hash = `#${el.dataset.base}/${el.dataset.id}`; };
@@ -1862,8 +1891,9 @@
       + factStrip([['Signal Code', esc(b.signal || '-')], ['Status', batchPill(b)], ['Branch', esc(b.branch)], [adv ? 'Rate' : 'Rate', esc(b.rate === 'All' ? 'All' : b.rate)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? `${fmt(b.closed)} by ${esc(b.closedBy)}` : '-'], ['Total', `<b>${b.rows.length}</b>`], [adv ? 'Promoted' : 'Reported', `<b>${reportedN(b)}</b>`]])
       + d1Filters(`${flow}detail`, [{ name: 'sn', label: 'Official No', type: 'text', ph: 'e.g. B0539', w: 'w-44' }, { name: 'name', label: 'Name', type: 'text', ph: 'Surname or first name', w: 'w-64' }])
       + d1Table(`${flow}detail`, rows, {
-        cols: [['Official No', (x) => x.sn], ['Full Name', (x) => nameLink(x.r)], [adv ? 'Old Rate' : 'Old Ship', (x) => esc(x.from || '-')], [adv ? 'New Rate' : 'New Ship', (x) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')],
-          ...(adv ? [] : [['Vice/Deployment', (x) => esc(x.vice || '-')]]), [adv ? 'Date Advanced' : 'Date Reported', (x) => (x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`)]],
+        cols: [['Official No', (x) => x.sn], ['Full Name', (x) => nameB(x.r)], [adv ? 'New Rate' : 'New Ship', (x) => (x.to ? `<b class="font-medium">${esc(adv ? short(x.to) : x.to)}</b>` : '-')], [adv ? 'Date Advanced' : 'Date Reported', (x) => (x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Full Name', esc(upperName(x.r))], [adv ? 'Old Rate' : 'Old Ship', esc(x.from || '-')], [adv ? 'New Rate' : 'New Ship', esc(x.to || '-')], ...(adv ? [['Reason', esc(x.reason || '-')]] : [['Vice/Deployment', esc(x.vice || '-')]]), [adv ? 'Date Advanced' : 'Date Reported', x[dateField(flow)] ? fmt(x[dateField(flow)]) : `<span class="${pill.warning}">Pending</span>`], ['Batch', esc(b.no)]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card'),
         card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(x.from || '-')} to ${esc(x.to || '-')}`, r: x[dateField(flow)] ? `<span class="${pill.success}">${fmt(x[dateField(flow)])}</span>` : `<span class="${pill.warning}">Pending</span>` }),
         empty: ['search', 'No Ratings Match', 'Clear the Official No or name.', `<button type="button" data-d1="reset" data-key="${flow}detail" class="${btn.outline}">${ic('rotate-ccw')}Reset</button>`],
       });
@@ -1887,8 +1917,9 @@
     else if (!r) body = `<div class="${CARD}">${emptyBox('circle-alert', 'No Rating Found', `No rating has Official Number ${sn}. Check the number and search again.`)}</div>`;
     else body = `<section class="${CARD} mb-4 flex flex-wrap items-center gap-4 p-4">${avatar(r, 'h-12 w-12 text-base')}<div class="min-w-0 flex-1"><div class="text-base font-semibold">${esc(fullName(r))}</div><div class="text-sm text-muted-foreground">${r.sn} · ${esc(r.rate)} · ${esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`)}</div></div><a href="#ratings/record/${r.sn}" class="${btn.outline}">${ic('id-card')}Open Record</a></section>`
       + d1Table('history', rows, {
-        cols: [['Batch Number', ({ b }) => esc(b.no)], ['Authority', ({ b }) => esc(b.signal || '-')], ['Old Ship', ({ x }) => esc(x.from || '-')], ['New Ship', ({ x }) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Date Reported', ({ x }) => (x.wef ? fmt(x.wef) : '-')],
-          ['Status', ({ b, x }) => (x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`)]],
+        cols: [['Batch Number', ({ b }) => esc(b.no)], ['New Ship', ({ x }) => (x.to ? `<b class="font-medium">${esc(x.to)}</b>` : '-')], ['Date Reported', ({ x }) => (x.wef ? fmt(x.wef) : '-')], ['Status', ({ b, x }) => (x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`)]],
+        title: ({ b }) => b.no, all: ({ b, x }) => [['Batch Number', esc(b.no)], ['Authority', esc(b.signal || '-')], ['Old Ship', esc(x.from || '-')], ['New Ship', esc(x.to || '-')], ['Vice/Deployment', esc(x.vice || '-')], ['Date Reported', x.wef ? fmt(x.wef) : '-'], ['Status', x.wef ? `<span class="${pill.success}">Reported</span>` : b.status === 'closed' ? `<span class="${pill.warning}">Awaiting WEF</span>` : `<span class="${pill.info}">Proposed</span>`]],
+        acts: ({ b }) => lbtn(`drafting/batches/${b.no}`, 'Open Batch', 'list'),
         card: ({ b, x }) => ({ t: esc(`${x.from || '-'} to ${x.to || 'not set'}`), s: `${esc(b.no)} · ${esc(b.signal || 'No authority yet')}`, r: x.wef ? `<span class="${pill.success}">${fmt(x.wef)}</span>` : `<span class="${pill.warning}">Pending</span>` }),
         empty: ['history', 'No Drafts Yet', 'This rating has not been through a draft batch.'],
       });
@@ -1911,8 +1942,9 @@
       + d1Filters('report', [{ name: 'spec', label: 'Specialisation', list: SPEC_NAMES, ph: 'All Specialisations', w: 'w-60' }, { name: 'signal', label: 'Authority', type: 'text', ph: 'e.g. NHQ/NP/DOD', w: 'w-56' }, { name: 'from', label: 'From', type: 'date', w: 'w-40' }, { name: 'to', label: 'To', type: 'date', w: 'w-40' }])
       + (bad ? `<div class="mb-4">${notice('error', 'circle-alert', esc(bad))}</div>` : '')
       + d1Table('report', rows, {
-        cols: [['Batch Number', ({ b }) => esc(b.no)], ['Official No', ({ r }) => r.sn], ['Name', ({ r }) => nameLink(r) + subl(esc(r.gender))], ['Present Ship', ({ r, x }) => { const j = dojOf(r, x); return esc(x.from || '-') + subl(`DOJ ${j ? fmt(j) : '-'}`); }],
-          ['Authority', ({ b }) => esc(b.signal || '-')], ['Proposed Ship', ({ x }) => `<b class="font-medium">${esc(x.to)}</b>`], ['Deployment/Vice', ({ x }) => esc(x.vice || '-')], ['WEF', ({ x }) => fmt(x.wef)]],
+        cols: [['Official No', ({ r }) => r.sn], ['Name', ({ r }) => nameB(r) + subl(esc(r.gender))], ['Proposed Ship', ({ x }) => `<b class="font-medium">${esc(x.to)}</b>`], ['WEF', ({ x }) => fmt(x.wef)]],
+        title: ({ r }) => fullName(r), all: ({ b, x, r }) => [['Batch Number', esc(b.no)], ['Official No', r.sn], ['Name', esc(fullName(r))], ['Sex', esc(r.gender)], ['Present Ship', esc(x.from || '-')], ['DOJ', (() => { const j = dojOf(r, x); return j ? fmt(j) : '-'; })()], ['Authority', esc(b.signal || '-')], ['Proposed Ship', esc(x.to)], ['Deployment/Vice', esc(x.vice || '-')], ['WEF', fmt(x.wef)]],
+        acts: ({ b, r }) => lbtn(`drafting/batches/${b.no}`, 'Open Batch', 'list') + lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card'),
         card: ({ b, x, r }) => ({ t: esc(fullName(r)), s: `${esc(x.from || '-')} to ${esc(x.to)}`, r: `<span class="${pill.success}">${fmt(x.wef)}</span>`, body: esc(b.signal || '') }),
         empty: ['file-text', bad ? 'Check the Dates' : 'No Drafts Found', bad ? 'Fix the dates above to see the report.' : 'No posting reported in this selection. Widen the dates or the authority.', bad ? '' : `<button type="button" data-d1="reset" data-key="report" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
       });
@@ -1937,9 +1969,10 @@
     return pageHeader('Process Training Draft', 'Open a training batch for a course and month, then choose who joins it', `<button type="button" data-d1="tnew" class="${btn.primary}">${ic('plus')}New Training Batch</button>`)
       + (rows.length ? stat3([['Open Batches', rows.length], ['Ratings Proposed', rows.reduce((a, b) => a + b.rows.length, 0), 'text-primary-hover'], ['Courses', new Set(rows.map((b) => b.course.name)).size]]) : '')
       + d1Table('trainProcess', rows, {
-        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>`], ['Training', (b) => esc(b.course.name)], ['Month', (b) => MONTHS[b.month - 1]], ['Year', (b) => b.year], ['Ratings', (b) => b.rows.length, 'text-center'], ['Initiated By', (b) => esc(b.by)], ['Date Initiated', (b) => fmt(b.init)], ['Status', dotPill],
-          ['', (b) => tbtn('tadd', b.no, 'Add Ratings', 'user-plus') + `<a href="#training/review" data-d1="to-treview" data-id="${esc(b.no)}" class="${btn.ghost}">${ic('list')}Review</a>`, 'text-right']],
-        card: (b) => ({ t: esc(b.course.name), s: `${esc(b.no)} · ${MONTHS[b.month - 1]} ${b.year}`, r: dotPill(b), body: `${b.rows.length} ratings · started ${fmt(b.init)} by ${esc(b.by)}`, acts: sbtn('tadd', b.no, 'Add Ratings', 'user-plus') + `<a href="#training/review" data-d1="to-treview" data-id="${esc(b.no)}" class="${btn.outline}">${ic('list')}Review</a>` }),
+        cols: [['Batch Number', (b) => `<b class="font-medium">${esc(b.no)}</b>`], ['Training', (b) => esc(b.course.name) + subl(`${MONTHS[b.month - 1]} ${b.year}`)], ['Ratings', (b) => b.rows.length, 'text-center'], ['Status', dotPill]],
+        title: (b) => b.course.name, all: (b) => [['Batch Number', esc(b.no)], ['Training', esc(b.course.name)], ['Month', MONTHS[b.month - 1]], ['Year', b.year], ['Ratings', b.rows.length], ['Institution', esc(b.course.place)], ['Initiated By', esc(b.by)], ['Date Initiated', fmt(b.init)], ['Status', dotPill(b)]],
+        acts: (b) => lbtn('training/review', 'Review', 'list', `data-d1="to-treview" data-id="${esc(b.no)}"`) + sbtn('tadd', b.no, 'Add Ratings', 'user-plus', 'primary'),
+        card: (b) => ({ t: esc(b.course.name), s: `${esc(b.no)} · ${MONTHS[b.month - 1]} ${b.year}`, r: dotPill(b), body: `${b.rows.length} ratings · started ${fmt(b.init)} by ${esc(b.by)}` }),
         empty: ['graduation-cap', 'No Training Batch Is Open', 'Open a batch for a course, month and year to start.', `<button type="button" data-d1="tnew" class="${btn.primary}">${ic('plus')}New Training Batch</button>`],
       });
   }
@@ -1998,8 +2031,10 @@
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick an open training batch to review.')}</div>`;
     else body = factStrip([['Training', `<b>${esc(b.course.name)}</b>`], ['Period', `${MONTHS[b.month - 1]} ${b.year}`], ['Institution', esc(b.course.place)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`]])
       + d1Table('trainReview', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r)], ['Rate', (x) => short(x.r.rate)], ['LOS', (x) => los(x.r)], ['Last Course', (x) => courseCell(prevCourse(x.r, x))], ['', (x) => tbtn('tremove', x.sn, 'Remove', 'trash-2', 'text-destructive'), 'text-right']],
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · LOS ${los(x.r)}`, r: `<span class="${pill.info}">${esc(short(x.r.rate))}</span>`, body: courseCell(prevCourse(x.r, x)), acts: sbtn('tremove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(`LOS ${los(x.r)}`)], ['Last Course', (x) => { const t = prevCourse(x.r, x); return t ? esc(t.course) : `<span class="${pill.neutral}">First course</span>`; }]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Length of Service', los(x.r)], ['Last Course', courseCell(prevCourse(x.r, x))]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('tremove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive'),
+        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · LOS ${los(x.r)}`, r: `<span class="${pill.info}">${esc(short(x.r.rate))}</span>`, body: courseCell(prevCourse(x.r, x)) }),
         empty: ['users', 'This Batch Is Empty', 'Add ratings by Official Number or by branch.', `<button type="button" data-d1="tadd-here" class="${btn.primary}">${ic('user-plus')}Add Ratings</button>`],
       });
     return pageHeader('Training Review', 'Check who goes on the course; add or remove ratings', b ? `<button type="button" data-d1="tadd-one" class="${btn.primary}">${ic('user-plus')}Add Rating</button><button type="button" data-d1="tadd-here" class="${btn.outline}">${ic('users')}Add by Branch</button>` : '')
@@ -2018,7 +2053,9 @@
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick the batch whose course has been attended.')}</div>`;
     else body = factStrip([['Training', `<b>${esc(b.course.name)}</b>`], ['Period', `${MONTHS[b.month - 1]} ${b.year}`], ['Ratings', `${rows.length}`], ['Attending', `<b>${att}</b> of ${rows.length}`]])
       + d1Table('trainHistory', rows, {
-        cols: [['Attended', (x) => `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-4 w-4 rounded border-input accent-primary" />`], ['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r)], ['Rate', (x) => short(x.r.rate)], ['Last Course', (x) => courseCell(prevCourse(x.r, x))], ['This Course', (x) => (x.attended ? `<span class="${pill.info}">Will be recorded</span>` : `<span class="${pill.neutral}">Left out</span>`)]],
+        cols: [['Attended', (x) => `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-4 w-4 rounded border-input accent-primary" />`], ['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r)], ['This Course', (x) => (x.attended ? `<span class="${pill.info}">Will be recorded</span>` : `<span class="${pill.neutral}">Left out</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Last Course', courseCell(prevCourse(x.r, x))], ['Attended', x.attended ? 'Yes' : 'No'], ['This Course', x.attended ? `<span class="${pill.info}">Will be recorded</span>` : `<span class="${pill.neutral}">Left out</span>`]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card'),
         card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))}`, r: `<input type="checkbox" data-d1="tatt" data-id="${esc(x.sn)}" ${x.attended ? 'checked' : ''} aria-label="Attended" class="h-5 w-5 rounded border-input accent-primary" />`, body: courseCell(prevCourse(x.r, x)) }),
         empty: ['users', 'This Batch Is Empty', 'Add ratings in Training Review first.', `<a href="#training/review" class="${btn.outline}">Training Review</a>`],
       });
@@ -2050,9 +2087,9 @@
     return pageHeader('Reports', 'Every training batch, open or closed')
       + d1Filters('trainList', [{ name: 'course', label: 'Training', list: COURSES.map((c) => c.name), ph: 'All Training', w: 'w-64' }, { name: 'month', label: 'Month', list: MONTHS, ph: 'All Months', w: 'w-44' }, { name: 'year', label: 'Year', list: ['2025', '2026', '2027'], ph: 'All Years', w: 'w-36' }, { name: 'batch', label: 'Batch No', type: 'text', ph: 'e.g. DOT-2026', w: 'w-44' }])
       + d1Table('trainList', rows, {
-        cols: [['Training', (b) => `<b class="font-medium">${esc(b.course.name)}</b>`], ['Batch Number', (b) => esc(b.no)], ['Month', (b) => MONTHS[b.month - 1]], ['Year', (b) => b.year], ['Status', dotPill], ['Ratings', (b) => b.rows.length, 'text-center'],
-          ['Attended', (b) => (b.status === 'closed' ? b.rows.filter((x) => x.attended).length : '-'), 'text-center'], ['Initiated By', (b) => esc(b.by)], ['Date Initiated', (b) => fmt(b.init)]],
-        row: (b) => `data-d1="open-detail" data-id="${esc(b.no)}" data-base="training/reports" tabindex="0"`,
+        cols: [['Training', (b) => `<b class="font-medium">${esc(b.course.name)}</b>` + subl(`${MONTHS[b.month - 1]} ${b.year}`)], ['Batch Number', (b) => esc(b.no)], ['Status', dotPill], ['Ratings', (b) => b.rows.length, 'text-center']],
+        title: (b) => b.course.name, all: (b) => [['Training', esc(b.course.name)], ['Batch Number', esc(b.no)], ['Month', MONTHS[b.month - 1]], ['Year', b.year], ['Status', dotPill(b)], ['Ratings', b.rows.length], ['Attended', b.status === 'closed' ? b.rows.filter((x) => x.attended).length : '-'], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`]],
+        acts: (b) => lbtn(`training/reports/${b.no}`, 'Open Contents', 'list'),
         card: (b) => ({ t: esc(b.course.name), s: `${esc(b.no)} · ${MONTHS[b.month - 1]} ${b.year}`, r: dotPill(b), body: `${b.rows.length} ratings${b.status === 'closed' ? `, ${b.rows.filter((x) => x.attended).length} attended` : ''}` }),
         empty: ['search', 'No Batch Matches', 'Change the filters to see more batches.', `<button type="button" data-d1="reset" data-key="trainList" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
       });
@@ -2064,7 +2101,9 @@
     return backLink('training/reports', 'Reports') + pageHeader(`Batch ${b.no}`, `${b.course.name}, ${MONTHS[b.month - 1]} ${b.year}`, `<button type="button" data-d1="tpdf" data-id="${esc(b.no)}" class="${btn.blue}">${ic('printer')}Print PDF</button><button type="button" data-d1="excel" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button>`)
       + factStrip([['Training', `<b>${esc(b.course.name)}</b>`], ['Status', dotPill(b)], ['Period', `${MONTHS[b.month - 1]} ${b.year}`], ['Institution', esc(b.course.place)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Closed', b.closed ? fmt(b.closed) : '-'], ['Ratings', `<b>${rows.length}</b>`], ['Attended', b.status === 'closed' ? `<b>${rows.filter((x) => x.attended).length}</b>` : '-']])
       + d1Table('trainDetail', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r)], ['Rate', (x) => short(x.r.rate)], ['Previous Course', (x) => courseCell(prevCourse(x.r, x))], ['This Course', (x) => (b.status === 'open' ? `<span class="${pill.info}">Proposed</span>` : x.attended ? `${fmt(x.start)} to ${fmt(x.end)} <span class="${pill.success}">${esc(x.result)}</span>` : `<span class="${pill.neutral}">Did not attend</span>`)]],
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r)], ['Previous Course', (x) => { const t = prevCourse(x.r, x); return t ? esc(t.course) : `<span class="${pill.neutral}">First course</span>`; }], ['This Course', (x) => (b.status === 'open' ? `<span class="${pill.info}">Proposed</span>` : x.attended ? `<span class="${pill.success}">${esc(x.result)}</span>` : `<span class="${pill.neutral}">Did not attend</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Rate', esc(x.r.rate)], ['Previous Course', courseCell(prevCourse(x.r, x))], ['This Course', b.status === 'open' ? `<span class="${pill.info}">Proposed</span>` : x.attended ? `${fmt(x.start)} to ${fmt(x.end)} at ${esc(x.place)}` : `<span class="${pill.neutral}">Did not attend</span>`], ['Result', b.status === 'closed' && x.attended ? esc(x.result) : '-']],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card'),
         card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))}`, r: b.status === 'open' ? `<span class="${pill.info}">Proposed</span>` : x.attended ? `<span class="${pill.success}">${esc(x.result)}</span>` : `<span class="${pill.neutral}">Did not attend</span>`, body: courseCell(prevCourse(x.r, x)) }),
         empty: ['users', 'This Batch Is Empty'],
       });
@@ -2085,9 +2124,10 @@
       + d1Filters('due', [{ name: 'branch', label: 'Branch', list: BRANCHES, ph: 'All Branches' }, { name: 'spec', label: 'Specialisation', list: SPEC_NAMES, ph: 'All Specialisations', w: 'w-60' }, { name: 'rate', label: 'Current Rate', list: RATES.slice(0, -1), ph: 'All Rates' }])
       + `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ${rows.length === 1 ? 'rating is' : 'ratings are'} due${taken ? `, ${taken} already in an open batch` : ''}</div>`
       + d1Table('due', rows, {
-        cols: [['Official No', (r) => r.sn], ['Name', nameLink], ['Department', (r) => esc(r.spec)], ['Age (yrs)', (r) => years(r.dob), 'text-center'], ['LOS (yrs)', (r) => years(r.enlisted), 'text-center'], ['Current Rate', (r) => `<b class="font-medium">${esc(short(r.rate))}</b>`], ['In Rate Since', (r) => fmt(r.rateSince)], ['Months in Rate', (r) => ratePill(rateMo(r))],
-          ['Batch', (r) => { const b = inOpenBatch('DOA', r.sn); return b ? `<a href="#advancement/review" data-d1="to-adv-review" data-id="${b.no}" class="${pill.neutral}">${esc(b.no)}</a>` : '-'; }]],
-        card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.spec)}`, r: ratePill(rateMo(r)), body: `${esc(short(r.rate))} since ${fmt(r.rateSince)} · age ${years(r.dob)} · ${years(r.enlisted)} yrs service${inOpenBatch('DOA', r.sn) ? ` · in ${esc(inOpenBatch('DOA', r.sn).no)}` : ''}` }),
+        cols: [['Official No', (r) => r.sn], ['Name', (r) => nameB(r) + subl(esc(r.spec) + (inOpenBatch('DOA', r.sn) ? ' · in a batch' : ''))], ['Current Rate', (r) => esc(short(r.rate))], ['Months in Rate', (r) => ratePill(rateMo(r))]],
+        title: fullName, all: (r) => [['Official No', r.sn], ['Name', esc(fullName(r))], ['Department', esc(r.spec)], ['Age (yrs)', years(r.dob)], ['LOS (yrs)', years(r.enlisted)], ['Current Rate', esc(r.rate)], ['In Rate Since', fmt(r.rateSince)], ['Months in Rate', ratePill(rateMo(r))], ['Batch', inOpenBatch('DOA', r.sn) ? esc(inOpenBatch('DOA', r.sn).no) : '-']],
+        acts: (r) => (inOpenBatch('DOA', r.sn) ? lbtn('advancement/review', 'Go to Review', 'list', `data-d1="to-adv-review" data-id="${inOpenBatch('DOA', r.sn).no}"`) : '') + lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card'),
+        card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.spec)}`, r: ratePill(rateMo(r)), body: `${esc(short(r.rate))} since ${fmt(r.rateSince)}${inOpenBatch('DOA', r.sn) ? ` · in ${esc(inOpenBatch('DOA', r.sn).no)}` : ''}` }),
         empty: ['users', 'Nobody Is Due', 'No rating matches these filters. Widen the branch, specialisation or rate.', `<button type="button" data-d1="reset" data-key="due" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
       });
   }
@@ -2104,9 +2144,10 @@
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Current Rate', esc(b.rate === 'All' ? 'All rates' : b.rate)], ['Initiated', `${fmt(b.init)} by ${esc(b.by)}`], ['Status', batchPill(b)]])
       + `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(rows.length ? set / rows.length : 0)}" data-level="${rows.length && set === rows.length ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${rows.length} have a new rate</span></div>`
       + d1Table('advReview', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r) + subl(`Age ${years(x.r.dob)} · LOS ${years(x.r.enlisted)} yrs`)], ['Current Rate', (x) => esc(short(x.r.rate)) + subl(`since ${fmt(x.r.rateSince)}`)], ['Months in Rate', (x) => ratePill(rateMo(x.r))],
-          ['New Rate', (x) => (x.to ? `<b class="font-medium">${esc(short(x.to))}</b>` : `<span class="${pill.warning}">Not set</span>`)], ['Reason', (x) => esc(x.reason || '-')], ['', (x) => tbtn('doa-edit', x.sn, 'Edit', 'pencil') + tbtn('doa-remove', x.sn, 'Remove', 'trash-2', 'text-destructive'), 'text-right']],
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`, r: ratePill(rateMo(x.r)), body: x.to ? `New rate <b class="text-foreground">${esc(x.to)}</b>${x.reason ? ` · ${esc(x.reason)}` : ''}` : `<span class="${pill.warning}">No new rate</span>`, acts: sbtn('doa-edit', x.sn, 'Edit', 'pencil') + sbtn('doa-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(`${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`)], ['Months in Rate', (x) => ratePill(rateMo(x.r))], ['New Rate', (x) => (x.to ? `<b class="font-medium">${esc(short(x.to))}</b>` : `<span class="${pill.warning}">Not set</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['In Rate Since', fmt(x.r.rateSince)], ['Age', years(x.r.dob)], ['LOS (yrs)', years(x.r.enlisted)], ['Current Rate', esc(x.r.rate)], ['Months in Rate', ratePill(rateMo(x.r))], ['New Rate', x.to ? esc(x.to) : `<span class="${pill.warning}">Not set</span>`], ['Reason', esc(x.reason || '-')], ['Remark', esc(x.remark || '-')]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + sbtn('doa-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + sbtn('doa-edit', x.sn, 'Set New Rate', 'pencil', 'primary'),
+        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.r.rate))} since ${fmt(x.r.rateSince)}`, r: ratePill(rateMo(x.r)), body: x.to ? `New rate <b class="text-foreground">${esc(x.to)}</b>` : `<span class="${pill.warning}">No new rate</span>` }),
         empty: ['users', 'This Batch Is Empty', 'Add personnel by Official Number, or make a new proposal.', `<button type="button" data-d1="doa-add" class="${btn.primary}">${ic('user-plus')}Add Personnel</button>`],
       });
     return pageHeader('Advancement Review', 'Choose the new rate for each rating', acts) + (list.length ? batchPicker('advReview', list, b, { labelOf: batchLabel }) : '') + body;
@@ -2135,9 +2176,10 @@
     else if (!b) body = `<div class="${CARD}">${emptyBox('list', 'Choose a Batch', 'Pick a closed batch to enter the board dates.')}</div>`;
     else body = factStrip([['Batch', `<b>${esc(b.no)}</b>`], ['Authority', esc(b.signal)], ['Closed', `${fmt(b.closed)} by ${esc(b.closedBy)}`], ['Dated', `<b>${reportedN(b)}</b> of ${b.rows.length}`]])
       + d1Table('advBoard', rows, {
-        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameLink(x.r) + subl(`Age ${years(x.r.dob)} · LOS ${years(x.r.enlisted)} yrs`)], ['Department', (x) => esc(x.r.spec)], ['Current Rate', (x) => esc(short(x.from))], ['Months in Rate', (x) => (x.date ? '-' : ratePill(rateMo(x.r)))], ['New Rate', (x) => `<b class="font-medium">${esc(short(x.to))}</b>`],
-          ['Board Approval Date', (x) => (x.date ? `${fmt(x.date)} <span class="${pill.success}">Advanced</span>` : `<span class="${pill.warning}">Pending</span>`)], ['', (x) => (x.date ? '' : tbtn('board-row', x.sn, 'Set Date', 'calendar')), 'text-right']],
-        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.from))} to ${esc(short(x.to))}`, r: x.date ? `<span class="${pill.success}">${fmt(x.date)}</span>` : `<span class="${pill.warning}">Pending</span>`, acts: x.date ? '' : sbtn('board-row', x.sn, 'Set Date', 'calendar', 'primary') }),
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x.r) + subl(esc(short(x.from)))], ['New Rate', (x) => `<b class="font-medium">${esc(short(x.to))}</b>`], ['Board Approval', (x) => (x.date ? `${fmt(x.date)}` : `<span class="${pill.warning}">Pending</span>`)]],
+        title: (x) => fullName(x.r), all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x.r))], ['Department', esc(x.r.spec)], ['Age', years(x.r.dob)], ['LOS (yrs)', years(x.r.enlisted)], ['Current Rate', esc(x.from)], ['Months in Rate', x.date ? '-' : ratePill(rateMo(x.r))], ['New Rate', esc(x.to)], ['Board Approval Date', x.date ? `${fmt(x.date)} <span class="${pill.success}">Advanced</span>` : `<span class="${pill.warning}">Pending</span>`]],
+        acts: (x) => lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + (x.date ? '' : sbtn('board-row', x.sn, 'Set Date', 'calendar', 'primary')),
+        card: (x) => ({ t: esc(fullName(x.r)), s: `${x.sn} · ${esc(short(x.from))} to ${esc(short(x.to))}`, r: x.date ? `<span class="${pill.success}">${fmt(x.date)}</span>` : `<span class="${pill.warning}">Pending</span>` }),
         empty: ['users', 'This Batch Is Empty'],
       });
     return pageHeader('Board Returns Update', 'Enter the date the board approved each advancement', b ? `<button type="button" data-d1="board-batch" ${pending ? '' : 'disabled'} class="${btn.primary} disabled:opacity-50">${ic('calendar')}Set Date for Batch</button>` : '') + (list.length ? batchPicker('advBoard', list, b, { labelOf: (x) => `${x.no} · ${x.signal}` }) : '') + body;
@@ -2205,7 +2247,8 @@
       + (st === 2 ? `<div class="mt-4">${notice('success', 'circle-check', `<b>${file.ready} ${cfg.noun} imported.</b> ${file.skipped} skipped as duplicates and ${file.errors} not imported because of errors. Each import ${cfg.effect}.`)}</div>` : '')
       + (ok && st >= 1 ? `<div class="mt-4"><div class="mb-2 flex items-center gap-3"><h2 class="text-sm font-semibold">Rows Not ${st === 2 ? 'Imported' : 'Ready'}</h2><button type="button" data-d1="excel" class="${btn.ghost} ml-auto">${ic('download')}Download Error Rows</button></div>`
         + d1Table(`up${key}`, issues, {
-          cols: [['Row', (i) => i[0]], ['Official No', (i) => esc(i[1])], ['Field', (i) => esc(i[2])], ['Problem', (i) => esc(i[3]), 'whitespace-normal'], ['Result', (i) => `<span class="${i[4] === 'error' ? pill.error : pill.warning}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`]],
+          cols: [['Row', (i) => i[0]], ['Official No', (i) => esc(i[1])], ['Problem', (i) => esc(i[3]) + subl(esc(i[2])), 'whitespace-normal'], ['Result', (i) => `<span class="${i[4] === 'error' ? pill.error : pill.warning}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`]],
+          title: (i) => `Row ${i[0]} · ${i[1]}`, all: (i) => [['Row', i[0]], ['Official No', esc(i[1])], ['Field', esc(i[2])], ['Result', `<span class="${i[4] === 'error' ? pill.error : pill.warning}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`], ['Problem', esc(i[3])]], size: 'md',
           card: (i) => ({ t: `Row ${i[0]} · ${esc(i[1])}`, s: esc(i[2]), r: `<span class="${i[4] === 'error' ? pill.error : pill.warning}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`, body: esc(i[3]) }) }) + '</div>' : '');
   }
   D1ACT['up-template'] = () => toast('Demo only: no workbook was made.');
