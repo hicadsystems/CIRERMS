@@ -242,6 +242,7 @@ const TABLES = [
 // named from its own name ("5 rating_x records")
 const NOUNS = {
   ratings: ['rating', 'ratings'],
+  discipline_cases: ['disciplinary case', 'disciplinary cases'],
   rating_language: ['rating language record', 'rating language records'],
   rating_next_of_kin: ['next of kin record', 'next of kin records'],
   rating_drafting: ['drafting record', 'drafting records'],
