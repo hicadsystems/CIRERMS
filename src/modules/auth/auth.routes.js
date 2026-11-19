@@ -67,10 +67,29 @@ router.get(
 // Keeps an active session open while the person works without calling the server.
 router.post(
   '/ping',
-  requireAuth,
+  requireAuth.allowPasswordChange,
   (_req, res) => {
     res.json({ data: { ok: true } });
   }
+);
+
+// Change Password (account menu, and the forced change at first sign-in or after a reset).
+// Open to a session that must change its password, since that is how it stops having to.
+router.post(
+  '/change-password',
+  requireAuth.allowPasswordChange,
+  asyncHandler(async (req, res) => {
+    const key = clientKey(req);
+    throttle.check(key);
+    try {
+      const result = await authService.changePassword(req.user, req.actor, req.body || {});
+      throttle.clear(key);
+      res.json({ data: result });
+    } catch (err) {
+      if (err && err.code === 'WRONG_PASSWORD') throttle.fail(key);
+      throw err;
+    }
+  })
 );
 
 router.post(

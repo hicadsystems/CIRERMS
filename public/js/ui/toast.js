@@ -6,7 +6,8 @@
  *     timeout  ms before it fades (default 4200; errors 6000); 0 keeps it until closed
  *   Returns the toast element.
  *
- * Desktop: bottom right, 320 px wide. Phones: full width above the bottom bar.
+ * Toasts never cover a dialog's buttons. Phones: full width at the top, under the header. Desktop: 320 px
+ * wide at the bottom right, and at the top right while a dialog is open. They sit above a dialog's scrim.
  */
 import { cx, h } from './html.js';
 import { icon } from '../core/icons.js';
@@ -24,9 +25,24 @@ function root() {
     r = h('div', { id: 'toast-root' });
     document.body.appendChild(r);
   }
-  r.className = 'pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 flex-col gap-2 phone:bottom-20 phone:left-3 phone:right-3 phone:w-auto';
   r.setAttribute('aria-live', 'polite');
+  place(r);
+  if (!watching) {
+    watching = true;
+    // a dialog opening or closing moves the toasts that are showing
+    new MutationObserver(() => place(r)).observe(document.body, { childList: true, subtree: true });
+  }
   return r;
+}
+
+let watching = false;
+
+function place(r) {
+  const dialogOpen = !!document.querySelector('#overlay-root [role="dialog"]');
+  r.className = cx(
+    'pointer-events-none fixed right-4 z-[70] flex w-80 flex-col gap-2 phone:left-3 phone:right-3 phone:top-16 phone:bottom-auto phone:w-auto',
+    dialogOpen ? 'top-4 bottom-auto' : 'bottom-4 top-auto'
+  );
 }
 
 export function toast(message, tone = 'success', { timeout } = {}) {

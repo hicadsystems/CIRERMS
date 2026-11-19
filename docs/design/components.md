@@ -204,7 +204,7 @@ toast('Rating saved.');                       // tone: 'success' (default) | 'er
 toast(err.message, 'error', { timeout: 0 });  // 4200 ms by default (errors 6000); 0 keeps it until its X is pressed
 ```
 
-It shows bottom right on desktop and full width above the bottom bar on a phone. `core/dom.js`
+Toasts never cover a dialog's buttons: on a phone they show full width at the top, under the header; on desktop they show at the bottom right, and at the top right while a dialog is open. They sit above a dialog's scrim. `core/dom.js`
 `showToast` calls it.
 
 ## Toolbar
@@ -356,5 +356,8 @@ openNewRating();                        // what #ratings/new and the phone's flo
 | `getLookups()`, `filterDenominations(lookups, religionId)`, `filterLgas(lookups, stateId)` | `core/lookups.js` | The dropdown lists, loaded once per visit |
 | `el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes` | `core/dom.js` | Small DOM helpers (`el` is `ui/html.js` `h`); `previewBlobModal` shows a PDF or image in the dialog |
 | `icon(name, className)` | `core/icons.js` | One icon from the sprite |
+| `setAccess({ privileges, user })`, `can(screen, action = 'view')`, `pageAllowed(page)`, `moduleVisible(m)`, `moduleHref(m)`, `visibleTabs(m)`, `homeHref()`, `hasFullAccess()` | `core/access.js` | What the signed-in person may open and do: the shell fills it from `/api/auth/me`; every menu, tab and button asks `can()`. The server checks the same privileges on every route |
+| `startLock(session)`, `lockScreen(reason)`, `announceSignOut()` | `shell/lock.js` | The session lock: locks after the idle time or from Lock Screen in the account menu, unlocks with the password only, and locks, unlocks and signs out every open tab together |
+| `openChangePassword({ forced })` | `shell/password.js` | Change Password (account menu) and the forced change before anything else opens for a new or reset account |
 | `currentTheme()`, `setTheme(theme)`, `toggleTheme()`, `onThemeChange(fn)`, `bindThemeButton(button)` | `core/theme.js` | Light or dark. `bindThemeButton` makes a button the switch: it shows a moon or a sun and says the mode it switches to. `core/theme-boot.js` (a plain script in each page's `<head>`) sets the first one before the page draws |
 

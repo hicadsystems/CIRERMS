@@ -96,7 +96,19 @@ export const AREAS = [
       // one tab and page per table (TABLES below); each is its own privilege, screen tables.<slug>
       { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', href: 'tables/appraisal-ratings', tabs: [] },
       { key: 'reports', label: 'Reports', short: 'Reports', icon: 'chart-column', soon: true },
-      { key: 'admin', label: 'System Administration', short: 'Admin', icon: 'shield-user', soon: true },
+      {
+        key: 'admin',
+        label: 'System Administration',
+        short: 'Admin',
+        icon: 'shield-user',
+        href: 'admin/users',
+        tabs: [
+          { route: 'admin/users', label: 'Manage Users', icon: 'users', screen: 'admin.users' },
+          { route: 'admin/roles', label: 'Manage Roles', icon: 'shield-user', screen: 'admin.roles' },
+          { route: 'admin/password', label: 'Manage Password', icon: 'key-round', screen: 'admin.password' },
+          { route: 'admin/audit', label: 'Audit Trail', icon: 'history', screen: 'admin.audit' },
+        ],
+      },
     ],
   },
 ];
@@ -166,6 +178,10 @@ export const PAGES = [
     screen: `tables.${t.slug}`,
     view: { file: 'static-table.js', mount: 'mountStaticTable', props: { slug: t.slug } },
   })),
+  { pattern: 'admin/users', module: 'admin', tab: 'admin/users', title: 'Manage Users', subtitle: 'Accounts that can sign in', short: 'Users', screen: 'admin.users', view: { file: 'admin-users.js', mount: 'mountAdminUsers' } },
+  { pattern: 'admin/roles', module: 'admin', tab: 'admin/roles', title: 'Manage Roles', subtitle: 'What each role may open and change', short: 'Roles', screen: 'admin.roles', view: { file: 'admin-roles.js', mount: 'mountAdminRoles' } },
+  { pattern: 'admin/password', module: 'admin', tab: 'admin/password', title: 'Manage Password', subtitle: 'Reset a password for someone who cannot sign in', short: 'Password', screen: 'admin.password', view: { file: 'admin-password.js', mount: 'mountAdminPassword' } },
+  { pattern: 'admin/audit', module: 'admin', tab: 'admin/audit', title: 'Audit Trail', subtitle: 'Every action and change, newest first', short: 'Audit', screen: 'admin.audit', view: { file: 'admin-audit.js', mount: 'mountAdminAudit' } },
   {
     // "Coming in a Later Release" (drawn by the shell; shown to full-access roles only)
     pattern: 'soon/:key',

@@ -40,7 +40,9 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
 12. **Session lock** — locks after 15 minutes without use (`SESSION_IDLE_MINUTES`) or from *Lock Screen* in the account menu; unlocks with the password only, checked by the server; *Sign Out* from the lock screen. While locked the page is hidden and the server refuses the session's requests; every open tab locks and unlocks together.
 13. **Static Tables** (`#tables/<slug>`, 16 tabs) — one table engine for Appraisal Ratings, Branch, Exit Type, Entry Mode, Offences, Sanctions, Institution, Local Government, Languages, Relationship, Staff Branch, Specialisation Area, Ships, States, Title and Training. Each tab is a searchable list (25 a page from the server) with **Add** and **Edit** in a dialog (a bottom sheet on a phone), a Status of Active or Inactive, and **Delete** after a confirmation. A row that records use cannot be deleted: the message says where it is used (for example "in use (5 ratings)") and the row can be made Inactive instead, which takes it out of the dropdowns while the records that hold it still show it. Every write is audited. Each table is its own privilege, `tables.<slug>` with view, add, edit and delete, checked on every route and used to hide the buttons. Details below, *Static Tables*.
 
-*(The other sidebar items — Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Reports and System Administration — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
+14. **System Administration** (`#admin/users`, `#admin/roles`, `#admin/password`, `#admin/audit`) — four tabs. **Manage Users**: search and filter the accounts (role, active state), 25 a page from the server; a row opens the account in a dialog; **Add Account**, **Edit**, **Deactivate** and **Reactivate** (after a confirmation) and **Reset Password**. **Manage Roles**: the roles with their user counts; a row opens the role with its privilege grid, every module's screens grouped by module with only the actions each has (view, add, edit, delete, approve); **Add Role**, **Edit** and **Delete**. **Manage Password**: find an account by official number or user name and reset it. **Audit Trail**: filters (dates, who, action, table, official number), 25 a page, a row opens the entry with before and after. **Change Password** is in the account menu (desktop and phone). Details below, *System Administration*.
+
+*(The other sidebar items — Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration and Reports — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
 
 How a module registers itself, declares its privileges and writes to the audit trail: `CONVENTIONS.md`, *Access, audit and modules*.
 
@@ -90,6 +92,43 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 - A training entry picked from the Training table takes the course's name as its Course text, and the course's institution when none is picked.
 - The seed adds the old system's `StaticTables` role ("Static Tables": view, add, edit and delete on all 16). Manage Roles (WP3) will group `tables.*` under Static Tables.
 
+### System Administration
+
+`src/modules/users/` (Manage Users and Manage Password), `src/modules/access/` (Manage Roles) and `src/modules/audit/` (Audit Trail) serve the four screens, drawn by `public/js/sections/admin-users.js`, `admin-roles.js`, `admin-password.js` and `admin-audit.js` (shared parts in `admin-common.js`). Privileges: `admin.users` (view, add, edit), `admin.roles` (view, add, edit, delete), `admin.password` (view, edit), `admin.audit` (view). Every route checks its own; the buttons show only with the grant.
+
+| API | Does | Needs |
+|---|---|---|
+| `GET /api/users?q=&roleId=&active=&page=` | the accounts, 25 a page (`q` searches user name, name, official number and e-mail); never a hash | `admin.users` view |
+| `GET /api/users/meta`, `GET /api/users/:id` | the roles and Specialisations for the dialogs; one account | view |
+| `POST /api/users` | add an account: a random one-time password comes back once, in the response only | add |
+| `PUT /api/users/:id` | edit (the user name is fixed) | edit |
+| `POST /api/users/:id/deactivate` / `reactivate` | an account is never deleted; deactivating ends its sessions | edit |
+| `GET /api/users/lookup?q=` | one account by official number or user name | `admin.password` view |
+| `POST /api/users/:id/reset-password` | a new one-time password (once), the person's sessions end, they choose a new one at next sign-in | `admin.password` edit |
+| `GET /api/access/roles?q=&page=`, `GET /api/access/roles/:id`, `GET /api/access/privileges` | the roles (25 a page, with user counts and privileges); the catalogue | `admin.roles` view |
+| `POST` / `PUT` / `DELETE /api/access/roles[/:id]` | add, edit, delete a role | add / edit / delete |
+| `POST /api/auth/change-password` | Change Password (account menu): current, new, confirm | any signed-in account |
+| `GET /api/audit`, `/api/audit/:id`, `/api/audit/filters` | the trail (WP1) | `admin.audit` view |
+
+**An account** has a user name (a rating's official number, or an administrator's own such as `HICO001`; fixed once made), full name, role, an optional **Linked Rating** (an official number that must exist in Ratings and not be linked to another account; it opens *View My Details*), an optional **Specialisation** (stored and shown here; the drafting packages apply it), phone, e-mail and an active state. **Nothing is deleted**: an account is deactivated, which ends its sessions, and can be reactivated.
+
+**Guards** (the server refuses, with the reason): nobody deactivates, resets or changes the role of their own account (they may edit the rest of it, and use Change Password); the last active full-access administrator cannot be deactivated or moved to another role; the Administrator role (full access) cannot be edited or deleted; a role that still has users cannot be deleted; role names are unique, whatever the case; a role must hold at least one privilege, every pair must exist in the catalogue, and a screen's other actions need its View.
+
+**Passwords.** Hashed with bcrypt (`src/shared/password.js`, the one helper); a hash is never returned. The rules (Change Password, and enforced by the server): at least 8 characters, with a letter and a digit, and different from the current password. A new or reset account gets a random 12-character **one-time password** (no look-alike characters), shown once to the administrator and never stored in clear, logged or written to the audit trail; at the next sign-in the person sees *Choose a New Password* before anything else opens, and until they do the server answers every other request with 403 `PASSWORD_CHANGE_REQUIRED`. Changing a password signs out the person's other sessions (this one stays). The old e-mailed-code reset is not rebuilt: someone who forgets their password asks an administrator.
+
+**Roles.** A role is a grid of every module's screens and the actions each has, read from the privilege catalogue (`/api/access/privileges`, which the module manifests fill), grouped by module. **A later module's screens appear in Manage Roles by themselves**: declare them in its `<module>.module.js` `privileges` and they are in the catalogue (and in the Administrator role) at the next start or seed; nothing is added here. Seeding grants to other roles is that module's own seed file. A role change applies from the person's next request (the server reads the grants on every request), and nobody is signed out.
+
+**The audit trail.** Every write is audited in its transaction: accounts (INSERT, UPDATE for edit, deactivate, reactivate, reset and password change) and roles (INSERT, UPDATE with the privileges added and removed, DELETE). A reset or password change records *that* the credentials changed (and the sessions it ended), never the password; `audit.record` drops any field named like a password, hash, token or secret. Nothing in the app edits or deletes an audit row.
+
+Choices made where the design and decisions were silent (also in the report):
+
+- **Manage Roles** is a list of roles with a dialog for each role's grid, not the demo's role list beside a grid, so it follows the wide-table rule (key columns, row opens a dialog) and a 25-a-page list; a screen's actions are toggles (not a six-column table) so the grid never scrolls sideways on a phone. Toggling an action turns View on; turning View off clears the screen's other actions. *Select All* and *Clear* act on one module.
+- **Manage Password** is the administrator's reset (decision 3), not the demo's change-your-own-password form; that form is *Change Password* in the account menu.
+- **Linked Rating** is typed as an official number and checked, not picked from a list of every rating.
+- **The user name cannot be changed** after the account is made (the audit trail and sign-in use it).
+- **Search** in Manage Users matches user name, name, official number and e-mail; the Audit Trail's *Official No* filter matches the record key (so it also finds a user name or role name for those tables).
+- **Seeded roles other than Administrator**: Records Officer, Records Clerk, Auditor (the demo's names) with the grants the old system's privilege names map to (`UpdateDetails`, `NewRatings`, `BatchCreation`, the two lists, `ViewDocument`); the old role bundles themselves are not in the code. Grants for the later modules' screens come with their packages.
+
 ---
 
 ## 3. Demo Credentials
@@ -98,6 +137,14 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 |---|---|---|---|---|
 | `HICO001` | `Admin@123` | Administrator | `NULL` | Every privilege; demonstrates unlinked admin notice on *View My Details*. |
 | `B0539` | `Rating@123` | Rating | `B0539` | *View My Details* only: linked to **PO Okonkwo Chukwuemeka**, sees the read-only dossier and nothing else (403 from every other API). |
+| `HICO002` | `Officer@123` | Records Officer | `NULL` | Keeps the ratings records (new rating, batch upload, documents, edits); no administration. |
+| `HICO003` | `Officer@123` | Records Officer | `NULL` | As `HICO002`, tied to the **Navigation** Specialisation (a drafting officer will then see only that department's batches and approvals). |
+| `B0541` | `Clerk@123` | Records Clerk | `B0541` | Looks up and updates records and documents; cannot add or upload. |
+| `HICO004` | `Auditor@123` | Auditor | `NULL` | Reads the records and the Audit Trail; changes nothing. |
+| `HICO005` | `Tables@123` | Static Tables | `NULL` | Maintains the 16 Static Tables (the old `StaticTables` role). |
+| `B0562` | `Rating@123` | Rating | `B0562` | **Inactive**: cannot sign in (shows the deactivated state). |
+
+An account made in Manage Users or reset in Manage Password has a **one-time password** that the person must replace at first sign-in; the seeded accounts above do not (so the demo opens straight in).
 
 ---
 
@@ -164,4 +211,12 @@ NODE_PATH=$(npm root -g) node tests/e2e/access-walkthrough.js
 npm run migrate:fresh
 npm start
 NODE_PATH=$(npm root -g) node tests/e2e/static-tables-walkthrough.js
+```
+
+`tests/e2e/system-admin-walkthrough.js` (WP3) walks Manage Users, Manage Roles, Manage Password, the Audit Trail and Change Password as the Administrator at 1440 and 390 px in light and dark (every action through the dialogs), then the guards, a new account's forced first change, a reset ending a session, a role change applying on the next request, accounts with no grants or view only (no buttons, 403 from the API), and the audit trail holding every write and no password. It adds throw-away `WT` roles and accounts and removes them when it ends.
+
+```bash
+npm run migrate:fresh
+npm start
+NODE_PATH=$(npm root -g) node tests/e2e/system-admin-walkthrough.js
 ```

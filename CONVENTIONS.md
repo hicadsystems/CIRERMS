@@ -18,7 +18,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
-| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports and the System Administration screens (their look is agreed in `docs/design/demo.html`; WP1 built what they need underneath). The other non-Ratings modules |
+| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports (its look is agreed in `docs/design/demo.html`). The other modules not yet built. System Administration is built (WP3) |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
 ## Folder layout
@@ -35,12 +35,13 @@ CIRERMS/
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
 │  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
-│  ├─ shared/                   # audit.js (the audit trail helper), excel.js, pdf.js, dates.js, errors.js
+│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, pdf.js, dates.js, errors.js
 │  └─ modules/
 │     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
 │     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js
-│     ├─ access/                # roles and the privilege catalogue (read side, for Manage Roles)
+│     ├─ access/                # roles (add, edit, delete) and the privilege catalogue, for Manage Roles
 │     ├─ audit/                 # the audit trail (read side, for Audit Trail)
+│     ├─ users/                 # Manage Users and Manage Password: accounts, one-time passwords, deactivation, reset
 │     ├─ tables/                # Static Tables: tables.module.js  tables.config.js (one config per table)  tables.routes.js  tables.service.js  tables.repo.js
 │     ├─ dashboard/             # dashboard.module.js  dashboard.routes.js  dashboard.service.js  dashboard.repo.js
 │     ├─ ratings/               # ratings.module.js  ratings.routes.js  ratings.service.js  ratings.repo.js
@@ -52,7 +53,8 @@ CIRERMS/
 │  │                            # dates, dom, lookups, icons, choices, theme-boot (light or dark before the page draws) and theme (the switch)
 │  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session, lock (the session lock)
 │  ├─ js/ui/                    # the component kit (docs/design/components.md)
-│  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents, static-table),
+│  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents, static-table,
+│                            # admin-users, admin-roles, admin-password, admin-audit),
 │  │                            # the record's parts (rating-*.js) and app-shell.js (loads each page's screen from nav.js)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
@@ -162,6 +164,8 @@ DROP TABLE ratings;
 6. `20261120_010100_users_role_id.sql` — `users.role` (a string) becomes `users.role_id` (existing values moved across)
 7. `20261120_010200_create_user_sessions.sql` — `user_sessions`: open, locked or ended sign-ins
 8. `20261120_010300_create_audit_trail.sql` — `audit_trail`
+9. `20261120_020000_create_static_tables.sql` — the Static Tables' columns and new tables (WP2)
+10. `20261120_030000_users_admin.sql` — `users`: e-mail, phone, Specialisation, `must_change_password`, `password_changed_at` (WP3)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -287,6 +291,9 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   to keep one native). Look a select up with `querySelector('[name="…"]')` or its id, never
   `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
   it is on the page. Its look is set at the end of `input.css`.
+- **Toasts never cover a dialog's buttons** (`js/ui/toast.js`). On a phone they show full width at the top, under
+  the header; on desktop they stay at the bottom right, and show at the top right while a dialog is open. They
+  sit above a dialog's scrim.
 - No other CSS framework or external CDN dependency.
 
 ## Access, audit and modules
@@ -328,8 +335,8 @@ module.exports = {
   by the auth service. The record id is the record's key: a service number, `B0539:12` for a child row.
 - **Reading the trail.** `GET /api/audit?from=&to=&user=&userId=&action=&table=&record=&page=` (25 a page,
   newest first, dates `YYYY-MM-DD`), `GET /api/audit/:id` (with its changes), `GET /api/audit/filters`;
-  `GET /api/access/privileges` and `GET /api/access/roles` for Manage Roles. Screen ids `admin.audit` and
-  `admin.roles` (view).
+  `GET /api/access/privileges` and `GET /api/access/roles` for Manage Roles. Screen ids `admin.audit` (view)
+  and `admin.roles` (view, add, edit, delete); see *System Administration* below.
 - **The screens hide what a person may not do.** `js/core/access.js` holds the privileges from
   `/api/auth/me`: `can(screen, action)` (action defaults to `view`) decides every button, menu item and tab;
   the rail, the module tabs, the bottom bar, More and Ctrl K show only what may be opened. Each page in
@@ -351,6 +358,24 @@ module.exports = {
   `unique`, `list`). Every table carries the codes, flags and links the other modules need and every old
   column that held real data (PLAN 9c); codes are trimmed, upper case and unique. `/api/lookups` carries
   them (codes, flags, links) for the forms and later modules.
+- **System Administration** (WP3). Screens `admin.users` (view, add, edit), `admin.roles` (view, add, edit,
+  delete), `admin.password` (view, edit), `admin.audit` (view); routes under `/api/users` (accounts, `lookup`,
+  `reset-password`), `/api/access/roles` (add, edit, delete) and `/api/audit`. **Passwords** go through
+  `src/shared/password.js` only (bcrypt `hash`/`verify`, `validateNew`: at least 8 characters with a letter and a
+  digit and different from the current one, `generateOneTime`); a hash is never returned, and no password or
+  one-time password is ever logged or written to the audit trail (`audit.record` also drops any field named like
+  one). A new or reset account has `users.must_change_password = 1` and a one-time password shown once to the
+  administrator; `requireAuth` answers every route with 403 `PASSWORD_CHANGE_REQUIRED` until the person has chosen
+  their own (`requireAuth.allowLocked` and `requireAuth.allowPasswordChange` are the exceptions: `/api/auth/me`,
+  lock, sign out, `POST /api/auth/change-password`), and the shell shows `js/shell/password.js` before anything
+  else. Changing or resetting a password ends the person's other sessions (a reset, all of them); deactivating
+  ends them all. Accounts are never deleted. Guards (409 with a code): `SELF_DEACTIVATE`, `SELF_ROLE_CHANGE`,
+  `SELF_RESET`, `LAST_ADMIN` (the last active full-access administrator), `ROLE_PROTECTED` (the Administrator
+  role), `ROLE_IN_USE`, `DUPLICATE_ROLE`, `DUPLICATE_USERNAME`. **A later module's screens appear in Manage Roles
+  from its manifest** (`privileges`), with nothing to add in System Administration; a grant to a role other than
+  Administrator is that module's seed. A role change applies from the person's next request (grants are read on
+  every request). The screens' shared parts (the View Details row tooltip, the one-time password dialog) are in
+  `js/sections/admin-common.js`.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -382,8 +407,8 @@ Every screen has both layouts (desktop 761 px and up, phone 760 px and below) an
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
 Drafting, Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
-Assessment, Disciplinary Action and Discharge Administration (Records); Reports and System
-Administration (Administration). Static Tables is built (16 tabs, `tables.<slug>`).
+Assessment, Disciplinary Action and Discharge Administration (Records); Reports
+(Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 
 ## Open items
 

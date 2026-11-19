@@ -3,7 +3,7 @@
 const db = require('../../db');
 
 const USER_COLUMNS = `u.id, u.username, u.password_hash, u.full_name, u.service_number, u.is_active, u.last_login_at,
-       u.role_id, r.name AS role_name, r.full_access`;
+       u.role_id, u.must_change_password, r.name AS role_name, r.full_access`;
 
 async function findByUsername(username, conn = null) {
   const rows = await db.query(
@@ -29,6 +29,25 @@ async function findById(id, conn = null) {
     conn
   );
   return rows[0] || null;
+}
+
+/** A new password the person chose: the hash, and no more forced change. */
+async function setPassword(id, passwordHash, conn = null) {
+  await db.query(
+    'UPDATE users SET password_hash = ?, must_change_password = 0, password_changed_at = NOW() WHERE id = ?',
+    [passwordHash, id],
+    conn
+  );
+}
+
+/** Ends the user's sessions other than `exceptSessionId`; how many ended. */
+async function endOtherSessions(userId, exceptSessionId, conn = null) {
+  const res = await db.query(
+    'UPDATE user_sessions SET ended_at = NOW() WHERE user_id = ? AND id <> ? AND ended_at IS NULL',
+    [userId, exceptSessionId],
+    conn
+  );
+  return res.affectedRows || 0;
 }
 
 async function touchLastLogin(id, conn = null) {
@@ -118,6 +137,8 @@ module.exports = {
   findByUsername,
   findById,
   touchLastLogin,
+  setPassword,
+  endOtherSessions,
   insertSession,
   findSession,
   touchSession,
