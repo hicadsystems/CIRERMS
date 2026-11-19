@@ -146,6 +146,7 @@ Notes for coming briefs:
   `core/access.js` and `shell/lock.js` in `docs/design/components.md`.
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
+- **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Security, told to the owner:** the old repository's `hpproject/Web.config` holds database
   passwords in plain text; they should be changed if still in use. Never copy them.
 
