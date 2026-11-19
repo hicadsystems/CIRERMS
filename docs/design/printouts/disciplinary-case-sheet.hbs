@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="portrait"}}
+</head>
+<body>
+{{> header}}
+<h2 class="sec">The rating</h2>
+{{> facts items=rating cols=2}}
+<h2 class="sec">The case</h2>
+{{> facts items=particulars cols=1}}
+{{#if decision}}
+<h2 class="sec">Decision</h2>
+{{> facts items=decision cols=1}}
+{{/if}}
+{{#if corrections.rows.length}}
+{{> datatable corrections}}
+{{/if}}
+{{> signatures items=signatures}}
+</body>
+</html>

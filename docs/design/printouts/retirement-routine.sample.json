@@ -1,0 +1,101 @@
+{
+  "title": "RETIREMENT ROUTINE",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "subtitle": "Layout indicative: the owner supplies the real form",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Date Employed",
+      "value": "2008-03-12",
+      "kind": "date"
+    },
+    {
+      "label": "Length of Service",
+      "value": "18 years"
+    },
+    {
+      "label": "Age",
+      "value": "38 years"
+    },
+    {
+      "label": "Exit Type",
+      "value": "Retirement"
+    },
+    {
+      "label": "Exit Date",
+      "value": "2027-03-31",
+      "kind": "date"
+    },
+    {
+      "label": "Proposal",
+      "value": "Age limit"
+    }
+  ],
+  "table": {
+    "heading": "Clearance",
+    "columns": [
+      {
+        "label": "Section",
+        "key": "s",
+        "w": "38%"
+      },
+      {
+        "label": "Cleared",
+        "kind": "check",
+        "w": "10%"
+      },
+      {
+        "label": "Cleared By",
+        "kind": "fill"
+      },
+      {
+        "label": "Date",
+        "kind": "fill",
+        "w": "18%"
+      }
+    ],
+    "rows": [
+      {
+        "s": "Ship or unit"
+      },
+      {
+        "s": "Stores and equipment"
+      },
+      {
+        "s": "Medical"
+      },
+      {
+        "s": "Accounts and pay"
+      },
+      {
+        "s": "Documents and records"
+      }
+    ]
+  },
+  "note": "Reason: reached the age limit for the rate.",
+  "signatures": [
+    {
+      "role": "Rating"
+    },
+    {
+      "role": "Commanding Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

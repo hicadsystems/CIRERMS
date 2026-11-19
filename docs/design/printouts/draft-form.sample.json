@@ -1,0 +1,593 @@
+{
+  "title": "DRAFT FORM",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "DOD-SM-ALL-ALL-000006",
+  "subtitle": "Batch awaiting approval",
+  "facts": [
+    {
+      "label": "Batch Number",
+      "value": "DOD-SM-ALL-ALL-000006",
+      "kind": "code"
+    },
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Specialisation",
+      "value": "All"
+    },
+    {
+      "label": "Initiated By",
+      "value": "PO OKONKWO Chukwuemeka"
+    },
+    {
+      "label": "Date",
+      "value": "2026-11-12",
+      "kind": "date"
+    },
+    {
+      "label": "Ratings",
+      "value": "38"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "7%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "17%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "5%"
+      },
+      {
+        "label": "Sex",
+        "key": "sex",
+        "kind": "ctr",
+        "w": "4%"
+      },
+      {
+        "label": "Current Ship",
+        "key": "from",
+        "w": "11%"
+      },
+      {
+        "label": "Months",
+        "key": "months",
+        "kind": "num",
+        "w": "6%"
+      },
+      {
+        "label": "Proposed Ship",
+        "key": "to",
+        "w": "12%"
+      },
+      {
+        "label": "Vice / Deployment",
+        "key": "vice",
+        "w": "13%"
+      },
+      {
+        "label": "Remark",
+        "key": "remark"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "C0311",
+        "name": "OKONKWO Danladi Ifeanyi",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 21,
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0319",
+        "name": "ADEYEMI Kehinde Samson",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS DELTA",
+        "months": 30,
+        "to": "NNS DELTA",
+        "vice": "Vice ONYEKACHI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0321",
+        "name": "BELLO Chidi Sunday",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS BEECROFT",
+        "months": 30,
+        "to": "NNS THUNDER",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0323",
+        "name": "EZE Ime Friday",
+        "rate": "PO",
+        "sex": "M",
+        "from": "NNS OKPABANA",
+        "months": 21,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice GARBA",
+        "remark": "Medical board pending",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0332",
+        "name": "IBRAHIM Umar Peter",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS OKPABANA",
+        "months": 15,
+        "to": "NNS THUNDER",
+        "vice": "Vice ADEYEMI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0337",
+        "name": "OBI Danladi Ade",
+        "rate": "PO",
+        "sex": "F",
+        "from": "NNS LANA",
+        "months": 13,
+        "to": "NOT RECOMMENDED: sea time not met",
+        "vice": "",
+        "remark": "",
+        "struck": true,
+        "flag": ""
+      },
+      {
+        "sn": "C0340",
+        "name": "NWACHUKWU Kehinde Friday",
+        "rate": "MPO",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 23,
+        "to": "NNS BEECROFT",
+        "vice": "Vice AKPAN",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0354",
+        "name": "ABUBAKAR Danladi Peter",
+        "rate": "PO",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 28,
+        "to": "NNS LANA",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0359",
+        "name": "OLADIPO Blessing Friday",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS KADA",
+        "months": 27,
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0374",
+        "name": "UDOH Tunde Ugochukwu",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS PATHFINDER",
+        "months": 16,
+        "to": "NNS LANA",
+        "vice": "Vice AFOLABI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0382",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "OS",
+        "sex": "F",
+        "from": "NNS DELTA",
+        "months": 25,
+        "to": "NNS THUNDER",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0392",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "CPO",
+        "sex": "F",
+        "from": "NNS PATHFINDER",
+        "months": 19,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice UDOH",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0406",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS THUNDER",
+        "months": 30,
+        "to": "NNS THUNDER",
+        "vice": "Vice ONYEKACHI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0418",
+        "name": "AFOLABI Peter Michael",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS KADA",
+        "months": 12,
+        "to": "NNS ARADU",
+        "vice": "Vice LAWAL",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0427",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "OS",
+        "sex": "F",
+        "from": "NNS QUORRA",
+        "months": 29,
+        "to": "NNS ARADU",
+        "vice": "New vacancy",
+        "remark": "Medical board pending",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0435",
+        "name": "ETIM Aminu Friday",
+        "rate": "MPO",
+        "sex": "F",
+        "from": "NNS PATHFINDER",
+        "months": 27,
+        "to": "NNS OKPABANA",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0450",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "MPO",
+        "sex": "M",
+        "from": "NNS LANA",
+        "months": 15,
+        "to": "NOT RECOMMENDED: sea time not met",
+        "vice": "",
+        "remark": "",
+        "struck": true,
+        "flag": ""
+      },
+      {
+        "sn": "C0460",
+        "name": "SANI Ime Friday",
+        "rate": "OS",
+        "sex": "M",
+        "from": "NNS QUORRA",
+        "months": 27,
+        "to": "NNS LANA",
+        "vice": "New vacancy",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0469",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "OS",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 14,
+        "to": "NNS OKPABANA",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0485",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS NGURU",
+        "months": 20,
+        "to": "NNS KADA",
+        "vice": "Vice AKPAN",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0501",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 10,
+        "to": "NNS LANA",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0511",
+        "name": "LAWAL Grace Dauda",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS SAPELE",
+        "months": 11,
+        "to": "NNS DELTA",
+        "vice": "Vice MOHAMMED",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0523",
+        "name": "AMADI Chidi Abdul",
+        "rate": "MPO",
+        "sex": "M",
+        "from": "NNS SAPELE",
+        "months": 10,
+        "to": "NNS NGURU",
+        "vice": "New vacancy",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0538",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS BEECROFT",
+        "months": 30,
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0555",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 10,
+        "to": "NNS LANA",
+        "vice": "Vice NWACHUKWU",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0560",
+        "name": "EDET Effiong Michael",
+        "rate": "PO",
+        "sex": "M",
+        "from": "NNS PATHFINDER",
+        "months": 18,
+        "to": "NNS QUORRA",
+        "vice": "New vacancy",
+        "remark": "Medical board pending",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0574",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "LS",
+        "sex": "F",
+        "from": "NNS DELTA",
+        "months": 23,
+        "to": "NNS UNITY",
+        "vice": "New vacancy",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0578",
+        "name": "GARBA Umar Olusegun",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 21,
+        "to": "NOT RECOMMENDED: sea time not met",
+        "vice": "",
+        "remark": "",
+        "struck": true,
+        "flag": ""
+      },
+      {
+        "sn": "A0592",
+        "name": "IGWE Segun Michael",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS OKPABANA",
+        "months": 26,
+        "to": "NNS NGURU",
+        "vice": "Deployment",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0607",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "LS",
+        "sex": "F",
+        "from": "NNS THUNDER",
+        "months": 19,
+        "to": "NNS UNITY",
+        "vice": "Vice OKONKWO",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS LANA",
+        "months": 13,
+        "to": "NNS THUNDER",
+        "vice": "Vice JOSEPH",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "CPO",
+        "sex": "M",
+        "from": "NNS PATHFINDER",
+        "months": 11,
+        "to": "NNS ARADU",
+        "vice": "Vice ABUBAKAR",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS ARADU",
+        "months": 20,
+        "to": "NNS UNITY",
+        "vice": "Vice FASHOLA",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "rate": "CPO",
+        "sex": "F",
+        "from": "NNS KADA",
+        "months": 17,
+        "to": "NNS DELTA",
+        "vice": "Vice OKONKWO",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "OS",
+        "sex": "M",
+        "from": "NNS ARADU",
+        "months": 16,
+        "to": "NNS KADA",
+        "vice": "Vice OBI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS THUNDER",
+        "months": 28,
+        "to": "NNS NGURU",
+        "vice": "Vice LAWAL",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 17,
+        "to": "NNS QUORRA",
+        "vice": "Vice YAKUBU",
+        "remark": "Medical board pending",
+        "struck": false,
+        "flag": ""
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS LANA",
+        "months": 29,
+        "to": "NNS QUORRA",
+        "vice": "Vice NNAMDI",
+        "remark": "",
+        "struck": false,
+        "flag": ""
+      }
+    ]
+  },
+  "note": "Lines struck through are ratings the approving department did not recommend.",
+  "signatures": [
+    {
+      "role": "Drafting Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

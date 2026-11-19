@@ -1,0 +1,671 @@
+{
+  "title": "CURRENT RATINGS NOMINAL ROLL",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "Total matching records: 74 | Filter: \"Western\"",
+  "summary": [
+    {
+      "label": "Ratings",
+      "value": 74
+    },
+    {
+      "label": "Ships",
+      "value": 12
+    },
+    {
+      "label": "Commands",
+      "value": 5
+    }
+  ],
+  "facts": [
+    {
+      "label": "Status",
+      "value": "Current"
+    },
+    {
+      "label": "Filter",
+      "value": "Western"
+    },
+    {
+      "label": "Printed",
+      "value": "2026-11-19",
+      "kind": "date"
+    }
+  ],
+  "table": {
+    "dense": false,
+    "columns": [
+      {
+        "label": "S/N",
+        "kind": "index",
+        "w": "6%"
+      },
+      {
+        "label": "Official No.",
+        "key": "sn",
+        "kind": "code",
+        "w": "10%"
+      },
+      {
+        "label": "Full Name",
+        "key": "name",
+        "kind": "name",
+        "w": "25%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "16%"
+      },
+      {
+        "label": "Current Ship",
+        "key": "ship",
+        "w": "15%"
+      },
+      {
+        "label": "Branch",
+        "key": "branch",
+        "w": "14%"
+      },
+      {
+        "label": "Command",
+        "key": "cmd",
+        "w": "14%"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "C0311",
+        "name": "OKONKWO Danladi Ifeanyi",
+        "rate": "Able Seaman",
+        "ship": "NNS UNITY",
+        "branch": "Marine Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0319",
+        "name": "ADEYEMI Kehinde Samson",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Writer",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "B0321",
+        "name": "BELLO Chidi Sunday",
+        "rate": "Leading Seaman",
+        "ship": "NNS BEECROFT",
+        "branch": "Communications",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0323",
+        "name": "EZE Ime Friday",
+        "rate": "Petty Officer",
+        "ship": "NNS OKPABANA",
+        "branch": "Supply",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0332",
+        "name": "IBRAHIM Umar Peter",
+        "rate": "Leading Seaman",
+        "ship": "NNS OKPABANA",
+        "branch": "Writer",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "A0337",
+        "name": "OBI Danladi Ade",
+        "rate": "Petty Officer",
+        "ship": "NNS LANA",
+        "branch": "Communications",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C0340",
+        "name": "NWACHUKWU Kehinde Friday",
+        "rate": "Master Petty Officer",
+        "ship": "NNS UNITY",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0354",
+        "name": "ABUBAKAR Danladi Peter",
+        "rate": "Petty Officer",
+        "ship": "NNS UNITY",
+        "branch": "Communications",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "A0359",
+        "name": "OLADIPO Blessing Friday",
+        "rate": "Able Seaman",
+        "ship": "NNS KADA",
+        "branch": "Supply",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "A0374",
+        "name": "UDOH Tunde Ugochukwu",
+        "rate": "Leading Seaman",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "B0382",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS DELTA",
+        "branch": "Communications",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "C0392",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "Chief Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "C0406",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "Able Seaman",
+        "ship": "NNS THUNDER",
+        "branch": "Hydrography",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "C0418",
+        "name": "AFOLABI Peter Michael",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS KADA",
+        "branch": "Seaman",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0427",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS QUORRA",
+        "branch": "Supply",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "A0435",
+        "name": "ETIM Aminu Friday",
+        "rate": "Master Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "A0450",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "Master Petty Officer",
+        "ship": "NNS LANA",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "C0460",
+        "name": "SANI Ime Friday",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS QUORRA",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B0469",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0485",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "Able Seaman",
+        "ship": "NNS NGURU",
+        "branch": "Communications",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0501",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "Able Seaman",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "B0511",
+        "name": "LAWAL Grace Dauda",
+        "rate": "Leading Seaman",
+        "ship": "NNS SAPELE",
+        "branch": "Seaman",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C0523",
+        "name": "AMADI Chidi Abdul",
+        "rate": "Master Petty Officer",
+        "ship": "NNS SAPELE",
+        "branch": "Communications",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "C0538",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "Leading Seaman",
+        "ship": "NNS BEECROFT",
+        "branch": "Writer",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "A0555",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0560",
+        "name": "EDET Effiong Michael",
+        "rate": "Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Writer",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0574",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "Leading Seaman",
+        "ship": "NNS DELTA",
+        "branch": "Electrical Engineering",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0578",
+        "name": "GARBA Umar Olusegun",
+        "rate": "Leading Seaman",
+        "ship": "NNS UNITY",
+        "branch": "Hydrography",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0592",
+        "name": "IGWE Segun Michael",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS OKPABANA",
+        "branch": "Writer",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0607",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "Leading Seaman",
+        "ship": "NNS THUNDER",
+        "branch": "Supply",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "rate": "Able Seaman",
+        "ship": "NNS LANA",
+        "branch": "Communications",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "Chief Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "Able Seaman",
+        "ship": "NNS ARADU",
+        "branch": "Marine Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "rate": "Chief Petty Officer",
+        "ship": "NNS KADA",
+        "branch": "Medical",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS ARADU",
+        "branch": "Writer",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "rate": "Leading Seaman",
+        "ship": "NNS THUNDER",
+        "branch": "Supply",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "Leading Seaman",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS LANA",
+        "branch": "Supply",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B0703",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "rate": "Able Seaman",
+        "ship": "NNS LANA",
+        "branch": "Seaman",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "A0716",
+        "name": "UDOH Peter Olusegun",
+        "rate": "Able Seaman",
+        "ship": "NNS SAPELE",
+        "branch": "Hydrography",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B0726",
+        "name": "AKPAN Kehinde Samson",
+        "rate": "Able Seaman",
+        "ship": "NNS OKPABANA",
+        "branch": "Communications",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0728",
+        "name": "MOHAMMED Chinedu Ekong",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Marine Engineering",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0730",
+        "name": "CHUKWU Blessing Olusegun",
+        "rate": "Master Petty Officer",
+        "ship": "NNS OKPABANA",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C0743",
+        "name": "AFOLABI Ifeanyi Ade",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS NGURU",
+        "branch": "Communications",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "C0754",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS BEECROFT",
+        "branch": "Hydrography",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0769",
+        "name": "ETIM Victor Ugochukwu",
+        "rate": "Master Petty Officer",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C0782",
+        "name": "OGUNLEYE Chinedu Okon",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS QUORRA",
+        "branch": "Electrical Engineering",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "C0799",
+        "name": "SANI Danladi Dauda",
+        "rate": "Chief Petty Officer",
+        "ship": "NNS QUORRA",
+        "branch": "Electrical Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0814",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "rate": "Master Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0821",
+        "name": "OKAFOR Effiong Samson",
+        "rate": "Master Petty Officer",
+        "ship": "NNS OKPABANA",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0834",
+        "name": "BASSEY Tunde Michael",
+        "rate": "Leading Seaman",
+        "ship": "NNS SAPELE",
+        "branch": "Seaman",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0840",
+        "name": "LAWAL Kehinde Sunday",
+        "rate": "Chief Petty Officer",
+        "ship": "NNS NGURU",
+        "branch": "Marine Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0845",
+        "name": "AMADI Chinedu Ade",
+        "rate": "Master Petty Officer",
+        "ship": "NNS THUNDER",
+        "branch": "Hydrography",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "C0855",
+        "name": "YAKUBU Chukwuemeka Chibuike",
+        "rate": "Petty Officer",
+        "ship": "NNS THUNDER",
+        "branch": "Supply",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "A0857",
+        "name": "ONYEKACHI Grace Abdul",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS LANA",
+        "branch": "Medical",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "B0864",
+        "name": "EDET Ayodele Ugochukwu",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS QUORRA",
+        "branch": "Medical",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0874",
+        "name": "FASHOLA Tunde Ade",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS THUNDER",
+        "branch": "Hydrography",
+        "cmd": "Central Naval Command"
+      },
+      {
+        "sn": "B0877",
+        "name": "GARBA Effiong Ifeanyi",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Communications",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0893",
+        "name": "IGWE Taiwo Ekong",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS LANA",
+        "branch": "Hydrography",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "A0905",
+        "name": "JOSEPH Grace Michael",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS THUNDER",
+        "branch": "Electrical Engineering",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "C0909",
+        "name": "OKONKWO Ime Dauda",
+        "rate": "Leading Seaman",
+        "ship": "NNS LANA",
+        "branch": "Electrical Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0921",
+        "name": "ADEYEMI Segun Ekong",
+        "rate": "Master Petty Officer",
+        "ship": "NNS KADA",
+        "branch": "Medical",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "C0938",
+        "name": "BELLO Samuel Chibuike",
+        "rate": "Able Seaman",
+        "ship": "NNS QUORRA",
+        "branch": "Communications",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B0953",
+        "name": "EZE Musa Chibuike",
+        "rate": "Master Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Seaman",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0956",
+        "name": "IBRAHIM Musa Obinna",
+        "rate": "Master Petty Officer",
+        "ship": "NNS ARADU",
+        "branch": "Seaman",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "A0957",
+        "name": "OBI Tunde Chibuike",
+        "rate": "Ordinary Seaman",
+        "ship": "NNS DELTA",
+        "branch": "Medical",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0959",
+        "name": "NWACHUKWU Emeka Ifeanyi",
+        "rate": "Master Petty Officer",
+        "ship": "NNS BEECROFT",
+        "branch": "Marine Engineering",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "B0969",
+        "name": "ABUBAKAR Joseph Abdul",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS SAPELE",
+        "branch": "Communications",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B0978",
+        "name": "OLADIPO Umar Ifeanyi",
+        "rate": "Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Writer",
+        "cmd": "Eastern Naval Command"
+      },
+      {
+        "sn": "B0990",
+        "name": "UDOH Musa Ugochukwu",
+        "rate": "Petty Officer",
+        "ship": "NNS DELTA",
+        "branch": "Writer",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "A0997",
+        "name": "AKPAN Chidi Ugochukwu",
+        "rate": "Master Chief Petty Officer",
+        "ship": "NNS OKPABANA",
+        "branch": "Medical",
+        "cmd": "Naval Headquarters"
+      },
+      {
+        "sn": "B1002",
+        "name": "MOHAMMED Ayodele Ekong",
+        "rate": "Petty Officer",
+        "ship": "NNS UNITY",
+        "branch": "Supply",
+        "cmd": "Naval Training Command"
+      },
+      {
+        "sn": "A1016",
+        "name": "CHUKWU Emeka Ifeanyi",
+        "rate": "Leading Seaman",
+        "ship": "NNS SAPELE",
+        "branch": "Communications",
+        "cmd": "Western Naval Command"
+      },
+      {
+        "sn": "C1032",
+        "name": "AFOLABI Emeka Ekong",
+        "rate": "Able Seaman",
+        "ship": "NNS ARADU",
+        "branch": "Marine Engineering",
+        "cmd": "Naval Training Command"
+      }
+    ]
+  }
+}

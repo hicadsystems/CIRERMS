@@ -1,0 +1,86 @@
+{
+  "title": "PERSONNEL DETAILS",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Surname",
+      "value": "OKONKWO"
+    },
+    {
+      "label": "First Name",
+      "value": "Chukwuemeka"
+    },
+    {
+      "label": "Middle Name",
+      "value": "Ifeanyi"
+    },
+    {
+      "label": "Date of Birth",
+      "value": "1988-06-21",
+      "kind": "date"
+    },
+    {
+      "label": "Telephone",
+      "value": "0803 555 0142"
+    }
+  ],
+  "table": {
+    "heading": "Rate history",
+    "columns": [
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "40%"
+      },
+      {
+        "label": "From",
+        "key": "from",
+        "kind": "date",
+        "w": "30%"
+      },
+      {
+        "label": "To",
+        "key": "to",
+        "kind": "date"
+      }
+    ],
+    "rows": [
+      {
+        "rate": "OS",
+        "from": "2008-03-12",
+        "to": "2010-03-11"
+      },
+      {
+        "rate": "AB",
+        "from": "2010-03-12",
+        "to": "2013-05-31"
+      },
+      {
+        "rate": "LS",
+        "from": "2013-06-01",
+        "to": "2017-07-14"
+      },
+      {
+        "rate": "PO",
+        "from": "2017-07-15",
+        "to": "Present"
+      }
+    ]
+  },
+  "note": "Rate history of PO OKONKWO Chukwuemeka, from the record's Advancement tab.",
+  "signatures": [
+    {
+      "role": "Records Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

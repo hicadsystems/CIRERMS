@@ -1,0 +1,386 @@
+{
+  "title": "BATCH SUMMARY REPORT FOR ADVANCEMENT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "31 batches",
+  "facts": [
+    {
+      "label": "Batches",
+      "value": "31"
+    },
+    {
+      "label": "Open",
+      "value": "11"
+    },
+    {
+      "label": "Closed",
+      "value": "20"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Signal Code",
+        "key": "signal",
+        "kind": "code",
+        "w": "17%"
+      },
+      {
+        "label": "Batch Number",
+        "key": "no",
+        "kind": "code",
+        "w": "22%"
+      },
+      {
+        "label": "Branch",
+        "key": "branch",
+        "w": "16%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "7%"
+      },
+      {
+        "label": "Status",
+        "key": "status",
+        "w": "8%"
+      },
+      {
+        "label": "Total",
+        "key": "total",
+        "kind": "num",
+        "w": "7%"
+      },
+      {
+        "label": "Promoted",
+        "key": "done",
+        "kind": "num",
+        "w": "9%"
+      },
+      {
+        "label": "Date Closed",
+        "key": "closedOn",
+        "kind": "date",
+        "w": "11%"
+      }
+    ],
+    "rows": [
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-LS-000037",
+        "branch": "Supply",
+        "rate": "MPO",
+        "status": "Open",
+        "total": 16,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-LS-000037",
+        "branch": "Supply",
+        "rate": "LS",
+        "status": "Closed",
+        "total": 45,
+        "done": 44,
+        "closedOn": "2026-06-07"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-PO-000036",
+        "branch": "Supply",
+        "rate": "PO",
+        "status": "Closed",
+        "total": 17,
+        "done": 16,
+        "closedOn": "2026-07-03"
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-PO-000035",
+        "branch": "Writer",
+        "rate": "MPO",
+        "status": "Open",
+        "total": 29,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-PO-000035",
+        "branch": "Hydrography",
+        "rate": "MCPO",
+        "status": "Closed",
+        "total": 27,
+        "done": 26,
+        "closedOn": "2026-10-01"
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-AB-000034",
+        "branch": "Medical",
+        "rate": "CPO",
+        "status": "Closed",
+        "total": 42,
+        "done": 42,
+        "closedOn": "2026-08-04"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-LS-000033",
+        "branch": "Electrical Engineering",
+        "rate": "CPO",
+        "status": "Open",
+        "total": 17,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-AB-000033",
+        "branch": "Seaman",
+        "rate": "OS",
+        "status": "Closed",
+        "total": 36,
+        "done": 36,
+        "closedOn": "2026-10-10"
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-AB-000032",
+        "branch": "Communications",
+        "rate": "CPO",
+        "status": "Closed",
+        "total": 27,
+        "done": 27,
+        "closedOn": "2026-03-14"
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-AB-000031",
+        "branch": "Supply",
+        "rate": "PO",
+        "status": "Open",
+        "total": 18,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-PO-000031",
+        "branch": "Communications",
+        "rate": "OS",
+        "status": "Closed",
+        "total": 26,
+        "done": 25,
+        "closedOn": "2026-01-21"
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-AB-000030",
+        "branch": "Medical",
+        "rate": "LS",
+        "status": "Closed",
+        "total": 17,
+        "done": 15,
+        "closedOn": "2026-04-02"
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-LS-000029",
+        "branch": "Medical",
+        "rate": "MPO",
+        "status": "Open",
+        "total": 46,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-PO-000029",
+        "branch": "Writer",
+        "rate": "PO",
+        "status": "Closed",
+        "total": 27,
+        "done": 27,
+        "closedOn": "2026-01-03"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-PO-000028",
+        "branch": "Medical",
+        "rate": "CPO",
+        "status": "Closed",
+        "total": 47,
+        "done": 46,
+        "closedOn": "2026-09-16"
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-LS-000027",
+        "branch": "Supply",
+        "rate": "PO",
+        "status": "Open",
+        "total": 32,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-LS-000027",
+        "branch": "Marine Engineering",
+        "rate": "OS",
+        "status": "Closed",
+        "total": 45,
+        "done": 45,
+        "closedOn": "2026-03-11"
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-AB-000026",
+        "branch": "Writer",
+        "rate": "MPO",
+        "status": "Closed",
+        "total": 8,
+        "done": 7,
+        "closedOn": "2026-08-28"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-AB-000025",
+        "branch": "Seaman",
+        "rate": "MCPO",
+        "status": "Open",
+        "total": 9,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-AB-000025",
+        "branch": "Hydrography",
+        "rate": "PO",
+        "status": "Closed",
+        "total": 18,
+        "done": 17,
+        "closedOn": "2026-10-09"
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-PO-000024",
+        "branch": "Communications",
+        "rate": "MPO",
+        "status": "Closed",
+        "total": 18,
+        "done": 16,
+        "closedOn": "2026-03-18"
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-AB-000023",
+        "branch": "Electrical Engineering",
+        "rate": "OS",
+        "status": "Open",
+        "total": 42,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-AB-000023",
+        "branch": "Electrical Engineering",
+        "rate": "MPO",
+        "status": "Closed",
+        "total": 36,
+        "done": 36,
+        "closedOn": "2026-06-21"
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-PO-000022",
+        "branch": "Seaman",
+        "rate": "MCPO",
+        "status": "Closed",
+        "total": 21,
+        "done": 19,
+        "closedOn": "2026-10-20"
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-AB-000021",
+        "branch": "Seaman",
+        "rate": "MCPO",
+        "status": "Open",
+        "total": 18,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-PO-000021",
+        "branch": "Supply",
+        "rate": "CPO",
+        "status": "Closed",
+        "total": 33,
+        "done": 33,
+        "closedOn": "2026-04-26"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-LS-000020",
+        "branch": "Seaman",
+        "rate": "PO",
+        "status": "Closed",
+        "total": 45,
+        "done": 45,
+        "closedOn": "2026-01-05"
+      },
+      {
+        "signal": "NHQ/DOP/DR/147/26",
+        "no": "DOA-ALL-ALL-PO-000019",
+        "branch": "Marine Engineering",
+        "rate": "AB",
+        "status": "Open",
+        "total": 34,
+        "done": 0,
+        "closedOn": ""
+      },
+      {
+        "signal": "NHQ/DOP/DR/101/26",
+        "no": "DOA-ALL-ALL-PO-000019",
+        "branch": "Marine Engineering",
+        "rate": "PO",
+        "status": "Closed",
+        "total": 32,
+        "done": 32,
+        "closedOn": "2026-04-12"
+      },
+      {
+        "signal": "NHQ/DOP/DR/118/26",
+        "no": "DOA-ALL-ALL-PO-000018",
+        "branch": "Electrical Engineering",
+        "rate": "CPO",
+        "status": "Closed",
+        "total": 10,
+        "done": 9,
+        "closedOn": "2026-02-14"
+      },
+      {
+        "signal": "NHQ/DOP/DR/133/26",
+        "no": "DOA-ALL-ALL-AB-000017",
+        "branch": "Hydrography",
+        "rate": "MPO",
+        "status": "Open",
+        "total": 25,
+        "done": 0,
+        "closedOn": ""
+      }
+    ],
+    "totals": {
+      "signal": "Total",
+      "total": 863,
+      "done": 563
+    }
+  }
+}

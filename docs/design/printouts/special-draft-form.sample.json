@@ -1,0 +1,370 @@
+{
+  "title": "SPECIAL DRAFT FORM",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "SD/2026/014",
+  "subtitle": "Posting type TY",
+  "facts": [
+    {
+      "label": "Form No",
+      "value": "SD/2026/014",
+      "kind": "code"
+    },
+    {
+      "label": "Posting Type",
+      "value": "TY",
+      "kind": "code"
+    },
+    {
+      "label": "Ratings",
+      "value": "20"
+    },
+    {
+      "label": "Date",
+      "value": "2026-11-19",
+      "kind": "date"
+    },
+    {
+      "label": "Prepared By",
+      "value": "PO OKONKWO Chukwuemeka"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "8%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "17%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "5%"
+      },
+      {
+        "label": "Sex",
+        "key": "sex",
+        "kind": "ctr",
+        "w": "4%"
+      },
+      {
+        "label": "Current Ship",
+        "key": "from",
+        "w": "11%"
+      },
+      {
+        "label": "Months",
+        "key": "months",
+        "kind": "num",
+        "w": "6%"
+      },
+      {
+        "label": "Drafted To",
+        "key": "to",
+        "w": "11%"
+      },
+      {
+        "label": "Deployment / Vice",
+        "key": "vice",
+        "w": "12%"
+      },
+      {
+        "label": "Authority",
+        "key": "auth",
+        "kind": "code",
+        "w": "11%"
+      },
+      {
+        "label": "WEF",
+        "key": "wef",
+        "kind": "date",
+        "w": "8%"
+      },
+      {
+        "label": "",
+        "key": "sched",
+        "w": "7%",
+        "kind": "flag"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "C0311",
+        "name": "OKONKWO Danladi Ifeanyi",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 21,
+        "to": "NNS UNITY",
+        "vice": "Vice NNAMDI",
+        "auth": "NHQ/DOP/DR/101/26",
+        "wef": "2026-11-03",
+        "sched": ""
+      },
+      {
+        "sn": "B0319",
+        "name": "ADEYEMI Kehinde Samson",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS DELTA",
+        "months": 31,
+        "to": "NNS UNITY",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/118/26",
+        "wef": "2026-12-04",
+        "sched": "Scheduled"
+      },
+      {
+        "sn": "B0321",
+        "name": "BELLO Chidi Sunday",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS BEECROFT",
+        "months": 30,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice IBRAHIM",
+        "auth": "NHQ/DOP/DR/133/26",
+        "wef": "2026-11-05",
+        "sched": ""
+      },
+      {
+        "sn": "A0323",
+        "name": "EZE Ime Friday",
+        "rate": "PO",
+        "sex": "M",
+        "from": "NNS OKPABANA",
+        "months": 28,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice GARBA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "wef": "2026-12-06",
+        "sched": ""
+      },
+      {
+        "sn": "B0332",
+        "name": "IBRAHIM Umar Peter",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS OKPABANA",
+        "months": 29,
+        "to": "NNS QUORRA",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/101/26",
+        "wef": "2026-11-07",
+        "sched": ""
+      },
+      {
+        "sn": "A0337",
+        "name": "OBI Danladi Ade",
+        "rate": "PO",
+        "sex": "F",
+        "from": "NNS LANA",
+        "months": 23,
+        "to": "NNS ARADU",
+        "vice": "Vice IGWE",
+        "auth": "NHQ/DOP/DR/118/26",
+        "wef": "2026-12-08",
+        "sched": ""
+      },
+      {
+        "sn": "C0340",
+        "name": "NWACHUKWU Kehinde Friday",
+        "rate": "MPO",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 19,
+        "to": "NNS UNITY",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/133/26",
+        "wef": "2026-11-09",
+        "sched": "Scheduled"
+      },
+      {
+        "sn": "B0354",
+        "name": "ABUBAKAR Danladi Peter",
+        "rate": "PO",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 29,
+        "to": "NNS PATHFINDER",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/147/26",
+        "wef": "2026-12-10",
+        "sched": ""
+      },
+      {
+        "sn": "A0359",
+        "name": "OLADIPO Blessing Friday",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS KADA",
+        "months": 23,
+        "to": "NNS BEECROFT",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/101/26",
+        "wef": "2026-11-11",
+        "sched": ""
+      },
+      {
+        "sn": "A0374",
+        "name": "UDOH Tunde Ugochukwu",
+        "rate": "LS",
+        "sex": "M",
+        "from": "NNS PATHFINDER",
+        "months": 38,
+        "to": "NNS QUORRA",
+        "vice": "Vice OKONKWO",
+        "auth": "NHQ/DOP/DR/118/26",
+        "wef": "2026-12-12",
+        "sched": ""
+      },
+      {
+        "sn": "B0382",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "OS",
+        "sex": "F",
+        "from": "NNS DELTA",
+        "months": 18,
+        "to": "NNS PATHFINDER",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/133/26",
+        "wef": "2026-11-13",
+        "sched": ""
+      },
+      {
+        "sn": "C0392",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "CPO",
+        "sex": "F",
+        "from": "NNS PATHFINDER",
+        "months": 26,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice ADEYEMI",
+        "auth": "NHQ/DOP/DR/147/26",
+        "wef": "2026-12-14",
+        "sched": "Scheduled"
+      },
+      {
+        "sn": "C0406",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS THUNDER",
+        "months": 14,
+        "to": "NNS PATHFINDER",
+        "vice": "Vice IBRAHIM",
+        "auth": "NHQ/DOP/DR/101/26",
+        "wef": "2026-11-15",
+        "sched": ""
+      },
+      {
+        "sn": "C0418",
+        "name": "AFOLABI Peter Michael",
+        "rate": "MCPO",
+        "sex": "M",
+        "from": "NNS KADA",
+        "months": 39,
+        "to": "NNS LANA",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/118/26",
+        "wef": "2026-12-16",
+        "sched": ""
+      },
+      {
+        "sn": "B0427",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "OS",
+        "sex": "F",
+        "from": "NNS QUORRA",
+        "months": 29,
+        "to": "NNS OKPABANA",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/133/26",
+        "wef": "2026-11-17",
+        "sched": ""
+      },
+      {
+        "sn": "A0435",
+        "name": "ETIM Aminu Friday",
+        "rate": "MPO",
+        "sex": "F",
+        "from": "NNS PATHFINDER",
+        "months": 16,
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/147/26",
+        "wef": "2026-12-18",
+        "sched": ""
+      },
+      {
+        "sn": "A0450",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "MPO",
+        "sex": "M",
+        "from": "NNS LANA",
+        "months": 14,
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/101/26",
+        "wef": "2026-11-19",
+        "sched": "Scheduled"
+      },
+      {
+        "sn": "C0460",
+        "name": "SANI Ime Friday",
+        "rate": "OS",
+        "sex": "M",
+        "from": "NNS QUORRA",
+        "months": 34,
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/118/26",
+        "wef": "2026-12-20",
+        "sched": ""
+      },
+      {
+        "sn": "B0469",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "OS",
+        "sex": "M",
+        "from": "NNS UNITY",
+        "months": 26,
+        "to": "NNS NGURU",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/133/26",
+        "wef": "2026-11-21",
+        "sched": ""
+      },
+      {
+        "sn": "B0485",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "AB",
+        "sex": "M",
+        "from": "NNS NGURU",
+        "months": 33,
+        "to": "NNS DELTA",
+        "vice": "Deployment",
+        "auth": "NHQ/DOP/DR/147/26",
+        "wef": "2026-12-22",
+        "sched": ""
+      }
+    ]
+  },
+  "note": "WEF dates marked Scheduled are in the future. Printing this form marks the drafts printed.",
+  "signatures": [
+    {
+      "role": "Drafting Officer"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

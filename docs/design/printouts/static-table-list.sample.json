@@ -1,0 +1,235 @@
+{
+  "title": "SHIPS AND UNITS",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "orientation": "landscape",
+  "subtitle": "25 entries  |  Printed 19/11/2026",
+  "facts": [
+    {
+      "label": "List",
+      "value": "Ships and Units"
+    },
+    {
+      "label": "Search",
+      "value": "None"
+    },
+    {
+      "label": "Status",
+      "value": "All"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "No",
+        "kind": "index",
+        "w": "6%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "34%"
+      },
+      {
+        "label": "Code",
+        "key": "code",
+        "kind": "code",
+        "w": "10%"
+      },
+      {
+        "label": "Command",
+        "key": "cmd",
+        "w": "22%"
+      },
+      {
+        "label": "Type",
+        "key": "type",
+        "w": "18%"
+      },
+      {
+        "label": "Active",
+        "key": "active",
+        "kind": "ctr",
+        "w": "8%"
+      }
+    ],
+    "rows": [
+      {
+        "name": "ABUJA NAVAL BASE",
+        "code": "SH001",
+        "cmd": "Western Naval Command",
+        "type": "Ship",
+        "active": "Yes"
+      },
+      {
+        "name": "BONNY NAVAL BASE",
+        "code": "SH002",
+        "cmd": "Eastern Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "CALABAR NAVAL BASE",
+        "code": "SH003",
+        "cmd": "Central Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "DOCKYARD LAGOS NAVAL BASE",
+        "code": "SH004",
+        "cmd": "Naval Training Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "EPE NAVAL BASE",
+        "code": "SH005",
+        "cmd": "Naval Headquarters",
+        "type": "Ship",
+        "active": "No"
+      },
+      {
+        "name": "FORCADOS NAVAL BASE",
+        "code": "SH006",
+        "cmd": "Western Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "GOMBE NAVAL BASE",
+        "code": "SH007",
+        "cmd": "Eastern Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "HARBOUR POINT NAVAL BASE",
+        "code": "SH008",
+        "cmd": "Central Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "IBADAN NAVAL BASE",
+        "code": "SH009",
+        "cmd": "Naval Training Command",
+        "type": "Ship",
+        "active": "Yes"
+      },
+      {
+        "name": "JOS NAVAL BASE",
+        "code": "SH010",
+        "cmd": "Naval Headquarters",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "KAINJI NAVAL BASE",
+        "code": "SH011",
+        "cmd": "Western Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "LEKKI NAVAL BASE",
+        "code": "SH012",
+        "cmd": "Eastern Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "MAKURDI NAVAL BASE",
+        "code": "SH013",
+        "cmd": "Central Naval Command",
+        "type": "Ship",
+        "active": "Yes"
+      },
+      {
+        "name": "NIGER BASE NAVAL BASE",
+        "code": "SH014",
+        "cmd": "Naval Training Command",
+        "type": "Shore establishment",
+        "active": "No"
+      },
+      {
+        "name": "ONNE NAVAL BASE",
+        "code": "SH015",
+        "cmd": "Naval Headquarters",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "PORT HARCOURT NAVAL BASE",
+        "code": "SH016",
+        "cmd": "Western Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "QUA IBOE NAVAL BASE",
+        "code": "SH017",
+        "cmd": "Eastern Naval Command",
+        "type": "Ship",
+        "active": "Yes"
+      },
+      {
+        "name": "RAMAT NAVAL BASE",
+        "code": "SH018",
+        "cmd": "Central Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "SAPELE NAVAL BASE",
+        "code": "SH019",
+        "cmd": "Naval Training Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "TIN CAN NAVAL BASE",
+        "code": "SH020",
+        "cmd": "Naval Headquarters",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "UYO NAVAL BASE",
+        "code": "SH021",
+        "cmd": "Western Naval Command",
+        "type": "Ship",
+        "active": "Yes"
+      },
+      {
+        "name": "VICTORIA ISLAND NAVAL BASE",
+        "code": "SH022",
+        "cmd": "Eastern Naval Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "WARRI NAVAL BASE",
+        "code": "SH023",
+        "cmd": "Central Naval Command",
+        "type": "Shore establishment",
+        "active": "No"
+      },
+      {
+        "name": "YENAGOA NAVAL BASE",
+        "code": "SH024",
+        "cmd": "Naval Training Command",
+        "type": "Shore establishment",
+        "active": "Yes"
+      },
+      {
+        "name": "ZUNGERU NAVAL BASE",
+        "code": "SH025",
+        "cmd": "Naval Headquarters",
+        "type": "Ship",
+        "active": "Yes"
+      }
+    ]
+  }
+}

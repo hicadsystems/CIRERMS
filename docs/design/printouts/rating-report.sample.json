@@ -1,0 +1,131 @@
+{
+  "title": "DRAFTING RECORD",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "B0539",
+  "subtitle": "PO OKONKWO CHUKWUEMEKA IFEANYI (Petty Officer)",
+  "facts": [
+    {
+      "label": "Official No",
+      "value": "B0539",
+      "kind": "code"
+    },
+    {
+      "label": "Name",
+      "value": "OKONKWO Chukwuemeka Ifeanyi"
+    },
+    {
+      "label": "Rate",
+      "value": "Petty Officer"
+    },
+    {
+      "label": "Branch",
+      "value": "Seaman"
+    },
+    {
+      "label": "Date Employed",
+      "value": "2008-03-12",
+      "kind": "date"
+    },
+    {
+      "label": "Status",
+      "value": "Current"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Ship / Unit",
+        "key": "ship",
+        "kind": "name",
+        "w": "24%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "10%"
+      },
+      {
+        "label": "Start Date",
+        "key": "from",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "End Date",
+        "key": "to",
+        "kind": "date",
+        "w": "14%"
+      },
+      {
+        "label": "Remarks",
+        "key": "remarks"
+      }
+    ],
+    "rows": [
+      {
+        "ship": "NNS THUNDER",
+        "rate": "OS",
+        "from": "2008-03-12",
+        "to": "2009-11-28",
+        "remarks": "Specialist posting"
+      },
+      {
+        "ship": "NNS OKPABANA",
+        "rate": "AB",
+        "from": "2009-03-12",
+        "to": "2010-11-28",
+        "remarks": "Specialist posting"
+      },
+      {
+        "ship": "NNS KADA",
+        "rate": "AB",
+        "from": "2010-03-12",
+        "to": "2011-11-28",
+        "remarks": "Annual draft"
+      },
+      {
+        "ship": "NNS ARADU",
+        "rate": "LS",
+        "from": "2011-03-12",
+        "to": "2012-11-28",
+        "remarks": "Specialist posting"
+      },
+      {
+        "ship": "NNS BEECROFT",
+        "rate": "LS",
+        "from": "2012-03-12",
+        "to": "2013-11-28",
+        "remarks": "Sea time requirement"
+      },
+      {
+        "ship": "NNS LANA",
+        "rate": "PO",
+        "from": "2013-03-12",
+        "to": "2014-11-28",
+        "remarks": "Specialist posting"
+      },
+      {
+        "ship": "NNS QUORRA",
+        "rate": "PO",
+        "from": "2014-03-12",
+        "to": "2015-11-28",
+        "remarks": "Joined on commissioning"
+      },
+      {
+        "ship": "NNS SAPELE",
+        "rate": "MPO",
+        "from": "2015-03-12",
+        "to": "2016-11-28",
+        "remarks": "Annual draft"
+      },
+      {
+        "ship": "NNS PATHFINDER",
+        "rate": "MPO",
+        "from": "2016-03-12",
+        "to": "",
+        "remarks": "Normal rotation"
+      }
+    ]
+  }
+}

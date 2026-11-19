@@ -1,0 +1,609 @@
+{
+  "title": "DRAFT REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "All postings, 01/01/2026 to 19/11/2026",
+  "facts": [
+    {
+      "label": "Specialisation",
+      "value": "All"
+    },
+    {
+      "label": "Authority",
+      "value": "All"
+    },
+    {
+      "label": "Period",
+      "value": "01/01/2026 to 19/11/2026"
+    },
+    {
+      "label": "Postings",
+      "value": "48"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Batch",
+        "key": "batch",
+        "kind": "code",
+        "w": "14%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "17%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "5%"
+      },
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "8%"
+      },
+      {
+        "label": "Present Ship",
+        "key": "from",
+        "w": "10%"
+      },
+      {
+        "label": "Authority",
+        "key": "auth",
+        "kind": "code",
+        "w": "12%"
+      },
+      {
+        "label": "Proposed Ship",
+        "key": "to",
+        "w": "10%"
+      },
+      {
+        "label": "Vice",
+        "key": "vice",
+        "w": "11%"
+      },
+      {
+        "label": "WEF",
+        "key": "wef",
+        "kind": "date",
+        "w": "8%"
+      }
+    ],
+    "rows": [
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "OS",
+        "sn": "B0382",
+        "from": "NNS DELTA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS ARADU",
+        "vice": "Vice BASSEY",
+        "wef": "2026-01-10"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "CPO",
+        "sn": "C0392",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS SAPELE",
+        "vice": "Deployment",
+        "wef": "2026-03-25"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "AB",
+        "sn": "C0406",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-03-24"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AFOLABI Peter Michael",
+        "rate": "MCPO",
+        "sn": "C0418",
+        "from": "NNS KADA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS THUNDER",
+        "vice": "Vice BELLO",
+        "wef": "2026-10-19"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "OS",
+        "sn": "B0427",
+        "from": "NNS QUORRA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS SAPELE",
+        "vice": "Vice AFOLABI",
+        "wef": "2026-03-28"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "ETIM Aminu Friday",
+        "rate": "MPO",
+        "sn": "A0435",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS OKPABANA",
+        "vice": "Deployment",
+        "wef": "2026-10-22"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "MPO",
+        "sn": "A0450",
+        "from": "NNS LANA",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS PATHFINDER",
+        "vice": "Deployment",
+        "wef": "2026-10-08"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "SANI Ime Friday",
+        "rate": "OS",
+        "sn": "C0460",
+        "from": "NNS QUORRA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS UNITY",
+        "vice": "New vacancy",
+        "wef": "2026-04-26"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "OS",
+        "sn": "B0469",
+        "from": "NNS UNITY",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS OKPABANA",
+        "vice": "New vacancy",
+        "wef": "2026-01-23"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "AB",
+        "sn": "B0485",
+        "from": "NNS NGURU",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS DELTA",
+        "vice": "Vice YAKUBU",
+        "wef": "2026-10-28"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "AB",
+        "sn": "B0501",
+        "from": "NNS UNITY",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS DELTA",
+        "vice": "Vice AKPAN",
+        "wef": "2026-07-23"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "LAWAL Grace Dauda",
+        "rate": "LS",
+        "sn": "B0511",
+        "from": "NNS SAPELE",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS PATHFINDER",
+        "vice": "New vacancy",
+        "wef": "2026-10-09"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AMADI Chidi Abdul",
+        "rate": "MPO",
+        "sn": "C0523",
+        "from": "NNS SAPELE",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS QUORRA",
+        "vice": "New vacancy",
+        "wef": "2026-10-04"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "LS",
+        "sn": "C0538",
+        "from": "NNS BEECROFT",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS LANA",
+        "vice": "New vacancy",
+        "wef": "2026-06-05"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "MCPO",
+        "sn": "A0555",
+        "from": "NNS UNITY",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS QUORRA",
+        "vice": "New vacancy",
+        "wef": "2026-10-13"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "EDET Effiong Michael",
+        "rate": "PO",
+        "sn": "B0560",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS PATHFINDER",
+        "vice": "Deployment",
+        "wef": "2026-10-24"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "LS",
+        "sn": "B0574",
+        "from": "NNS DELTA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS NGURU",
+        "vice": "New vacancy",
+        "wef": "2026-03-15"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "GARBA Umar Olusegun",
+        "rate": "LS",
+        "sn": "B0578",
+        "from": "NNS UNITY",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS KADA",
+        "vice": "New vacancy",
+        "wef": "2026-09-27"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "IGWE Segun Michael",
+        "rate": "MCPO",
+        "sn": "A0592",
+        "from": "NNS OKPABANA",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS UNITY",
+        "vice": "Deployment",
+        "wef": "2026-07-21"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "LS",
+        "sn": "B0607",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS DELTA",
+        "vice": "Deployment",
+        "wef": "2026-06-18"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "OKONKWO Grace Peter",
+        "rate": "AB",
+        "sn": "B0623",
+        "from": "NNS LANA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-03-22"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "CPO",
+        "sn": "C0640",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS KADA",
+        "vice": "New vacancy",
+        "wef": "2026-07-28"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "AB",
+        "sn": "B0645",
+        "from": "NNS ARADU",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS ARADU",
+        "vice": "Vice BASSEY",
+        "wef": "2026-03-01"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "EZE Peter Friday",
+        "rate": "CPO",
+        "sn": "B0652",
+        "from": "NNS KADA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS NGURU",
+        "vice": "New vacancy",
+        "wef": "2026-09-07"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "OS",
+        "sn": "C0665",
+        "from": "NNS ARADU",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS LANA",
+        "vice": "New vacancy",
+        "wef": "2026-06-06"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "OBI Joseph Michael",
+        "rate": "LS",
+        "sn": "C0670",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS UNITY",
+        "vice": "Deployment",
+        "wef": "2026-06-12"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "LS",
+        "sn": "A0678",
+        "from": "NNS UNITY",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS PATHFINDER",
+        "vice": "Deployment",
+        "wef": "2026-06-17"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "MCPO",
+        "sn": "B0687",
+        "from": "NNS LANA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS KADA",
+        "vice": "Vice AMADI",
+        "wef": "2026-06-20"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "rate": "AB",
+        "sn": "B0703",
+        "from": "NNS LANA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS QUORRA",
+        "vice": "Deployment",
+        "wef": "2026-02-25"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "UDOH Peter Olusegun",
+        "rate": "AB",
+        "sn": "A0716",
+        "from": "NNS SAPELE",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS UNITY",
+        "vice": "Deployment",
+        "wef": "2026-10-10"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AKPAN Kehinde Samson",
+        "rate": "AB",
+        "sn": "B0726",
+        "from": "NNS OKPABANA",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS BEECROFT",
+        "vice": "Vice CHUKWU",
+        "wef": "2026-09-20"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "MOHAMMED Chinedu Ekong",
+        "rate": "MCPO",
+        "sn": "B0728",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS QUORRA",
+        "vice": "Deployment",
+        "wef": "2026-06-10"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "CHUKWU Blessing Olusegun",
+        "rate": "MPO",
+        "sn": "B0730",
+        "from": "NNS OKPABANA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS SAPELE",
+        "vice": "Deployment",
+        "wef": "2026-06-24"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AFOLABI Ifeanyi Ade",
+        "rate": "OS",
+        "sn": "C0743",
+        "from": "NNS NGURU",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS KADA",
+        "vice": "New vacancy",
+        "wef": "2026-08-27"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "rate": "OS",
+        "sn": "C0754",
+        "from": "NNS BEECROFT",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS OKPABANA",
+        "vice": "Vice NWACHUKWU",
+        "wef": "2026-09-05"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "ETIM Victor Ugochukwu",
+        "rate": "MPO",
+        "sn": "B0769",
+        "from": "NNS PATHFINDER",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS NGURU",
+        "vice": "Vice LAWAL",
+        "wef": "2026-09-08"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "OGUNLEYE Chinedu Okon",
+        "rate": "MCPO",
+        "sn": "C0782",
+        "from": "NNS QUORRA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS LANA",
+        "vice": "Vice CHUKWU",
+        "wef": "2026-06-27"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "SANI Danladi Dauda",
+        "rate": "CPO",
+        "sn": "C0799",
+        "from": "NNS QUORRA",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "wef": "2026-10-22"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "rate": "MPO",
+        "sn": "B0814",
+        "from": "NNS DELTA",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS SAPELE",
+        "vice": "New vacancy",
+        "wef": "2026-10-03"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "OKAFOR Effiong Samson",
+        "rate": "MPO",
+        "sn": "B0821",
+        "from": "NNS OKPABANA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS BEECROFT",
+        "vice": "Vice UDOH",
+        "wef": "2026-09-05"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "BASSEY Tunde Michael",
+        "rate": "LS",
+        "sn": "A0834",
+        "from": "NNS SAPELE",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS DELTA",
+        "vice": "Vice BASSEY",
+        "wef": "2026-10-17"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "LAWAL Kehinde Sunday",
+        "rate": "CPO",
+        "sn": "B0840",
+        "from": "NNS NGURU",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS LANA",
+        "vice": "Deployment",
+        "wef": "2026-10-09"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "AMADI Chinedu Ade",
+        "rate": "MPO",
+        "sn": "B0845",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS ARADU",
+        "vice": "Deployment",
+        "wef": "2026-03-02"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "YAKUBU Chukwuemeka Chibuike",
+        "rate": "PO",
+        "sn": "C0855",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS DELTA",
+        "vice": "Vice NNAMDI",
+        "wef": "2026-10-03"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "ONYEKACHI Grace Abdul",
+        "rate": "MCPO",
+        "sn": "A0857",
+        "from": "NNS LANA",
+        "auth": "NHQ/DOP/DR/101/26",
+        "to": "NNS QUORRA",
+        "vice": "Vice FASHOLA",
+        "wef": "2026-02-06"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000004",
+        "name": "EDET Ayodele Ugochukwu",
+        "rate": "OS",
+        "sn": "B0864",
+        "from": "NNS QUORRA",
+        "auth": "NHQ/DOP/DR/118/26",
+        "to": "NNS NGURU",
+        "vice": "Deployment",
+        "wef": "2026-04-27"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000005",
+        "name": "FASHOLA Tunde Ade",
+        "rate": "MCPO",
+        "sn": "A0874",
+        "from": "NNS THUNDER",
+        "auth": "NHQ/DOP/DR/133/26",
+        "to": "NNS DELTA",
+        "vice": "Vice AKPAN",
+        "wef": "2026-02-14"
+      },
+      {
+        "batch": "DOD-SM-ALL-ALL-000006",
+        "name": "GARBA Effiong Ifeanyi",
+        "rate": "MCPO",
+        "sn": "B0877",
+        "from": "NNS DELTA",
+        "auth": "NHQ/DOP/DR/147/26",
+        "to": "NNS BEECROFT",
+        "vice": "New vacancy",
+        "wef": "2026-07-01"
+      }
+    ]
+  }
+}

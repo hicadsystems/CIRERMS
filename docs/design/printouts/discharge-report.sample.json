@@ -1,0 +1,533 @@
+{
+  "title": "DISCHARGE REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "Period 01/01/2026 to 31/12/2027",
+  "facts": [
+    {
+      "label": "Period",
+      "value": "01/01/2026 to 31/12/2027"
+    },
+    {
+      "label": "Exit Type",
+      "value": "All"
+    },
+    {
+      "label": "Rate",
+      "value": "All"
+    },
+    {
+      "label": "Branch",
+      "value": "All"
+    },
+    {
+      "label": "Records",
+      "value": "40"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "8%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "17%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "5%"
+      },
+      {
+        "label": "Date Employed",
+        "key": "emp",
+        "kind": "date",
+        "w": "9%"
+      },
+      {
+        "label": "Service",
+        "key": "svc",
+        "kind": "num",
+        "w": "7%"
+      },
+      {
+        "label": "Type",
+        "key": "type",
+        "w": "10%"
+      },
+      {
+        "label": "Exit Date",
+        "key": "exit",
+        "kind": "date",
+        "w": "9%"
+      },
+      {
+        "label": "Reason",
+        "key": "reason",
+        "w": "15%"
+      },
+      {
+        "label": "Approved By",
+        "key": "by",
+        "w": "10%"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "B0726",
+        "name": "AKPAN Kehinde Samson",
+        "rate": "AB",
+        "emp": "1994-07-11",
+        "svc": "32 yrs",
+        "type": "Voluntary",
+        "exit": "2027-08-24",
+        "reason": "Request",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0728",
+        "name": "MOHAMMED Chinedu Ekong",
+        "rate": "MCPO",
+        "emp": "2018-12-11",
+        "svc": "8 yrs",
+        "type": "Re-engagement",
+        "exit": "2026-02-18",
+        "reason": "Medical grounds",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B0730",
+        "name": "CHUKWU Blessing Olusegun",
+        "rate": "MPO",
+        "emp": "2011-08-20",
+        "svc": "15 yrs",
+        "type": "Retirement",
+        "exit": "2026-12-25",
+        "reason": "60 months",
+        "by": "CNS"
+      },
+      {
+        "sn": "C0743",
+        "name": "AFOLABI Ifeanyi Ade",
+        "rate": "OS",
+        "emp": "2016-03-26",
+        "svc": "10 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-03-17",
+        "reason": "Completion of engagement",
+        "by": "CNS"
+      },
+      {
+        "sn": "C0754",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "rate": "OS",
+        "emp": "2001-09-21",
+        "svc": "25 yrs",
+        "type": "Voluntary",
+        "exit": "2026-11-22",
+        "reason": "Completion of engagement",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0769",
+        "name": "ETIM Victor Ugochukwu",
+        "rate": "MPO",
+        "emp": "2009-05-21",
+        "svc": "17 yrs",
+        "type": "Retirement",
+        "exit": "2027-01-01",
+        "reason": "Completion of engagement",
+        "by": "CNS"
+      },
+      {
+        "sn": "C0782",
+        "name": "OGUNLEYE Chinedu Okon",
+        "rate": "MCPO",
+        "emp": "1997-12-08",
+        "svc": "29 yrs",
+        "type": "Compulsory",
+        "exit": "2027-11-21",
+        "reason": "Request",
+        "by": "DOP"
+      },
+      {
+        "sn": "C0799",
+        "name": "SANI Danladi Dauda",
+        "rate": "CPO",
+        "emp": "2008-09-19",
+        "svc": "18 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-02-19",
+        "reason": "60 months",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0814",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "rate": "MPO",
+        "emp": "2014-08-20",
+        "svc": "12 yrs",
+        "type": "Voluntary",
+        "exit": "2026-12-09",
+        "reason": "60 months",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B0821",
+        "name": "OKAFOR Effiong Samson",
+        "rate": "MPO",
+        "emp": "2016-04-25",
+        "svc": "10 yrs",
+        "type": "Voluntary",
+        "exit": "2026-06-24",
+        "reason": "Request",
+        "by": "CNS"
+      },
+      {
+        "sn": "A0834",
+        "name": "BASSEY Tunde Michael",
+        "rate": "LS",
+        "emp": "2002-12-09",
+        "svc": "24 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-08-20",
+        "reason": "Request",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0840",
+        "name": "LAWAL Kehinde Sunday",
+        "rate": "CPO",
+        "emp": "2016-07-28",
+        "svc": "10 yrs",
+        "type": "Compulsory",
+        "exit": "2026-08-19",
+        "reason": "Age limit",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0845",
+        "name": "AMADI Chinedu Ade",
+        "rate": "MPO",
+        "emp": "1992-08-17",
+        "svc": "34 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-08-22",
+        "reason": "60 months",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "C0855",
+        "name": "YAKUBU Chukwuemeka Chibuike",
+        "rate": "PO",
+        "emp": "1998-06-18",
+        "svc": "28 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-07-02",
+        "reason": "Request",
+        "by": "CNS"
+      },
+      {
+        "sn": "A0857",
+        "name": "ONYEKACHI Grace Abdul",
+        "rate": "MCPO",
+        "emp": "1991-02-24",
+        "svc": "35 yrs",
+        "type": "Re-engagement",
+        "exit": "2026-04-06",
+        "reason": "Request",
+        "by": "CNS"
+      },
+      {
+        "sn": "B0864",
+        "name": "EDET Ayodele Ugochukwu",
+        "rate": "OS",
+        "emp": "2006-07-14",
+        "svc": "20 yrs",
+        "type": "Retirement",
+        "exit": "2027-03-16",
+        "reason": "Medical grounds",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A0874",
+        "name": "FASHOLA Tunde Ade",
+        "rate": "MCPO",
+        "emp": "1990-05-11",
+        "svc": "36 yrs",
+        "type": "Retirement",
+        "exit": "2026-12-13",
+        "reason": "Medical grounds",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0877",
+        "name": "GARBA Effiong Ifeanyi",
+        "rate": "MCPO",
+        "emp": "2008-01-06",
+        "svc": "18 yrs",
+        "type": "Compulsory",
+        "exit": "2027-05-16",
+        "reason": "60 months",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0893",
+        "name": "IGWE Taiwo Ekong",
+        "rate": "MCPO",
+        "emp": "1996-11-05",
+        "svc": "30 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-04-07",
+        "reason": "60 months",
+        "by": "DOP"
+      },
+      {
+        "sn": "A0905",
+        "name": "JOSEPH Grace Michael",
+        "rate": "OS",
+        "emp": "1991-12-17",
+        "svc": "35 yrs",
+        "type": "Voluntary",
+        "exit": "2026-10-21",
+        "reason": "60 months",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "C0909",
+        "name": "OKONKWO Ime Dauda",
+        "rate": "LS",
+        "emp": "1993-07-06",
+        "svc": "33 yrs",
+        "type": "Compulsory",
+        "exit": "2027-08-12",
+        "reason": "Age limit",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B0921",
+        "name": "ADEYEMI Segun Ekong",
+        "rate": "MPO",
+        "emp": "2013-01-02",
+        "svc": "13 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-01-23",
+        "reason": "60 months",
+        "by": "DOP"
+      },
+      {
+        "sn": "C0938",
+        "name": "BELLO Samuel Chibuike",
+        "rate": "AB",
+        "emp": "2019-05-03",
+        "svc": "7 yrs",
+        "type": "Retirement",
+        "exit": "2027-04-03",
+        "reason": "Medical grounds",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B0953",
+        "name": "EZE Musa Chibuike",
+        "rate": "MPO",
+        "emp": "2012-03-05",
+        "svc": "14 yrs",
+        "type": "Retirement",
+        "exit": "2026-06-14",
+        "reason": "Medical grounds",
+        "by": "CNS"
+      },
+      {
+        "sn": "B0956",
+        "name": "IBRAHIM Musa Obinna",
+        "rate": "MPO",
+        "emp": "2017-03-12",
+        "svc": "9 yrs",
+        "type": "Retirement",
+        "exit": "2026-06-22",
+        "reason": "Medical grounds",
+        "by": "DOP"
+      },
+      {
+        "sn": "A0957",
+        "name": "OBI Tunde Chibuike",
+        "rate": "OS",
+        "emp": "2012-02-18",
+        "svc": "14 yrs",
+        "type": "Retirement",
+        "exit": "2027-04-13",
+        "reason": "Request",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A0959",
+        "name": "NWACHUKWU Emeka Ifeanyi",
+        "rate": "MPO",
+        "emp": "2004-01-26",
+        "svc": "22 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-10-25",
+        "reason": "Request",
+        "by": "DOP"
+      },
+      {
+        "sn": "B0969",
+        "name": "ABUBAKAR Joseph Abdul",
+        "rate": "MCPO",
+        "emp": "2001-09-15",
+        "svc": "25 yrs",
+        "type": "Retirement",
+        "exit": "2026-01-13",
+        "reason": "Age limit",
+        "by": "CNS"
+      },
+      {
+        "sn": "B0978",
+        "name": "OLADIPO Umar Ifeanyi",
+        "rate": "PO",
+        "emp": "2016-01-10",
+        "svc": "10 yrs",
+        "type": "Voluntary",
+        "exit": "2026-04-18",
+        "reason": "Medical grounds",
+        "by": "CNS"
+      },
+      {
+        "sn": "B0990",
+        "name": "UDOH Musa Ugochukwu",
+        "rate": "PO",
+        "emp": "1996-06-08",
+        "svc": "30 yrs",
+        "type": "Compulsory",
+        "exit": "2027-03-05",
+        "reason": "Medical grounds",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A0997",
+        "name": "AKPAN Chidi Ugochukwu",
+        "rate": "MCPO",
+        "emp": "2003-12-26",
+        "svc": "23 yrs",
+        "type": "Retirement",
+        "exit": "2026-06-09",
+        "reason": "Request",
+        "by": "DOP"
+      },
+      {
+        "sn": "B1002",
+        "name": "MOHAMMED Ayodele Ekong",
+        "rate": "PO",
+        "emp": "2017-12-08",
+        "svc": "9 yrs",
+        "type": "Compulsory",
+        "exit": "2026-08-02",
+        "reason": "Request",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A1016",
+        "name": "CHUKWU Emeka Ifeanyi",
+        "rate": "LS",
+        "emp": "2012-01-16",
+        "svc": "14 yrs",
+        "type": "Compulsory",
+        "exit": "2027-06-18",
+        "reason": "Completion of engagement",
+        "by": "DOP"
+      },
+      {
+        "sn": "C1032",
+        "name": "AFOLABI Emeka Ekong",
+        "rate": "AB",
+        "emp": "2015-02-04",
+        "svc": "11 yrs",
+        "type": "Voluntary",
+        "exit": "2027-05-07",
+        "reason": "Medical grounds",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B1039",
+        "name": "DANJUMA Joseph Ugochukwu",
+        "rate": "MCPO",
+        "emp": "2013-03-09",
+        "svc": "13 yrs",
+        "type": "Voluntary",
+        "exit": "2026-12-08",
+        "reason": "60 months",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B1054",
+        "name": "ETIM Effiong Ekong",
+        "rate": "LS",
+        "emp": "2008-03-07",
+        "svc": "18 yrs",
+        "type": "Retirement",
+        "exit": "2027-01-09",
+        "reason": "Request",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "B1058",
+        "name": "OGUNLEYE Ime Peter",
+        "rate": "PO",
+        "emp": "2003-09-14",
+        "svc": "23 yrs",
+        "type": "Re-engagement",
+        "exit": "2027-12-25",
+        "reason": "Completion of engagement",
+        "by": "DOP"
+      },
+      {
+        "sn": "C1071",
+        "name": "SANI Grace Ade",
+        "rate": "OS",
+        "emp": "2004-12-07",
+        "svc": "22 yrs",
+        "type": "Voluntary",
+        "exit": "2027-06-22",
+        "reason": "Request",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A1083",
+        "name": "NNAMDI Blessing Ugochukwu",
+        "rate": "OS",
+        "emp": "2000-10-22",
+        "svc": "26 yrs",
+        "type": "Compulsory",
+        "exit": "2026-07-26",
+        "reason": "Age limit",
+        "by": "FOC WNC"
+      },
+      {
+        "sn": "A1097",
+        "name": "OKAFOR Joseph Okon",
+        "rate": "MCPO",
+        "emp": "2010-03-17",
+        "svc": "16 yrs",
+        "type": "Retirement",
+        "exit": "2027-10-03",
+        "reason": "Medical grounds",
+        "by": "CNS"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Prepared By"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

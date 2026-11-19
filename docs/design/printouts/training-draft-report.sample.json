@@ -1,0 +1,354 @@
+{
+  "title": "TRAINING DRAFT REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "DOT-2026-11-06",
+  "subtitle": "Closed batch",
+  "facts": [
+    {
+      "label": "Batch Number",
+      "value": "DOT-2026-11-06",
+      "kind": "code"
+    },
+    {
+      "label": "Training",
+      "value": "Leadership Course"
+    },
+    {
+      "label": "Period",
+      "value": "November 2026"
+    },
+    {
+      "label": "Institution",
+      "value": "Naval Training Command, Onne"
+    },
+    {
+      "label": "Status",
+      "value": "Closed"
+    },
+    {
+      "label": "Ratings",
+      "value": "34"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "11%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "27%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "8%"
+      },
+      {
+        "label": "Previous Course",
+        "key": "prev",
+        "w": "24%"
+      },
+      {
+        "label": "From",
+        "key": "from",
+        "kind": "date",
+        "w": "12%"
+      },
+      {
+        "label": "To",
+        "key": "to",
+        "kind": "date",
+        "w": "12%"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "B0501",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "AB",
+        "prev": "First course",
+        "from": "",
+        "to": ""
+      },
+      {
+        "sn": "B0511",
+        "name": "LAWAL Grace Dauda",
+        "rate": "LS",
+        "prev": "Firefighting",
+        "from": "2022-10-04",
+        "to": "2026-10-20"
+      },
+      {
+        "sn": "C0523",
+        "name": "AMADI Chidi Abdul",
+        "rate": "MPO",
+        "prev": "Marine Engineering Part II",
+        "from": "2024-11-12",
+        "to": "2026-01-17"
+      },
+      {
+        "sn": "C0538",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "LS",
+        "prev": "Radar Operator",
+        "from": "2024-03-25",
+        "to": "2026-05-13"
+      },
+      {
+        "sn": "A0555",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "MCPO",
+        "prev": "First course",
+        "from": "",
+        "to": ""
+      },
+      {
+        "sn": "B0560",
+        "name": "EDET Effiong Michael",
+        "rate": "PO",
+        "prev": "Radar Operator",
+        "from": "2025-11-23",
+        "to": "2025-02-04"
+      },
+      {
+        "sn": "B0574",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "LS",
+        "prev": "First course",
+        "from": "",
+        "to": ""
+      },
+      {
+        "sn": "B0578",
+        "name": "GARBA Umar Olusegun",
+        "rate": "LS",
+        "prev": "Radar Operator",
+        "from": "2025-02-13",
+        "to": "2025-02-20"
+      },
+      {
+        "sn": "A0592",
+        "name": "IGWE Segun Michael",
+        "rate": "MCPO",
+        "prev": "Damage Control",
+        "from": "2024-09-15",
+        "to": "2026-04-06"
+      },
+      {
+        "sn": "B0607",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "LS",
+        "prev": "Damage Control",
+        "from": "2023-06-04",
+        "to": "2025-10-02"
+      },
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "rate": "AB",
+        "prev": "Damage Control",
+        "from": "2024-07-13",
+        "to": "2026-05-20"
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "CPO",
+        "prev": "Radar Operator",
+        "from": "2025-10-27",
+        "to": "2025-09-14"
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "AB",
+        "prev": "Marine Engineering Part II",
+        "from": "2022-03-24",
+        "to": "2025-06-02"
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "rate": "CPO",
+        "prev": "Radar Operator",
+        "from": "2023-04-03",
+        "to": "2025-09-09"
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "OS",
+        "prev": "First course",
+        "from": "",
+        "to": ""
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "rate": "LS",
+        "prev": "Leadership Course",
+        "from": "2024-06-06",
+        "to": "2025-03-24"
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "LS",
+        "prev": "Basic Seamanship",
+        "from": "2025-07-07",
+        "to": "2025-12-02"
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "MCPO",
+        "prev": "Leadership Course",
+        "from": "2025-07-03",
+        "to": "2026-08-04"
+      },
+      {
+        "sn": "B0703",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "rate": "AB",
+        "prev": "Damage Control",
+        "from": "2024-04-03",
+        "to": "2026-10-01"
+      },
+      {
+        "sn": "A0716",
+        "name": "UDOH Peter Olusegun",
+        "rate": "AB",
+        "prev": "Leadership Course",
+        "from": "2024-04-20",
+        "to": "2026-04-10"
+      },
+      {
+        "sn": "B0726",
+        "name": "AKPAN Kehinde Samson",
+        "rate": "AB",
+        "prev": "Firefighting",
+        "from": "2023-11-22",
+        "to": "2026-04-16"
+      },
+      {
+        "sn": "B0728",
+        "name": "MOHAMMED Chinedu Ekong",
+        "rate": "MCPO",
+        "prev": "Basic Seamanship",
+        "from": "2025-12-09",
+        "to": "2026-02-27"
+      },
+      {
+        "sn": "B0730",
+        "name": "CHUKWU Blessing Olusegun",
+        "rate": "MPO",
+        "prev": "First course",
+        "from": "",
+        "to": ""
+      },
+      {
+        "sn": "C0743",
+        "name": "AFOLABI Ifeanyi Ade",
+        "rate": "OS",
+        "prev": "Radar Operator",
+        "from": "2023-05-14",
+        "to": "2025-12-20"
+      },
+      {
+        "sn": "C0754",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "rate": "OS",
+        "prev": "Marine Engineering Part II",
+        "from": "2023-04-05",
+        "to": "2026-01-09"
+      },
+      {
+        "sn": "B0769",
+        "name": "ETIM Victor Ugochukwu",
+        "rate": "MPO",
+        "prev": "Radar Operator",
+        "from": "2022-02-05",
+        "to": "2025-08-02"
+      },
+      {
+        "sn": "C0782",
+        "name": "OGUNLEYE Chinedu Okon",
+        "rate": "MCPO",
+        "prev": "Basic Seamanship",
+        "from": "2023-11-05",
+        "to": "2025-04-23"
+      },
+      {
+        "sn": "C0799",
+        "name": "SANI Danladi Dauda",
+        "rate": "CPO",
+        "prev": "Radar Operator",
+        "from": "2023-10-15",
+        "to": "2026-07-28"
+      },
+      {
+        "sn": "B0814",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "rate": "MPO",
+        "prev": "Leadership Course",
+        "from": "2022-12-09",
+        "to": "2026-07-02"
+      },
+      {
+        "sn": "B0821",
+        "name": "OKAFOR Effiong Samson",
+        "rate": "MPO",
+        "prev": "Leadership Course",
+        "from": "2023-06-04",
+        "to": "2026-08-27"
+      },
+      {
+        "sn": "A0834",
+        "name": "BASSEY Tunde Michael",
+        "rate": "LS",
+        "prev": "Marine Engineering Part II",
+        "from": "2024-03-26",
+        "to": "2025-08-22"
+      },
+      {
+        "sn": "B0840",
+        "name": "LAWAL Kehinde Sunday",
+        "rate": "CPO",
+        "prev": "Basic Seamanship",
+        "from": "2023-12-11",
+        "to": "2025-07-07"
+      },
+      {
+        "sn": "B0845",
+        "name": "AMADI Chinedu Ade",
+        "rate": "MPO",
+        "prev": "Damage Control",
+        "from": "2024-03-05",
+        "to": "2026-04-15"
+      },
+      {
+        "sn": "C0855",
+        "name": "YAKUBU Chukwuemeka Chibuike",
+        "rate": "PO",
+        "prev": "Marine Engineering Part II",
+        "from": "2024-11-09",
+        "to": "2025-10-26"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Training Officer"
+    },
+    {
+      "role": "Director of Training (Navy)"
+    }
+  ]
+}

@@ -1,0 +1,365 @@
+{
+  "title": "ADVANCEMENT REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "ref": "DOA-ALL-ALL-LS-000001",
+  "subtitle": "Closed batch",
+  "facts": [
+    {
+      "label": "Batch Number",
+      "value": "DOA-ALL-ALL-LS-000001",
+      "kind": "code"
+    },
+    {
+      "label": "Authority",
+      "value": "NHQ/DOP/AR/42/26",
+      "kind": "code"
+    },
+    {
+      "label": "Status",
+      "value": "Closed"
+    },
+    {
+      "label": "Rate",
+      "value": "LS"
+    },
+    {
+      "label": "Date Closed",
+      "value": "2026-11-05",
+      "kind": "date"
+    },
+    {
+      "label": "Ratings",
+      "value": "36"
+    }
+  ],
+  "table": {
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "12%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "30%"
+      },
+      {
+        "label": "Old Rate",
+        "key": "from",
+        "w": "12%"
+      },
+      {
+        "label": "New Rate",
+        "key": "to",
+        "w": "30%"
+      },
+      {
+        "label": "Date Advanced",
+        "key": "date",
+        "kind": "date"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-10-02",
+        "struck": false
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "from": "CPO",
+        "to": "MCPO",
+        "date": "2026-04-02",
+        "struck": false
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-07-16",
+        "struck": false
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "from": "CPO",
+        "to": "MCPO",
+        "date": "2026-04-11",
+        "struck": false
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "from": "OS",
+        "to": "NOT RECOMMENDED: pending case",
+        "date": "",
+        "struck": true
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "from": "LS",
+        "to": "PO",
+        "date": "2026-02-20",
+        "struck": false
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "from": "LS",
+        "to": "PO",
+        "date": "2026-07-27",
+        "struck": false
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-08-19",
+        "struck": false
+      },
+      {
+        "sn": "B0703",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-10-08",
+        "struck": false
+      },
+      {
+        "sn": "A0716",
+        "name": "UDOH Peter Olusegun",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-10-12",
+        "struck": false
+      },
+      {
+        "sn": "B0726",
+        "name": "AKPAN Kehinde Samson",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-02-08",
+        "struck": false
+      },
+      {
+        "sn": "B0728",
+        "name": "MOHAMMED Chinedu Ekong",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-09-22",
+        "struck": false
+      },
+      {
+        "sn": "B0730",
+        "name": "CHUKWU Blessing Olusegun",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-04-17",
+        "struck": false
+      },
+      {
+        "sn": "C0743",
+        "name": "AFOLABI Ifeanyi Ade",
+        "from": "OS",
+        "to": "NOT RECOMMENDED: pending case",
+        "date": "",
+        "struck": true
+      },
+      {
+        "sn": "C0754",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "from": "OS",
+        "to": "AB",
+        "date": "2026-03-09",
+        "struck": false
+      },
+      {
+        "sn": "B0769",
+        "name": "ETIM Victor Ugochukwu",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-02-23",
+        "struck": false
+      },
+      {
+        "sn": "C0782",
+        "name": "OGUNLEYE Chinedu Okon",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-10-15",
+        "struck": false
+      },
+      {
+        "sn": "C0799",
+        "name": "SANI Danladi Dauda",
+        "from": "CPO",
+        "to": "MCPO",
+        "date": "2026-04-07",
+        "struck": false
+      },
+      {
+        "sn": "B0814",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-04-26",
+        "struck": false
+      },
+      {
+        "sn": "B0821",
+        "name": "OKAFOR Effiong Samson",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-10-16",
+        "struck": false
+      },
+      {
+        "sn": "A0834",
+        "name": "BASSEY Tunde Michael",
+        "from": "LS",
+        "to": "PO",
+        "date": "2026-08-07",
+        "struck": false
+      },
+      {
+        "sn": "B0840",
+        "name": "LAWAL Kehinde Sunday",
+        "from": "CPO",
+        "to": "MCPO",
+        "date": "2026-04-12",
+        "struck": false
+      },
+      {
+        "sn": "B0845",
+        "name": "AMADI Chinedu Ade",
+        "from": "MPO",
+        "to": "NOT RECOMMENDED: pending case",
+        "date": "",
+        "struck": true
+      },
+      {
+        "sn": "C0855",
+        "name": "YAKUBU Chukwuemeka Chibuike",
+        "from": "PO",
+        "to": "MPO",
+        "date": "2026-04-11",
+        "struck": false
+      },
+      {
+        "sn": "A0857",
+        "name": "ONYEKACHI Grace Abdul",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-10-28",
+        "struck": false
+      },
+      {
+        "sn": "B0864",
+        "name": "EDET Ayodele Ugochukwu",
+        "from": "OS",
+        "to": "AB",
+        "date": "2026-02-26",
+        "struck": false
+      },
+      {
+        "sn": "A0874",
+        "name": "FASHOLA Tunde Ade",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-10-18",
+        "struck": false
+      },
+      {
+        "sn": "B0877",
+        "name": "GARBA Effiong Ifeanyi",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-10-08",
+        "struck": false
+      },
+      {
+        "sn": "B0893",
+        "name": "IGWE Taiwo Ekong",
+        "from": "MCPO",
+        "to": "WO",
+        "date": "2026-01-24",
+        "struck": false
+      },
+      {
+        "sn": "A0905",
+        "name": "JOSEPH Grace Michael",
+        "from": "OS",
+        "to": "AB",
+        "date": "2026-10-13",
+        "struck": false
+      },
+      {
+        "sn": "C0909",
+        "name": "OKONKWO Ime Dauda",
+        "from": "LS",
+        "to": "PO",
+        "date": "2026-10-02",
+        "struck": false
+      },
+      {
+        "sn": "B0921",
+        "name": "ADEYEMI Segun Ekong",
+        "from": "MPO",
+        "to": "NOT RECOMMENDED: pending case",
+        "date": "",
+        "struck": true
+      },
+      {
+        "sn": "C0938",
+        "name": "BELLO Samuel Chibuike",
+        "from": "AB",
+        "to": "LS",
+        "date": "2026-06-22",
+        "struck": false
+      },
+      {
+        "sn": "B0953",
+        "name": "EZE Musa Chibuike",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-09-14",
+        "struck": false
+      },
+      {
+        "sn": "B0956",
+        "name": "IBRAHIM Musa Obinna",
+        "from": "MPO",
+        "to": "CPO",
+        "date": "2026-07-18",
+        "struck": false
+      },
+      {
+        "sn": "A0957",
+        "name": "OBI Tunde Chibuike",
+        "from": "OS",
+        "to": "AB",
+        "date": "2026-04-03",
+        "struck": false
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Prepared By"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

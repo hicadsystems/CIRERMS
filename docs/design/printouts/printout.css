@@ -1,0 +1,153 @@
+/* CIRERMS printouts: the one shared stylesheet.
+   Kept from CIRERMS's own PDFs: the header, the footer, the colours.
+   Copied from NAVY-PAYROLL: the crest watermark, the faint blue page, the fonts.
+   Everything is a local file: nothing is fetched when a PDF is made. */
+
+@font-face { font-family: 'Inter'; font-weight: 400; src: url('fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; src: url('fonts/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; src: url('fonts/inter-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 700; src: url('fonts/inter-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-weight: 400; src: url('fonts/libre-baskerville-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-weight: 700; src: url('fonts/libre-baskerville-latin-700-normal.woff2') format('woff2'); }
+
+:root {
+  --navy: #0074a8;
+  --teal: #1caf9a;
+  --ink: #1d2939;
+  --muted: #556070;
+  --border: #d3d7db;
+  --stripe: #f5f7f9;
+  --band: #0074a8;
+  --page: #f8fbff;
+  --font-text: 'Inter', Helvetica, Arial, sans-serif;
+  --font-head: 'Libre Baskerville', Georgia, serif;
+  --font-mono: 'Courier New', Courier, monospace;
+}
+
+/* the faint blue page (NAVY-PAYROLL); the size and margins are set per printout */
+@page { background-color: var(--page); }
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the watermark (NAVY-PAYROLL): the crest, centred, faint, behind every page's content */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('assets/navy-logo.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: 0.02;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ---- header (first page): crest, name, system name, title, optional subtitle, navy rule ---- */
+.doc-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 15mm 1fr;
+  column-gap: 4mm;
+  align-items: start;
+  padding-bottom: 2.5mm;
+  border-bottom: 1.2pt solid var(--navy);
+  margin-bottom: 4mm;
+}
+.doc-header img { width: 14mm; height: auto; display: block; grid-row: 1 / span 2; }
+.doc-header .org { font-size: 13pt; font-weight: 700; color: var(--ink); line-height: 1.2; letter-spacing: 0.01em; }
+.doc-header .sys { font-size: 8.5pt; color: var(--muted); margin-top: 0.4mm; }
+.doc-header .title { font-family: var(--font-head); font-size: 12.5pt; font-weight: 700; color: var(--navy); margin-top: 2mm; line-height: 1.25; }
+.doc-header .subtitle { grid-column: 2; text-align: right; font-size: 8.5pt; color: var(--muted); margin-top: 0.5mm; }
+.doc-header .ref { position: absolute; top: 0; right: 0; text-align: right; font-family: var(--font-mono); font-size: 9.5pt; color: var(--ink); font-weight: 700; }
+
+/* ---- facts: label and value on one row, a hairline under each ---- */
+dl.facts { display: grid; grid-template-columns: repeat(var(--cols, 3), 1fr); column-gap: 8mm; margin: 0 0 4mm; break-inside: avoid; }
+dl.facts .fact { display: grid; grid-template-columns: 34mm 1fr; column-gap: 2mm; padding: 1.1mm 0; border-bottom: 0.5pt solid var(--border); break-inside: avoid; }
+dl.facts.cols-1 { --cols: 1; } dl.facts.cols-2 { --cols: 2; } dl.facts.cols-3 { --cols: 3; } dl.facts.cols-4 { --cols: 4; }
+dl.facts.cols-3 .fact, dl.facts.cols-4 .fact { grid-template-columns: 26mm 1fr; }
+dl.facts dt { margin: 0; color: var(--muted); font-size: 8pt; }
+dl.facts dd { margin: 0; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+dl.facts dd.empty { font-weight: 400; color: var(--muted); }
+dl.facts.stacked .fact { grid-template-columns: 1fr; padding: 1mm 0; }
+
+/* a strip of totals under the header (NAVY-PAYROLL's summary box) */
+.summary { display: flex; border-top: 1pt solid var(--navy); border-bottom: 1pt solid var(--navy); margin: 0 0 4mm; padding: 2mm 0; }
+.summary .item { flex: 1; text-align: center; border-right: 0.5pt solid var(--border); padding: 0 3mm; }
+.summary .item:last-child { border-right: 0; }
+.summary .label { white-space: nowrap; font-size: 7pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.summary .value { font-size: 12pt; font-weight: 700; color: var(--navy); font-family: var(--font-mono); }
+
+/* ---- section headings ---- */
+h2.sec { font-family: var(--font-head); font-size: 9.5pt; font-weight: 700; color: var(--navy); margin: 5mm 0 2mm; padding-bottom: 1mm; border-bottom: 0.5pt solid var(--border); position: relative; break-after: avoid; }
+h2.sec::after { content: ""; position: absolute; left: 0; bottom: -0.5pt; width: 14mm; height: 1.4pt; background: var(--teal); }
+h2.sec .n { color: var(--teal); margin-right: 1.5mm; }
+
+/* ---- tables ---- */
+table.data { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 3mm; }
+table.data.dense { font-size: 7.4pt; }
+table.data thead { display: table-header-group; }            /* the band repeats on every page */
+table.data thead th {
+  background: var(--band); color: #fff; text-align: left; font-weight: 600;
+  padding: 1.7mm 1.6mm; font-size: 7.6pt; letter-spacing: 0.02em; vertical-align: bottom;
+}
+table.data.dense thead th { font-size: 7pt; padding: 1.5mm 1.2mm; }
+table.data tbody td { padding: 1.5mm 1.6mm; border-bottom: 0.5pt solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+table.data.dense tbody td { padding: 1.2mm 1.2mm; }
+table.data tr { break-inside: avoid; page-break-inside: avoid; }     /* a row is never split across pages */
+table.data tbody tr:nth-child(even) td { background: var(--stripe); }
+table.data .num, table.data th.num { text-align: right; }
+table.data th.num, table.data td.num { padding-right: 3mm; }
+table.data .ctr, table.data th.ctr { text-align: center; }
+table.data td.num, table.data td.code, table.data td.date { font-family: var(--font-mono); }
+table.data td.code { font-weight: 700; letter-spacing: 0; }
+table.data td.name { font-weight: 600; }
+table.data td.date { white-space: nowrap; }
+table.data td.nowrap { white-space: nowrap; }
+table.data td.empty { color: var(--muted); }
+table.data tr.total td { background: #e6f0f6; border-top: 1.2pt solid var(--navy); border-bottom: 1.2pt solid var(--navy); font-weight: 700; }
+table.data tr.group td { background: #e6f0f6; color: var(--navy); font-weight: 700; font-size: 8pt; border-bottom: 0.5pt solid var(--navy); }
+table.data tr.struck td { color: var(--muted); text-decoration: line-through; }
+table.data tr.struck td.flag { text-decoration: none; font-weight: 700; color: var(--ink); }
+table.data tr.none td { text-align: center; color: var(--muted); font-style: italic; padding: 4mm; }
+table.data.blank td { height: 9mm; }
+.neg { font-weight: 700; }
+
+p.note { margin: 2mm 0 3mm; padding: 2mm 3mm; border-left: 2pt solid var(--teal); background: rgba(28,175,154,0.07); color: var(--ink); font-size: 8.5pt; }
+p.muted { color: var(--muted); }
+.printed-count { color: var(--muted); font-size: 8pt; margin: -1mm 0 2mm; }
+
+/* ---- signature blocks: kept together, never split from the page's last lines ---- */
+.signatures { display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); column-gap: 10mm; margin-top: 12mm; break-inside: avoid; page-break-inside: avoid; }
+.signatures .sig { padding-top: 11mm; }
+.signatures .line { border-top: 0.8pt solid var(--ink); padding-top: 1.2mm; }
+.signatures .role { font-weight: 700; font-size: 8.5pt; }
+.signatures .who { color: var(--muted); font-size: 7.8pt; margin-top: 0.5mm; }
+.signatures .fill { display: grid; grid-template-columns: auto 1fr; column-gap: 2mm; color: var(--muted); font-size: 7.8pt; margin-top: 3.5mm; }
+.signatures .fill i { border-bottom: 0.5pt solid var(--muted); display: block; height: 3.5mm; }
+
+/* ---- forms ---- */
+.checkbox { display: inline-block; width: 3.2mm; height: 3.2mm; border: 0.8pt solid var(--ink); vertical-align: -0.6mm; margin-right: 1.5mm; background: #fff; }
+.pagebreak { break-after: page; }
+.keep { break-inside: avoid; }
+.letter { font-size: 10pt; line-height: 1.6; }
+.letter p { margin: 0 0 3.2mm; }
+.letter .refline { display: flex; justify-content: space-between; margin-bottom: 5mm; }
+.letter .subject { font-weight: 700; text-decoration: underline; text-align: center; margin: 5mm 0; text-transform: uppercase; }
+.photo { width: 22mm; height: 26mm; object-fit: cover; border: 0.6pt solid var(--border); background: #fff; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+.sec-note { color: var(--muted); font-size: 8pt; margin: -1mm 0 2mm; }
+.bar { height: 3mm; background: var(--navy); }
+
+/* a record's identity block (photo and key facts) */
+.idblock { display: grid; grid-template-columns: 24mm 1fr; column-gap: 5mm; align-items: start; margin-bottom: 2mm; }

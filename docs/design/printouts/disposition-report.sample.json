@@ -1,0 +1,891 @@
+{
+  "title": "DISPOSITION REPORT",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "As at 19/11/2026",
+  "facts": [
+    {
+      "label": "Area Office",
+      "value": "All"
+    },
+    {
+      "label": "As At",
+      "value": "2026-11-19",
+      "kind": "date"
+    },
+    {
+      "label": "Current Ratings",
+      "value": "70"
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "9%"
+      },
+      {
+        "label": "Surname",
+        "key": "surname",
+        "kind": "name",
+        "w": "14%"
+      },
+      {
+        "label": "First Name",
+        "key": "first",
+        "w": "14%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "6%"
+      },
+      {
+        "label": "Sex",
+        "key": "sex",
+        "kind": "ctr",
+        "w": "5%"
+      },
+      {
+        "label": "Trade",
+        "key": "spec",
+        "w": "12%"
+      },
+      {
+        "label": "Ship or Unit",
+        "key": "ship",
+        "w": "13%"
+      },
+      {
+        "label": "Area Office",
+        "key": "cmd",
+        "w": "17%"
+      },
+      {
+        "label": "WEF",
+        "key": "wef",
+        "kind": "date",
+        "w": "9%"
+      }
+    ],
+    "rows": [
+      {
+        "group": "NNS ARADU  (3 ratings)"
+      },
+      {
+        "sn": "B0645",
+        "surname": "BELLO",
+        "first": "Bright",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS ARADU",
+        "cmd": "Western NC",
+        "wef": "2024-07-20"
+      },
+      {
+        "sn": "C0665",
+        "surname": "IBRAHIM",
+        "first": "Emeka",
+        "rate": "OS",
+        "sex": "M",
+        "spec": "Signals",
+        "ship": "NNS ARADU",
+        "cmd": "Western NC",
+        "wef": "2025-06-10"
+      },
+      {
+        "sn": "B0956",
+        "surname": "IBRAHIM",
+        "first": "Musa",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Electrician",
+        "ship": "NNS ARADU",
+        "cmd": "Naval Headquarters",
+        "wef": "2025-05-26"
+      },
+      {
+        "group": "NNS BEECROFT  (4 ratings)"
+      },
+      {
+        "sn": "B0321",
+        "surname": "BELLO",
+        "first": "Chidi",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS BEECROFT",
+        "cmd": "Western NC",
+        "wef": "2023-04-11"
+      },
+      {
+        "sn": "C0538",
+        "surname": "YAKUBU",
+        "first": "Peter",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS BEECROFT",
+        "cmd": "Naval Training Command",
+        "wef": "2024-07-05"
+      },
+      {
+        "sn": "C0754",
+        "surname": "DANJUMA",
+        "first": "Chukwuemeka",
+        "rate": "OS",
+        "sex": "M",
+        "spec": "Signals",
+        "ship": "NNS BEECROFT",
+        "cmd": "Eastern NC",
+        "wef": "2024-03-08"
+      },
+      {
+        "sn": "A0959",
+        "surname": "NWACHUKWU",
+        "first": "Emeka",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Nursing",
+        "ship": "NNS BEECROFT",
+        "cmd": "Western NC",
+        "wef": "2024-05-25"
+      },
+      {
+        "group": "NNS DELTA  (9 ratings)"
+      },
+      {
+        "sn": "B0319",
+        "surname": "ADEYEMI",
+        "first": "Kehinde",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Steward",
+        "ship": "NNS DELTA",
+        "cmd": "Central NC",
+        "wef": "2024-10-18"
+      },
+      {
+        "sn": "B0382",
+        "surname": "AKPAN",
+        "first": "Chidi",
+        "rate": "OS",
+        "sex": "F",
+        "spec": "Clerical",
+        "ship": "NNS DELTA",
+        "cmd": "Central NC",
+        "wef": "2025-02-16"
+      },
+      {
+        "sn": "B0574",
+        "surname": "FASHOLA",
+        "first": "Aminu",
+        "rate": "LS",
+        "sex": "F",
+        "spec": "Steward",
+        "ship": "NNS DELTA",
+        "cmd": "Eastern NC",
+        "wef": "2024-01-09"
+      },
+      {
+        "sn": "B0814",
+        "surname": "NNAMDI",
+        "first": "Aminu",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS DELTA",
+        "cmd": "Naval Training Command",
+        "wef": "2026-08-25"
+      },
+      {
+        "sn": "B0877",
+        "surname": "GARBA",
+        "first": "Effiong",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Signals",
+        "ship": "NNS DELTA",
+        "cmd": "Western NC",
+        "wef": "2026-10-18"
+      },
+      {
+        "sn": "B0953",
+        "surname": "EZE",
+        "first": "Musa",
+        "rate": "MPO",
+        "sex": "F",
+        "spec": "Cook",
+        "ship": "NNS DELTA",
+        "cmd": "Eastern NC",
+        "wef": "2023-01-18"
+      },
+      {
+        "sn": "A0957",
+        "surname": "OBI",
+        "first": "Tunde",
+        "rate": "OS",
+        "sex": "F",
+        "spec": "Signals",
+        "ship": "NNS DELTA",
+        "cmd": "Western NC",
+        "wef": "2024-03-20"
+      },
+      {
+        "sn": "B0978",
+        "surname": "OLADIPO",
+        "first": "Umar",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS DELTA",
+        "cmd": "Eastern NC",
+        "wef": "2025-09-24"
+      },
+      {
+        "sn": "B0990",
+        "surname": "UDOH",
+        "first": "Musa",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Nursing",
+        "ship": "NNS DELTA",
+        "cmd": "Western NC",
+        "wef": "2023-12-28"
+      },
+      {
+        "group": "NNS KADA  (4 ratings)"
+      },
+      {
+        "sn": "A0359",
+        "surname": "OLADIPO",
+        "first": "Blessing",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Survey",
+        "ship": "NNS KADA",
+        "cmd": "Central NC",
+        "wef": "2025-08-23"
+      },
+      {
+        "sn": "C0418",
+        "surname": "AFOLABI",
+        "first": "Peter",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS KADA",
+        "cmd": "Western NC",
+        "wef": "2025-06-14"
+      },
+      {
+        "sn": "B0652",
+        "surname": "EZE",
+        "first": "Peter",
+        "rate": "CPO",
+        "sex": "F",
+        "spec": "Survey",
+        "ship": "NNS KADA",
+        "cmd": "Central NC",
+        "wef": "2024-12-23"
+      },
+      {
+        "sn": "B0921",
+        "surname": "ADEYEMI",
+        "first": "Segun",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS KADA",
+        "cmd": "Naval Headquarters",
+        "wef": "2023-10-27"
+      },
+      {
+        "group": "NNS LANA  (8 ratings)"
+      },
+      {
+        "sn": "A0337",
+        "surname": "OBI",
+        "first": "Danladi",
+        "rate": "PO",
+        "sex": "F",
+        "spec": "Steward",
+        "ship": "NNS LANA",
+        "cmd": "Western NC",
+        "wef": "2026-01-16"
+      },
+      {
+        "sn": "A0450",
+        "surname": "OGUNLEYE",
+        "first": "Effiong",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Electrician",
+        "ship": "NNS LANA",
+        "cmd": "Naval Training Command",
+        "wef": "2024-09-02"
+      },
+      {
+        "sn": "B0623",
+        "surname": "OKONKWO",
+        "first": "Grace",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS LANA",
+        "cmd": "Naval Training Command",
+        "wef": "2024-01-02"
+      },
+      {
+        "sn": "B0687",
+        "surname": "ABUBAKAR",
+        "first": "Umar",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Nursing",
+        "ship": "NNS LANA",
+        "cmd": "Naval Headquarters",
+        "wef": "2025-12-21"
+      },
+      {
+        "sn": "B0703",
+        "surname": "OLADIPO",
+        "first": "Aminu",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Steward",
+        "ship": "NNS LANA",
+        "cmd": "Naval Headquarters",
+        "wef": "2025-10-02"
+      },
+      {
+        "sn": "A0857",
+        "surname": "ONYEKACHI",
+        "first": "Grace",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Survey",
+        "ship": "NNS LANA",
+        "cmd": "Naval Training Command",
+        "wef": "2023-12-02"
+      },
+      {
+        "sn": "B0893",
+        "surname": "IGWE",
+        "first": "Taiwo",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Nursing",
+        "ship": "NNS LANA",
+        "cmd": "Eastern NC",
+        "wef": "2026-05-03"
+      },
+      {
+        "sn": "C0909",
+        "surname": "OKONKWO",
+        "first": "Ime",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS LANA",
+        "cmd": "Western NC",
+        "wef": "2026-08-05"
+      },
+      {
+        "group": "NNS NGURU  (3 ratings)"
+      },
+      {
+        "sn": "B0485",
+        "surname": "OKAFOR",
+        "first": "Ifeanyi",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Electrician",
+        "ship": "NNS NGURU",
+        "cmd": "Western NC",
+        "wef": "2025-05-27"
+      },
+      {
+        "sn": "C0743",
+        "surname": "AFOLABI",
+        "first": "Ifeanyi",
+        "rate": "OS",
+        "sex": "F",
+        "spec": "Radar",
+        "ship": "NNS NGURU",
+        "cmd": "Naval Training Command",
+        "wef": "2026-10-19"
+      },
+      {
+        "sn": "B0840",
+        "surname": "LAWAL",
+        "first": "Kehinde",
+        "rate": "CPO",
+        "sex": "M",
+        "spec": "Signals",
+        "ship": "NNS NGURU",
+        "cmd": "Western NC",
+        "wef": "2024-04-05"
+      },
+      {
+        "group": "NNS OKPABANA  (6 ratings)"
+      },
+      {
+        "sn": "A0323",
+        "surname": "EZE",
+        "first": "Ime",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS OKPABANA",
+        "cmd": "Eastern NC",
+        "wef": "2025-07-02"
+      },
+      {
+        "sn": "B0332",
+        "surname": "IBRAHIM",
+        "first": "Umar",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Clerical",
+        "ship": "NNS OKPABANA",
+        "cmd": "Eastern NC",
+        "wef": "2023-01-07"
+      },
+      {
+        "sn": "A0592",
+        "surname": "IGWE",
+        "first": "Segun",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Electrician",
+        "ship": "NNS OKPABANA",
+        "cmd": "Western NC",
+        "wef": "2023-07-25"
+      },
+      {
+        "sn": "B0726",
+        "surname": "AKPAN",
+        "first": "Kehinde",
+        "rate": "AB",
+        "sex": "F",
+        "spec": "Electrician",
+        "ship": "NNS OKPABANA",
+        "cmd": "Naval Training Command",
+        "wef": "2023-04-01"
+      },
+      {
+        "sn": "B0730",
+        "surname": "CHUKWU",
+        "first": "Blessing",
+        "rate": "MPO",
+        "sex": "F",
+        "spec": "Gunnery",
+        "ship": "NNS OKPABANA",
+        "cmd": "Western NC",
+        "wef": "2023-09-18"
+      },
+      {
+        "sn": "B0821",
+        "surname": "OKAFOR",
+        "first": "Effiong",
+        "rate": "MPO",
+        "sex": "F",
+        "spec": "Propulsion",
+        "ship": "NNS OKPABANA",
+        "cmd": "Western NC",
+        "wef": "2023-07-25"
+      },
+      {
+        "group": "NNS PATHFINDER  (7 ratings)"
+      },
+      {
+        "sn": "A0374",
+        "surname": "UDOH",
+        "first": "Tunde",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Central NC",
+        "wef": "2024-02-08"
+      },
+      {
+        "sn": "C0392",
+        "surname": "MOHAMMED",
+        "first": "Grace",
+        "rate": "CPO",
+        "sex": "F",
+        "spec": "Cook",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Naval Headquarters",
+        "wef": "2023-06-06"
+      },
+      {
+        "sn": "A0435",
+        "surname": "ETIM",
+        "first": "Aminu",
+        "rate": "MPO",
+        "sex": "F",
+        "spec": "Radar",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Naval Headquarters",
+        "wef": "2024-05-02"
+      },
+      {
+        "sn": "B0560",
+        "surname": "EDET",
+        "first": "Effiong",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Steward",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Western NC",
+        "wef": "2025-08-03"
+      },
+      {
+        "sn": "C0640",
+        "surname": "ADEYEMI",
+        "first": "Emeka",
+        "rate": "CPO",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Naval Training Command",
+        "wef": "2025-10-07"
+      },
+      {
+        "sn": "B0728",
+        "surname": "MOHAMMED",
+        "first": "Chinedu",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Steward",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Eastern NC",
+        "wef": "2024-08-05"
+      },
+      {
+        "sn": "B0769",
+        "surname": "ETIM",
+        "first": "Victor",
+        "rate": "MPO",
+        "sex": "F",
+        "spec": "Radar",
+        "ship": "NNS PATHFINDER",
+        "cmd": "Western NC",
+        "wef": "2023-05-26"
+      },
+      {
+        "group": "NNS QUORRA  (6 ratings)"
+      },
+      {
+        "sn": "B0427",
+        "surname": "DANJUMA",
+        "first": "Victor",
+        "rate": "OS",
+        "sex": "F",
+        "spec": "Steward",
+        "ship": "NNS QUORRA",
+        "cmd": "Central NC",
+        "wef": "2023-04-22"
+      },
+      {
+        "sn": "C0460",
+        "surname": "SANI",
+        "first": "Ime",
+        "rate": "OS",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS QUORRA",
+        "cmd": "Naval Headquarters",
+        "wef": "2024-06-27"
+      },
+      {
+        "sn": "C0782",
+        "surname": "OGUNLEYE",
+        "first": "Chinedu",
+        "rate": "MCPO",
+        "sex": "F",
+        "spec": "Radar",
+        "ship": "NNS QUORRA",
+        "cmd": "Central NC",
+        "wef": "2026-04-21"
+      },
+      {
+        "sn": "C0799",
+        "surname": "SANI",
+        "first": "Danladi",
+        "rate": "CPO",
+        "sex": "F",
+        "spec": "Nursing",
+        "ship": "NNS QUORRA",
+        "cmd": "Naval Training Command",
+        "wef": "2024-10-05"
+      },
+      {
+        "sn": "B0864",
+        "surname": "EDET",
+        "first": "Ayodele",
+        "rate": "OS",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS QUORRA",
+        "cmd": "Western NC",
+        "wef": "2026-07-02"
+      },
+      {
+        "sn": "C0938",
+        "surname": "BELLO",
+        "first": "Samuel",
+        "rate": "AB",
+        "sex": "F",
+        "spec": "Steward",
+        "ship": "NNS QUORRA",
+        "cmd": "Naval Headquarters",
+        "wef": "2026-10-12"
+      },
+      {
+        "group": "NNS SAPELE  (5 ratings)"
+      },
+      {
+        "sn": "B0511",
+        "surname": "LAWAL",
+        "first": "Grace",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS SAPELE",
+        "cmd": "Western NC",
+        "wef": "2023-12-28"
+      },
+      {
+        "sn": "C0523",
+        "surname": "AMADI",
+        "first": "Chidi",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS SAPELE",
+        "cmd": "Naval Headquarters",
+        "wef": "2024-07-24"
+      },
+      {
+        "sn": "A0716",
+        "surname": "UDOH",
+        "first": "Peter",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Radar",
+        "ship": "NNS SAPELE",
+        "cmd": "Naval Headquarters",
+        "wef": "2026-07-15"
+      },
+      {
+        "sn": "A0834",
+        "surname": "BASSEY",
+        "first": "Tunde",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Nursing",
+        "ship": "NNS SAPELE",
+        "cmd": "Western NC",
+        "wef": "2025-12-05"
+      },
+      {
+        "sn": "B0969",
+        "surname": "ABUBAKAR",
+        "first": "Joseph",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Survey",
+        "ship": "NNS SAPELE",
+        "cmd": "Naval Headquarters",
+        "wef": "2024-12-12"
+      },
+      {
+        "group": "NNS THUNDER  (7 ratings)"
+      },
+      {
+        "sn": "C0406",
+        "surname": "CHUKWU",
+        "first": "Victor",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS THUNDER",
+        "cmd": "Naval Headquarters",
+        "wef": "2026-05-13"
+      },
+      {
+        "sn": "B0607",
+        "surname": "JOSEPH",
+        "first": "Joseph",
+        "rate": "LS",
+        "sex": "F",
+        "spec": "Steward",
+        "ship": "NNS THUNDER",
+        "cmd": "Central NC",
+        "wef": "2026-10-28"
+      },
+      {
+        "sn": "C0670",
+        "surname": "OBI",
+        "first": "Joseph",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Clerical",
+        "ship": "NNS THUNDER",
+        "cmd": "Central NC",
+        "wef": "2023-11-18"
+      },
+      {
+        "sn": "B0845",
+        "surname": "AMADI",
+        "first": "Chinedu",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Radar",
+        "ship": "NNS THUNDER",
+        "cmd": "Naval Training Command",
+        "wef": "2023-03-23"
+      },
+      {
+        "sn": "C0855",
+        "surname": "YAKUBU",
+        "first": "Chukwuemeka",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS THUNDER",
+        "cmd": "Naval Headquarters",
+        "wef": "2026-05-07"
+      },
+      {
+        "sn": "A0874",
+        "surname": "FASHOLA",
+        "first": "Tunde",
+        "rate": "MCPO",
+        "sex": "F",
+        "spec": "Clerical",
+        "ship": "NNS THUNDER",
+        "cmd": "Central NC",
+        "wef": "2025-05-15"
+      },
+      {
+        "sn": "A0905",
+        "surname": "JOSEPH",
+        "first": "Grace",
+        "rate": "OS",
+        "sex": "F",
+        "spec": "Radar",
+        "ship": "NNS THUNDER",
+        "cmd": "Eastern NC",
+        "wef": "2024-01-18"
+      },
+      {
+        "group": "NNS UNITY  (8 ratings)"
+      },
+      {
+        "sn": "C0311",
+        "surname": "OKONKWO",
+        "first": "Danladi",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS UNITY",
+        "cmd": "Western NC",
+        "wef": "2026-04-23"
+      },
+      {
+        "sn": "C0340",
+        "surname": "NWACHUKWU",
+        "first": "Kehinde",
+        "rate": "MPO",
+        "sex": "M",
+        "spec": "Steward",
+        "ship": "NNS UNITY",
+        "cmd": "Naval Training Command",
+        "wef": "2023-03-09"
+      },
+      {
+        "sn": "B0354",
+        "surname": "ABUBAKAR",
+        "first": "Danladi",
+        "rate": "PO",
+        "sex": "M",
+        "spec": "Propulsion",
+        "ship": "NNS UNITY",
+        "cmd": "Naval Headquarters",
+        "wef": "2025-12-28"
+      },
+      {
+        "sn": "B0469",
+        "surname": "NNAMDI",
+        "first": "Samuel",
+        "rate": "OS",
+        "sex": "M",
+        "spec": "Cook",
+        "ship": "NNS UNITY",
+        "cmd": "Western NC",
+        "wef": "2024-03-20"
+      },
+      {
+        "sn": "B0501",
+        "surname": "BASSEY",
+        "first": "Bright",
+        "rate": "AB",
+        "sex": "M",
+        "spec": "Gunnery",
+        "ship": "NNS UNITY",
+        "cmd": "Central NC",
+        "wef": "2024-06-03"
+      },
+      {
+        "sn": "A0555",
+        "surname": "ONYEKACHI",
+        "first": "Tunde",
+        "rate": "MCPO",
+        "sex": "M",
+        "spec": "Clerical",
+        "ship": "NNS UNITY",
+        "cmd": "Naval Training Command",
+        "wef": "2026-05-11"
+      },
+      {
+        "sn": "B0578",
+        "surname": "GARBA",
+        "first": "Umar",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Survey",
+        "ship": "NNS UNITY",
+        "cmd": "Western NC",
+        "wef": "2023-12-09"
+      },
+      {
+        "sn": "A0678",
+        "surname": "NWACHUKWU",
+        "first": "Chukwuemeka",
+        "rate": "LS",
+        "sex": "M",
+        "spec": "Electrician",
+        "ship": "NNS UNITY",
+        "cmd": "Western NC",
+        "wef": "2026-01-20"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Prepared By"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}

@@ -1,0 +1,871 @@
+{
+  "title": "REPORT ON APPRAISAL",
+  "generatedBy": "PO OKONKWO Chukwuemeka",
+  "generatedAt": "2026-11-19T10:42:00",
+  "subtitle": "Period 2025/2026",
+  "facts": [
+    {
+      "label": "Period",
+      "value": "All"
+    },
+    {
+      "label": "Ship",
+      "value": "All"
+    },
+    {
+      "label": "Rate",
+      "value": "All"
+    },
+    {
+      "label": "Branch",
+      "value": "All"
+    },
+    {
+      "label": "Grade",
+      "value": "Any"
+    },
+    {
+      "label": "Appraisals",
+      "value": "52"
+    }
+  ],
+  "charGrades": [
+    {
+      "label": "A Outstanding",
+      "value": 7
+    },
+    {
+      "label": "B Very good",
+      "value": 16
+    },
+    {
+      "label": "C Good",
+      "value": 14
+    },
+    {
+      "label": "D Fair",
+      "value": 8
+    },
+    {
+      "label": "E Poor",
+      "value": 7
+    }
+  ],
+  "effGrades": [
+    {
+      "label": "A Outstanding",
+      "value": 6
+    },
+    {
+      "label": "B Very good",
+      "value": 12
+    },
+    {
+      "label": "C Good",
+      "value": 23
+    },
+    {
+      "label": "D Fair",
+      "value": 11
+    },
+    {
+      "label": "E Poor",
+      "value": 0
+    }
+  ],
+  "table": {
+    "dense": true,
+    "columns": [
+      {
+        "label": "Official No",
+        "key": "sn",
+        "kind": "code",
+        "w": "8%"
+      },
+      {
+        "label": "Name",
+        "key": "name",
+        "kind": "name",
+        "w": "15%"
+      },
+      {
+        "label": "Rate",
+        "key": "rate",
+        "w": "5%"
+      },
+      {
+        "label": "Ship",
+        "key": "ship",
+        "w": "10%"
+      },
+      {
+        "label": "Branch",
+        "key": "branch",
+        "w": "10%"
+      },
+      {
+        "label": "Period",
+        "key": "period",
+        "w": "9%"
+      },
+      {
+        "label": "Character",
+        "key": "ch",
+        "w": "10%"
+      },
+      {
+        "label": "Efficiency",
+        "key": "ef",
+        "w": "10%"
+      },
+      {
+        "label": "CO's Name",
+        "key": "co",
+        "w": "12%"
+      },
+      {
+        "label": "Director",
+        "key": "dir",
+        "w": "11%"
+      }
+    ],
+    "rows": [
+      {
+        "sn": "C0311",
+        "name": "OKONKWO Danladi Ifeanyi",
+        "rate": "AB",
+        "ship": "NNS UNITY",
+        "branch": "Marine Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR ABUBAKAR Abdullahi",
+        "dir": "",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "B0319",
+        "name": "ADEYEMI Kehinde Samson",
+        "rate": "MCPO",
+        "ship": "NNS DELTA",
+        "branch": "Writer",
+        "period": "Jan-Jun 2026",
+        "ch": "D Fair",
+        "ef": "D Fair",
+        "co": "CDR OLADIPO Grace",
+        "dir": "CAPT DANJUMA Blessing",
+        "c": "D",
+        "e": "D"
+      },
+      {
+        "sn": "B0321",
+        "name": "BELLO Chidi Sunday",
+        "rate": "LS",
+        "ship": "NNS BEECROFT",
+        "branch": "Communications",
+        "period": "Jan-Jun 2026",
+        "ch": "A Outstanding",
+        "ef": "B Very good",
+        "co": "CDR DANJUMA Tunde",
+        "dir": "CAPT IGWE Chinedu",
+        "c": "A",
+        "e": "B"
+      },
+      {
+        "sn": "A0323",
+        "name": "EZE Ime Friday",
+        "rate": "PO",
+        "ship": "NNS OKPABANA",
+        "branch": "Supply",
+        "period": "Jan-Jun 2026",
+        "ch": "D Fair",
+        "ef": "D Fair",
+        "co": "CDR AKPAN Taiwo",
+        "dir": "",
+        "c": "D",
+        "e": "D"
+      },
+      {
+        "sn": "B0332",
+        "name": "IBRAHIM Umar Peter",
+        "rate": "LS",
+        "ship": "NNS OKPABANA",
+        "branch": "Writer",
+        "period": "Jul-Dec 2025",
+        "ch": "E Poor",
+        "ef": "C Good",
+        "co": "CDR DANJUMA Umar",
+        "dir": "",
+        "c": "E",
+        "e": "C"
+      },
+      {
+        "sn": "A0337",
+        "name": "OBI Danladi Ade",
+        "rate": "PO",
+        "ship": "NNS LANA",
+        "branch": "Communications",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR EZE Effiong",
+        "dir": "CAPT ONYEKACHI Peter",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "C0340",
+        "name": "NWACHUKWU Kehinde Friday",
+        "rate": "MPO",
+        "ship": "NNS UNITY",
+        "branch": "Marine Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "D Fair",
+        "ef": "D Fair",
+        "co": "CDR ABUBAKAR Bright",
+        "dir": "",
+        "c": "D",
+        "e": "D"
+      },
+      {
+        "sn": "B0354",
+        "name": "ABUBAKAR Danladi Peter",
+        "rate": "PO",
+        "ship": "NNS UNITY",
+        "branch": "Communications",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR ETIM Joseph",
+        "dir": "CAPT AMADI Grace",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "A0359",
+        "name": "OLADIPO Blessing Friday",
+        "rate": "AB",
+        "ship": "NNS KADA",
+        "branch": "Supply",
+        "period": "Jul-Dec 2025",
+        "ch": "A Outstanding",
+        "ef": "D Fair",
+        "co": "CDR IBRAHIM Grace",
+        "dir": "CAPT LAWAL Chinedu",
+        "c": "A",
+        "e": "D"
+      },
+      {
+        "sn": "A0374",
+        "name": "UDOH Tunde Ugochukwu",
+        "rate": "LS",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR IBRAHIM Joseph",
+        "dir": "CAPT ETIM Umar",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "B0382",
+        "name": "AKPAN Chidi Sunday",
+        "rate": "OS",
+        "ship": "NNS DELTA",
+        "branch": "Communications",
+        "period": "Jul-Dec 2025",
+        "ch": "A Outstanding",
+        "ef": "C Good",
+        "co": "CDR AFOLABI Chukwuemeka",
+        "dir": "",
+        "c": "A",
+        "e": "C"
+      },
+      {
+        "sn": "C0392",
+        "name": "MOHAMMED Grace Ifeanyi",
+        "rate": "CPO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR FASHOLA Aminu",
+        "dir": "CAPT SANI Ime",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "C0406",
+        "name": "CHUKWU Victor Dauda",
+        "rate": "AB",
+        "ship": "NNS THUNDER",
+        "branch": "Hydrography",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR EDET Abdullahi",
+        "dir": "CAPT DANJUMA Peter",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "C0418",
+        "name": "AFOLABI Peter Michael",
+        "rate": "MCPO",
+        "ship": "NNS KADA",
+        "branch": "Seaman",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR ABUBAKAR Chukwuemeka",
+        "dir": "",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "B0427",
+        "name": "DANJUMA Victor Abdul",
+        "rate": "OS",
+        "ship": "NNS QUORRA",
+        "branch": "Supply",
+        "period": "Jan-Jun 2026",
+        "ch": "D Fair",
+        "ef": "C Good",
+        "co": "CDR NWACHUKWU Taiwo",
+        "dir": "CAPT FASHOLA Emeka",
+        "c": "D",
+        "e": "C"
+      },
+      {
+        "sn": "A0435",
+        "name": "ETIM Aminu Friday",
+        "rate": "MPO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "E Poor",
+        "ef": "A Outstanding",
+        "co": "CDR OBI Ime",
+        "dir": "",
+        "c": "E",
+        "e": "A"
+      },
+      {
+        "sn": "A0450",
+        "name": "OGUNLEYE Effiong Samson",
+        "rate": "MPO",
+        "ship": "NNS LANA",
+        "branch": "Marine Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "D Fair",
+        "ef": "B Very good",
+        "co": "CDR EDET Joseph",
+        "dir": "",
+        "c": "D",
+        "e": "B"
+      },
+      {
+        "sn": "C0460",
+        "name": "SANI Ime Friday",
+        "rate": "OS",
+        "ship": "NNS QUORRA",
+        "branch": "Marine Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "B Very good",
+        "co": "CDR MOHAMMED Ngozi",
+        "dir": "",
+        "c": "C",
+        "e": "B"
+      },
+      {
+        "sn": "B0469",
+        "name": "NNAMDI Samuel Obinna",
+        "rate": "OS",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "E Poor",
+        "ef": "D Fair",
+        "co": "CDR AKPAN Joseph",
+        "dir": "CAPT LAWAL Abdullahi",
+        "c": "E",
+        "e": "D"
+      },
+      {
+        "sn": "B0485",
+        "name": "OKAFOR Ifeanyi Abdul",
+        "rate": "AB",
+        "ship": "NNS NGURU",
+        "branch": "Communications",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR EZE Chinedu",
+        "dir": "",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "B0501",
+        "name": "BASSEY Bright Ifeanyi",
+        "rate": "AB",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "E Poor",
+        "ef": "A Outstanding",
+        "co": "CDR JOSEPH Kehinde",
+        "dir": "",
+        "c": "E",
+        "e": "A"
+      },
+      {
+        "sn": "B0511",
+        "name": "LAWAL Grace Dauda",
+        "rate": "LS",
+        "ship": "NNS SAPELE",
+        "branch": "Seaman",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "B Very good",
+        "co": "CDR NNAMDI Peter",
+        "dir": "",
+        "c": "C",
+        "e": "B"
+      },
+      {
+        "sn": "C0523",
+        "name": "AMADI Chidi Abdul",
+        "rate": "MPO",
+        "ship": "NNS SAPELE",
+        "branch": "Communications",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR UDOH Blessing",
+        "dir": "",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "C0538",
+        "name": "YAKUBU Peter Ifeanyi",
+        "rate": "LS",
+        "ship": "NNS BEECROFT",
+        "branch": "Writer",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "A Outstanding",
+        "co": "CDR OKAFOR Peter",
+        "dir": "",
+        "c": "B",
+        "e": "A"
+      },
+      {
+        "sn": "A0555",
+        "name": "ONYEKACHI Tunde Obinna",
+        "rate": "MCPO",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "E Poor",
+        "ef": "C Good",
+        "co": "CDR YAKUBU Ayodele",
+        "dir": "",
+        "c": "E",
+        "e": "C"
+      },
+      {
+        "sn": "B0560",
+        "name": "EDET Effiong Michael",
+        "rate": "PO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Writer",
+        "period": "Jul-Dec 2025",
+        "ch": "D Fair",
+        "ef": "C Good",
+        "co": "CDR OBI Segun",
+        "dir": "CAPT IGWE Blessing",
+        "c": "D",
+        "e": "C"
+      },
+      {
+        "sn": "B0574",
+        "name": "FASHOLA Aminu Okon",
+        "rate": "LS",
+        "ship": "NNS DELTA",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "A Outstanding",
+        "ef": "C Good",
+        "co": "CDR NWACHUKWU Segun",
+        "dir": "",
+        "c": "A",
+        "e": "C"
+      },
+      {
+        "sn": "B0578",
+        "name": "GARBA Umar Olusegun",
+        "rate": "LS",
+        "ship": "NNS UNITY",
+        "branch": "Hydrography",
+        "period": "Jan-Jun 2026",
+        "ch": "A Outstanding",
+        "ef": "C Good",
+        "co": "CDR EDET Joseph",
+        "dir": "",
+        "c": "A",
+        "e": "C"
+      },
+      {
+        "sn": "A0592",
+        "name": "IGWE Segun Michael",
+        "rate": "MCPO",
+        "ship": "NNS OKPABANA",
+        "branch": "Writer",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "B Very good",
+        "co": "CDR CHUKWU Abdullahi",
+        "dir": "CAPT NWACHUKWU Taiwo",
+        "c": "C",
+        "e": "B"
+      },
+      {
+        "sn": "B0607",
+        "name": "JOSEPH Joseph Ugochukwu",
+        "rate": "LS",
+        "ship": "NNS THUNDER",
+        "branch": "Supply",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "D Fair",
+        "co": "CDR ETIM Chidi",
+        "dir": "CAPT OBI Aminu",
+        "c": "C",
+        "e": "D"
+      },
+      {
+        "sn": "B0623",
+        "name": "OKONKWO Grace Peter",
+        "rate": "AB",
+        "ship": "NNS LANA",
+        "branch": "Communications",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR AMADI Musa",
+        "dir": "CAPT ADEYEMI Peter",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "C0640",
+        "name": "ADEYEMI Emeka Ugochukwu",
+        "rate": "CPO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Marine Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "A Outstanding",
+        "ef": "C Good",
+        "co": "CDR GARBA Musa",
+        "dir": "CAPT ETIM Ime",
+        "c": "A",
+        "e": "C"
+      },
+      {
+        "sn": "B0645",
+        "name": "BELLO Bright Ifeanyi",
+        "rate": "AB",
+        "ship": "NNS ARADU",
+        "branch": "Marine Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "D Fair",
+        "ef": "C Good",
+        "co": "CDR BASSEY Musa",
+        "dir": "CAPT CHUKWU Abdullahi",
+        "c": "D",
+        "e": "C"
+      },
+      {
+        "sn": "B0652",
+        "name": "EZE Peter Friday",
+        "rate": "CPO",
+        "ship": "NNS KADA",
+        "branch": "Medical",
+        "period": "Jul-Dec 2025",
+        "ch": "D Fair",
+        "ef": "C Good",
+        "co": "CDR EZE Segun",
+        "dir": "",
+        "c": "D",
+        "e": "C"
+      },
+      {
+        "sn": "C0665",
+        "name": "IBRAHIM Emeka Ekong",
+        "rate": "OS",
+        "ship": "NNS ARADU",
+        "branch": "Writer",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "A Outstanding",
+        "co": "CDR AKPAN Peter",
+        "dir": "",
+        "c": "B",
+        "e": "A"
+      },
+      {
+        "sn": "C0670",
+        "name": "OBI Joseph Michael",
+        "rate": "LS",
+        "ship": "NNS THUNDER",
+        "branch": "Supply",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "D Fair",
+        "co": "CDR OBI Aminu",
+        "dir": "",
+        "c": "B",
+        "e": "D"
+      },
+      {
+        "sn": "A0678",
+        "name": "NWACHUKWU Chukwuemeka Sunday",
+        "rate": "LS",
+        "ship": "NNS UNITY",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "D Fair",
+        "co": "CDR BELLO Samuel",
+        "dir": "",
+        "c": "C",
+        "e": "D"
+      },
+      {
+        "sn": "B0687",
+        "name": "ABUBAKAR Umar Michael",
+        "rate": "MCPO",
+        "ship": "NNS LANA",
+        "branch": "Supply",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR OKAFOR Abdullahi",
+        "dir": "CAPT NWACHUKWU Taiwo",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "B0703",
+        "name": "OLADIPO Aminu Ugochukwu",
+        "rate": "AB",
+        "ship": "NNS LANA",
+        "branch": "Seaman",
+        "period": "Jul-Dec 2025",
+        "ch": "B Very good",
+        "ef": "B Very good",
+        "co": "CDR JOSEPH Chidi",
+        "dir": "",
+        "c": "B",
+        "e": "B"
+      },
+      {
+        "sn": "A0716",
+        "name": "UDOH Peter Olusegun",
+        "rate": "AB",
+        "ship": "NNS SAPELE",
+        "branch": "Hydrography",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR IBRAHIM Chinedu",
+        "dir": "CAPT JOSEPH Kehinde",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "B0726",
+        "name": "AKPAN Kehinde Samson",
+        "rate": "AB",
+        "ship": "NNS OKPABANA",
+        "branch": "Communications",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR NNAMDI Samuel",
+        "dir": "CAPT SANI Chidi",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "B0728",
+        "name": "MOHAMMED Chinedu Ekong",
+        "rate": "MCPO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Marine Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR IGWE Segun",
+        "dir": "CAPT OKONKWO Ayodele",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "B0730",
+        "name": "CHUKWU Blessing Olusegun",
+        "rate": "MPO",
+        "ship": "NNS OKPABANA",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR AKPAN Ngozi",
+        "dir": "CAPT OKAFOR Grace",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "C0743",
+        "name": "AFOLABI Ifeanyi Ade",
+        "rate": "OS",
+        "ship": "NNS NGURU",
+        "branch": "Communications",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR DANJUMA Victor",
+        "dir": "",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "C0754",
+        "name": "DANJUMA Chukwuemeka Dauda",
+        "rate": "OS",
+        "ship": "NNS BEECROFT",
+        "branch": "Hydrography",
+        "period": "Jan-Jun 2026",
+        "ch": "B Very good",
+        "ef": "C Good",
+        "co": "CDR ADEYEMI Joseph",
+        "dir": "",
+        "c": "B",
+        "e": "C"
+      },
+      {
+        "sn": "B0769",
+        "name": "ETIM Victor Ugochukwu",
+        "rate": "MPO",
+        "ship": "NNS PATHFINDER",
+        "branch": "Electrical Engineering",
+        "period": "Jul-Dec 2025",
+        "ch": "C Good",
+        "ef": "C Good",
+        "co": "CDR GARBA Danladi",
+        "dir": "CAPT JOSEPH Kehinde",
+        "c": "C",
+        "e": "C"
+      },
+      {
+        "sn": "C0782",
+        "name": "OGUNLEYE Chinedu Okon",
+        "rate": "MCPO",
+        "ship": "NNS QUORRA",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "A Outstanding",
+        "co": "CDR BASSEY Aminu",
+        "dir": "",
+        "c": "C",
+        "e": "A"
+      },
+      {
+        "sn": "C0799",
+        "name": "SANI Danladi Dauda",
+        "rate": "CPO",
+        "ship": "NNS QUORRA",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "D Fair",
+        "co": "CDR FASHOLA Ifeanyi",
+        "dir": "CAPT BELLO Ayodele",
+        "c": "C",
+        "e": "D"
+      },
+      {
+        "sn": "B0814",
+        "name": "NNAMDI Aminu Ugochukwu",
+        "rate": "MPO",
+        "ship": "NNS DELTA",
+        "branch": "Marine Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "E Poor",
+        "ef": "D Fair",
+        "co": "CDR AMADI Tunde",
+        "dir": "",
+        "c": "E",
+        "e": "D"
+      },
+      {
+        "sn": "B0821",
+        "name": "OKAFOR Effiong Samson",
+        "rate": "MPO",
+        "ship": "NNS OKPABANA",
+        "branch": "Electrical Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "E Poor",
+        "ef": "B Very good",
+        "co": "CDR BASSEY Musa",
+        "dir": "CAPT JOSEPH Peter",
+        "c": "E",
+        "e": "B"
+      },
+      {
+        "sn": "A0834",
+        "name": "BASSEY Tunde Michael",
+        "rate": "LS",
+        "ship": "NNS SAPELE",
+        "branch": "Seaman",
+        "period": "Jan-Jun 2026",
+        "ch": "A Outstanding",
+        "ef": "A Outstanding",
+        "co": "CDR JOSEPH Grace",
+        "dir": "",
+        "c": "A",
+        "e": "A"
+      },
+      {
+        "sn": "B0840",
+        "name": "LAWAL Kehinde Sunday",
+        "rate": "CPO",
+        "ship": "NNS NGURU",
+        "branch": "Marine Engineering",
+        "period": "Jan-Jun 2026",
+        "ch": "C Good",
+        "ef": "D Fair",
+        "co": "CDR OLADIPO Grace",
+        "dir": "CAPT LAWAL Segun",
+        "c": "C",
+        "e": "D"
+      }
+    ]
+  },
+  "signatures": [
+    {
+      "role": "Prepared By"
+    },
+    {
+      "role": "Director of Personnel (Navy)"
+    }
+  ]
+}
