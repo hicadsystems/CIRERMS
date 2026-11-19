@@ -98,7 +98,7 @@ table.data { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bott
 table.data.dense { font-size: 7.4pt; }
 table.data thead { display: table-header-group; }            /* the band repeats on every page */
 table.data thead th {
-  background: var(--band); color: #fff; text-align: left; font-weight: 600;
+  background: transparent; color: var(--navy); border-bottom: 1.3px solid var(--navy); text-align: left; font-weight: 600;
   padding: 1.7mm 1.6mm; font-size: 7.6pt; letter-spacing: 0.02em; vertical-align: bottom;
 }
 table.data.dense thead th { font-size: 7pt; padding: 1.5mm 1.2mm; }
