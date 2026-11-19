@@ -229,6 +229,13 @@ DROP TABLE ratings;
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
   keep their vertical scrollbar and never scroll sideways (Wide tables, below).
+- **Type scales with the screen** (owner's decision, 19/11/2026). Font sizes are fluid: every step of
+  the type scale grows smoothly from its phone size at 360 px wide to its desktop size at 1440 px (CSS
+  `clamp()` in the Tailwind font sizes), so text steps up or down with the screen instead of jumping
+  at one breakpoint. Phone text stays light: no huge or heavy headings; a page title or a record's
+  name is semibold, about 20 px on a phone, and only grows towards desktop. The scale and its values
+  live in `tailwind.config.js` (package T1); screens use the usual size classes and never set sizes of
+  their own.
 - **Wide tables never scroll sideways** (owner's decision, 19/11/2026). A list whose columns would
   overflow the screen shows only its most informative columns, the ones a person scans to find a
   row; the rest go in the record. Every row is clickable and opens the full record in a dialog (a

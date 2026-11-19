@@ -64,6 +64,8 @@ are settled. Both modules keep their **Soon** label until then.
    informative columns show, a row opens the full record in a dialog, and hovering a row shows a
    "View Details" tooltip. For build packages this wins over the design demo where a demo table is
    wider.
+   **Type scales with the screen** (owner, 19/11/2026; CONVENTIONS, Frontend): fluid font sizes from
+   phone to desktop, light and modest headings on a phone. This too wins over the demo.
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
 8. Read the old system for the module before designing or building: its menu items, controller
    actions, views, the tables and procedures they use (`docs/legacy/` from WP0 says where).
@@ -134,8 +136,9 @@ Sonnet where screens follow patterns already in the kit.
 |---|---|---|---|---|---|
 | WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and the old pages' faults we should not copy); the old tables and columns in `docs/legacy/sql/tables.md`, and what every procedure an in-scope page calls does, written in words in its module file (read from the 2017 backup, never copied as SQL; definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
 | WP1 | `foundation-access` | Users, roles and privileges modelled on the old ones (a privilege per screen and action: view, add, edit, delete, approve), checked on every route; menus, tabs and buttons hidden without the grant; the audit trail (table and a helper every write calls); the session lock as the demo shows it (password only); routes and screens registered from each module's own folder so later packages only add files; the admin role seeded with every privilege | Opus 5.5 · high | WP0 | L |
-| WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1 | M |
-| WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action), as the demo shows them | Sonnet 5.5 · medium | WP1 | M |
+| T1 | `fluid-type` | The fluid type scale (CONVENTIONS, Frontend, "Type scales with the screen"): font sizes in `tailwind.config.js` as `clamp()` from 360 to 1440 px wide, headings lighter and smaller on a phone (the record's name, page titles, stat values, dialog titles), every existing screen checked at 360, 390, 430, 768, 1024 and 1440 px in both themes with nothing cut off or overflowing; CONVENTIONS records the scale. Not `docs/design/`: the demo takes it at its next build | Sonnet 5.5 · medium | WP1 | S |
+| WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1, T1 | M |
+| WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action), as the demo shows them | Sonnet 5.5 · medium | WP1, T1 | M |
 | WP4 | `disciplinary` | Initiate an incident, pending cases, conclude a case with its sanction, concluded cases, the disciplinary report (PDF and Excel); the rating's record shows the cases | Sonnet 5.5 · medium | WP2, D2 | S |
 | WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2, D2 | M |
 | WP6 | `training-drafting` | Process a training draft, training review, update training history (feeds the record's Training tab), the reports, upload from Excel | Sonnet 5.5 · high | WP2, D1 | M |
@@ -150,7 +153,7 @@ Sonnet where screens follow patterns already in the kit.
 | Wave | Runs together | Merged before the next wave |
 |---|---|---|
 | A | WP0 (and `demo-themes`, already running) | WP0, `demo-themes` |
-| B | D1, WP1 | D1 after the owner's review, WP1 |
+| B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 |
 | C | D2, WP2 | D2 after the owner's review, WP2 |
 | D | WP3, WP4 | WP3, WP4 |
 | E | WP6, WP7a | WP6, WP7a |
@@ -190,7 +193,8 @@ the next wave once the owner has merged.
 | `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
 | WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
 | D1 | Running since 19/11/2026, Sonnet 5.5 · high | `design-drafting` | |
-| WP1 | Running since 19/11/2026, Opus 5.5 · high | `foundation-access` | |
+| WP1 | Done, checked, ready to merge (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
+| T1 | Not started | `fluid-type` | |
 | D2 | Not started | `design-casework` | |
 | WP2 | Not started | `static-tables` | |
 | WP3 | Not started | `system-admin` | |
