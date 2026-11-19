@@ -56,6 +56,7 @@ CIRERMS/
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
 ├─ docs/PLAN.md                # the project plan: work packages, models, order, status
+├─ docs/ADMIN.md               # the administrator session's handbook: role, owner's rules, how to check a branch
 ├─ docs/design/                 # demo.html: the approved layout and look (open it in a browser); demo-src.html + build-demo.js
 │                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
 ├─ docs/legacy/                 # map of the old system: README.md (how to trace a page), one file per module, sql/ (definitions only)
