@@ -247,7 +247,22 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   at one breakpoint. Phone text stays light: no huge or heavy headings; a page title or a record's
   name is semibold, about 20 px on a phone, and only grows towards desktop. The scale and its values
   live in `tailwind.config.js` (package T1); screens use the usual size classes and never set sizes of
-  their own.
+  their own. Each step is `clamp()`ed, held at its phone size up to 360 px and at its desktop size from
+  1440 px, with a line height that scales the same way:
+
+  | Step | Phone | Desktop | Line height (phone, desktop) | Used for |
+  | --- | --- | --- | --- | --- |
+  | `text-2xs` | 11 px | 11 px | 16, 16 | group labels, counts |
+  | `text-xs` | 12 px | 12 px | 16, 16 | captions, hints |
+  | `text-sm` | 13 px | 14 px | 20, 20 | body text, fields, tables (never below 13 px on a phone) |
+  | `text-base` | 15 px | 16 px | 22, 24 | dialog and sheet titles, the phone header title |
+  | `text-lg` | 16 px | 18 px | 24, 28 | small values |
+  | `text-xl` | 18 px | 20 px | 26, 28 | a record's name |
+  | `text-2xl` | 20 px | 24 px | 28, 32 | a page title, the lock heading |
+  | `text-3xl` | 22 px | 30 px | 28, 36 | a stat value, the sign-in heading |
+
+  Headings stay `font-semibold` on a phone (`phone:font-semibold` where desktop is bold); long names use
+  `break-words`.
 - **Wide tables never scroll sideways** (owner's decision, 19/11/2026). A list whose columns would
   overflow the screen shows only its most informative columns, the ones a person scans to find a
   row; the rest go in the record. Every row is clickable and opens the full record in a dialog (a
