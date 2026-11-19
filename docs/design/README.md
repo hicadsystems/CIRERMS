@@ -257,10 +257,16 @@ The Ship History Report stays an Excel workbook, as in the old system (its Print
 
 ### Dashboard tiles
 
-The Dashboard now shows six tiles (three across): **Members**; **Drafting**, the drafts reported this year from the drafting batches, with
-the open batches; **Disciplinary**, the pending cases, with the cases concluded this year; **Discharge**, the discharges with an exit date this
-year, with the ratings in a proposal; **Memos and Mails** and **Appraisals** unchanged (still a fixed 0: they have no source in the old system,
-PLAN section 9; whether they stay is for the owner).
+Five tiles (three, then two, on desktop; two across and the last one full width on a phone, so the grid has no gap): **Members**; **Drafting**, the
+drafts reported this year from the drafting batches, with the open batches; **Disciplinary**, the pending cases, with the cases concluded this year;
+**Discharge**, the discharges with an exit date this year, with the ratings in a proposal; **Appraisals**, which shows *Soon* until Naval Character
+Assessment is built. The **Memos and Mails** tile is dropped (the owner): it had no source in the old system.
+
+### Reports pages (wide-table rule)
+
+Ship History, All Personnel and Disposition follow the wide-table rule as D1's pages do: four key columns (Disposition: ship, ratings, share), a row opens
+the full record in a dialog (a sheet on a phone) with a View Details tooltip on desktop, cards on a phone, no sideways scrolling at 1440, 1024 or 390 px.
+Disposition's rate-by-rate counts moved into the row's dialog and a strip above the list.
 
 ### Decisions (PLAN 9b) and how they show
 
@@ -282,18 +288,28 @@ added by WP3 and WP1): Disciplinary: Initiate Incident = add; Pending Cases and 
 approve; Cancel Case = delete; Correct = edit. Discharge: Process Discharge, Print Service Details, Verification Forms and Discharge Report = view; Create
 Proposal, Add Rating and Upload Discharge = add; Process and Re-engage = edit; Remove = delete.
 
-### Questions the decisions did not answer, and what D2 chose
+### Decisions taken after the first review (the owner, then the administrator)
 
-- **Correct** may change every field of the case except the rating (offence, incident date and text, reported by, decision date, sanction, decision,
-  authority); it needs one change and a reason. The old edit form changed them with no trace.
-- **Reported By** and **Authority** stay free text (as in the old system), required.
+From the owner:
+- The **Memos and Mails** tile is dropped and **Appraisals** shows *Soon*.
+- The three verification forms **keep D2's indicative layouts** until copies of the real forms arrive (before WP5).
+
+From the administrator:
+- **Correct** may change every field of a case except the rating (offence, incident date and text, reported by, decision date, sanction, decision,
+  authority); it is audited, needs one change and a reason.
+- The **Discharge Report also lists re-engagements** (Exit Type has *Re-engagement* as a choice); a rating re-engaged is not due while the re-engagement runs.
+- **Upload Discharge** skips ratings already in a proposal or already discharged; the reason is optional (left empty; the exit type stands).
+- **The due placeholder stands**: 50 years of age or 20 of service; bands age 50/55/60 and service 20/30/35; in the build they are settings.
+- **Manage Roles** (WP3) will list every module's screens from the privilege catalogue, the *approve* action included.
+- **Exit Type flags (PLAN 9c, in the build):** the Exit Type table carries *Rating stays current* and *Death* flags. Discharge offers only the exit types that do
+  not keep a rating current, and asks for the death documents only for an exit type marked *Death* (the demo uses the name *Deceased*).
+
+Choices D2 made where nothing was decided (unchanged):
+- **Reported By** and **Authority** stay free text, required.
 - **Dates**: an incident is not in the future and not before the rating joined; a decision is not before the incident or in the future; an exit date may
   be in the future (scheduled) but not before the rating joined. Pending needs an exit type and a reason; Closed also needs the exit date.
-- **A rating with a pending case that is discharged**: the case stays open (it can still be concluded); nothing links the two.
-- A proposal exists while it has a pending rating; a rating is in one proposal at a time. **Re-engaged** and **Removed** ratings leave it.
-- The **Discharge Report** lists re-engagements too (filter by type); a rating re-engaged is not due again while the re-engagement runs.
-- The **upload** skips a rating that is already in an open proposal or already discharged (process it on its own page) and leaves the reason empty.
-- The **printouts' layouts** (the three forms above all) are indicative; the real ones need the users' forms.
+- A rating with a pending case that is discharged: the case stays open and can still be concluded; nothing links the two.
+- A proposal exists while it has a pending rating; a rating is in one proposal at a time; re-engaged and removed ratings leave it.
 
 ### Shared lines D2 touched (all in `demo-src.html`; nothing else outside `docs/design/`)
 
@@ -301,7 +317,9 @@ Proposal, Add Rating and Upload Discharge = add; Process and Re-engage = edit; R
   beside `D1.owns` (in `render` and `renderTabs`); the command palette lists both modules' pages.
 - **The record**: `RECORD_TABS` gains *Discipline*; `viewRecord` shows it (not on My Details), counts its badge, shows its body and adds `D2.pills(r)`
   (Leaves, Re-engaged to) to the header labels.
-- **Dashboard**: the tile grid (six tiles, three across).
+- **Dashboard**: the tile grid (five tiles; the Memos and Mails tile removed, Appraisals shows Soon). **The record's tab strip**: tighter desktop spacing and the short
+  labels *Kin* and *Advance* on desktop (the full names stay on a phone), so all 11 tabs fit at 1280 and 1440 px.
+- **Reports**: `viewReport` now builds its three lists with D1's table (key columns, record dialog, cards on a phone).
 - **Static Tables**: a *Print List* button beside *Add*; **Reports**: the *Print PDF* button of `reportShell` now calls the printouts above.
 - **A D1 fault fixed**: D1's `function viewReport()` (Draft Report) had the same name as the Reports module's `viewReport(slug)`, and a later function declaration
   wins, so **every Reports page showed the Draft Report**. D1's is now `viewDraftReport`. The same happened to the Ratings **Batch Upload** (`viewUpload()`), which D1's `viewUpload(key)` replaced, so that page threw an error; D1's is now `viewImport`.
