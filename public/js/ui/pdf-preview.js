@@ -1,14 +1,14 @@
 /*
  * pdf-preview: the app's own preview of a PDF. Every printout opens here, never in the browser's PDF
  * viewer (no browser toolbar in Chrome, Edge, Firefox or Safari): the pages are drawn by PDF.js, served
- * from our own origin (/vendor/pdfjs, from the pdfjs-dist package), on paper-coloured pages in a large
+ * from our own origin (/vendor/pdfjs, from the pdfjs-dist package), in a large
  * dialog, with only our own Download PDF and Print buttons.
  *
  *   openPdfPreview({ url, title, filename })   fetches the PDF through the api client (session and all)
  *   openPdfPreview({ blob, title, filename })  or previews a PDF already in hand
  *   returns the dialog handle (see ui/dialog.js)
  *
- * The dialog follows the theme; the pages stay paper-coloured (the --paper token) as a document does.
+ * The dialog follows the theme; the pages are drawn exactly as the PDF paints them (its own background).
  * The title and the page count are in the head; Download PDF saves the file under its name; Print
  * sends the pages to the browser's print dialog from a hidden frame, without showing any viewer.
  * Desktop: a large dialog. Phone: a tall bottom sheet, one page wide, no sideways scroll.
@@ -34,12 +34,6 @@ function loadPdfjs() {
   return pdfjsPromise;
 }
 
-/** The paper colour as the theme token defines it, for the canvas (the same in light and dark). */
-function paperColour() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
-  return v ? `rgb(${v.split(/\s+/).join(',')})` : 'rgb(250,249,240)';
-}
-
 const canvasBlob = (canvas) => new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 
 export function openPdfPreview({ url, blob, title = 'Preview', filename = 'document.pdf' } = {}) {
@@ -47,6 +41,7 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
   let pdf = null;
   let printFrame = null;
   let closed = false;
+  let resizer = null;
   const pageBox = h('div', { className: 'mx-auto flex w-full max-w-3xl flex-col items-center gap-4', dataset: { pdfPages: '' } });
   const count = h('span', { className: 'text-xs text-muted-foreground', dataset: { pdfCount: '' }, text: 'Loading' });
   const stage = h('div', { className: '-mx-5 -my-4 min-h-[60vh] bg-muted p-4 phone:min-h-[70vh] phone:p-2', dataset: { pdfStage: '' } }, [
@@ -61,6 +56,7 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
     className: 'phone:h-full desk:h-[90vh]',
     onClose: () => {
       closed = true;
+      if (resizer) resizer.disconnect();
       if (printFrame) printFrame.remove();
       if (pdf) pdf.destroy();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -86,20 +82,52 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
   const printBtn = button({ label: 'Print', icon: 'printer', variant: 'primary', disabled: true, onClick: () => print() });
   dlg.setFooter([button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() }), downloadBtn, printBtn]);
 
-  /** Draws one page at the width of the stage, sharp on a dense screen. */
-  async function drawPage(n, width) {
+  /*
+   * Each page is drawn at a backing resolution of 2x to 3x its display size (never below 2x, so a normal
+   * monitor still gets a supersampled page, and a dense phone gets its full 3x), within a pixel budget per
+   * page, then shown at its CSS size, scaled down and never up. The PDF paints its own page background.
+   */
+  const MAX_PAGE_PIXELS = 16e6;
+  let generation = 0;
+  let drawnWidth = 0;
+  const canvases = [];
+
+  async function drawPage(n, width, gen) {
     const page = await pdf.getPage(n);
+    if (closed || gen !== generation) return;
     const base = page.getViewport({ scale: 1 });
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const scale = (width / base.width) * dpr;
-    const viewport = page.getViewport({ scale });
-    const canvas = h('canvas', { className: 'block h-auto w-full max-w-full rounded-sm shadow-card', dataset: { pdfPage: String(n) }, role: 'img', 'aria-label': `Page ${n}` });
-    canvas.width = Math.floor(viewport.width);
-    canvas.height = Math.floor(viewport.height);
-    pageBox.appendChild(canvas);
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport, background: paperColour() }).promise;
-    return canvas;
+    const cssWidth = Math.round(width);
+    const cssHeight = Math.round((cssWidth / base.width) * base.height);
+    let ratio = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
+    ratio = Math.min(ratio, Math.sqrt(MAX_PAGE_PIXELS / (cssWidth * cssHeight)));
+    const viewport = page.getViewport({ scale: (cssWidth / base.width) * ratio });
+    const canvas = h('canvas', { className: 'block max-w-full rounded-sm shadow-card', dataset: { pdfPage: String(n) }, role: 'img', 'aria-label': `Page ${n}` });
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    // CSS size = the page's display size; width in whole pixels, the height follows the canvas's own ratio
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = 'auto';
+    canvas.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    if (closed || gen !== generation) return;
+    if (canvases[n - 1]) canvases[n - 1].replaceWith(canvas);
+    else pageBox.appendChild(canvas);
+    canvases[n - 1] = canvas;
   }
+
+  async function drawAll(width) {
+    generation += 1;
+    const gen = generation;
+    drawnWidth = width;
+    for (let n = 1; n <= pdf.numPages; n += 1) {
+      if (closed || gen !== generation) return;
+      // eslint-disable-next-line no-await-in-loop
+      await drawPage(n, width, gen);
+      stage.querySelector('[data-pdf-loading]')?.remove();
+    }
+  }
+
+  const stageWidth = () => Math.max(280, Math.min(pageBox.clientWidth || 700, 760));
 
   async function run() {
     try {
@@ -112,17 +140,24 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
         standardFontDataUrl: `${PDFJS}/standard_fonts/`,
         isEvalSupported: false,
       }).promise;
-      const width = Math.max(280, Math.min(pageBox.clientWidth || 700, 760));
-      for (let n = 1; n <= pdf.numPages; n += 1) {
-        if (closed) return;
-        // eslint-disable-next-line no-await-in-loop
-        await drawPage(n, width);
-        stage.querySelector('[data-pdf-loading]')?.remove();
-      }
+      await drawAll(stageWidth());
+      if (closed) return;
       count.textContent = `${pdf.numPages} ${pdf.numPages === 1 ? 'page' : 'pages'}`;
       stage.dataset.ready = '1';
       downloadBtn.disabled = false;
       printBtn.disabled = false;
+      // draw again, sharp, when the dialog's width changes
+      if (typeof ResizeObserver === 'function') {
+        let timer = null;
+        resizer = new ResizeObserver(() => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            const w = stageWidth();
+            if (!closed && pdf && w !== drawnWidth) drawAll(w);
+          }, 150);
+        });
+        resizer.observe(pageBox);
+      }
     } catch (err) {
       if (closed) return;
       stage.replaceChildren(h('p', { className: 'py-16 text-center text-sm text-error', role: 'alert', text: (err && err.message) || 'The document could not be opened.' }));
@@ -140,12 +175,12 @@ export function openPdfPreview({ url, blob, title = 'Preview', filename = 'docum
       const urls = [];
       for (let n = 1; n <= pdf.numPages; n += 1) {
         const page = await pdf.getPage(n);
-        const viewport = page.getViewport({ scale: 2 });
+        const viewport = page.getViewport({ scale: 3 });
         const canvas = document.createElement('canvas');
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
         // eslint-disable-next-line no-await-in-loop
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport, background: paperColour() }).promise;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
         // eslint-disable-next-line no-await-in-loop
         urls.push(URL.createObjectURL(await canvasBlob(canvas)));
       }
