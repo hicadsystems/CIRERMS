@@ -6,8 +6,9 @@ updates the status table as they report back.
 
 ## 1. Goal
 
-**Phase 1, this plan: finish the demo, fully, design first.** Every module except Special Drafting
-and Naval Character Assessment, through every menu item of the old system, every page, every step
+**Phase 1, this plan: finish the demo, fully, design first.** Every module, Special Drafting and
+Naval Character Assessment included (owner, 19/11/2026: D3 designs them, WP11 and WP12 build them),
+through every menu item of the old system, every page, every step
 and every action (list, view, add, edit, delete, approve, close, upload, print, export), with users,
 roles and privileges. In two steps per module:
 
@@ -16,9 +17,9 @@ roles and privileges. In two steps per module:
    owner's approval.
 2. **Build:** the app is made to match the approved design and works end to end on demo data.
 
-**Later, not planned here:** Special Drafting, Naval Character Assessment (section 10 keeps what is
-known of both), then importing the real records from the old SQL Server database once our tables
-are settled. Both modules keep their **Soon** label until then.
+**Later, not planned here:** importing the real records from the old SQL Server database once our
+tables are settled. (Special Drafting and Naval Character Assessment were here until 19/11/2026; section
+10 keeps what is known of both, and section 9e has the decisions for them.)
 
 ## 2. The old system (the reference)
 
@@ -102,9 +103,9 @@ are settled. Both modules keep their **Soon** label until then.
 |---|---|---|---|---|
 | Ratings Management | Ratings Management | Employee: viewprofile (View My Details), Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents) | Done, approved | Done |
 | Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList, draftapproval, closedraftreview | D1 | WP7a, WP7b |
-| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | Later | Later |
+| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | D3 | WP11 |
 | Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement (in the code, not in the live menu; included by the owner's decision, 18/11/2026) | D1 | WP8 |
-| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | Later | Later |
+| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | D3 | WP12 |
 | Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | D2 | WP4 |
 | Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | D2 | WP5 |
 | Training Drafting | Training Drafting | TrainingDraft: TrainingDraftiningProcess, Trainingreview, trainingdraftenddate (training history), summaryreport, ExcelUpload | D1 | WP6 |
@@ -129,6 +130,7 @@ Sonnet where screens follow patterns already in the kit.
 |---|---|---|---|---|---|
 | D1 | `design-drafting` | Drafting (9 pages; Upload Draft moved to Special Drafting), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the printouts the in-scope pages load (`docs/legacy/reports.md` section 5, as PDF previews on the pages that print them), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
+| D3 | `design-special` | Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), by rule 14 and section 9e; the sidebar loses its last Soon items and the Appraisals tile counts appraisals | Sonnet 5.5 · medium | D2 | M |
 
 ### Build packages
 
@@ -146,6 +148,8 @@ Sonnet where screens follow patterns already in the kit.
 | WP7b | `drafting-reports` | Batch/Signal Content, Rate DOD History and Draft Report, reading WP7a's tables, with their printouts | Sonnet 5.5 · medium | WP7a | M |
 | WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. Eligibility does not read appraisal grades (WP0) | Opus 5.5 · high | WP2, WP4, D1 | L |
 | WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a, D2 | M |
+| WP11 | `special-drafting` | Special Draft Proposal, Special Draft Report (the draft form by posting type), Upload Draft from Excel, as D3 shows them; a special draft moves the rating on its WEF through WP7a's postings | Sonnet 5.5 · medium | WP7a, D3 | M |
+| WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP2, D3 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
 ## 6. Order: two sessions at a time
@@ -155,9 +159,10 @@ Sonnet where screens follow patterns already in the kit.
 | A | WP0 (and `demo-themes`, already running) | WP0, `demo-themes` |
 | B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 |
 | C | D2, WP2 | D2 after the owner's review, WP2 |
-| D | WP3, WP4 | WP3, WP4 |
+| D | WP3, WP4, then D3 in the first free slot | WP3, WP4, D3 after the owner's review |
 | E | WP6, WP7a | WP6, WP7a |
 | F | WP5, WP8 | WP5, WP8 |
+| F2 | WP12, WP11 (WP11 once WP7a is merged) | WP12, WP11 |
 | G | WP7b, WP9 | WP7b, WP9 |
 | H | WP10 | WP10: the demo is complete |
 
@@ -205,6 +210,9 @@ the next wave once the owner has merged.
 | WP7b | Not started | `drafting-reports` | |
 | WP8 | Not started | `advancement` | |
 | WP9 | Not started | `reports` | |
+| D3 | Not started (owner, 19/11/2026: design and build both this phase) | `design-special` | |
+| WP11 | Not started | `special-drafting` | |
+| WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
 
 ## 9. Open questions
@@ -341,8 +349,10 @@ Also, outside the 16 screens (seeded by SQL, as in the old system):
 Decided by the administrator before WP3 started, at the owner's request (19/11/2026), from
 `docs/legacy/system-admin.md`.
 
-1. **Manage Users.** An account has a user name (a rating's official number, or an administrator's own such as
-   HICO001), full name, role, an optional link to a rating (for My Details), an optional **Specialisation** (a
+1. **Manage Users.** **Every account belongs to an existing rating; there is no special administrator account, the
+   Hicad one included** (owner, 19/11/2026). Add Account starts by finding the rating; the user name is its
+   official number, and a rating has at most one account (the seeded HICO001 becomes a rating in the demo data). An
+   account also has its role, an optional **Specialisation** (a
    drafting officer then sees only that department's batches and approvals, as the old `specid`; WP7a and WP8 apply
    it), phone and e-mail, and an active state. A new account gets a random one-time password, shown once to the
    administrator, and the person must choose their own at first sign-in. Nothing is deleted: an account is
@@ -362,7 +372,35 @@ Decided by the administrator before WP3 started, at the owner's request (19/11/2
    entry with what changed (before and after). No password or one-time password is ever written to the audit trail;
    nothing deletes audit rows.
 
-## 10. Notes for later phases
+## 9e. Decisions for Special Drafting and Naval Character Assessment (D3, WP11, WP12)
+
+Decided by the administrator at the owner's request (19/11/2026), from section 10 and `docs/legacy/`. D3, WP11 and
+WP12 follow them; the owner can change any of them.
+
+1. **A special draft posts one rating outside the batch cycle**, on a signal's authority. Special Draft Proposal
+   finds the rating by official number or name (from the menu, with no batch number in the address), fills in their
+   current rate, branch, ship, date joined it and months there, and takes Deployment/Vice, Authority (the signal),
+   WEF, Drafted To, Remark and the **Posting Type** (Complement, Vice, TY, DW: a labelled list). A rating with a
+   special draft not yet printed cannot get a second one. Remove is possible until it is printed.
+2. **The move follows 9a decision 4**: the old posting ends the day before the WEF and the new one starts on it; a
+   future WEF shows on the record as scheduled. A printed special draft is final; a correction is made on the
+   rating's record, in the audit trail.
+3. **Special Draft Report** prints every unprinted special draft of the chosen posting type as one draft form (a PDF
+   preview), and marks them printed; it can also reprint a past form.
+4. **Upload Draft** (moved here from Drafting) imports special drafts from Excel in D1's upload pattern, keyed by
+   official number: Official No, Drafted To, Authority, WEF, Posting Type, Deployment/Vice, Remark.
+5. **Appraisal Periods** is a page of the module (name, start and end dates, open or closed); one appraisal per
+   rating per period; a closed period is read-only.
+6. **Recommendation and Grading**: Initiate Appraisal for a rating and an open period: Character grade and
+   Efficiency grade from the Appraisal Ratings table, remark, the CO's name; the director's date and name are saved
+   (the old page lost them). The list has filters; Edit while the period is open; Cancel with a reason; nothing is
+   deleted outright. Recording is the add action; editing the edit action.
+7. **Report on Appraisal** (never built in the old system) lists the appraisals of a period, filtered by ship, rate,
+   branch and grade, with the grade counts, as PDF and Excel.
+8. The rating's record shows its appraisals (as the old profile did) for someone who may view Recommendation and
+   Grading; the dashboard's Appraisals tile counts appraisals this month.
+
+## 10. What is known of Special Drafting and Naval Character Assessment
 
 **Special Drafting** posts chosen ratings straight away on a signal's authority, outside the batch
 drafting cycle.
