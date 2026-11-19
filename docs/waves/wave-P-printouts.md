@@ -3,7 +3,8 @@
 The owner's decision (19/11/2026): printouts are **HTML templates turned into PDFs by Chromium**, as in the owner's
 NAVY-PAYROLL application. CIRERMS's own PDF conventions stay (the crest, the header, the footer with "RESTRICTED"
 and "Page X of Y", the colours); NAVY-PAYROLL's PDFs are the standard for improving on them. In the app a PDF shows as real
-pages in our own preview (PDF.js draws the pages; never the browser's PDF viewer and its toolbar).
+pages in our own preview dialog: the browser's own PDF viewer with its toolbar hidden (`#toolbar=0`), as NAVY-PAYROLL
+does, and drawn pages on phones that cannot show a PDF inline. Never a new tab.
 
 Two packages, one after the other: D4 designs every printout as an HTML template in that design, and the owner
 reviews them as real PDFs; after the owner approves (by merging), WP13 makes the app render its PDFs from those
@@ -112,7 +113,7 @@ administrator sends the owner the PDFs to review.
 - `docs/design/printouts/` and the "Printouts" section of `docs/design/README.md` (D4, approved).
 - NAVY-PAYROLL's `lib/chromiumPdfGenerator.js`, `lib/pdfGate.js` and a report controller, as above.
 - CIRERMS today: `src/shared/pdf.js` (pdfkit), `src/modules/disciplinary/disciplinary.documents.js`, the ratings
-  module's PDF code, the Static Tables print route, `public/js/ui/pdf-preview.js` (the preview stays as it is).
+  module's PDF code, the Static Tables print route, `public/js/ui/pdf-preview.js` (the preview dialog, `openPdfPreview`).
 
 ### Build
 1. **The renderer**, `src/shared/printouts/` (one module, documented at the top): a Chromium generator modelled on

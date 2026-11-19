@@ -75,9 +75,10 @@ The project's rules (`docs/PLAN.md` section 3 and `CONVENTIONS.md` hold them in 
 - **Every add and edit opens in a dialog** (a bottom sheet on a phone), with errors under the fields, a
   confirmation for anything that removes or closes, and a toast after.
 - **Printouts** are HTML templates (Handlebars, in `src/templates/printouts/`, keeping CIRERMS's PDF conventions,
-  improved to the standard of the owner's NAVY-PAYROLL application, designed by D4) turned into PDFs on the server by Chromium (`renderPdf`, WP13), and open
-  in the app's own preview (`openPdfPreview` in `public/js/ui/pdf-preview.js`, which draws the real pages): never
-  the browser's PDF viewer, never an `<iframe>`, `<embed>` or `<object>` of a PDF.
+  improved to the standard of the owner's NAVY-PAYROLL application, designed by D4) turned into PDFs on the server by
+  Chromium (`renderPdf`, WP13), and open in the app's preview dialog (`openPdfPreview` in
+  `public/js/ui/pdf-preview.js`): it shows the PDF in the browser's own viewer with its toolbar hidden (`#toolbar=0`),
+  as NAVY-PAYROLL does, and draws the pages on phones that cannot show a PDF inline. Never open a PDF in a new tab.
 - **Look**: colour tokens only (no `bg-white`, `text-white`, `#fff`, hex or Tailwind palette colours in the app),
   light and dark mode, desktop and phone, the fluid type scale, Lucide icons from the sprite, dates `dd/mm/yyyy`,
   no inline scripts or `on*=` handlers (the Content Security Policy forbids them). Rebuild the CSS
