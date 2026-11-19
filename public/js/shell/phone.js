@@ -7,7 +7,8 @@
  *   renderPhone(info)   openMore()
  *   setPhoneTitle(text)   a record page names its rating once it has loaded
  */
-import { AREAS, BOTTOM, bottomKeyFor } from '../core/nav.js';
+import { AREAS, BOTTOM, PAGES, bottomKeyFor, matchPattern } from '../core/nav.js';
+import { can, pageAllowed, moduleVisible, moduleHref } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { openSearch } from '../core/search.js';
 import { cx, h } from '../ui/html.js';
@@ -17,15 +18,17 @@ import { pillClass } from '../ui/pill.js';
 import { initialsOf } from '../ui/avatar.js';
 import { accountItems, getUser, roleLabel } from './session.js';
 
+const COLS = { 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' };
 const ROUND = 'inline-flex h-tap w-tap flex-none items-center justify-center rounded-full hover:bg-sidebar-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-foreground/60';
 
 export function openMore() {
   return openDialog({
     title: 'More',
-    body: AREAS.map((a) => h('div', { className: 'mb-4' }, [
+    // only the modules the person may open (core/access.js)
+    body: AREAS.filter((a) => a.modules.some(moduleVisible)).map((a) => h('div', { className: 'mb-4' }, [
       h('div', { className: 'mb-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground', text: a.label }),
-      h('div', { className: 'grid grid-cols-4 gap-2' }, a.modules.map((m) => h('a', {
-        href: `#${m.href || `soon/${m.key}`}`,
+      h('div', { className: 'grid grid-cols-4 gap-2' }, a.modules.filter(moduleVisible).map((m) => h('a', {
+        href: `#${moduleHref(m)}`,
         className: 'relative flex flex-col items-center gap-1.5 rounded-card p-2 text-center text-2xs font-medium hover:bg-muted',
         'aria-label': m.soon ? `${m.label} (Soon)` : m.label,
       }, [
@@ -60,7 +63,10 @@ function renderBottom(info) {
   const bar = document.getElementById('bottom-bar');
   if (!bar) return;
   const cur = bottomKeyFor(info);
-  bar.replaceChildren(...BOTTOM.map((b) => {
+  // only the items whose page the person may open; More always
+  const items = BOTTOM.filter((b) => !b.href || pageAllowed(PAGES.find((p) => matchPattern(p.pattern, b.href))));
+  bar.className = cx('grid flex-none border-t border-border/60 bg-background/80 px-1 pb-[env(safe-area-inset-bottom)] shadow-pop backdrop-blur-xl desk:hidden', COLS[items.length] || 'grid-cols-5');
+  bar.replaceChildren(...items.map((b) => {
     const on = b.key === cur;
     const cls = cx('flex h-16 flex-col items-center justify-center gap-1 text-2xs focus-visible:outline-none', on ? 'font-semibold text-brand' : 'text-muted-foreground');
     const inner = [
@@ -74,7 +80,7 @@ function renderBottom(info) {
 
   const fab = document.getElementById('fab');
   if (fab) {
-    const show = info && ['ratings/current', 'ratings/former', 'ratings/new'].includes(info.path);
+    const show = info && can('ratings.new', 'add') && ['ratings/current', 'ratings/former', 'ratings/new'].includes(info.path);
     fab.classList.toggle('hidden', !show);
     fab.classList.toggle('flex', !!show);
   }

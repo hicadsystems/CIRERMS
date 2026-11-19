@@ -11,6 +11,11 @@ function toInt(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function toPositiveNumber(value, fallback) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 const env = (process.env.NODE_ENV || 'development').trim();
 const jwtSecret = process.env.JWT_SECRET || '';
 
@@ -42,6 +47,14 @@ const config = Object.freeze({
   jwt: Object.freeze({
     secret: jwtSecret || 'cirerms-local-dev-secret-change-me',
     expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+  }),
+
+  // Session lock: the screen locks after this many minutes without use (decimals allowed, so a
+  // test can use a few seconds). The server also locks a session that has made no request for
+  // the idle time plus a grace period (a closed or sleeping tab), as a backstop.
+  session: Object.freeze({
+    idleMinutes: toPositiveNumber(process.env.SESSION_IDLE_MINUTES, 15),
+    serverGraceSeconds: toInt(process.env.SESSION_SERVER_GRACE_SECONDS, 120),
   }),
 
   uploads: Object.freeze({

@@ -17,8 +17,8 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
-| Auth | Payroll-style JWT login against `users` table (separate from `ratings`). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. One admin role for the demo; screen IDs ready for permissions later |
-| Out of scope (for now) | Automated tests and CI pipelines. On hold until the legacy system is available as reference: the session lock, Static Tables, Reports and System Administration (their look is agreed in `docs/design/demo.html`). The other non-Ratings modules |
+| Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
+| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Static Tables, Reports and the System Administration screens (their look is agreed in `docs/design/demo.html`; WP1 built what they need underneath). The other non-Ratings modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
 ## Folder layout
@@ -34,22 +34,25 @@ CIRERMS/
 │  │  ├─ migrator.js            # migration & seed engine
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
-│  ├─ middleware/               # auth.js, error.js, upload.js
-│  ├─ shared/                   # excel.js, pdf.js, dates.js, errors.js
+│  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
+│  ├─ shared/                   # audit.js (the audit trail helper), excel.js, pdf.js, dates.js, errors.js
 │  └─ modules/
-│     ├─ auth/                  # auth.routes.js  auth.service.js  auth.repo.js
-│     ├─ dashboard/             # dashboard.routes.js  dashboard.service.js  dashboard.repo.js
-│     ├─ ratings/               # ratings.routes.js  ratings.service.js  ratings.repo.js
-│     └─ lookups/               # lookups.routes.js  lookups.service.js  lookups.repo.js
+│     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
+│     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js
+│     ├─ access/                # roles and the privilege catalogue (read side, for Manage Roles)
+│     ├─ audit/                 # the audit trail (read side, for Audit Trail)
+│     ├─ dashboard/             # dashboard.module.js  dashboard.routes.js  dashboard.service.js  dashboard.repo.js
+│     ├─ ratings/               # ratings.module.js  ratings.routes.js  ratings.service.js  ratings.repo.js
+│     └─ lookups/               # lookups.module.js  lookups.routes.js  lookups.service.js  lookups.repo.js
 ├─ public/
 │  ├─ index.html                # sign in (auth.login): the sea canvas (js/sections/login-canvas.js; day or night), crest, form, light / dark switch
 │  ├─ app.html                  # shell slots: rail, top bar, module tabs, phone header, <main>, bottom bar
-│  ├─ js/core/                  # api, router, nav (the navigation catalogue), search (Ctrl K hook), dates, dom, lookups, icons, choices,
-│  │                            # theme-boot (light or dark before the page draws) and theme (the switch)
-│  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session
+│  ├─ js/core/                  # api, router, nav (the navigation catalogue), access (can(screen, action)), search (Ctrl K hook),
+│  │                            # dates, dom, lookups, icons, choices, theme-boot (light or dark before the page draws) and theme (the switch)
+│  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session, lock (the session lock)
 │  ├─ js/ui/                    # the component kit (docs/design/components.md)
 │  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents),
-│  │                            # the record's parts (rating-*.js) and app-shell.js (routes to screens)
+│  │                            # the record's parts (rating-*.js) and app-shell.js (loads each page's screen from nav.js)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
 ├─ docs/PLAN.md                # the project plan: work packages, models, order, status
@@ -68,9 +71,11 @@ CIRERMS/
 └─ package.json
 ```
 
-New modules (drafting, advancement, discipline, ...) are added as a folder under `src/modules/`, their
-screens as files in `public/js/sections/` (mapped in `app-shell.js` `SCREENS`), and their pages and tabs in
-`public/js/core/nav.js`; nothing else moves.
+New modules (drafting, advancement, discipline, ...) are added as a folder under `src/modules/` with a
+manifest (`<module>.module.js`: its routes and privileges), their screens as files in `public/js/sections/`,
+and their pages (with `screen`, `action` and `view`) and tabs in `public/js/core/nav.js`; nothing else moves
+(see *Access, audit and modules*).
+Tests: `tests/e2e/` holds Playwright walk-throughs (run with the machine's Playwright, see each file's header).
 
 ## Backend layering
 
@@ -105,7 +110,7 @@ Every module has three files, each with one job:
 | Screen ID | `module.screen` | `ratings.list`, `ratings.new` |
 
 The **screen ID** is the single name for a screen: its page in `js/core/nav.js` (`screen`), the menu item, and
-later the permission key. UI labels preserve familiar
+the privilege key (with an action: view, add, edit, delete, approve). UI labels preserve familiar
 naval wording ("Official Number" / "Service No") while the DB and API standardise on `service_number`.
 
 ## Database
@@ -149,6 +154,12 @@ DROP TABLE ratings;
 2. `20261116_090100_create_lookups.sql` — 28 `ref_*` lookup tables
 3. `20261116_090200_create_ratings.sql` — `ratings` table + `fk_users_rating` on `users`
 4. `20261116_090300_create_rating_records.sql` — 9 `rating_*` child tables
+5. `20261120_010000_create_roles_privileges.sql` — `roles`, `privileges`, `role_privileges`; the Administrator and Rating roles
+6. `20261120_010100_users_role_id.sql` — `users.role` (a string) becomes `users.role_id` (existing values moved across)
+7. `20261120_010200_create_user_sessions.sql` — `user_sessions`: open, locked or ended sign-ins
+8. `20261120_010300_create_audit_trail.sql` — `audit_trail`
+
+Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
 **Commands**
 
@@ -258,6 +269,60 @@ DROP TABLE ratings;
   `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
   it is on the page. Its look is set at the end of `input.css`.
 - No other CSS framework or external CDN dependency.
+
+## Access, audit and modules
+
+**A module registers itself.** `src/modules/index.js` mounts every folder with a manifest,
+`src/modules/<module>/<module>.module.js`; nothing else is edited to add a module:
+
+```js
+module.exports = {
+  key: 'drafting',                       // the folder name
+  label: 'Drafting',                     // the module's name in the privilege catalogue
+  basePath: '/api/drafting',             // where its router is mounted
+  routes: './drafting.routes',           // its router
+  privileges: [                          // screen ids from public/js/core/nav.js, and their actions
+    { screen: 'drafting.proposal', label: 'Print Draft Proposal', actions: ['view', 'add'] },
+    { screen: 'drafting.approval', label: 'Draft Approval', actions: ['view', 'approve'] },
+  ],
+};
+```
+
+- **Privileges** are one action (`view`, `add`, `edit`, `delete`, `approve`) on one screen id. The manifests
+  form the catalogue, written to `privileges` before the seeds run and when the server starts; roles with
+  `full_access` (the Administrator) get every privilege, new ones included. A module's seed grants its
+  privileges to other roles (`src/db/seeds/003_access.sql` gives the Rating role View My Details).
+- **Every route is guarded.** After `requireAuth`, each route (or the router, before its routes) carries
+  `requirePrivilege(screen, action)` or `requireAnyPrivilege([[screen, action], ...])` from
+  `src/middleware/access.js`; without the grant the answer is 403 `FORBIDDEN` in the error shape. The server
+  refuses to start when a route of a module has no check (only a manifest marked `public`, auth, is exempt).
+  `{ own: (req) => ... }` also lets a request through for the person's own record (My Details).
+- **Who is signed in.** `requireAuth` loads the session, the user, their role and privileges on every
+  request: `req.user` (`id`, `username`, `role`, `fullAccess`, `serviceNumber`, `privileges`), `req.can(screen,
+  action)`, and `req.actor`, the actor for the audit trail. `/api/auth/me` returns the user, their privileges
+  as `{ screen: [actions] }` and the session (`locked`, `lockReason`, `idleMinutes`).
+- **Every write is audited, inside its transaction.** A service write runs in `db.transaction()` and calls
+  `audit.record(tx, actor, { action, table, recordId, before, after })` from `src/shared/audit.js`: `INSERT`
+  with `after`, `UPDATE` with `before` and `after`, `DELETE` with `before` (the raw rows; what changed is worked
+  out, secrets and bookkeeping columns are never kept, an UPDATE that changed nothing is not recorded). Routes
+  pass `req.actor` to the service; services never read `req`. Sign in, sign out, lock and unlock are recorded
+  by the auth service. The record id is the record's key: a service number, `B0539:12` for a child row.
+- **Reading the trail.** `GET /api/audit?from=&to=&user=&userId=&action=&table=&record=&page=` (25 a page,
+  newest first, dates `YYYY-MM-DD`), `GET /api/audit/:id` (with its changes), `GET /api/audit/filters`;
+  `GET /api/access/privileges` and `GET /api/access/roles` for Manage Roles. Screen ids `admin.audit` and
+  `admin.roles` (view).
+- **The screens hide what a person may not do.** `js/core/access.js` holds the privileges from
+  `/api/auth/me`: `can(screen, action)` (action defaults to `view`) decides every button, menu item and tab;
+  the rail, the module tabs, the bottom bar, More and Ctrl K show only what may be opened. Each page in
+  `nav.js` names its `screen`, the `action` needed to open it (default `view`) and its `view`
+  (`{ file, mount, props }`: the section file and the function that draws it, loaded when the page opens).
+  A page opened without the grant shows the not-allowed state; `#dashboard` without the grant goes to the
+  person's first page.
+- **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
+  from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
+  sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
+  every open tab locks, unlocks and signs out together. The server also locks a session that made no request
+  for the idle time plus `SESSION_SERVER_GRACE_SECONDS` (120), so a closed or sleeping tab reopens locked.
 
 ## Not carried over from the old app
 

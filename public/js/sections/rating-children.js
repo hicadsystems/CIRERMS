@@ -6,7 +6,8 @@
  * with the current posting marked; the rest as tables.
  *
  *   CHILD_TABS                         [{ key, label, bundleKey, ... }] in tab order
- *   childPanel({ serviceNumber, tab, rows, rating, readOnly, lookups, onChange })
+ *   childPanel({ serviceNumber, tab, rows, rating, readOnly, lookups, onChange, canAdd, canEdit, canDelete })
+ *     canAdd / canEdit / canDelete   which row actions show (default: all unless readOnly)
  *     onChange({ items, currentShipName, rating })   after a save or delete
  */
 import { api } from '../core/api.js';
@@ -124,7 +125,7 @@ function control(f, row) {
   return textInput({ name: f.name, type: f.type || 'text', value: raw == null ? '' : String(raw), required: !!f.required });
 }
 
-export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnly = false, lookups = {}, onChange } = {}) {
+export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnly = false, lookups = {}, onChange, canAdd = !readOnly, canEdit = !readOnly, canDelete = !readOnly } = {}) {
   const base = `/api/ratings/${encodeURIComponent(serviceNumber)}/records/${tab.key}`;
 
   function openForm(row = null) {
@@ -169,12 +170,12 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   }
 
   const ICON_BTN = 'inline-flex h-8 w-8 items-center justify-center rounded-ctl text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 phone:h-tap phone:w-tap';
-  const rowActions = (row, what) => (readOnly ? null : h('span', { className: 'inline-flex flex-none gap-1' }, [
-    h('button', { type: 'button', className: ICON_BTN, 'aria-label': `Edit ${what}`, onClick: () => openForm(row) }, icon('pencil')),
-    h('button', { type: 'button', className: cx(ICON_BTN, 'hover:bg-error-soft hover:text-destructive'), 'aria-label': `Delete ${what}`, onClick: () => remove(row, what) }, icon('trash-2')),
+  const rowActions = (row, what) => (!canEdit && !canDelete ? null : h('span', { className: 'inline-flex flex-none gap-1' }, [
+    canEdit ? h('button', { type: 'button', className: ICON_BTN, 'aria-label': `Edit ${what}`, onClick: () => openForm(row) }, icon('pencil')) : null,
+    canDelete ? h('button', { type: 'button', className: cx(ICON_BTN, 'hover:bg-error-soft hover:text-destructive'), 'aria-label': `Delete ${what}`, onClick: () => remove(row, what) }, icon('trash-2')) : null,
   ]));
 
-  const addBtn = () => (readOnly ? null : button({ label: tab.addLabel, icon: 'plus', variant: 'outline', onClick: () => openForm() }));
+  const addBtn = () => (!canAdd ? null : button({ label: tab.addLabel, icon: 'plus', variant: 'outline', onClick: () => openForm() }));
   const printBtn = () => (tab.pdf && rows.length ? button({ label: 'Print', icon: 'printer', variant: 'ghost', onClick: () => printTab() }) : null);
 
   async function printTab() {
@@ -190,10 +191,10 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
     return h('div', { className: CARD }, emptyState({ icon: tab.icon, title: `No ${tab.label} Recorded`, action: addBtn() }));
   }
 
-  const band = (readOnly && !tab.pdf) ? null : h('div', { className: 'flex items-center justify-end gap-2 border-b border-border px-4 py-2.5' }, [printBtn(), addBtn()]);
+  const band = (!canAdd && !tab.pdf) ? null : h('div', { className: 'flex items-center justify-end gap-2 border-b border-border px-4 py-2.5' }, [printBtn(), addBtn()]);
 
   if (tab.look === 'cards') {
-    const photo = nokPhoto({ serviceNumber, rating, readOnly });
+    const photo = nokPhoto({ serviceNumber, rating, readOnly: !canEdit });
     return h('div', { className: 'space-y-4' }, [
       h('div', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1' }, rows.map((r) => {
         const name = [r.first_name, r.last_name].filter(Boolean).join(' ');
@@ -206,7 +207,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
           facts([['Mobile Number', r.mobile_number], ['Relationship', r.next_of_kin_type_name]]),
         ]);
       })),
-      readOnly ? null : addBtn(),
+      addBtn(),
       photo,
     ]);
   }
@@ -237,10 +238,10 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   return h('div', { className: cx(CARD, 'overflow-hidden') }, [
     band,
     h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-sm' }, [
-      h('thead', { className: 'bg-subtle' }, h('tr', {}, [...cols.map(([label]) => h('th', { className: TH, scope: 'col', text: label })), readOnly ? null : h('th', { className: TH, scope: 'col' }, h('span', { className: 'sr-only', text: 'Actions' }))])),
+      h('thead', { className: 'bg-subtle' }, h('tr', {}, [...cols.map(([label]) => h('th', { className: TH, scope: 'col', text: label })), !canEdit && !canDelete ? null : h('th', { className: TH, scope: 'col' }, h('span', { className: 'sr-only', text: 'Actions' }))])),
       h('tbody', {}, rows.map((r) => h('tr', { className: 'border-t border-border' }, [
         ...cols.map(([, get], i) => h('td', { className: cx('whitespace-nowrap px-4 py-2.5', i === 0 && 'font-medium') }, value(get(r)))),
-        readOnly ? null : h('td', { className: 'w-px whitespace-nowrap px-2 py-1 text-right' }, rowActions(r, String(cols[0][1](r) || tab.noun))),
+        !canEdit && !canDelete ? null : h('td', { className: 'w-px whitespace-nowrap px-2 py-1 text-right' }, rowActions(r, String(cols[0][1](r) || tab.noun))),
       ]))),
     ])),
   ]);

@@ -11,6 +11,7 @@
  *   mountRatingRecord(outlet, ctx)   mountMyDetails(outlet)
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { getLookups } from '../core/lookups.js';
 import { navigate } from '../core/router.js';
 import { icon } from '../core/icons.js';
@@ -38,7 +39,7 @@ import { documentsBlock } from './rating-documents-block.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
 import { ratingName, personName } from './rating-names.js';
 
-const TABS = [{ key: 'details', label: 'Details' }, ...CHILD_TABS.map((t) => ({ key: t.key, label: t.label })), { key: 'documents', label: 'Documents' }];
+const ALL_TABS = [{ key: 'details', label: 'Details' }, ...CHILD_TABS.map((t) => ({ key: t.key, label: t.label })), { key: 'documents', label: 'Documents' }];
 
 function loadingNode() {
   return h('div', { className: 'flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground' }, [icon('loader-circle', 'icon animate-spin'), 'Loading']);
@@ -63,6 +64,16 @@ export function photoAvatar(r, size = 'xl') {
  * Returns a cleanup function.
  */
 function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' }) {
+  // what the person may do here (core/access.js); My Details is read-only and shows its own documents
+  const may = {
+    add: !readOnly && can('ratings.edit', 'add'),
+    edit: !readOnly && can('ratings.edit', 'edit'),
+    remove: !readOnly && can('ratings.edit', 'delete'),
+    docs: readOnly || can('ratings.documents'),
+    upload: !readOnly && can('ratings.documents', 'add'),
+    removeDoc: !readOnly && can('ratings.documents', 'delete'),
+  };
+  const TABS = ALL_TABS.filter((t) => t.key !== 'documents' || may.docs);
   const state = { rating: data.rating, children: data.children || {}, tab: TABS.some((t) => t.key === initialTab) ? initialTab : 'details' };
   let docs = null;
 
@@ -84,13 +95,11 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
     setPhoneTitle(name);
     document.title = `${name} · CIRERMS`;
     const where = r.status === 'former' ? (r.exit_date ? `Left ${formatDisplayDate(r.exit_date)}` : 'Former') : r.current_ship_name || 'No current posting';
-    const actions = readOnly
-      ? [button({ label: 'Print Dossier', icon: 'printer', variant: 'blue', onClick: printDossier })]
-      : [
-          button({ label: 'Edit Details', icon: 'pencil', variant: 'primary', onClick: () => editSection('basic') }),
-          button({ label: 'Print Dossier', icon: 'printer', variant: 'blue', onClick: printDossier }),
-          button({ label: 'Delete', icon: 'trash-2', variant: 'outline', className: 'text-destructive phone:hidden', onClick: removeRating }),
-        ];
+    const actions = [
+      may.edit ? button({ label: 'Edit Details', icon: 'pencil', variant: 'primary', onClick: () => editSection('basic') }) : null,
+      button({ label: 'Print Dossier', icon: 'printer', variant: 'blue', onClick: printDossier }),
+      may.remove ? button({ label: 'Delete', icon: 'trash-2', variant: 'outline', className: 'text-destructive phone:hidden', onClick: removeRating }) : null,
+    ];
     fill(head, [
       h('div', { className: 'flex flex-wrap items-center gap-4 p-4' }, [
         photoAvatar(r),
@@ -117,6 +126,8 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
       docs = documentsBlock({
         serviceNumber: sn(),
         readOnly,
+        canUpload: may.upload,
+        canDelete: may.removeDoc,
         onCount: (n) => {
           state.children.documents = new Array(n).fill(null);
           drawHead();
@@ -132,6 +143,9 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
       rows: state.children[tab.bundleKey] || [],
       rating: state.rating,
       readOnly,
+      canAdd: may.add,
+      canEdit: may.edit,
+      canDelete: may.remove,
       lookups,
       onChange: ({ items, currentShipName }) => {
         state.children[tab.bundleKey] = items || [];
@@ -152,7 +166,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
       }
       return card({
         title: s.title,
-        actions: readOnly ? null : [button({ label: 'Edit', icon: 'pencil', variant: 'ghost', ariaLabel: `Edit ${s.title}`, onClick: () => editSection(s.key) })],
+        actions: !may.edit ? null : [button({ label: 'Edit', icon: 'pencil', variant: 'ghost', ariaLabel: `Edit ${s.title}`, onClick: () => editSection(s.key) })],
         body: facts(rows),
       });
     }));
@@ -267,7 +281,7 @@ export async function mountMyDetails(outlet, { query = {} } = {}) {
           text: me.serviceNumber
             ? `This account is linked to ${me.serviceNumber}, which is not in the personnel records.`
             : 'This is an administrative account, so it has no personal service record. Open a rating from the Current or Former lists to see theirs.',
-          action: button({ label: 'Current Ratings', icon: 'users', variant: 'outline', href: '#ratings/current' }),
+          action: can('ratings.list') ? button({ label: 'Current Ratings', icon: 'users', variant: 'outline', href: '#ratings/current' }) : null,
         })),
       ]);
       return null;

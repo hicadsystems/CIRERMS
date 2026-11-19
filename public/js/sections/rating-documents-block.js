@@ -5,7 +5,7 @@
  * opens a dialog with the category and the file. Used by the record's
  * Documents tab and the Documents screen.
  *
- *   const block = documentsBlock({ serviceNumber, readOnly, onCount })
+ *   const block = documentsBlock({ serviceNumber, readOnly, onCount, canUpload, canDelete })
  *     onCount(n)   after each load, with how many files the rating has
  *   block.el   block.reload()   block.destroy()
  */
@@ -37,7 +37,7 @@ function saveBlob(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
-export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}) {
+export function documentsBlock({ serviceNumber, readOnly = false, onCount, canUpload = !readOnly, canDelete = !readOnly } = {}) {
   const sn = encodeURIComponent(serviceNumber);
   let docs = [];
   let categories = [];
@@ -87,7 +87,7 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}
       : emptyState({ icon: 'folder-open', title: cat === 'ALL' ? 'No Documents Yet' : 'No Documents Here' });
     fill(listCard, [
       body,
-      readOnly ? null : h('div', { className: 'border-t border-border bg-subtle px-4 py-3' }, button({ label: 'Upload Document', icon: 'upload', variant: 'primary', onClick: openUpload })),
+      !canUpload ? null : h('div', { className: 'border-t border-border bg-subtle px-4 py-3' }, button({ label: 'Upload Document', icon: 'upload', variant: 'primary', onClick: openUpload })),
     ]);
     // the list's last row drops its line
     const last = listCard.querySelector('li:last-child > button');
@@ -131,7 +131,7 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount } = {}
     const download = button({ label: 'Download', icon: 'download', variant: 'blue', disabled: true, onClick: () => blob && saveBlob(blob, d.original_name) });
     const actions = h('div', { className: 'flex flex-wrap gap-2 border-t border-border px-4 py-3 phone:flex-col' }, [
       download,
-      readOnly ? null : button({ label: 'Delete', icon: 'trash-2', variant: 'outline', className: 'text-destructive', onClick: () => remove(d, host) }),
+      !canDelete ? null : button({ label: 'Delete', icon: 'trash-2', variant: 'outline', className: 'text-destructive', onClick: () => remove(d, host) }),
     ]);
     fill(target, [head, stage, actions]);
     try {

@@ -1,8 +1,19 @@
 'use strict';
 
+/*
+ * Who is signed in. The session cookie (or a Bearer token) carries a JWT naming the session
+ * row; requireAuth loads the session, the user, their role and privileges on every request
+ * (so a role change or a deactivated account takes effect at once) into req.user, and the
+ * actor for the audit trail into req.actor.
+ *
+ *   requireAuth               refuses a locked session with 423 SESSION_LOCKED
+ *   requireAuth.allowLocked   lets a locked session through (unlock, sign out, me, lock)
+ */
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { unauthorized } = require('../shared/errors');
+const { actorFrom } = require('../shared/audit');
+const authService = require('../modules/auth/auth.service');
 
 const COOKIE_NAME = 'cirerms_session';
 const EIGHT_HOURS_SECONDS = 8 * 60 * 60;
@@ -77,30 +88,43 @@ function extractToken(req) {
   return null;
 }
 
-function requireAuth(req, _res, next) {
-  const token = extractToken(req);
-  if (!token) {
-    return next(unauthorized('Your session has expired or you are not signed in.'));
-  }
+function authenticate({ allowLocked }) {
+  return async function authMiddleware(req, _res, next) {
+    const token = extractToken(req);
+    if (!token) {
+      return next(unauthorized('Your session has expired or you are not signed in.'));
+    }
 
-  try {
-    const payload = jwt.verify(token, config.jwt.secret);
-    req.user = {
-      id: payload.sub,
-      username: payload.username,
-      fullName: payload.fullName,
-      role: payload.role,
-      serviceNumber: payload.serviceNumber || null,
-    };
-    return next();
-  } catch (_) {
-    return next(unauthorized('Invalid or expired session. Please sign in again.'));
-  }
+    let payload;
+    try {
+      payload = jwt.verify(token, config.jwt.secret);
+    } catch (_) {
+      return next(unauthorized('Invalid or expired session. Please sign in again.'));
+    }
+
+    try {
+      req.user = await authService.resolveSession(payload, {
+        ip: req.ip,
+        userAgent: req.headers['user-agent'] || null,
+      });
+      req.actor = actorFrom(req);
+      if (req.user.locked && !allowLocked) {
+        return next(authService.lockedError(req.user.lockReason));
+      }
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  };
 }
+
+const requireAuth = authenticate({ allowLocked: false });
+requireAuth.allowLocked = authenticate({ allowLocked: true });
 
 module.exports = {
   COOKIE_NAME,
   requireAuth,
+  extractToken,
   setSessionCookie,
   clearSessionCookie,
 };

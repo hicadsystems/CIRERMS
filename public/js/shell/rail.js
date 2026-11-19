@@ -9,6 +9,7 @@
  *   isFolded()  setFolded(bool)
  */
 import { AREAS } from '../core/nav.js';
+import { moduleVisible, moduleHref, homeHref } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { cx, h } from '../ui/html.js';
 import { attachMenu } from '../ui/menu.js';
@@ -83,7 +84,7 @@ export function renderRail(info) {
 
   rail.className = cx('flex flex-none flex-col bg-gradient-to-b from-sidebar to-sidebar-deep text-sidebar-foreground transition-all phone:hidden', c ? 'w-rail-collapsed' : 'w-rail');
 
-  const brand = h('a', { href: '#dashboard', className: cx('flex flex-none items-center gap-2.5 pb-3 pt-4', c ? 'justify-center px-0' : 'px-3.5'), 'aria-label': 'CIRERMS Home', dataset: { tip: 'Dashboard' } }, [
+  const brand = h('a', { href: `#${homeHref() || 'dashboard'}`, className: cx('flex flex-none items-center gap-2.5 pb-3 pt-4', c ? 'justify-center px-0' : 'px-3.5'), 'aria-label': 'CIRERMS Home', dataset: { tip: 'Dashboard' } }, [
     h('span', { className: 'flex h-11 w-11 flex-none items-center justify-center rounded-full bg-background p-0.5 shadow-md ring-2 ring-sidebar-foreground/30' }, h('img', { src: '/assets/navy-logo.png', alt: '', className: 'h-10 w-10 object-contain' })),
     c ? null : h('span', { className: 'min-w-0 leading-tight' }, [
       h('b', { className: 'block text-base font-bold tracking-wide', text: 'CIRERMS' }),
@@ -93,10 +94,13 @@ export function renderRail(info) {
 
   const scroll = h('nav', { 'aria-label': 'Modules', className: 'cirerms-scroll flex min-h-0 flex-1 flex-col gap-px overflow-y-auto px-2.5 pb-3', dataset: { railScroll: '' } });
   AREAS.forEach((area) => {
+    // only the modules the person may open (core/access.js); an area with none is left out
+    const modules = area.modules.filter(moduleVisible);
+    if (!modules.length) return;
     scroll.appendChild(h('div', { className: cx('text-2xs font-semibold uppercase tracking-widest text-sidebar-muted', c ? 'mx-2 mb-1.5 mt-3 h-px bg-sidebar-border' : 'px-2 pb-1.5 pt-4'), 'aria-hidden': c ? 'true' : undefined, text: c ? '' : area.label }));
-    area.modules.forEach((m) => {
+    modules.forEach((m) => {
       const on = m.key === current;
-      const href = `#${m.href || `soon/${m.key}`}`;
+      const href = `#${moduleHref(m)}`;
       scroll.appendChild(h('a', {
         href,
         'aria-current': on ? 'page' : undefined,

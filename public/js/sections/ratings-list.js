@@ -10,6 +10,7 @@
  * list's filters) and New Rating.
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { getLookups } from '../core/lookups.js';
 import { formatDisplayDate, yearsBetween, durationSince } from '../core/dates.js';
 import { previewBlobModal } from '../core/dom.js';
@@ -99,9 +100,9 @@ async function ratingCard(row) {
     ]),
     facts(rows),
     h('div', { className: 'flex flex-wrap gap-2 phone:flex-col phone:items-stretch' }, [
-      button({ label: 'Open Record', icon: 'id-card', variant: 'primary', href: `#ratings/edit/${sn}` }),
-      button({ label: 'Print Report', icon: 'printer', variant: 'blue', onClick: () => printReport(r.service_number) }),
-      button({ label: 'Documents', icon: 'folder-open', variant: 'outline', href: `#ratings/documents/${sn}` }),
+      can('ratings.edit') ? button({ label: 'Open Record', icon: 'id-card', variant: 'primary', href: `#ratings/edit/${sn}` }) : null,
+      can('ratings.edit') ? button({ label: 'Print Report', icon: 'printer', variant: 'blue', onClick: () => printReport(r.service_number) }) : null,
+      can('ratings.documents') ? button({ label: 'Documents', icon: 'folder-open', variant: 'outline', href: `#ratings/documents/${sn}` }) : null,
     ]),
   ]);
 }

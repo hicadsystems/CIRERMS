@@ -870,13 +870,13 @@ VALUES
 -- ============================================================================
 -- HICO001 / Admin@123  (Administrator; service_number = NULL)
 -- B0539   / Rating@123 (Rating-linked account; demonstrates "View My Details")
-INSERT IGNORE INTO users (username, password_hash, full_name, role, service_number, is_active)
+INSERT IGNORE INTO users (username, password_hash, full_name, role_id, service_number, is_active)
 VALUES
   (
     'HICO001',
     '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42',
     'HICO Administrator',
-    'admin',
+    (SELECT id FROM roles WHERE name = 'Administrator'),
     NULL,
     1
   ),
@@ -884,7 +884,7 @@ VALUES
     'B0539',
     '$2a$10$dx88V0ZKKf48RieJLVEod.MC2YcQ7pzp3QxY85rTWEImDhqQw9dqG',
     'PO Chukwuemeka Okonkwo',
-    'rating',
+    (SELECT id FROM roles WHERE name = 'Rating'),
     'B0539',
     1
   );

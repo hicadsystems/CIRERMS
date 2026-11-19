@@ -10,6 +10,7 @@
  */
 import { api } from '../core/api.js';
 import { AREAS } from '../core/nav.js';
+import { can, moduleVisible, moduleHref, visibleTabs } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { navigate } from '../core/router.js';
 import { h, cx, fill } from '../ui/html.js';
@@ -19,18 +20,22 @@ import { pillClass } from '../ui/pill.js';
 import { openNewRating } from '../sections/rating-new.js';
 import { ratingName, personName } from '../sections/rating-names.js';
 
+// the screens the person may open (core/access.js), and New Rating when they may add
 function screens() {
   const out = [];
-  AREAS.forEach((area) => area.modules.forEach((m) => {
+  AREAS.forEach((area) => area.modules.filter(moduleVisible).forEach((m) => {
     if (m.tabs && m.tabs.length) {
-      m.tabs.forEach((t) => out.push({ label: `${m.short} · ${t.label}`, words: `${m.label} ${t.label}`, href: t.route, icon: t.icon || m.icon }));
+      visibleTabs(m).forEach((t) => out.push({ label: `${m.short} · ${t.label}`, words: `${m.label} ${t.label}`, href: t.route, icon: t.icon || m.icon }));
     } else {
-      out.push({ label: m.label, words: `${m.label} ${m.short}`, href: m.href || `soon/${m.key}`, icon: m.icon, soon: !!m.soon });
+      out.push({ label: m.label, words: `${m.label} ${m.short}`, href: moduleHref(m), icon: m.icon, soon: !!m.soon });
     }
   }));
-  out.splice(1, 0, { label: 'New Rating', words: 'new rating add create enlist', icon: 'user-plus', run: () => openNewRating() });
+  if (can('ratings.new', 'add')) out.splice(1, 0, { label: 'New Rating', words: 'new rating add create enlist', icon: 'user-plus', run: () => openNewRating() });
   return out;
 }
+
+// ratings are found when the person may open the lists and the record
+const findsRatings = () => can('ratings.list') && can('ratings.edit');
 
 let open = null;
 
@@ -48,8 +53,8 @@ export function openPalette() {
     type: 'text',
     autocomplete: 'off',
     spellcheck: 'false',
-    placeholder: 'Search ratings and screens',
-    'aria-label': 'Search ratings and screens',
+    placeholder: findsRatings() ? 'Search ratings and screens' : 'Search screens',
+    'aria-label': findsRatings() ? 'Search ratings and screens' : 'Search screens',
     role: 'combobox',
     'aria-expanded': 'true',
     'aria-controls': 'palette-results',
@@ -148,6 +153,7 @@ export function openPalette() {
   }
 
   async function findRatings() {
+    if (!findsRatings()) return;
     const q = input.value.trim();
     const mine = ++token;
     try {

@@ -1,5 +1,14 @@
 const TOKEN_STORAGE_KEY = 'cirerms_session_fallback';
 
+// The session lock (shell/lock.js) registers here: a 423 SESSION_LOCKED answer shows it.
+let lockedHandler = null;
+export function setLockedHandler(fn) {
+  lockedHandler = typeof fn === 'function' ? fn : null;
+}
+function reportLocked(payload) {
+  if (lockedHandler) lockedHandler((payload && payload.error && payload.error.fields && payload.error.fields.reason) || 'idle');
+}
+
 export function setFallbackToken(token) {
   try {
     if (token) {
@@ -61,6 +70,8 @@ async function request(url, { method = 'GET', body = undefined, isFormData = fal
   const contentType = response.headers.get('content-type') || '';
   const payload = contentType.includes('application/json') ? await response.json() : null;
 
+  if (response.status === 423) reportLocked(payload);
+
   if (!response.ok) {
     const errInfo = payload?.error || {};
     throw new ApiClientError(
@@ -97,6 +108,7 @@ export async function fetchBlob(url) {
     const ct = response.headers.get('content-type') || '';
     if (ct.includes('application/json')) {
       const payload = await response.json();
+      if (response.status === 423) reportLocked(payload);
       throw new ApiClientError(
         response.status,
         payload?.error?.code || 'DOWNLOAD_FAILED',

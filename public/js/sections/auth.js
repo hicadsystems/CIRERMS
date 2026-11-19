@@ -33,11 +33,11 @@ function hideError() {
   errorBox.classList.remove('flex');
 }
 
-// a session already open goes straight in (a 401 here is expected when signed out)
+// a session already open goes straight in
 api
-  .get('/api/auth/me', { skipAuthRedirect: true })
+  .get('/api/auth/status', { skipAuthRedirect: true })
   .then((res) => {
-    if (res?.data?.user) window.location.replace('/app.html#dashboard');
+    if (res?.data?.signedIn) window.location.replace('/app.html#dashboard');
   })
   .catch(() => {});
 

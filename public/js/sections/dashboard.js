@@ -4,6 +4,7 @@
  * exist), Recently Enlisted and Current Ratings by Rate.
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { formatDisplayDate } from '../core/dates.js';
 import { h, fill } from '../ui/html.js';
@@ -39,7 +40,7 @@ export async function mountDashboard(outlet) {
     h('div', { className: 'mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1' }, [
       card({
         title: 'Recently Enlisted',
-        actions: [button({ label: 'View All', variant: 'ghost', href: '#ratings/current' })],
+        actions: can('ratings.list') ? [button({ label: 'View All', variant: 'ghost', href: '#ratings/current' })] : null,
         body: recent,
         padded: false,
         className: 'col-span-3 phone:col-span-1',

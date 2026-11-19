@@ -5,6 +5,7 @@
  * documents block as the record.
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { navigate } from '../core/router.js';
 import { icon } from '../core/icons.js';
 import { h, cx, fill } from '../ui/html.js';
@@ -118,9 +119,9 @@ export async function mountRatingsDocuments(outlet, { params = {} } = {}) {
         ]),
         pill(r.status === 'former' ? 'Former' : 'Current', r.status === 'former' ? 'neutral' : 'success'),
       ]),
-      button({ label: 'Open Record', icon: 'id-card', variant: 'outline', href: `#ratings/edit/${encodeURIComponent(r.service_number)}` }),
+      can('ratings.edit') ? button({ label: 'Open Record', icon: 'id-card', variant: 'outline', href: `#ratings/edit/${encodeURIComponent(r.service_number)}` }) : null,
     ]));
-    block = documentsBlock({ serviceNumber: r.service_number });
+    block = documentsBlock({ serviceNumber: r.service_number, canUpload: can('ratings.documents', 'add'), canDelete: can('ratings.documents', 'delete') });
     fill(body, block.el);
   } catch (err) {
     fill(body, h('div', { className: CARD }, emptyState({ icon: 'search', title: err.status === 404 ? 'Rating Not Found' : 'Could Not Load Documents', text: err.message || '' })));
