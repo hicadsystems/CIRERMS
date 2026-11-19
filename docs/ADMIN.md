@@ -20,7 +20,12 @@ sessions, checks what they deliver, and tells the owner what is ready to merge. 
   id from `docs/PLAN.md` section 7. Reports arrive as notifications: read them with
   `ReadNotifications`. When the administrator hands over, the outgoing one forwards any report that
   still reaches it.
-- **Check every branch** before telling the owner it is ready (section 4). The owner merges on
+- **Check every branch** before telling the owner it is ready (section 4).
+- **Other developers** can take packages (owner, 19/11/2026): `docs/waves/` holds one brief per wave (model, scope,
+  checks), and every package ends with a report note, `docs/reports/<package>.md`, on its branch, naming the branch
+  and last commit. When the owner says a note is there, fetch the branch, read the note and check the branch as
+  section 4 says. Keep `docs/waves/` in step with the plan when a decision changes a package. Briefs for your own
+  sessions are the wave file's package section plus the line: report with `send_message` to this session's id. The owner merges on
   GitHub; you never open a PR.
 - After the owner merges, update the plan's status, archive the finished session
   (`archive_session`), and start the next wave.
@@ -117,18 +122,14 @@ WP0, WP1, D1 and T1:
    (it is in `docs/PLAN.md` section 7), listing branch and last commit, what was built against the
    scope, checks and results, anything not verified, what the next package must know; then stop.
 
-## 6. Where things stand (19/11/2026, wave C)
+## 6. Where things stand (19/11/2026, after wave D)
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP4, D3, the plan |
-| `project-plan` | Even with master after the owner's merge of PR 16 |
-| D1, T1, D2, WP2, WP3, WP3b, WP4, D3 | Merged 19/11/2026; sessions archived |
-| WP3c `detail-rows` | Session `session_01G8Rfvj5QXdAWhBCrLbhPaC` (Sonnet 5.5, medium), started 19/11/2026 at the owner's request: the `facts` kit part and any hand-made label-above-value areas become label and value rows (app only; no tests, owner). Done at b7407f7, looked at. Owner merges, then archive. Walkthrough steps that expect "-" for an empty value now see "N/A", and the Details tab is one card with two panels. The next build package updates the walkthrough steps WP3b and WP3c list (system admin: Add Account ~347-359, ~794; Manage Password ~502-528, ~812, ~1028; Audit ~662, ~677; disciplinary: Initiate ~218, ~556, ~621; Pending and Concluded filters ~159, ~286-385) |
-| WP2 | Merged 19/11/2026 (two merges); session archived |
-| Sessions | One at a time while the weekly limit is at its warning level, unless the owner says otherwise |
-| Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
-| Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, the plan |
+| Sessions | All archived; none running. The owner: one session at a time while the weekly limit is at its warning level, unless they say otherwise |
+| Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
+| For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
 Notes for coming briefs:
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`

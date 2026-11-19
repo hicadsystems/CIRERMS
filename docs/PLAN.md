@@ -144,6 +144,7 @@ Sonnet where screens follow patterns already in the kit.
 | D1 | `design-drafting` | Drafting (9 pages; Upload Draft moved to Special Drafting), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the printouts the in-scope pages load (`docs/legacy/reports.md` section 5, as PDF previews on the pages that print them), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
 | D3 | `design-special` | Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), by rule 14 and section 9e; the sidebar loses its last Soon items and the Appraisals tile counts appraisals | Sonnet 5.5 · medium | D2 | M |
+| D4 | `design-printouts` | PDF reforming, design: one house style for every printout (page, header, facts, tables, signatures, footer with the marking and page numbers) and every printout in it, in the demo (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D3 | M |
 
 ### Build packages
 
@@ -155,14 +156,15 @@ Sonnet where screens follow patterns already in the kit.
 | WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it. A Training course also carries its Branch, Specialisation and Rates (who may attend; D1, `docs/design/README.md`) | Sonnet 5.5 · medium | WP1, T1 | M |
 | WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action), as the demo shows them | Sonnet 5.5 · medium | WP1, T1 | M |
 | WP4 | `disciplinary` | Initiate an incident, pending cases, conclude a case with its sanction, concluded cases, the disciplinary report (PDF and Excel); the rating's record shows the cases | Sonnet 5.5 · medium | WP2, D2 | S |
-| WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2, D2 | M |
-| WP6 | `training-drafting` | Process a training draft, training review, update training history (feeds the record's Training tab), the reports, upload from Excel | Sonnet 5.5 · high | WP2, D1 | M |
-| WP7a | `drafting-cycle` | The draft cycle (`docs/legacy/drafting.md` section 15): Update Manning Requirement, Print Draft Proposal (who is due, section 9), Review/Print Draft, Draft Approval, Close Draft, Update WEF; it creates the drafting tables and updates the record's Drafting tab and current ship | Opus 5.5 · high | WP2, D1 | L |
+| WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP13 | M |
+| WP6 | `training-drafting` | Process a training draft, training review, update training history (feeds the record's Training tab), the reports, upload from Excel | Sonnet 5.5 · high | WP13 | M |
+| WP7a | `drafting-cycle` | The draft cycle (`docs/legacy/drafting.md` section 15): Update Manning Requirement, Print Draft Proposal (who is due, section 9), Review/Print Draft, Draft Approval, Close Draft, Update WEF; it creates the drafting tables and updates the record's Drafting tab and current ship | Opus 5.5 · high | WP13 | L |
 | WP7b | `drafting-reports` | Batch/Signal Content, Rate DOD History and Draft Report, reading WP7a's tables, with their printouts | Sonnet 5.5 · medium | WP7a | M |
-| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. Eligibility does not read appraisal grades (WP0) | Opus 5.5 · high | WP2, WP4, D1 | L |
-| WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a, D2 | M |
+| WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. Eligibility does not read appraisal grades (WP0) | Opus 5.5 · high | WP7a | L |
+| WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a | M |
 | WP11 | `special-drafting` | Special Draft Proposal, Special Draft Report (the draft form by posting type), Upload Draft from Excel, as D3 shows them; a special draft moves the rating on its WEF through WP7a's postings | Sonnet 5.5 · medium | WP7a, D3 | M |
-| WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP2, D3 | M |
+| WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP13 | M |
+| WP13 | `printouts` | PDF reforming, build: the shared PDF layout to D4's design, every PDF the app makes today rebuilt on it, and the walkthrough steps WP3b and WP3c broke fixed (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D4 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
 ## 6. Order: two sessions at a time
@@ -173,11 +175,15 @@ Sonnet where screens follow patterns already in the kit.
 | B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 |
 | C | D2, WP2 | D2 after the owner's review, WP2 |
 | D | WP3, WP4, then D3 in the first free slot | WP3, WP4, D3 after the owner's review |
+| P | D4, then WP13 (PDF reforming) | D4 after the owner's review, WP13 |
 | E | WP6, WP7a | WP6, WP7a |
-| F | WP5, WP8 | WP5, WP8 |
-| F2 | WP12, WP11 (WP11 once WP7a is merged) | WP12, WP11 |
+| F | WP5 (any time after WP13), WP8 (after WP7a) | WP5, WP8 |
+| F2 | WP12 (any time after WP13), WP11 (after WP7a) | WP12, WP11 |
 | G | WP7b, WP9 | WP7b, WP9 |
 | H | WP10 | WP10: the demo is complete |
+
+Since 19/11/2026 the remaining waves are written out for any developer, one file per wave, in `docs/waves/` (start
+with its `README.md`): model and effort, what to read, what to build, the checks, and the report note.
 
 A package starts only from a `master` that holds every package in its "Needs merged first" column.
 Two packages in the same wave never share files beyond their own lines in the shared ones (rule
@@ -200,6 +206,10 @@ When done, the session sends one message to the administrator session
 - for a design package, what the owner should look at first
 - what the next package should know
 
+A developer (a person, or an AI session working for one) leaves the same report as a note on their branch,
+`docs/reports/<package>.md` (outline in `docs/reports/README.md`), naming the branch and its last commit, and tells
+the owner.
+
 The administrator checks the branch (author, no Claude mentions, rules 1 to 14 by reading the
 diff), tells the owner it is ready to review or merge, updates the status table below, and starts
 the next wave once the owner has merged.
@@ -218,7 +228,9 @@ the next wave once the owner has merged.
 | WP3 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $17.94) | `system-admin` | 19/11/2026: 01cf6df, Manage Users, Manage Roles, Manage Password, Audit Trail, Change Password; every account a rating; the app's own PDF preview (pdfkit makes, PDF.js draws) for every printout; Static Tables' Print List; checked on fresh databases: access 166, static tables 1,474, disciplinary 192, system admin 285 |
 | WP4 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $6.48) | `disciplinary` | 19/11/2026: fdd2698, Disciplinary Action (cases, rules, four pages, three PDFs and the Excel report, the Discipline tab); checked with WP3's a7c85e2 on fresh databases: access 166, static tables 1,452, disciplinary 189, system admin 271 |
 | WP3b | Merged 19/11/2026 (Sonnet 5.5 · medium; about $2.02) | `rating-search` | 19/11/2026: 7c31158, the rating search select (10 a time, at least 2 characters) in Add Account, Manage Password, the Audit Trail filter, Initiate Incident, the Pending and Concluded filters and Documents; checked on 15,000 ratings and in the browser |
-| WP3c | Done, checked; ready to merge (Sonnet 5.5 · medium) | `detail-rows` | 19/11/2026: b7407f7, `facts` draws label and value rows with dividers ("N/A" when empty) and a new `factPanels` gives the record's Details tab two panels with brand headings; audit entry, account dialogs, case and rating dialogs, next-of-kin cards and the ratings list preview changed. Looked at by the administrator on desktop and phone, light and dark: no browser errors, no sideways scrolling |
+| WP3c | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.41) | `detail-rows` | 19/11/2026: b7407f7, details as label and value rows (`facts`, `factPanels`), the record's Details tab in two panels |
+| D4 | Not started (wave P; `docs/waves/wave-P-printouts.md`) | `design-printouts` | |
+| WP13 | Not started (wave P) | `printouts` | |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
 | WP7a | Not started | `drafting-cycle` | |
@@ -308,6 +320,9 @@ administrator: Correct may change every field of a case except the rating; the D
 re-engagements; Upload Discharge skips ratings already in a proposal or already discharged, and its reason is
 optional; the discharge due placeholder is 50 years of age or 20 of service (bands 50/55/60 and 20/30/35), kept as
 settings; Manage Roles (WP3) lists every module's screens from the privilege catalogue, the approve action included.
+
+Added by the administrator (19/11/2026): closing a discharge also deactivates the rating's user account, if it has
+one (its sessions end), since every account belongs to a rating.
 
 ## 9c. Decisions for Static Tables (WP2)
 
