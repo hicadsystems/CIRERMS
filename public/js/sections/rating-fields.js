@@ -15,7 +15,7 @@ import { h, cx } from '../ui/html.js';
 import { field, textInput, selectInput } from '../ui/field.js';
 import { INPUT } from '../ui/classes.js';
 import { populateSelect } from '../core/dom.js';
-import { filterDenominations, filterLgas } from '../core/lookups.js';
+import { filterDenominations, filterLgas, filterStaffBranches, zoneOfState, optionsWithHeld } from '../core/lookups.js';
 import { formatDisplayDate, yearsBetween, durationSince, parseDisplayDate, wireDateField } from '../core/dates.js';
 
 const sel = (name, label, lookup, extra = {}) => ({ name, label, type: 'select', lookup, ...extra });
@@ -87,7 +87,7 @@ export const SECTIONS = [
     fields: [
       sel('branch_id', 'Branch', 'branches'),
       sel('command_id', 'Command', 'commands'),
-      sel('staff_branch_id', 'Staff Branch', 'staffBranches'),
+      sel('staff_branch_id', 'Staff Branch', 'staffBranches', { cascade: 'command' }),
       sel('specialisation_id', 'Specialisation', 'specialisations'),
       sel('entry_mode_id', 'Entry Mode', 'entryModes'),
       date('date_employed', 'Date Enlisted'),
@@ -112,11 +112,13 @@ function withAge(dob) {
 
 const asOptions = (list = []) => list.map((x) => ({ value: x.id, label: x.name }));
 
+// a record that holds a value since made inactive (Static Tables) still offers it
 function optionsFor(f, lookups, values) {
   if (f.options) return f.options;
   if (f.cascade === 'religion') return asOptions(filterDenominations(lookups, values.religion_id));
-  if (f.cascade === 'state') return asOptions(filterLgas(lookups, values.state_id));
-  return asOptions(lookups[f.lookup] || []);
+  if (f.cascade === 'state') return optionsWithHeld(lookups, 'localGovernments', values[f.name], filterLgas(lookups, values.state_id));
+  if (f.cascade === 'command') return optionsWithHeld(lookups, 'staffBranches', values[f.name], filterStaffBranches(lookups, values.command_id));
+  return optionsWithHeld(lookups, f.lookup, values[f.name]);
 }
 
 function cascadePlaceholder(f, values) {
@@ -183,6 +185,14 @@ export function wireCascades(scope, lookups) {
       populateSelect(scope.querySelector('[name="local_government_id"]'), filterLgas(lookups, id), {
         placeholder: id ? '-- Select Local Government --' : '-- Select State First --',
       });
+      // the zone follows the state
+      const zone = zoneOfState(lookups, id);
+      const zoneSelect = scope.querySelector('[name="geo_political_zone_id"]');
+      if (zone && zoneSelect) zoneSelect.value = String(zone);
+    } else if (name === 'command_id') {
+      // the staff branch list follows the command
+      const staff = scope.querySelector('[name="staff_branch_id"]');
+      populateSelect(staff, filterStaffBranches(lookups, e.target.value), { placeholder: '-- Select --', selectedValue: staff ? staff.value : '' });
     }
   });
 }

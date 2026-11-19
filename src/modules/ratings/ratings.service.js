@@ -594,8 +594,11 @@ const CHILD_TAB_CONFIG = Object.freeze({
     listFn: ratingsRepo.listTraining,
     sanitise(body) {
       const errors = {};
+      // the institution and the course are picked from the Static Tables; the name is kept as text too
       const institution = cleanNullableString(body.institution, 200);
-      if (!institution) errors.institution = 'Institution is required.';
+      const institutionId = parseNullableId(body.institution_id ?? null, 'institution_id', errors);
+      const courseId = parseNullableId(body.training_course_id ?? null, 'training_course_id', errors);
+      if (!institution && !institutionId && !courseId) errors.institution_id = 'Institution is required.';
       const startDate = parseCheckedDate(body.start_date ?? null, 'start_date', errors);
       const endDate = parseCheckedDate(body.end_date ?? null, 'end_date', errors);
       if (startDate && endDate && endDate < startDate) {
@@ -604,6 +607,8 @@ const CHILD_TAB_CONFIG = Object.freeze({
       if (Object.keys(errors).length) throw validationError('Please check Training details.', errors);
       return {
         institution,
+        institution_id: institutionId ?? null,
+        training_course_id: courseId ?? null,
         qualification: cleanNullableString(body.qualification ?? null, 200),
         classification: cleanNullableString(body.classification ?? null, 100),
         start_date: startDate ?? null,
@@ -618,7 +623,8 @@ const CHILD_TAB_CONFIG = Object.freeze({
     sanitise(body) {
       const errors = {};
       const institution = cleanNullableString(body.institution, 200);
-      if (!institution) errors.institution = 'Institution is required.';
+      const institutionId = parseNullableId(body.institution_id ?? null, 'institution_id', errors);
+      if (!institution && !institutionId) errors.institution_id = 'Institution is required.';
       const startDate = parseCheckedDate(body.start_date ?? null, 'start_date', errors);
       const endDate = parseCheckedDate(body.end_date ?? null, 'end_date', errors);
       if (startDate && endDate && endDate < startDate) {
@@ -627,6 +633,7 @@ const CHILD_TAB_CONFIG = Object.freeze({
       if (Object.keys(errors).length) throw validationError('Please check Education details.', errors);
       return {
         institution,
+        institution_id: institutionId ?? null,
         qualification: cleanNullableString(body.qualification ?? null, 200),
         classification: cleanNullableString(body.classification ?? null, 100),
         start_date: startDate ?? null,
@@ -653,6 +660,35 @@ const CHILD_TAB_CONFIG = Object.freeze({
     },
   },
 });
+
+/**
+ * An entry that picks its institution or course from the Static Tables keeps their names as text
+ * too (the record shows the name; the Institution and Course rows can be renamed or made inactive
+ * without losing it).
+ */
+async function resolveLinks(fields) {
+  const out = { ...fields };
+  const errors = {};
+  if (out.training_course_id) {
+    const [course] = await db.query(
+      'SELECT name, institution_id FROM ref_training WHERE id = ?',
+      [out.training_course_id]
+    );
+    if (!course) errors.training_course_id = 'Pick a course from the list.';
+    else {
+      out.qualification = course.name;
+      if (!out.institution_id && course.institution_id) out.institution_id = course.institution_id;
+    }
+  }
+  if (out.institution_id) {
+    const [inst] = await db.query('SELECT name FROM ref_institution WHERE id = ?', [out.institution_id]);
+    if (!inst) errors.institution_id = 'Pick an institution from the list.';
+    else out.institution = inst.name;
+  }
+  if ('institution' in out && !out.institution) errors.institution_id = 'Institution is required.';
+  if (Object.keys(errors).length) throw validationError('Please check the details.', errors);
+  return out;
+}
 
 function getChildConfig(tabKey) {
   const cfg = CHILD_TAB_CONFIG[tabKey];
@@ -681,7 +717,7 @@ async function listChildRecords(serviceNumberRaw, tabKey) {
 async function createChildRecord(serviceNumberRaw, tabKey, body, actor) {
   const cfg = getChildConfig(tabKey);
   const rating = await ensureRatingExists(serviceNumberRaw);
-  const fields = cfg.sanitise(body || {});
+  const fields = await resolveLinks(cfg.sanitise(body || {}));
 
   try {
     await db.transaction(async (tx) => {
@@ -722,7 +758,7 @@ async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body, actor
     throw notFound('Record not found.');
   }
 
-  const fields = cfg.sanitise(body || {});
+  const fields = await resolveLinks(cfg.sanitise(body || {}));
   try {
     await db.transaction(async (tx) => {
       const before = await ratingsRepo.findChildRow(cfg.table, rowId, rating.service_number, tx.connection);

@@ -38,14 +38,57 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
 10. **Users, roles and privileges** — each user has one role; a role holds privileges, each one action (view, add, edit, delete, approve) on one screen. The server checks them on every route (403 otherwise) and the screens hide the menus, tabs and buttons a person may not use; a page opened without the grant shows a not-allowed notice. **Administrator** holds every privilege; **Rating** holds *View My Details* only, as in the old system.
 11. **Audit trail** — every saved change (who, when, what, which table and record, and what changed, field by field) and every sign in, sign out, lock and unlock, written in the same transaction as the change. Read through `/api/audit` (25 a page, filtered by date, user and action) for the System Administration screens.
 12. **Session lock** — locks after 15 minutes without use (`SESSION_IDLE_MINUTES`) or from *Lock Screen* in the account menu; unlocks with the password only, checked by the server; *Sign Out* from the lock screen. While locked the page is hidden and the server refuses the session's requests; every open tab locks and unlocks together.
+13. **Static Tables** (`#tables/<slug>`, 16 tabs) — one table engine for Appraisal Ratings, Branch, Exit Type, Entry Mode, Offences, Sanctions, Institution, Local Government, Languages, Relationship, Staff Branch, Specialisation Area, Ships, States, Title and Training. Each tab is a searchable list (25 a page from the server) with **Add** and **Edit** in a dialog (a bottom sheet on a phone), a Status of Active or Inactive, and **Delete** after a confirmation. A row that records use cannot be deleted: the message says where it is used (for example "in use (5 ratings)") and the row can be made Inactive instead, which takes it out of the dropdowns while the records that hold it still show it. Every write is audited. Each table is its own privilege, `tables.<slug>` with view, add, edit and delete, checked on every route and used to hide the buttons. Details below, *Static Tables*.
 
-*(The other sidebar items — Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Static Tables, Reports and System Administration — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
+*(The other sidebar items — Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Reports and System Administration — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
 
 How a module registers itself, declares its privileges and writes to the audit trail: `CONVENTIONS.md`, *Access, audit and modules*.
 
 The approved layout and look is `docs/design/demo.html` (one file; open it in a browser). `docs/design/components.md` lists the shared components.
 
 The map of the old system (how it is built, one file per module, definitions from its 2017 backup) is in `docs/legacy/` (start at `docs/legacy/README.md`).
+
+### Static Tables
+
+One engine serves all 16 tables. `src/modules/tables/tables.config.js` holds a config per table; the routes (`tables.routes.js`), rules (`tables.service.js`), SQL (`tables.repo.js`) and the screen (`public/js/sections/static-table.js`) read it and know no table by name.
+
+| API | Does | Needs |
+|---|---|---|
+| `GET /api/tables/<slug>?q=&status=&page=` | the list, 25 a page, `meta` with the totals; `q` searches every text column and the linked names | `tables.<slug>` view |
+| `GET /api/tables/<slug>/meta` | the columns and the dropdown rows the dialog needs | view |
+| `GET /api/tables/<slug>/:id` | one row, and where it is used (`usage`, `in_use`) | view |
+| `POST` / `PUT /api/tables/<slug>[/:id]` | add / edit: required, length, range, the fixed choices, linked rows that exist, no duplicates (422 with a message per field) | add / edit |
+| `DELETE /api/tables/<slug>/:id` | deletes a row nothing uses; 409 `IN_USE` with where it is used otherwise | delete |
+
+**The tables and their columns** (the amended specification, PLAN 9c; lengths are the old ones; the list shows the demo's columns and the code, four at most, the rest is in the row's dialog). Codes are trimmed, upper case and unique; `*` means required.
+- Appraisal Ratings (new): Code*(5), Grade*(50), Lowest and Highest Score* (0 to 100, low not above high, no overlap with another grade).
+- Branch: Name*, Code*(2) (in the batch numbers, `DOD-SM-...`). Exit Type: Name*, Code*(2), Rating Stays Current (yes for the old codes A, M and C; decides Current or Former), Death (yes for the deceased exit type: Discharge shows the death documents only for it). Entry Mode: Name*, Code*(5).
+- Offences (new): Name*, Code*(10), Category (Conduct, Discipline, Duty, Property). Sanctions (new): Name*, Severity (Minor, Major).
+- Institution (new): Code(30), Name*(100), Location, Type (University, Polytechnic, College, Secondary School, Training Centre, Training Base, Other).
+- Local Government: Name*, State*, Code(10). Languages: Name. Relationship (the next of kin type table): Name*, Code(5).
+- Staff Branch: Name*, Code(20), Command, Department(20), CDR(20). Specialisation Area: Name*, Code*(15), Second Description(20) (the code goes in the batch numbers).
+- Ships: Name*, Type* (Ship, Base, Training), Command, Description(150). States: Name*, Code*(5), Geo-Political Zone. Title: Name*, Description(50).
+- Training (new): Code(10), Course*(60), Qualification Awarded(50), Institution*, Weeks* (1 to 104), Branch or Any, Specialisation or Any, Rates (none means every rate; link table `ref_training_rate`). The list shows Course, Institution, Weeks and the code.
+
+Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MWO, NWO); their `sort_order` is the rank order, lowest first. The rating's Education and Training entries gained `institution_id` (and Training `training_course_id`) with foreign keys: their dialogs pick from the tables, the entry keeps the name as text too, and an older entry that holds only text still shows and saves. Migration `20261120_020000_create_static_tables.sql`; seed `004_static_tables.sql`. Other dropdown tables not among the 16 stay seeded by SQL.
+
+**`/api/lookups`** also carries each table's codes, flags and links for the forms and later modules: branches, entry modes and relationships (`code`), exit types (`code`, `keepsCurrent`), staff branches (`code`, `commandId`, `department`, `cdr`), specialisations (`code`, `secondDescription`), ships (`type`, `commandId`, `description`), states (`code`, `geoPoliticalZoneId`), titles (`description`), rates (`code`), and the new tables as `institutions`, `trainingCourses` (with `rateIds`), `appraisalRatings`, `offences` and `sanctions`. The rating form fills the zone from the chosen state and narrows Staff Branch to the chosen Command.
+
+**Add a table.** Create the `ref_` table in a migration of your package's block (`id`, `name`, `sort_order`, `is_active`, the dates, `created_by`, `UNIQUE (name)`), add an entry to `TABLES` in `tables.config.js` (its columns), add the slug, tab and title to `TABLES` in `public/js/core/nav.js`, and seed its demo rows and grants in your own seed (the privilege `tables.<slug>` appears in the catalogue by itself, and the Administrator gets it from the sync).
+
+**Add a column.** Add it to the table in a migration, then to `columns` in the table's config (`type` text, select, number, ref or multi, with `required`, `max`, `unique`, `list` and so on; `tables.config.js` explains each). The dialog, the list, the validation and the audit trail pick it up.
+
+**Where a row is used is read from the database.** The in-use check on delete reads every declared foreign key that points at the table (`information_schema`; a cascading link such as a course's rates does not count), so a later module's table is covered as soon as it declares its own: **declare a foreign key for every link you add** (WP4's incident to Offences and Sanctions, WP6's training history to Training). `NOUNS` in `tables.config.js` only gives a referring table a friendly name for the message ("5 ratings"); any other table is named from its own name. `/api/lookups` still serves the ratings screens (active rows, with `inactive` kept apart so a record can still show and keep a value that has since been made inactive).
+
+**Decisions made where the specification was silent** (the rest follow PLAN section 9c):
+- Optional codes (Institution, Local Government, Relationship, Staff Branch, Training) may be empty but are unique when given. The database leaves every code column NULL-able so the migration runs on rows that exist; the engine requires the codes the specification marks.
+- A new row goes to the end of its dropdown order (`sort_order` is not shown); every name is unique (a local government's within its State; case ignored).
+- A Training course needs its Institution and Weeks; Branch and Specialisation empty mean Any; Rates are picked from a dropdown that adds a chip.
+- Ships and bases: the seed keeps the demo's types (the shore bases are Base, the rest Ship); the old Sea and Land become Ship and Base. Ship, staff branch, state and exit-type values for command, zone and flag are demo values.
+- The old exit codes A, M and C are seeded as "Serving (A)", "Serving (M)" and "Serving (C)" (stays current): their meaning beyond that is not in the repository.
+- A row opens its dialog from the row or its Edit button; without the Edit grant it opens read-only (View).
+- A training entry picked from the Training table takes the course's name as its Course text, and the course's institution when none is picked.
+- The seed adds the old system's `StaticTables` role ("Static Tables": view, add, edit and delete on all 16). Manage Roles (WP3) will group `tables.*` under Static Tables.
 
 ---
 
@@ -113,4 +156,12 @@ npm run migrate:fresh
 npm start
 PORT=3001 SESSION_IDLE_MINUTES=0.1 SESSION_SERVER_GRACE_SECONDS=20 node src/server.js   # locks after 6 s
 NODE_PATH=$(npm root -g) node tests/e2e/access-walkthrough.js
+```
+
+`tests/e2e/static-tables-walkthrough.js` (WP2) walks all 16 tables as the Administrator at 1440 and 390 px in light and dark (list, search, add, edit, make inactive, delete a row in use and an unused one), then the Training and Local Government rules, a rating, a viewer, the Static Tables role and a role with one table's grants (buttons, 403s, Ctrl K), the audit rows and the rating forms' dropdowns. It adds and removes its own throw-away roles and accounts (it reads `.env`):
+
+```bash
+npm run migrate:fresh
+npm start
+NODE_PATH=$(npm root -g) node tests/e2e/static-tables-walkthrough.js
 ```
