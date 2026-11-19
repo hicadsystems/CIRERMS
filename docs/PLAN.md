@@ -67,6 +67,9 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
    wider.
    **Type scales with the screen** (owner, 19/11/2026; CONVENTIONS, Frontend): fluid font sizes from
    phone to desktop, light and modest headings on a phone. This too wins over the demo.
+   **Printouts open in the app's own PDF preview** (owner, 19/11/2026): a dialog (a sheet on a phone) with the
+   pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
+   from WP3).
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
 8. Read the old system for the module before designing or building: its menu items, controller
    actions, views, the tables and procedures they use (`docs/legacy/` from WP0 says where).
@@ -205,7 +208,7 @@ the next wave once the owner has merged.
 | T1 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.64) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
 | D2 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $4.56) | `design-casework` | 19/11/2026: bfbb20a, Disciplinary Action (4 pages), Discharge Administration (5), 12 printouts, five dashboard tiles (Memos and Mails dropped, Appraisals Soon), the Reports pages under the wide-table rule, 11 record tabs; only `docs/design/`; fixed two D1 name clashes that hid the Reports pages and the Ratings Batch Upload; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling |
 | WP2 | Merged 19/11/2026, in two merges (Sonnet 5.5 · medium; about $11.77) | `static-tables` | 19/11/2026: 9b1c802; every field of section 9c confirmed; the Death seed and the held "(Inactive)" value fixed (a record reads the lists afresh when it opens); walkthrough restructured to the 5-minute rule. Administrator's run on a fresh database: access walkthrough 166 passed in 74 s, static tables walkthrough 1,444 passed in 92 s |
-| WP3 | Running: one last fix (account names from the rating) (Sonnet 5.5 · medium) | `system-admin` | 19/11/2026: 04df206, the four screens and Change Password; every account a rating; `static-tables` merged in; administrator's run on fresh databases: access 166 passed (73 s), static tables 1,444 (81 s), system admin 267 (50 s). Sent back so an account's name comes from its rating (the demo accounts showed officer and civilian titles) |
+| WP3 | Running: one last fix (account names from the rating) (Sonnet 5.5 · medium) | `system-admin` | 19/11/2026: 04df206, the four screens and Change Password; every account a rating; `static-tables` merged in; administrator's run on fresh databases: access 166 passed (73 s), static tables 1,444 (81 s), system admin 267 (50 s). Sent back so an account's name comes from its rating (the demo accounts showed officer and civilian titles); then, at the owner's request, the app's own PDF preview (no browser PDF viewer) and Static Tables' Print List |
 | WP4 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvkhEqoo5KPx5QPdkE2`; decisions in section 9b | `disciplinary` | |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
@@ -213,7 +216,7 @@ the next wave once the owner has merged.
 | WP7b | Not started | `drafting-reports` | |
 | WP8 | Not started | `advancement` | |
 | WP9 | Not started | `reports` | |
-| D3 | Not started (owner, 19/11/2026: design and build both this phase) | `design-special` | |
+| D3 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8Rfvj9QeAuEJNKNHHRpuq`; the owner's priority; decisions in section 9e | `design-special` | |
 | WP11 | Not started | `special-drafting` | |
 | WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |

@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit), and told the owner's rule that every account belongs to an existing rating, HICO001 included (PLAN 9d). On report: check, run the three walkthroughs, owner merges, archive |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
 | WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
-| D3 `design-special` | Not started. The owner (19/11/2026) wants Special Drafting and Naval Character Assessment designed and built this phase: D3 (Sonnet 5.5, medium) in the first free slot after WP3 or WP4, with PLAN 9e in its brief; then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
+| D3 `design-special` | Session `session_01G8Rfvj9QeAuEJNKNHHRpuq` (Sonnet 5.5, medium), started 19/11/2026 at the owner's word ("the most important"), alongside WP3's last fixes and WP4. On report: check, send the owner `demo.html`, owner merges, archive. Then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
 | Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
@@ -150,6 +150,9 @@ Notes for coming briefs:
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
+- **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF
+  viewer (owner, 19/11/2026). WP4 keeps its PDF opening behind one helper; when WP3 is merged, tell WP4 to merge master
+  and switch. Every later build brief says so.
 - **Accounts:** every account belongs to a rating (owner, 19/11/2026; WP3). A walkthrough or seed that creates an
   account must link it to a rating. Test packages together before telling the owner a later one is ready: merge
   the branches in a scratch tree and run every walkthrough on a fresh database.
