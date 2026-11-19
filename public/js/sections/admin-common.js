@@ -94,7 +94,7 @@ export function statusPill(active) {
 
 export function accountHead(u) {
   return h('div', { className: 'flex items-start gap-3' }, [
-    avatar({ name: u.fullName, size: 'lg' }),
+    avatar({ name: u.fullName, initials: u.initials || undefined, size: 'lg' }),
     h('div', { className: 'min-w-0' }, [
       h('div', { className: 'break-words text-xl font-semibold leading-tight', text: u.fullName }),
       h('div', { className: 'text-sm text-muted-foreground', text: u.username }),

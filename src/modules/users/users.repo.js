@@ -1,16 +1,18 @@
 'use strict';
 
 const db = require('../../db');
+const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 
 const escapeLike = (s) => String(s).replace(/[\\%_]/g, (c) => `\\${c}`);
 
 // never the hash
-const COLUMNS = `u.id, u.username, u.full_name, u.role_id, r.name AS role_name, r.full_access,
+const COLUMNS = `u.id, u.username, ${NAME_COLUMNS}, u.role_id, r.name AS role_name, r.full_access,
        u.service_number, u.email, u.phone, u.specialisation_id, s.name AS specialisation_name,
        u.is_active, u.must_change_password, u.last_login_at, u.password_changed_at,
        u.created_at, u.updated_at`;
 const FROM = `FROM users u
        JOIN roles r ON r.id = u.role_id
+       ${NAME_JOINS}
        LEFT JOIN ref_specialisation s ON s.id = u.specialisation_id`;
 
 function whereClause({ q, roleId, active }) {
@@ -18,8 +20,8 @@ function whereClause({ q, roleId, active }) {
   const params = [];
   if (q) {
     const like = escapeLike(q);
-    where.push(`(u.username LIKE CONCAT('%', ?, '%') OR u.full_name LIKE CONCAT('%', ?, '%')
-                 OR u.service_number LIKE CONCAT('%', ?, '%') OR u.email LIKE CONCAT('%', ?, '%'))`);
+    where.push(`(u.username LIKE CONCAT('%', ?, '%') OR rg.surname LIKE CONCAT('%', ?, '%')
+                 OR rg.first_name LIKE CONCAT('%', ?, '%') OR u.email LIKE CONCAT('%', ?, '%'))`);
     params.push(like, like, like, like);
   }
   if (roleId) { where.push('u.role_id = ?'); params.push(roleId); }
@@ -29,9 +31,9 @@ function whereClause({ q, roleId, active }) {
 
 async function list(filters, { page, pageSize }, conn = null) {
   const { sql, params } = whereClause(filters);
-  const [count] = await db.query(`SELECT COUNT(*) AS total FROM users u ${sql}`, params, conn);
+  const [count] = await db.query(`SELECT COUNT(*) AS total FROM users u LEFT JOIN ratings rg ON rg.service_number = u.service_number ${sql}`, params, conn);
   const items = await db.query(
-    `SELECT ${COLUMNS} ${FROM} ${sql} ORDER BY u.full_name, u.username LIMIT ? OFFSET ?`,
+    `SELECT ${COLUMNS} ${FROM} ${sql} ORDER BY rg.surname, rg.first_name, u.username LIMIT ? OFFSET ?`,
     [...params, pageSize, (page - 1) * pageSize],
     conn
   );
@@ -104,10 +106,10 @@ async function listSpecialisations(conn = null) {
 
 async function insert(f, conn) {
   const res = await db.query(
-    `INSERT INTO users (username, password_hash, full_name, role_id, service_number, email, phone,
+    `INSERT INTO users (username, password_hash, role_id, service_number, email, phone,
                         specialisation_id, is_active, must_change_password, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
-    [f.serviceNumber, f.passwordHash, f.fullName, f.roleId, f.serviceNumber, f.email, f.phone, f.specialisationId, f.createdBy],
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
+    [f.serviceNumber, f.passwordHash, f.roleId, f.serviceNumber, f.email, f.phone, f.specialisationId, f.createdBy],
     conn
   );
   return res.insertId;
@@ -115,9 +117,9 @@ async function insert(f, conn) {
 
 async function update(id, f, conn) {
   await db.query(
-    `UPDATE users SET full_name = ?, role_id = ?, email = ?, phone = ?, specialisation_id = ?
+    `UPDATE users SET role_id = ?, email = ?, phone = ?, specialisation_id = ?
       WHERE id = ?`,
-    [f.fullName, f.roleId, f.email, f.phone, f.specialisationId, id],
+    [f.roleId, f.email, f.phone, f.specialisationId, id],
     conn
   );
 }

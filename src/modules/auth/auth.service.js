@@ -7,6 +7,7 @@ const config = require('../../config');
 const db = require('../../db');
 const audit = require('../../shared/audit');
 const passwords = require('../../shared/password');
+const { accountName, accountInitials } = require('../../shared/rating-name');
 const authRepo = require('./auth.repo');
 const { validationError, unauthorized, forbidden, AppError } = require('../../shared/errors');
 
@@ -20,7 +21,8 @@ function formatUserDto(row) {
   return {
     id: row.id,
     username: row.username,
-    fullName: row.full_name,
+    fullName: accountName(row), // from the account's rating
+    initials: accountInitials(row),
     role: row.role_name,
     roleId: row.role_id,
     fullAccess: !!row.full_access,

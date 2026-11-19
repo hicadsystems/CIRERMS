@@ -1,15 +1,18 @@
 'use strict';
 
 const db = require('../../db');
+const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 
-const USER_COLUMNS = `u.id, u.username, u.password_hash, u.full_name, u.service_number, u.is_active, u.last_login_at,
-       u.role_id, u.must_change_password, r.name AS role_name, r.full_access`;
+const USER_COLUMNS = `u.id, u.username, u.password_hash, u.service_number, u.is_active, u.last_login_at,
+       u.role_id, u.must_change_password, r.name AS role_name, r.full_access,
+       ${NAME_COLUMNS}`;
 
 async function findByUsername(username, conn = null) {
   const rows = await db.query(
     `SELECT ${USER_COLUMNS}
        FROM users u
        JOIN roles r ON r.id = u.role_id
+       ${NAME_JOINS}
       WHERE u.username = ?
       LIMIT 1`,
     [username],
@@ -23,6 +26,7 @@ async function findById(id, conn = null) {
     `SELECT ${USER_COLUMNS}
        FROM users u
        JOIN roles r ON r.id = u.role_id
+       ${NAME_JOINS}
       WHERE u.id = ?
       LIMIT 1`,
     [id],
@@ -73,6 +77,7 @@ async function findSession(sessionId, conn = null) {
        FROM user_sessions s
        JOIN users u ON u.id = s.user_id
        JOIN roles r ON r.id = u.role_id
+       ${NAME_JOINS}
       WHERE s.id = ?
       LIMIT 1`,
     [sessionId],

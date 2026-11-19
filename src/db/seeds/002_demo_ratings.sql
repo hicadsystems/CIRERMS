@@ -872,12 +872,11 @@ VALUES
 -- B0539   / Rating@123 (Rating-linked account; demonstrates "View My Details")
 -- HICO001: the Hicad administrator is a rating too (every account belongs to one; WP3)
 INSERT IGNORE INTO ratings (
-  service_number, status, rate_id, title_id, surname, first_name, gender_id, date_of_birth,
+  service_number, status, rate_id, surname, first_name, gender_id, date_of_birth,
   email_address, phone, branch_id, command_id, seniority_date, entry_mode_id, date_employed, specialisation_id
 ) VALUES (
   'HICO001', 'current',
   (SELECT id FROM ref_rate WHERE name = 'Master Warrant Officer (MWO)'),
-  (SELECT id FROM ref_title WHERE name = 'WO'),
   'ADMINISTRATOR', 'HICO',
   (SELECT id FROM ref_gender WHERE name = 'Male'), '1980-02-14',
   'hico.admin@navy.mil.ng', '08031112200',
@@ -889,12 +888,11 @@ INSERT IGNORE INTO ratings (
   (SELECT id FROM ref_specialisation WHERE name = 'ICT / Cyber')
 );
 
-INSERT IGNORE INTO users (username, password_hash, full_name, role_id, service_number, is_active)
+INSERT IGNORE INTO users (username, password_hash, role_id, service_number, is_active)
 VALUES
   (
     'HICO001',
     '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42',
-    'HICO Administrator',
     (SELECT id FROM roles WHERE name = 'Administrator'),
     'HICO001',
     1
@@ -902,7 +900,6 @@ VALUES
   (
     'B0539',
     '$2a$10$dx88V0ZKKf48RieJLVEod.MC2YcQ7pzp3QxY85rTWEImDhqQw9dqG',
-    'PO Chukwuemeka Okonkwo',
     (SELECT id FROM roles WHERE name = 'Rating'),
     'B0539',
     1

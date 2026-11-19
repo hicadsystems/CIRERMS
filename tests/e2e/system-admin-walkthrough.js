@@ -293,7 +293,12 @@ async function adminSuite(browser, viewport, theme, idx) {
   // ---- Manage Users: list, search, filters
   await listReady(page);
   await shot(page, `users-list-${phone ? 'phone' : 'desktop'}-${theme}`);
-  const total = (await api(page, 'GET', '/api/users')).body.meta.total;
+  const list0 = (await api(page, 'GET', '/api/users')).body.data;
+  const hico = list0.find((u) => u.username === 'HICO001');
+  check(hico.fullName === 'MWO ADMINISTRATOR HICO', 'an account is named from its rating: rate, surname, first name', hico.fullName);
+  check(list0.every((u) => !/^(Lt|Cdr|Mrs|Mr|Dr)\b/.test(u.fullName)), 'no officer or civilian titles in the account names', list0.map((u) => u.fullName).join('|'));
+  check((await api(page, 'GET', '/api/auth/me')).body.data.user.fullName === 'MWO ADMINISTRATOR HICO', '/api/auth/me carries the rating’s name');
+  const total = list0.length;
   check(total >= 7, 'the seeded accounts are listed', `${total}`);
   check(await noSideScroll(page), 'Manage Users: no sideways scroll');
   if (!phone) {
@@ -304,7 +309,7 @@ async function adminSuite(browser, viewport, theme, idx) {
     const tip = page.locator('[role="tooltip"]', { hasText: 'View Details' });
     check(await tip.isVisible(), 'a row hover shows the View Details tooltip');
   }
-  await search(page, 'Okafor');
+  await search(page, 'OKAFOR');
   check((await rowsOf(page, phone).count()) === 1, 'search finds an account by name');
   await search(page, 'B0562');
   check((await rowsOf(page, phone).count()) === 1, 'search finds an account by official number');
@@ -323,13 +328,13 @@ async function adminSuite(browser, viewport, theme, idx) {
   await rowsOf(page, phone).first().click();
   let dlg = dialogOf(page);
   await dlg.waitFor();
-  check(/HICO Administrator/.test(await dlg.innerText()) && /Administrator/.test(await dlg.innerText()), 'a row opens the account in a dialog');
+  check(/MWO ADMINISTRATOR HICO/.test(await dlg.innerText()) && /Administrator/.test(await dlg.innerText()), 'a row opens the account in a dialog, named from its rating');
   check((await dlg.getByRole('button', { name: 'Deactivate' }).count()) === 0 && (await dlg.getByRole('button', { name: 'Reset Password' }).count()) === 0, 'your own account offers no Deactivate or Reset Password');
   check(/own account/.test(await dlg.innerText()), 'your own account says so');
   await shot(page, `users-account-${phone ? 'phone' : 'desktop'}-${theme}`);
   await dlg.getByRole('button', { name: 'Edit' }).click();
   dlg = dialogOf(page);
-  await dlg.locator('input[name="fullName"]').waitFor();
+  await dlg.locator('input[name="phone"]').waitFor();
   check(await dlg.locator('.custom-dropdown-wrapper[name="roleId"] input:not(.custom-dropdown-hidden)').first().isDisabled(), 'your own role cannot be changed in the form');
   check(/cannot be changed/.test(await dlg.innerText()) && (await dlg.locator('input[name="serviceNumber"]').count()) === 0, 'the rating, and so the user name, is fixed once the account exists');
   await dlg.getByRole('button', { name: 'Cancel' }).click();
@@ -353,7 +358,8 @@ async function adminSuite(browser, viewport, theme, idx) {
   check(await taken.isDisabled() && /Has account B0541/.test(await taken.innerText()), 'Add Account: a rating that already has an account cannot be picked');
   await dlg.locator('input[name="ratingSearch"]').fill(linked.slice(0, 4));
   await dlg.locator(`[data-rating="${linked}"]`).click();
-  check(/B0588|B0601F|B0614|B0627/.test(await dlg.locator('[data-rating-chosen]').innerText()) && (await dlg.locator('input[name="fullName"]').inputValue()).length > 3, 'Add Account: picking a rating shows it and fills the name');
+  check(/B0588|B0601F|B0614|B0627/.test(await dlg.locator('[data-rating-chosen]').innerText()), 'Add Account: picking a rating shows it');
+  check((await dlg.locator('input[name="fullName"]').count()) === 0, 'Add Account: there is no separate full-name field');
   await choose(page, 'roleId', 'Records Clerk');
   await dlg.locator('input[name="email"]').fill('not-an-email');
   await dlg.getByRole('button', { name: 'Add Account' }).click();
@@ -431,8 +437,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   check(/Navigation/.test(await dlg.innerText()) && new RegExp(linked).test(await dlg.innerText()), 'the account dialog shows the Specialisation and the linked rating');
   await dlg.getByRole('button', { name: 'Edit' }).click();
   dlg = dialogOf(page);
-  await dlg.locator('input[name="fullName"]').waitFor();
-  await dlg.locator('input[name="fullName"]').fill(`WT Person ${tag} Edited`);
+  await dlg.locator('input[name="phone"]').waitFor();
   await dlg.locator('input[name="phone"]').fill('08030002222');
   await dlg.getByRole('button', { name: 'Save' }).click();
   await toastText(page, /Account updated/);
@@ -448,7 +453,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await tdlg.getByRole('button', { name: 'Edit' }).click({ timeout: 3000 });
   await dialogOf(page).getByRole('button', { name: 'Cancel' }).click({ timeout: 3000 });
   await listReady(page);
-  check((await rowsOf(page, phone).first().innerText()).includes('Edited'), 'Edit: the list shows the new name');
+  check((await api(page, 'GET', `/api/users?q=${newUser}`)).body.data[0].phone === '08030002222', 'Edit: the new phone is saved');
 
   // ---- Deactivate (ends the sessions), Reactivate
   await rowsOf(page, phone).first().click();
@@ -502,7 +507,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await page.getByRole('button', { name: 'Find Account' }).click();
   const result = page.locator('[data-result]');
   await result.getByText(newUser).first().waitFor();
-  check(/Edited/.test(await result.innerText()) && /Must be chosen at next sign-in/.test(await result.innerText()), 'Manage Password: found by official number (not the user name), with its details');
+  check(/AONDOAKAA/.test(await result.innerText()) && /Must be chosen at next sign-in/.test(await result.innerText()), 'Manage Password: found by official number (not the user name), with its details');
   await page.fill('#app-main input[name="q"]', newUser.toLowerCase());
   await page.getByRole('button', { name: 'Find Account' }).click();
   await result.getByText(newUser).first().waitFor();
@@ -521,7 +526,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   // the old password gave way to the new one: cookies from that anon login must not leak into this page
   await page.fill('#app-main input[name="q"]', 'HICO001');
   await page.getByRole('button', { name: 'Find Account' }).click();
-  await result.getByText('HICO Administrator').first().waitFor();
+  await result.getByText('MWO ADMINISTRATOR HICO').first().waitFor();
   check(await page.getByRole('button', { name: 'Reset Password' }).isDisabled() && /your own account/.test(await result.innerText()), 'Manage Password: your own account cannot be reset here');
 
   // ---- Manage Roles
@@ -662,7 +667,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await dlg.waitFor();
   await dlg.getByText('What Changed').waitFor();
   const entryText = await dlg.innerText();
-  check(/What Changed/i.test(entryText) && /full_name/.test(entryText) && /Records Clerk/.test(entryText) && /One-time password issued/.test(entryText), 'a row opens the entry with its changes, before and after', entryText.replace(/\n/g, ' | ').slice(0, 700));
+  check(/What Changed/i.test(entryText) && /service_number/.test(entryText) && /Records Clerk/.test(entryText) && /One-time password issued/.test(entryText), 'a row opens the entry with its changes, before and after', entryText.replace(/\n/g, ' | ').slice(0, 700));
   check(![...secrets].some((s) => entryText.includes(s)), 'the entry shows no password');
   await shot(page, `audit-entry-${phone ? 'phone' : 'desktop'}-${theme}`);
   await dlg.getByRole('button', { name: 'Close' }).first().click();

@@ -3,6 +3,7 @@
 const db = require('../../db');
 const audit = require('../../shared/audit');
 const password = require('../../shared/password');
+const { accountName, accountInitials } = require('../../shared/rating-name');
 const usersRepo = require('./users.repo');
 const { validationError, notFound, conflict } = require('../../shared/errors');
 
@@ -19,7 +20,8 @@ function toDto(r) {
   return {
     id: r.id,
     username: r.username,
-    fullName: r.full_name,
+    fullName: accountName(r), // from the account's rating
+    initials: accountInitials(r),
     roleId: r.role_id,
     role: r.role_name,
     fullAccess: !!r.full_access,
@@ -40,7 +42,7 @@ function toDto(r) {
 function auditRow(r) {
   return {
     username: r.username,
-    full_name: r.full_name,
+    name: accountName(r),
     role: r.role_name,
     service_number: r.service_number,
     specialisation: r.specialisation_name,
@@ -93,7 +95,6 @@ async function lookup(term) {
 async function parseFields(body, { current = null } = {}, conn = null) {
   const errors = {};
   const f = {
-    fullName: text(body.fullName, 150),
     roleId: Number.parseInt(body.roleId, 10) || null,
     serviceNumber: current ? current.service_number : (text(body.serviceNumber, 20) || '').toUpperCase() || null,
     email: text(body.email, 150),
@@ -111,7 +112,6 @@ async function parseFields(body, { current = null } = {}, conn = null) {
       if (holder) errors.serviceNumber = `This rating already has the account ${holder.username}.`;
     }
   }
-  if (!f.fullName) errors.fullName = 'Full name is required.';
   if (!f.roleId) errors.roleId = 'Choose a role.';
   if (f.email && !EMAIL.test(f.email)) errors.email = 'Enter a valid e-mail address.';
   if (f.phone && !PHONE.test(f.phone)) errors.phone = 'Enter a valid phone number.';

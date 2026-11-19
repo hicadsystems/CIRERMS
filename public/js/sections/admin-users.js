@@ -48,7 +48,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
   const lv = listView({
     columns: [
       { key: 'username', label: 'User Name', className: 'font-semibold text-foreground' },
-      { key: 'fullName', label: 'Full Name' },
+      { key: 'fullName', label: 'Name' },
       { key: 'role', label: 'Role', render: (u) => pill(u.role, u.fullAccess ? 'warning' : 'info') },
       { key: 'isActive', label: 'Status', render: (u) => statusPill(u.isActive) },
     ],
@@ -62,7 +62,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     },
     onPick: (u) => openAccount(u),
     card: {
-      avatar: (u) => u.fullName,
+      avatar: (u) => (u.initials ? u.initials.split('').join(' ') : u.fullName),
       title: (u) => u.fullName,
       subtitle: (u) => `${u.username} · ${u.role}`,
       aside: (u) => statusPill(u.isActive),
@@ -189,8 +189,6 @@ export async function mountAdminUsers(outlet, { info } = {}) {
           searchInput.focus();
         } }),
       ]));
-      const fn = form.querySelector('[name="fullName"]');
-      if (fn && !fn.value) fn.value = r.name;
     }
     searchInput.addEventListener('input', () => {
       clearTimeout(timer);
@@ -217,16 +215,15 @@ export async function mountAdminUsers(outlet, { info } = {}) {
       }, 250);
     });
     const ratingField = u
-      ? field({ label: 'Official Number (User Name)', control: h('div', { className: 'rounded-ctl border border-border bg-subtle px-3 py-2 text-sm font-semibold', text: u.serviceNumber }), hint: 'The account belongs to this rating; it cannot be changed.', className: 'col-span-2 phone:col-span-1' })
+      ? field({ label: 'Official Number (User Name)', control: h('div', { className: 'rounded-ctl border border-border bg-subtle px-3 py-2 text-sm font-semibold', text: u.serviceNumber }), hint: `The account belongs to this rating (${u.fullName}); it cannot be changed.`, className: 'col-span-2 phone:col-span-1' })
       : field({
         label: 'Rating *',
         className: 'col-span-2 phone:col-span-1',
         control: h('div', {}, [h('div', { dataset: { searchWrap: '' } }, [searchInput, results]), chosen, pickedInput]),
-        hint: 'Every account belongs to a rating. Find it by official number or name; its official number becomes the user name.',
+        hint: 'Every account belongs to a rating, and its name is the rating’s. Find it by official number or name; its official number becomes the user name.',
       });
     const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, [
       ratingField,
-      field({ label: 'Full Name *', control: textInput({ name: 'fullName', value: u ? u.fullName : '', maxlength: 150 }) }),
       field({
         label: 'Role *',
         control: selectInput({ name: 'roleId', options: meta.roles.map((r) => ({ value: r.id, label: r.name })), value: u ? u.roleId : '', disabled: isSelf }),
@@ -239,7 +236,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
         'A one-time password is shown once the account is saved. The person chooses their own at first sign-in.',
       ]),
     ]);
-    const dlg = openDialog({ title: u ? 'Edit Account' : 'Add Account', size: 'lg', body: form, initialFocus: u ? 'input[name="fullName"]' : 'input[name="ratingSearch"]' });
+    const dlg = openDialog({ title: u ? 'Edit Account' : 'Add Account', size: 'lg', body: form, initialFocus: u ? undefined : 'input[name="ratingSearch"]' });
     const save = button({ label: u ? 'Save' : 'Add Account', icon: 'check', variant: 'primary', onClick: () => submit() });
     dlg.setFooter([button({ label: 'Cancel', variant: 'outline', onClick: () => dlg.close() }), save]);
     form.addEventListener('submit', (e) => { e.preventDefault(); submit(); });
@@ -251,7 +248,6 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     async function submit() {
       clearFieldErrors(form);
       const body = {
-        fullName: val('fullName'),
         roleId: isSelf ? u.roleId : val('roleId'),
         serviceNumber: u ? u.serviceNumber : pickedInput.value,
         specialisationId: val('specialisationId'),

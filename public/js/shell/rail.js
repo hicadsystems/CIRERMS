@@ -125,7 +125,7 @@ export function renderRail(info) {
     'aria-label': c ? `Account: ${user.username || ''}` : 'Account',
     dataset: { tip: user.fullName || user.username || 'Account' },
   }, [
-    h('span', { className: 'flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground', text: initialsOf(user.fullName || user.username || '') }),
+    h('span', { className: 'flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground', text: user.initials || initialsOf(user.fullName || user.username || '') }),
     c ? null : h('span', { className: 'min-w-0 flex-1 leading-tight' }, [
       h('b', { className: 'block truncate text-sm font-semibold', text: user.username || '' }),
       h('span', { className: 'block truncate text-2xs text-sidebar-muted', text: roleLabel(user) }),

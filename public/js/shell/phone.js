@@ -49,7 +49,7 @@ function renderHeader(info) {
     : h('span', { className: 'ml-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-background p-0.5 ring-2 ring-sidebar-foreground/30' }, h('img', { src: '/assets/navy-logo.png', alt: '', className: 'h-8 w-8 object-contain' }));
   const search = h('button', { type: 'button', className: ROUND, 'aria-label': 'Search', onClick: () => openSearch() }, icon('search', 'icon h-5 w-5'));
   const account = h('button', { type: 'button', className: ROUND, 'aria-label': 'Account' },
-    h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-2xs font-bold text-sidebar-accent-foreground', text: initialsOf(user.fullName || user.username || '') }));
+    h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-2xs font-bold text-sidebar-accent-foreground', text: user.initials || initialsOf(user.fullName || user.username || '') }));
   attachMenu(account, accountItems, { title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
   header.replaceChildren(
     lead,

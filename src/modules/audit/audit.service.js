@@ -1,6 +1,7 @@
 'use strict';
 
 const auditRepo = require('./audit.repo');
+const { accountName } = require('../../shared/rating-name');
 const { ACTIONS } = require('../../shared/audit');
 const { validationError, notFound, badRequest } = require('../../shared/errors');
 
@@ -56,7 +57,7 @@ function toItem(r) {
     time: r.created_at,
     userId: r.user_id,
     username: r.username,
-    fullName: r.full_name || null,
+    fullName: r.rating_surname ? accountName(r) : null,
     action: r.action,
     table: r.table_name,
     recordId: r.record_id,
@@ -96,7 +97,7 @@ async function getFilterOptions() {
   return {
     actions: [...ACTIONS],
     tables,
-    users: users.map((u) => ({ id: u.id, username: u.username, fullName: u.full_name })),
+    users: users.map((u) => ({ id: u.id, username: u.username, fullName: u.rating_surname ? accountName(u) : null })),
   };
 }
 
