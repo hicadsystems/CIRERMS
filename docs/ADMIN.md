@@ -92,7 +92,8 @@ Then, by package type:
   (Docker Hub rate-limits; use the mirror). `.env` from `.env.example` with those credentials. Check
   the branch out in a worktree, link `node_modules`, `npm run migrate:fresh`, `npm run seed`, start
   two servers as `tests/e2e/access-walkthrough.js` says in its header, and run it (166 checks passed
-  on WP1). Add the package's own walkthrough if it wrote one.
+  on WP1). Add the package's own walkthrough if it wrote one. **Every walkthrough runs in 5 minutes at most**
+  (owner, 19/11/2026; PLAN rule 13): it prints its time and fails over 5 minutes; say so in every build brief.
 - The plan branch: after the owner merges `project-plan`, fast-forward it (`git merge --ff-only
   origin/master`) before the next edit. A shallow clone once turned a merge into an add/add conflict
   and conflict markers were pushed by mistake: always `grep -c '^<<<<<<<'` before committing.
@@ -123,10 +124,10 @@ WP0, WP1, D1 and T1:
 | master | WP0, WP1, T1, D1, D2, WP2 (merged early at 540100d, see below), the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
 | D1, T1, D2 | Merged 19/11/2026; sessions archived |
-| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit), and told the owner's rule that every account belongs to an existing rating, HICO001 included (PLAN 9d). On report: check, run the three walkthroughs, owner merges, archive |
-| WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA`. The owner merged 540100d early; b971773 checked (rules clean, Death seed fixed, access 166 passed, static tables 1941 passed and 1 failed: the held inactive branch not marked "(Inactive)" in a rating's edit dialog). Sent back for that one fix (a short third session alongside WP3 and WP4). On report: check, owner merges `static-tables` again, archive |
-| WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
-| D3 `design-special` | Not started. The owner (19/11/2026) wants Special Drafting and Naval Character Assessment designed and built this phase: D3 (Sonnet 5.5, medium) in the first free slot after WP3 or WP4, with PLAN 9e in its brief; then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
+| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`, ON HOLD by the owner. a7c85e2 good; 1f8a75f unfinished (PDF preview with PDF.js, install refused in its session; Print List). Waiting for the owner's choice: PDF.js preview over our pdfkit files (recommended), or printouts as HTML made into PDFs by headless Chromium (Puppeteer), or the browser viewer with its toolbar hidden. The app makes PDFs with pdfkit; Chromium is only in our test containers |
+| WP2 | Merged 19/11/2026 (two merges); session archived |
+| WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2`. Done at fdd2698 and checked (with WP3's a7c85e2 too). Owner to merge, then archive. When WP3 resumes it merges master (README, CONVENTIONS and output.css will conflict: rebuild the CSS) and switches WP4's `previewPdf` helper to the shared preview |
+| D3 `design-special` | Session `session_01G8Rfvj9QeAuEJNKNHHRpuq` (Sonnet 5.5, medium), started 19/11/2026 at the owner's word ("the most important"), alongside WP3's last fixes and WP4. On report: check, send the owner `demo.html`, owner merges, archive. Then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
 | Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
@@ -149,6 +150,14 @@ Notes for coming briefs:
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
+- **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF
+  viewer (owner, 19/11/2026). WP4 keeps its PDF opening behind one helper; when WP3 is merged, tell WP4 to merge master
+  and switch. Every later build brief says so.
+- **Accounts:** every account belongs to a rating (owner, 19/11/2026; WP3). A walkthrough or seed that creates an
+  account must link it to a rating. Test packages together before telling the owner a later one is ready: merge
+  the branches in a scratch tree and run every walkthrough on a fresh database.
+- **Open:** if a rating's official number changes, the account's user name keeps the old number (WP3 noted it);
+  settle it before the import.
 - **Security, told to the owner:** the old repository's `hpproject/Web.config` holds database
   passwords in plain text; they should be changed if still in use. Never copy them.
 

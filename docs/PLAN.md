@@ -67,6 +67,9 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
    wider.
    **Type scales with the screen** (owner, 19/11/2026; CONVENTIONS, Frontend): fluid font sizes from
    phone to desktop, light and modest headings on a phone. This too wins over the demo.
+   **Printouts open in the app's own PDF preview** (owner, 19/11/2026): a dialog (a sheet on a phone) with the
+   pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
+   from WP3).
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
 8. Read the old system for the module before designing or building: its menu items, controller
    actions, views, the tables and procedures they use (`docs/legacy/` from WP0 says where).
@@ -87,7 +90,10 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
 13. **A build package is done when** every old menu action of the module works on demo data and
     matches the demo; privileges are checked on every route and the screens hide what a person may
     not do; every write lands in the audit trail; demo seed data fills every page; a Playwright
-    walk-through presses every action, on desktop and phone, in both themes, with no browser errors;
+    walk-through presses every action, on desktop and phone, in both themes, with no browser errors,
+    and runs in 5 minutes at most (owner, 19/11/2026: rules through the API, every action through the
+    screens once, the other layouts only per screen and its main dialog; it prints its time and fails over 5
+    minutes);
     README and CONVENTIONS describe what was built.
 14. **A design package is done when** every old menu page of its modules has its screen in the demo,
     with every step, dialog, confirmation, upload (template, preview, result), print preview, empty
@@ -201,16 +207,16 @@ the next wave once the owner has merged.
 | WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
 | T1 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.64) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
 | D2 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $4.56) | `design-casework` | 19/11/2026: bfbb20a, Disciplinary Action (4 pages), Discharge Administration (5), 12 printouts, five dashboard tiles (Memos and Mails dropped, Appraisals Soon), the Reports pages under the wide-table rule, 11 record tabs; only `docs/design/`; fixed two D1 name clashes that hid the Reports pages and the Ratings Batch Upload; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling |
-| WP2 | Done; the owner merged 540100d early, the last two commits (b971773) wait for one more merge (Sonnet 5.5 · medium; about $6.74 so far) | `static-tables` | 19/11/2026: b971773; every field of section 9c confirmed by its walkthrough; the Death seed fixed (checked by the administrator after a fresh migration and two seeds); administrator's check of master: codes required and upper case, links as foreign keys, rates in rank order with codes, access walkthrough 166 passed, static tables walkthrough 1,583 checks passed before the Death fix |
-| WP3 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvnSc5mdVeps4sjzbKj`; decisions in section 9d; also moves toasts clear of dialog buttons (kit) | `system-admin` | |
-| WP4 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvkhEqoo5KPx5QPdkE2`; decisions in section 9b | `disciplinary` | |
+| WP2 | Merged 19/11/2026, in two merges (Sonnet 5.5 · medium; about $11.77) | `static-tables` | 19/11/2026: 9b1c802; every field of section 9c confirmed; the Death seed and the held "(Inactive)" value fixed (a record reads the lists afresh when it opens); walkthrough restructured to the 5-minute rule. Administrator's run on a fresh database: access walkthrough 166 passed in 74 s, static tables walkthrough 1,444 passed in 92 s |
+| WP3 | On hold (owner, 19/11/2026) (Sonnet 5.5 · medium) | `system-admin` | 19/11/2026: a7c85e2 is the last good commit (accounts named from their rating; access 166, static tables 1,444, system admin 271, all on fresh databases). 1f8a75f on top is unfinished (the app's own PDF preview needs the PDF.js library, whose install was refused in its session; Static Tables' Print List works on the server): do not merge until the owner decides how printouts are previewed |
+| WP4 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `disciplinary` | 19/11/2026: fdd2698, Disciplinary Action (cases, rules, four pages, three PDFs and the Excel report, the Discipline tab); demo accounts B0575 and B0588. Administrator's run, merged with WP3's a7c85e2 on fresh databases: access 166 (75 s), static tables 1,452 (83 s), disciplinary 189 (36 s), system admin 271 (54 s); no account clash. Its PDFs still open through the old preview until the owner decides how printouts are previewed; WP3 then switches every module's |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
 | WP7a | Not started | `drafting-cycle` | |
 | WP7b | Not started | `drafting-reports` | |
 | WP8 | Not started | `advancement` | |
 | WP9 | Not started | `reports` | |
-| D3 | Not started (owner, 19/11/2026: design and build both this phase) | `design-special` | |
+| D3 | Done, checked; for the owner's review (Sonnet 5.5 · medium) | `design-special` | 19/11/2026: 91884e3, Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), appraisals under the record's Advancement tab, the Appraisals tile; only `docs/design/`; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling, no Soon items left |
 | WP11 | Not started | `special-drafting` | |
 | WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
@@ -399,6 +405,11 @@ WP12 follow them; the owner can change any of them.
    branch and grade, with the grade counts, as PDF and Excel.
 8. The rating's record shows its appraisals (as the old profile did) for someone who may view Recommendation and
    Grading; the dashboard's Appraisals tile counts appraisals this month.
+
+D3's questions, answered by the administrator (19/11/2026): a special draft moves the rating only once its form is
+printed (on its WEF), so Remove needs no undo; closing an appraisal period is final; the director's name and date are
+optional but go together, and the CO's name is required; the appraisals sit in a list under the record's Advancement
+tab rather than a twelfth tab. The meaning of the posting types TY and DW is for the owner (the demo shows the codes).
 
 ## 10. What is known of Special Drafting and Naval Character Assessment
 
