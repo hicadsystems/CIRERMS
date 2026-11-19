@@ -154,7 +154,8 @@ Notes for coming briefs:
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
   typed official number. The next build package fixes the walkthrough steps WP3b lists.
-- **PDF making (owner, 19/11/2026):** HTML templates turned into PDF by Chromium, in the design of the owner's
+- **PDF making (owner, 19/11/2026):** HTML templates turned into PDF by Chromium. Keep CIRERMS's PDF conventions (crest,
+  header, footer with RESTRICTED and Page X of Y, colours) and only improve on them, to the standard of the owner's
   NAVY-PAYROLL (`hicadsystems/navy-payroll`, public: `templates/*.html`, `lib/chromiumPdfGenerator.js`). D4 designs the
   templates, WP13 builds the renderer; pdfkit goes. Show the owner D4's rendered PDFs to review.
 - **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF

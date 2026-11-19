@@ -74,7 +74,7 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
    **Details read as label and value on one row** (owner, 19/11/2026; WP3c): the label left in normal case, the value
    right, a divider under each row, "N/A" when empty; on a wide page two panels with brand-coloured headings; never
    small capital labels stacked above values. This wins over the demo.
-   **Printouts open in the app's own PDF preview** (owner, 19/11/2026; PDF.js draws the real pages in the page; the PDFs are HTML templates turned into PDF by Chromium on the server, in the design of the owner's NAVY-PAYROLL application, from WP13): a dialog (a sheet on a phone) with the
+   **Printouts open in the app's own PDF preview** (owner, 19/11/2026; PDF.js draws the real pages in the page; the PDFs are HTML templates turned into PDF by Chromium on the server, keeping CIRERMS's PDF conventions and improved to the standard of the owner's NAVY-PAYROLL application, from WP13): a dialog (a sheet on a phone) with the
    pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
    from WP3).
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
@@ -144,7 +144,7 @@ Sonnet where screens follow patterns already in the kit.
 | D1 | `design-drafting` | Drafting (9 pages; Upload Draft moved to Special Drafting), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the printouts the in-scope pages load (`docs/legacy/reports.md` section 5, as PDF previews on the pages that print them), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
 | D3 | `design-special` | Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), by rule 14 and section 9e; the sidebar loses its last Soon items and the Appraisals tile counts appraisals | Sonnet 5.5 · medium | D2 | M |
-| D4 | `design-printouts` | PDF reforming, design: every printout as an HTML (Handlebars) template in the house style of the owner's NAVY-PAYROLL application, rendered to PDF for the owner's review (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D3 | M |
+| D4 | `design-printouts` | PDF reforming, design: every printout as an HTML (Handlebars) template, keeping CIRERMS's PDF conventions (crest, header, footer with RESTRICTED and Page X of Y, colours) and improving on them to the standard of the owner's NAVY-PAYROLL, rendered to PDF for the owner's review (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D3 | M |
 
 ### Build packages
 

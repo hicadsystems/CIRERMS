@@ -74,8 +74,8 @@ The project's rules (`docs/PLAN.md` section 3 and `CONVENTIONS.md` hold them in 
   phone. 25 rows a page, paged by the server.
 - **Every add and edit opens in a dialog** (a bottom sheet on a phone), with errors under the fields, a
   confirmation for anything that removes or closes, and a toast after.
-- **Printouts** are HTML templates (Handlebars, in `src/templates/printouts/`, in the house style of the owner's
-  NAVY-PAYROLL application, designed by D4) turned into PDFs on the server by Chromium (`renderPdf`, WP13), and open
+- **Printouts** are HTML templates (Handlebars, in `src/templates/printouts/`, keeping CIRERMS's PDF conventions,
+  improved to the standard of the owner's NAVY-PAYROLL application, designed by D4) turned into PDFs on the server by Chromium (`renderPdf`, WP13), and open
   in the app's own preview (`openPdfPreview` in `public/js/ui/pdf-preview.js`, which draws the real pages): never
   the browser's PDF viewer, never an `<iframe>`, `<embed>` or `<object>` of a PDF.
 - **Look**: colour tokens only (no `bg-white`, `text-white`, `#fff`, hex or Tailwind palette colours in the app),
