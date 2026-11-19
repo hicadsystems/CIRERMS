@@ -124,7 +124,7 @@ WP0, WP1, D1 and T1:
 | master | WP0, WP1, T1, D1, D2, WP2, WP4, D3, the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
 | D1, T1, D2, WP2, WP4, D3 | Merged 19/11/2026; sessions archived |
-| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`, resumed: the owner chose pdfkit plus PDF.js; installing pdfjs-dist@4.10.38 is the owner's decision (if its permission check refuses again, ask the owner to approve it in WP3's session). It merges master (WP4, D3), finishes the PDF preview and Print List, switches WP4's `previewPdf`. On report: check the four walkthroughs, owner merges, archive |
+| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`. Done at 01cf6df and checked (four walkthroughs, preview seen). Owner to merge, then archive |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
 | (no new session) | The owner (19/11/2026): open no other session until WP3 is done |
 | Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
