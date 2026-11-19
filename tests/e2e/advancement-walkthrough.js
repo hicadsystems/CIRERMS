@@ -469,7 +469,7 @@ async function adminFlow(browser, db, state) {
   await previewOpens(page, 'Advancement Report');
   await shot(page, 'desktop-light-advancement-report');
   await closeAll(page);
-  await filterText(page, 'name', 'OKON');
+  await filterText(page, 'name', 'UMOH');
   check((await rowTexts(page, false)).length === 1, 'Report: the batch\'s Name filter');
   const sum = await fileHead(page, '/api/advancement/report/pdf?branchId=4');
   check(sum.status === 200 && sum.head === '%PDF', 'Report: the Batch Summary takes the filters');
