@@ -6,6 +6,7 @@
  */
 const db = require('../../db');
 const audit = require('../../shared/audit');
+const { buildStaticTableListPdf } = require('../../shared/pdf');
 const { bySlug, stem } = require('./tables.config');
 const repo = require('./tables.repo');
 const { conflict, notFound, validationError } = require('../../shared/errors');
@@ -227,4 +228,27 @@ async function remove(slug, rawId, actor) {
   return { id };
 }
 
-module.exports = { getMeta, list, get, create, update, remove, PAGE_SIZE };
+const MAX_PRINT_ROWS = 5000;
+
+/** The table's list printed as a PDF, following the search and status filter on screen. */
+async function printList(slug, query = {}, generatedBy = '') {
+  const cfg = tableOf(slug);
+  const search = String(query.q || '').trim().slice(0, 100);
+  const status = ['active', 'inactive'].includes(query.status) ? query.status : '';
+  const rows = (await repo.list(cfg, { search, status, limit: MAX_PRINT_ROWS, offset: 0 })).map((r) => decorate(cfg, r));
+  const meta = await getMeta(slug);
+  // the screen's columns: the name first, then the other list columns (the code among them)
+  const listed = meta.columns.filter((c) => c.list).sort((a, b) => (b.key === 'name') - (a.key === 'name'));
+  const cell = (c, row) => (c.type === 'ref' ? row[c.name] : c.type === 'bool' ? (row[c.key] ? 'Yes' : 'No') : row[c.key]);
+  const columns = [
+    ...listed.map((c) => ({ header: c.label, weight: c.key === 'name' ? 2.2 : 1.2, value: (row) => cell(c, row) })),
+    { header: 'Active', weight: 0.8, value: (row) => (row.is_active ? 'Yes' : 'No') },
+  ];
+  const notes = [];
+  if (search) notes.push(`Search "${search}"`);
+  if (status) notes.push(status === 'active' ? 'Active only' : 'Inactive only');
+  const buffer = await buildStaticTableListPdf({ title: meta.title, columns, rows, filterNote: notes.join(', '), generatedBy });
+  return { buffer, fileName: `CIRERMS_${slug}_list.pdf` };
+}
+
+module.exports = { printList, getMeta, list, get, create, update, remove, PAGE_SIZE };

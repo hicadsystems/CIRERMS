@@ -293,6 +293,12 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   to keep one native). Look a select up with `querySelector('[name="…"]')` or its id, never
   `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
   it is on the page. Its look is set at the end of `input.css`.
+- **Printouts open in the app's own PDF preview, never the browser's PDF viewer** (`js/ui/pdf-preview.js`,
+  `openPdfPreview({ url, title, filename })`; `previewBlobModal` hands PDFs to it). PDF.js (`pdfjs-dist`) draws the
+  pages from our own origin (`/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN, no `<iframe>` or `<embed>` of a
+  PDF); only the app's Download PDF and Print buttons. The pages stay paper-coloured (`--paper`) in dark mode. Every
+  Static Table has **Print List** (`GET /api/tables/<slug>/print?q=&status=`, a pdfkit PDF with the crest, title,
+  list columns, Active, row count, date printed and page numbers; the table's view privilege).
 - **Toasts never cover a dialog's buttons** (`js/ui/toast.js`). On a phone they show full width at the top, under
   the header; on desktop they stay at the bottom right, and show at the top right while a dialog is open. They
   sit above a dialog's scrim.

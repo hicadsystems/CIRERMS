@@ -207,6 +207,23 @@ toast(err.message, 'error', { timeout: 0 });  // 4200 ms by default (errors 6000
 Toasts never cover a dialog's buttons: on a phone they show full width at the top, under the header; on desktop they show at the bottom right, and at the top right while a dialog is open. They sit above a dialog's scrim. `core/dom.js`
 `showToast` calls it.
 
+## PDF preview
+
+`ui/pdf-preview.js`: every printout opens here, never in the browser's PDF viewer (no browser toolbar in Chrome, Edge,
+Firefox or Safari). The pages are drawn by PDF.js (the `pdfjs-dist` package, served from our own origin at `/vendor/pdfjs`,
+with a `worker-src 'self' blob:` in the CSP; no CDN and no `<iframe>`/`<embed>` of the PDF).
+
+```js
+openPdfPreview({ url, title, filename })    // fetched through the api client, so the session applies
+openPdfPreview({ blob, title, filename })   // or a PDF already in hand
+```
+
+A large dialog on desktop and a tall sheet on a phone (one page wide, no sideways scroll), the title and the page count in
+the head, the pages on paper (the `--paper` token: the page stays paper-coloured in dark mode, the dialog follows the
+theme), and only **Download PDF** (saves the file under its name) and **Print** (sends the pages to the browser's print
+dialog from a hidden frame, with no viewer shown). `previewBlobModal` in `core/dom.js` hands a PDF to it, so every place that
+opened a PDF does too.
+
 ## Toolbar
 
 `ui/toolbar.js`

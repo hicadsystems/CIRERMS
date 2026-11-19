@@ -19,6 +19,7 @@ export { openDialog, closeAllDialogs } from './dialog.js';
 export { confirmDialog } from './confirm.js';
 export { attachMenu, openMenu, closeMenus } from './menu.js';
 export { toast } from './toast.js';
+export { openPdfPreview } from './pdf-preview.js';
 export { toolbar } from './toolbar.js';
 export { listView } from './list-view.js';
 export { pager, PAGE_SIZE } from './pager.js';
