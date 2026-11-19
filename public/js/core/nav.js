@@ -17,6 +17,30 @@
  * the person's privileges (core/access.js) for `screen` and `action`; nothing else is edited.
  */
 
+/*
+ * The 16 Static Tables, in the demo's order: the route tables/<slug>, the tab's label, the page title
+ * and the privilege screen tables.<slug>. The same slugs and labels are in
+ * src/modules/tables/tables.config.js (the columns and rules live there).
+ */
+export const TABLES = [
+  { slug: 'appraisal-ratings', tab: 'Appraisal Ratings', title: 'Appraisal Ratings' },
+  { slug: 'branch', tab: 'Branch', title: 'Branches' },
+  { slug: 'exit-type', tab: 'Exit Type', title: 'Exit Types' },
+  { slug: 'entry-mode', tab: 'Entry Mode', title: 'Entry Modes' },
+  { slug: 'offences', tab: 'Offences', title: 'Disciplinary Offences' },
+  { slug: 'sanctions', tab: 'Sanctions', title: 'Disciplinary Sanctions' },
+  { slug: 'institution', tab: 'Institution', title: 'Institutions' },
+  { slug: 'local-government', tab: 'Local Government', title: 'Local Governments' },
+  { slug: 'languages', tab: 'Languages', title: 'Languages' },
+  { slug: 'relationship', tab: 'Relationship', title: 'Relationships' },
+  { slug: 'staff-branch', tab: 'Staff Branch', title: 'Staff Branches' },
+  { slug: 'specialisation', tab: 'Specialisation Area', title: 'Specialisation Areas' },
+  { slug: 'ships', tab: 'Ships', title: 'Ships and Bases' },
+  { slug: 'states', tab: 'States', title: 'States' },
+  { slug: 'title', tab: 'Title', title: 'Titles' },
+  { slug: 'training', tab: 'Training', title: 'Training Courses' },
+];
+
 export const AREAS = [
   {
     key: 'overview',
@@ -69,12 +93,16 @@ export const AREAS = [
     key: 'administration',
     label: 'Administration',
     modules: [
-      { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', soon: true },
+      // one tab and page per table (TABLES below); each is its own privilege, screen tables.<slug>
+      { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', href: 'tables/appraisal-ratings', tabs: [] },
       { key: 'reports', label: 'Reports', short: 'Reports', icon: 'chart-column', soon: true },
       { key: 'admin', label: 'System Administration', short: 'Admin', icon: 'shield-user', soon: true },
     ],
   },
 ];
+
+// the Static Tables module's tabs, one per table
+AREAS.flatMap((a) => a.modules).find((m) => m.key === 'tables').tabs = TABLES.map((t) => ({ route: `tables/${t.slug}`, label: t.tab, screen: `tables.${t.slug}` }));
 
 export const MODULES = AREAS.flatMap((area) =>
   area.modules.map((m) => ({ tabs: [], ...m, area: area.key, href: m.href || `soon/${m.key}` }))
@@ -128,6 +156,16 @@ export const PAGES = [
     view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' },
   },
   { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details', view: { file: 'rating-record.js', mount: 'mountMyDetails' } },
+ ...TABLES.map((t) => ({
+    pattern: `tables/${t.slug}`,
+    module: 'tables',
+    tab: `tables/${t.slug}`,
+    title: t.title,
+    subtitle: 'Reference values the other screens pick from',
+    short: t.tab,
+    screen: `tables.${t.slug}`,
+    view: { file: 'static-table.js', mount: 'mountStaticTable', props: { slug: t.slug } },
+  })),
   {
     // "Coming in a Later Release" (drawn by the shell; shown to full-access roles only)
     pattern: 'soon/:key',
