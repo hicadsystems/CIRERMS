@@ -336,6 +336,32 @@ Also, outside the 16 screens (seeded by SQL, as in the old system):
   `training_course_id` on Training (nullable; an old entry keeps its text until the import maps it), and their
   dialogs pick the institution and the course from the tables.
 
+## 9d. Decisions for System Administration (WP3)
+
+Decided by the administrator before WP3 started, at the owner's request (19/11/2026), from
+`docs/legacy/system-admin.md`.
+
+1. **Manage Users.** An account has a user name (a rating's official number, or an administrator's own such as
+   HICO001), full name, role, an optional link to a rating (for My Details), an optional **Specialisation** (a
+   drafting officer then sees only that department's batches and approvals, as the old `specid`; WP7a and WP8 apply
+   it), phone and e-mail, and an active state. A new account gets a random one-time password, shown once to the
+   administrator, and the person must choose their own at first sign-in. Nothing is deleted: an account is
+   deactivated, which ends its sessions. Nobody can deactivate or change the role of their own account, and the last
+   active full-access administrator cannot be deactivated or moved to another role.
+2. **Manage Roles.** Add, edit and delete roles. A role is a grid of every module's screens and the actions each
+   screen has (view, add, edit, delete, approve), read from the privilege catalogue, grouped by module. The
+   Administrator role (full access) cannot be edited or deleted; a role that still has users cannot be deleted;
+   role names are unique. A change applies from the users' next request, without signing them out.
+3. **Manage Password** is an administrator's reset, by official number or user name: it sets a one-time password,
+   shown once, ends that user's sessions, and makes them choose a new one at next sign-in. The old anonymous
+   e-mailed-code reset is not rebuilt (it allowed account takeover); a person who forgets their password asks an
+   administrator.
+4. **Change Password** (account menu): current password, new password, confirm. Passwords are at least 8 characters
+   with a letter and a digit, and differ from the current one. The person's other sessions are signed out.
+5. **Audit Trail**: filters by dates, user, action and official number, 25 a page from the server, a row opens the
+   entry with what changed (before and after). No password or one-time password is ever written to the audit trail;
+   nothing deletes audit rows.
+
 ## 10. Notes for later phases
 
 **Special Drafting** posts chosen ratings straight away on a signal's authority, outside the batch
