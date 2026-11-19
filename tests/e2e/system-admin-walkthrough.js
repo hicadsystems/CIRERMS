@@ -836,6 +836,37 @@ async function glance(browser, viewport, theme) {
 }
 
 // ---------------------------------------------------------------------------
+// Print Dossier opens in the app's own PDF preview, never the browser's viewer
+// ---------------------------------------------------------------------------
+async function dossierPreview(browser, viewport, theme) {
+  const phone = viewport.width < 700;
+  const where = `${phone ? 'phone' : 'desktop'}, ${theme}`;
+  console.log(`\nPrint Dossier preview, ${where}`);
+  const ctx = await open(browser, { viewport, theme });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
+  await page.getByRole('button', { name: /Print Dossier/ }).first().waitFor();
+  await page.getByRole('button', { name: /Print Dossier/ }).first().click();
+  const dlg = dialogOf(page);
+  await dlg.locator('[data-pdf-stage][data-ready="1"]').waitFor({ timeout: 20000 });
+  const pages = await dlg.locator('canvas[data-pdf-page]').count();
+  check(pages >= 1 && new RegExp(`${pages} pages?`).test(await dlg.locator('[data-pdf-count]').innerText()), 'Print Dossier: the pages are drawn by the app and counted', `${pages}`);
+  check(/Dossier/.test(await dlg.locator('h2').innerText()), 'Print Dossier: the title is in the head');
+  check((await dlg.locator('iframe, embed, object').count()) === 0, 'Print Dossier: no browser PDF viewer in the preview');
+  check(await noSideScroll(page), 'Print Dossier: no sideways scroll');
+  await shot(page, `dossier-preview-${phone ? 'phone' : 'desktop'}-${theme}`);
+  const download = page.waitForEvent('download');
+  await dlg.getByRole('button', { name: 'Download PDF' }).click();
+  check(/\.pdf$/.test((await download).suggestedFilename()), 'Print Dossier: Download PDF saves the file');
+  await dlg.getByRole('button', { name: 'Print', exact: true }).click();
+  await page.locator('[data-pdf-print-frame]').waitFor({ state: 'attached' });
+  check(true, 'Print Dossier: Print makes the hidden print frame');
+  check(ctx.errors.length === 0, `Print Dossier ${where}: no browser errors`, ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
+// ---------------------------------------------------------------------------
 // The guards: self, the last administrator, the Administrator role, a role with users, names
 // ---------------------------------------------------------------------------
 async function guards(browser) {
@@ -1074,6 +1105,8 @@ async function main() {
     if (want('admin')) {
       await adminSuite(browser, DESKTOP, 'light', 0);
       for (const [vp, th] of combos.slice(1)) await glance(browser, vp, th);
+      await dossierPreview(browser, DESKTOP, 'light');
+      await dossierPreview(browser, PHONE, 'dark');
     }
     if (want('guards')) await guards(browser);
     if (want('none')) {

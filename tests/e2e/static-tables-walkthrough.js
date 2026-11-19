@@ -944,6 +944,52 @@ async function ratingFormLinks(browser) {
   await ctx.context.close();
 }
 
+// ---------------------------------------------------------------------------
+// Print List: the list as a PDF in the app's own preview (pages drawn, page count, Download gives a PDF)
+// ---------------------------------------------------------------------------
+async function printListPreview(browser, viewport, theme) {
+  const phone = viewport.width < 700;
+  const where = `${phone ? 'phone' : 'desktop'}, ${theme}`;
+  console.log(`\nPrint List preview, ${where}`);
+  const ctx = await open(browser, { viewport, theme });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  const pdf = await page.evaluate(async () => {
+    const r = await fetch('/api/tables/states/print?q=a', { credentials: 'include' });
+    const b = new Uint8Array(await r.arrayBuffer());
+    return { status: r.status, type: r.headers.get('content-type'), head: String.fromCharCode(...b.slice(0, 4)), size: b.length };
+  });
+  check(pdf.status === 200 && pdf.head === '%PDF' && /pdf/.test(pdf.type) && pdf.size > 1500, 'Print List: the API sends a PDF following the search', JSON.stringify(pdf));
+  await page.goto(`${BASE}/app.html#tables/states`);
+  await page.getByRole('button', { name: 'Print List' }).click();
+  const stage = dialogOf(page).locator('[data-pdf-stage][data-ready="1"]');
+  await stage.waitFor({ timeout: 20000 });
+  const pages = await dialogOf(page).locator('canvas[data-pdf-page]').count();
+  check(pages >= 1, 'Print List: the pages are drawn by the app (canvases)', `${pages}`);
+  check(new RegExp(`${pages} pages?`).test(await dialogOf(page).locator('[data-pdf-count]').innerText()), 'Print List: the head shows the page count');
+  check(/States/.test(await dialogOf(page).locator('h2').innerText()), 'Print List: the title is in the head');
+  check((await dialogOf(page).locator('iframe, embed, object').count()) === 0, 'Print List: no browser PDF viewer in the preview');
+  const buttons = await dialogOf(page).locator('button').allInnerTexts();
+  check(buttons.some((t) => /Download PDF/.test(t)) && buttons.some((t) => /^\s*Print\s*$/.test(t)), 'Print List: our own Download PDF and Print buttons', buttons.join('|'));
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'Print List: no sideways scroll');
+  const painted = await dialogOf(page).locator('canvas[data-pdf-page="1"]').evaluate((c) => {
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let ink = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i] < 120) ink += 1;
+    return ink;
+  });
+  check(painted > 500, 'Print List: the page has text on it', `${painted}`);
+  const download = page.waitForEvent('download');
+  await dialogOf(page).getByRole('button', { name: 'Download PDF' }).click();
+  check(/^CIRERMS_states_list\.pdf$/.test((await download).suggestedFilename()), 'Print List: Download PDF saves the file under its name');
+  await dialogOf(page).getByRole('button', { name: 'Print', exact: true }).click();
+  await page.locator('[data-pdf-print-frame]').waitFor({ state: 'attached' });
+  const printed = await page.evaluate(() => document.querySelector('[data-pdf-print-frame]').contentDocument.images.length);
+  check(printed === pages, 'Print List: Print sends the pages to the print dialog from a hidden frame', `${printed} of ${pages}`);
+  check(ctx.errors.length === 0, `Print List ${where}: no browser errors`, ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
 async function main() {
   const started = Date.now();
   const db = await connect();
@@ -968,6 +1014,7 @@ async function main() {
       (async () => { await glanceLane(browser, db, DESKTOP, 'dark', '1'); })(),
       (async () => { await glanceLane(browser, db, PHONE, 'light', '2'); })(),
       (async () => { await glanceLane(browser, db, PHONE, 'dark', '3'); })(),
+      (async () => { await printListPreview(browser, DESKTOP, 'light'); await printListPreview(browser, PHONE, 'dark'); })(),
       (async () => { await trainingRules(browser); await lgaRules(browser); await ratingFormLinks(browser); })(),
       (async () => {
         await withoutGrants(browser, 'light', DESKTOP);

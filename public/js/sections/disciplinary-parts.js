@@ -14,7 +14,7 @@
 import { api } from '../core/api.js';
 import { can } from '../core/access.js';
 import { formatDisplayDate, parseDisplayDate, wireDateField } from '../core/dates.js';
-import { previewBlobModal } from '../core/dom.js';
+import { openPdfPreview } from '../ui/pdf-preview.js';
 import { navigate } from '../core/router.js';
 import { h, cx } from '../ui/html.js';
 import { INPUT, CARD } from '../ui/classes.js';
@@ -60,13 +60,9 @@ const notice = (tone, iconName, html) => h('div', { className: cx('flex gap-2 ro
   [icon(iconName, 'icon mt-0.5 flex-none'), h('div', { className: 'min-w-0' }, html)]);
 
 // ---- PDF preview -----------------------------------------------------------
-export async function previewPdf(url, title, fileName) {
-  try {
-    const { blob, mimeType, fileName: name } = await api.fetchBlob(url);
-    previewBlobModal({ title, blob, mimeType: mimeType || 'application/pdf', fileName: name || fileName });
-  } catch (err) {
-    toast(err.message || 'Could not make the printout.', 'error');
-  }
+export function previewPdf(url, title, fileName) {
+  // the app's own PDF preview (ui/pdf-preview.js), never the browser's viewer
+  return openPdfPreview({ url, title, filename: fileName });
 }
 
 // ---- "View Details" tooltip under the pointer (desktop) ---------------------

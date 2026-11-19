@@ -95,6 +95,8 @@ function stampPageFooters(doc, generatedBy) {
   const stampDate = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
   for (let i = 0; i < range.count; i += 1) {
     doc.switchToPage(range.start + i);
+    // the footer sits inside the bottom margin: without this, writing there adds a blank page
+    doc.page.margins.bottom = 0;
     const margin = doc.page.margins.left;
     const footerY = doc.page.height - 28;
     const width = doc.page.width - margin * 2;
