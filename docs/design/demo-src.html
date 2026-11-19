@@ -323,12 +323,12 @@
     { label: 'Personnel', modules: [{ key: 'ratings', label: 'Ratings Management', short: 'Ratings', icon: 'users', href: 'ratings/current' }] },
     { label: 'Operations', modules: [
       { key: 'drafting', label: 'Drafting', short: 'Drafting', icon: 'briefcase', href: 'drafting/manning' },
-      { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
+      { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', href: 'special/proposal' },
       { key: 'training-drafting', label: 'Training Drafting', short: 'Training', icon: 'graduation-cap', href: 'training/process' },
     ] },
     { label: 'Records', modules: [
       { key: 'advancement', label: 'Advancement Processing', short: 'Advance', icon: 'trending-up', href: 'advancement/due' },
-      { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
+      { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', href: 'assessment/grading' },
       { key: 'disciplinary', label: 'Disciplinary Action', short: 'Discipline', icon: 'gavel', href: 'disciplinary/initiate' },
       { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', href: 'discharge/process' },
     ] },
@@ -559,6 +559,8 @@
     if (route.startsWith('advancement/')) return 'advancement';
     if (route.startsWith('disciplinary/')) return 'disciplinary';
     if (route.startsWith('discharge/')) return 'discharge';
+    if (route.startsWith('special/')) return 'special-drafting';
+    if (route.startsWith('assessment/')) return 'assessment';
     if (route.startsWith('soon/')) return route.slice(5);
     return 'dashboard';
   }
@@ -625,7 +627,7 @@
     const nav = $('#tabs');
     const TABS = MODULE_TABS[moduleOf(route)];
     if (!TABS) { nav.innerHTML = ''; nav.className = 'flex-none'; return; }
-    const cur = route.startsWith('ratings') ? tabRoute(route) : (D1.owns(route) ? D1.tabOf(route) : D2.owns(route) ? D2.tabOf(route) : route);
+    const cur = route.startsWith('ratings') ? tabRoute(route) : (D1.owns(route) ? D1.tabOf(route) : D2.owns(route) ? D2.tabOf(route) : D3.owns(route) ? D3.tabOf(route) : route);
     const desk = `<div class="flex gap-1 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
       const on = t.route === cur;
       return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-brand after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
@@ -701,13 +703,14 @@
     const max = Math.max(...byRate.map(([, n]) => n));
     const recent = ratings.slice().sort((a, b) => b.enlisted - a.enlisted).slice(0, 5);
     const d2s = D2.stats();
+    const d3s = D3.stats();
     return pageHeader('Dashboard', 'Ratings at a glance', `<button type="button" data-act="new-rating" class="${btn.primary}">${ic('user-plus')}New Rating</button>`) + `
       <div class="grid grid-cols-6 gap-4 phone:grid-cols-2 phone:gap-3">
         ${tile('Members', ratings.length, 'users', ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'], `<a href="#ratings/current" class="hover:text-foreground"><b class="text-foreground">${current.length}</b> current</a><a href="#ratings/former" class="hover:text-foreground"><b class="text-foreground">${former}</b> former</a>`, 'col-span-2 phone:col-span-1')}
         ${tile('Drafting', d2s.drafted, 'briefcase', ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'], `<a href="#drafting/report" class="hover:text-foreground"><b class="text-foreground">${d2s.drafted}</b> this year</a><a href="#drafting/review" class="hover:text-foreground"><b class="text-foreground">${d2s.openDraft}</b> open</a>`, 'col-span-2 phone:col-span-1')}
         ${tile('Disciplinary', d2s.pending, 'gavel', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], `<a href="#disciplinary/pending" class="hover:text-foreground"><b class="text-foreground">${d2s.pending}</b> pending</a><a href="#disciplinary/concluded" class="hover:text-foreground"><b class="text-foreground">${d2s.decided}</b> concluded this year</a>`, 'col-span-2 phone:col-span-1')}
         ${tile('Discharge', d2s.discharged, 'door-open', ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'], `<a href="#discharge/report" class="hover:text-foreground"><b class="text-foreground">${d2s.discharged}</b> this year</a><a href="#discharge/process" class="hover:text-foreground"><b class="text-foreground">${d2s.proposed}</b> proposed</a>`, 'col-span-3 phone:col-span-1')}
-        ${tile('Appraisals', `<span class="text-muted-foreground">Soon</span>`, 'clipboard-check', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], '<span>Comes with Naval Character Assessment</span>', 'col-span-3 phone:col-span-2')}
+        ${tile('Appraisals', d3s.month, 'clipboard-check', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], `<a href="#assessment/grading" class="hover:text-foreground"><b class="text-foreground">${d3s.month}</b> this month</a><a href="#assessment/periods" class="hover:text-foreground"><b class="text-foreground">${d3s.open}</b> open ${d3s.open === 1 ? 'period' : 'periods'}</a>`, 'col-span-3 phone:col-span-2')}
       </div>
       <div class="mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1">
         <section class="${CARD} col-span-3 phone:col-span-1">
@@ -848,7 +851,7 @@
     } else if (tab === 'children') {
       body = tableCard(['Name', 'Gender', 'Date of Birth', 'Age'], rec.children.map((c) => [esc(c.name), c.gender, fmt(c.dob), years(c.dob)]), 'baby', 'No Children Recorded', 'Add Child');
     } else if (tab === 'advancement') {
-      body = tableCard(['From', 'To', 'Effective'], rec.advancement.map((a) => [esc(a.from), esc(a.to), fmt(a.date)]), 'trending-up', 'No Advancement Recorded', 'Add Advancement');
+      body = tableCard(['From', 'To', 'Effective'], rec.advancement.map((a) => [esc(a.from), esc(a.to), fmt(a.date)]), 'trending-up', 'No Advancement Recorded', 'Add Advancement') + D3.recordAppraisals(r, readOnly);
     } else if (tab === 'drafting') {
       body = `<div class="${CARD} p-4"><ol class="relative ml-2 border-l-2 border-border">${r.sched ? `<li class="relative pb-5 pl-5"><span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-background bg-warning"></span><div class="flex flex-wrap items-center gap-2"><b class="text-sm">Drafted to ${esc(r.sched.to)} wef ${fmt(r.sched.date)}</b><span class="${pill.info}">Scheduled</span></div><div class="text-xs text-muted-foreground">The ship changes on ${fmt(r.sched.date)}</div></li>` : ''}${rec.drafting.slice().reverse().map((p) => `<li class="relative pb-5 pl-5 last:pb-0">
           <span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-background ${p.to ? 'bg-border' : 'bg-primary'}"></span>
@@ -3059,6 +3062,467 @@
   });
   // ==== D2 END: wiring ====
 
+  // ==== D3 BEGIN: shared parts and demo data for Special Drafting and Naval Character Assessment ====
+  // Built on D1's and D2's parts (d1Table, d1Filters, d1Form, d1Pdf, confirmBox, the notices, the rating strip). One in-memory store, as in D1
+  // and D2: a special draft made on one page shows on the next, and a printed one moves the rating on its record. Nothing is saved: a reload
+  // brings the demo data back.
+  const D3ACT = {};
+  const d3b = (act, id, label, iconName, tone = 'outline', extra = '') => `<button type="button" data-d3="${act}" data-id="${esc(id)}" class="${btn[tone]} ${extra}">${ic(iconName)}${esc(label)}</button>`;
+  const D3USERS = ['NAVPERS01', 'NAVPERS02'];
+  const pad4 = (n) => String(n).padStart(4, '0');
+  const MORE_SHIPS = SHIP_NAMES.filter((s) => s !== 'NAVTRAC EBUTE-ERO');
+
+  // ---- Special drafts: one rating, outside the batch cycle, on a signal's authority ----
+  // Posting Type is a labelled list. The expansions of TY and DW are not in the old code; the demo shows the codes as the old page did.
+  const POSTING = ['Complement', 'Vice', 'TY', 'DW'];
+  const SPD = []; const SPFORMS = []; let spSeq = 0;
+  const spOpen = () => SPD.filter((x) => !x.form);
+  const spOf = (sn) => SPD.find((x) => x.sn === sn && !x.form);
+  const spById = (id) => SPD.find((x) => x.id === id);
+  const spFormByNo = (no) => SPFORMS.find((f) => f.no === no);
+  const spDest = (r, n) => MORE_SHIPS.filter((s) => s !== r.ship)[(n * 3 + ratings.indexOf(r)) % (MORE_SHIPS.length - 1)];
+  function makeSp(r, o) {
+    spSeq += 1;
+    const x = Object.assign({ id: `SD${spSeq}`, sn: r.sn, rate: r.rate, from: r.ship, since: r.shipSince, vice: '', remark: '', by: D3USERS[spSeq % 2], created: TODAY, form: null }, o);
+    SPD.push(x); return x;
+  }
+  // printing a form marks its drafts printed and moves each rating on its WEF (9a decision 4): a WEF in the future shows as scheduled
+  function printSpForm(type, list, on = TODAY, by = 'HICO001') {
+    const year = on.getFullYear();
+    const f = { no: `SDF-${year}-${pad4(SPFORMS.filter((x) => x.no.startsWith(`SDF-${year}-`)).length + 1)}`, type, on, by, ids: list.map((x) => x.id) };
+    SPFORMS.push(f);
+    list.forEach((x) => { x.form = f.no; applyWef(bySn(x.sn), x, x.wef); });
+    return f;
+  }
+  const wefPill = (dt) => (dt > TODAY ? ` <span class="${pill.warning}">Scheduled</span>` : '');
+  const typePill = (t) => `<span class="${t === 'Complement' ? pill.info : t === 'Vice' ? pill.success : pill.neutral}">${esc(t)}</span>`;
+  (function seedSpecial() {
+    const cur = current().filter((r) => r !== me);
+    const mk = (i, type, wef, o = {}) => { const r = cur[i]; return makeSp(r, Object.assign({ to: spDest(r, i), type, wef, authority: `NHQ/NP/SD/${40 + i}/2026`, created: addDays(TODAY, -(i % 6) - 1) }, o)); };
+    // printed, in two forms (the moves are on the records)
+    const a = [mk(1, 'Complement', d(2026, 9, 14)), mk(2, 'Complement', d(2026, 9, 14)), mk(4, 'Complement', d(2026, 9, 21), { remark: 'Commissioning crew' })];
+    printSpForm('Complement', a, d(2026, 9, 10), 'HICO001');
+    const b = [mk(5, 'Vice', d(2026, 10, 26), { vice: `Vice ${upperName(cur[8]).split(' ')[0]}` }), mk(6, 'TY', d(2026, 11, 2), { remark: 'Three-month attachment' })];
+    printSpForm('Vice', b, d(2026, 10, 22), 'HICO001');
+    // not yet printed
+    mk(10, 'Complement', d(2026, 11, 16), { remark: 'Replaces a medical evacuee' });
+    mk(11, 'Complement', d(2026, 12, 1));
+    mk(12, 'Vice', d(2026, 11, 23), { vice: `Vice ${upperName(cur[14]).split(' ')[0]}`, remark: 'Compassionate posting' });
+    mk(13, 'TY', d(2027, 1, 4), { authority: 'NHQ/NP/SD/053/2026', remark: 'Fleet exercise support' });
+    mk(15, 'DW', d(2026, 11, 25));
+  })();
+
+  // ---- Appraisal periods and appraisals ----
+  const GRADES = T2('appraisal-ratings').rows.map((r) => ({ name: r[0], code: r[1], range: r[2] }));
+  const GRADE_LIST = GRADES.map((g) => `${g.code} - ${g.name}`);
+  const gradeOf = (code) => GRADES.find((g) => g.code === code);
+  const gradePill = (code) => { const i = GRADES.findIndex((g) => g.code === code); return `<span class="${i <= 1 ? pill.success : i === 2 ? pill.info : i === 3 ? pill.warning : pill.error}">${esc(code)} · ${esc(gradeOf(code).name)}</span>`; };
+  const PERIODS = []; const AP = []; let apSeq = 0;
+  const periodById = (id) => PERIODS.find((p) => p.id === id);
+  const periodByName = (n) => PERIODS.find((p) => p.name === n);
+  const openPeriods = () => PERIODS.filter((p) => p.open);
+  const apActive = () => AP.filter((a) => a.status === 'active');
+  const apOfSn = (sn) => apActive().filter((a) => a.sn === sn).sort((a, b) => periodById(b.pid).start - periodById(a.pid).start);
+  const apFor = (sn, pid) => apActive().find((a) => a.sn === sn && a.pid === pid);
+  const apOfPeriod = (p) => apActive().filter((a) => a.pid === p.id);
+  const periodRange = (p) => `${fmt(p.start)} to ${fmt(p.end)}`;
+  const periodPill = (p) => `<span class="${p.open ? pill.success : pill.neutral}">${p.open ? 'Open' : 'Closed'}</span>`;
+  const gradeCode = (label) => String(label || '').split(' - ')[0];
+  const gradeLabel = (code) => `${code} - ${gradeOf(code).name}`;
+  function makePeriod(name, start, end, open = true, closedOn = null) { const p = { id: PERIODS.length + 1, name, start, end, open, closedOn, closedBy: open ? '' : 'HICO001' }; PERIODS.push(p); return p; }
+  function makeAp(r, p, o) {
+    apSeq += 1;
+    const a = Object.assign({ no: `APR-${pad4(apSeq)}`, sn: r.sn, pid: p.id, rate: r.rate, ship: r.ship, char: 'C', eff: 'C', remark: '', co: '', dirDate: null, dirName: '', by: D3USERS[apSeq % 2], on: TODAY, status: 'active', cancel: null, edits: [] }, o);
+    AP.push(a); return a;
+  }
+  (function seedAppraisals() {
+    const p1 = makePeriod('2025 First Half', d(2025, 1, 1), d(2025, 6, 30), false, d(2025, 7, 11));
+    const p2 = makePeriod('2025 Second Half', d(2025, 7, 1), d(2025, 12, 31), false, d(2026, 1, 12));
+    const p3 = makePeriod('2026 First Half', d(2026, 1, 1), d(2026, 6, 30), false, d(2026, 7, 10));
+    const p4 = makePeriod('2026 Second Half', d(2026, 7, 1), d(2026, 12, 31));
+    const COS = ['Cdr A. Danjuma', 'Capt O. Adewale', 'Cdr I. Okeke', 'Capt S. Bassey', 'Cdr T. Lawal', 'Lt Cdr E. Nwachukwu'];
+    const DIRS = ['Cdr Ibrahim Danladi', 'Capt Ngozi Eze'];
+    const REMARKS = ['Reliable and well turned out. Leads the watch with confidence.', 'Sound technical knowledge; should be given more responsibility.', 'Good team member who needs closer supervision on paperwork.', 'Outstanding performance during the fleet exercise.', 'Meets the standard. Punctuality has improved this period.', 'Shows initiative and sets a good example to junior ratings.', 'Capable but inconsistent; counselled on timekeeping.', ''];
+    const PAT_C = [0, 1, 1, 2, 0, 1, 2, 3, 1, 2, 4, 1, 2, 0, 3]; const PAT_E = [1, 0, 2, 1, 2, 1, 3, 2, 0, 1, 2, 4, 1, 2, 1];
+    const cur = current();
+    cur.forEach((r, i) => {
+      [p1, p2, p3].forEach((p, pi) => {
+        if (r !== me && (i + pi) % 5 === 0) return;
+        const k = (i * 7 + pi * 3) % 15;
+        const on = addDays(p.end, 12 + ((i * 3) % 9));
+        makeAp(r, p, { char: GRADES[PAT_C[k]].code, eff: GRADES[PAT_E[(k + i) % 15]].code, remark: REMARKS[(i + pi) % REMARKS.length], co: COS[(i + pi) % COS.length], dirName: DIRS[(i + pi) % 2], dirDate: addDays(on, 9 + (i % 7)), on });
+      });
+    });
+    // the open period: some ratings done, some not (the ones left are who is still to be appraised)
+    cur.slice(0, 13).forEach((r, i) => {
+      const k = (i * 4 + 2) % 15;
+      const on = i < 6 ? d(2026, 11, 2 + i * 2) : d(2026, 10, 12 + i);
+      makeAp(r, p4, { char: GRADES[PAT_C[k]].code, eff: GRADES[PAT_E[(k + 3) % 15]].code, remark: REMARKS[(i + 1) % REMARKS.length], co: COS[i % COS.length], dirName: i % 4 === 3 ? '' : DIRS[i % 2], dirDate: i % 4 === 3 ? null : addDays(on, 6), on });
+    });
+    const one = AP.find((a) => a.pid === p4.id && a.sn === cur[2].sn);
+    one.edits.push({ on: d(2026, 11, 9), by: 'HICO001', changes: [['Efficiency Grade', gradeLabel(one.eff === 'B' ? 'C' : 'B'), gradeLabel(one.eff)]] });
+    const gone = makeAp(cur[14], p4, { char: 'D', eff: 'D', remark: 'Entered against the wrong rating.', co: COS[0], on: d(2026, 11, 4), status: 'cancelled', cancel: { reason: 'Entered against the wrong rating; recorded again under the correct Official No.', by: 'NAVPERS01', on: d(2026, 11, 5) } });
+    gone.dirName = '';
+  })();
+
+  // ---- small builders ----
+  function apRows(a, { forReport = false } = {}) {
+    const r = bySn(a.sn); const p = periodById(a.pid);
+    return [['Official No', a.sn], ['Name', esc(fullName(r))], ['Rate at the Time', esc(a.rate)], ['Ship at the Time', esc(a.ship)], ['Period', `${esc(p.name)} ${periodPill(p)}`], ['Appraisal No', esc(a.no)],
+      ['Character Grade', `${gradePill(a.char)}${subl(`Score ${gradeOf(a.char).range}`)}`], ['Efficiency Grade', `${gradePill(a.eff)}${subl(`Score ${gradeOf(a.eff).range}`)}`], ["CO's Name", esc(a.co)], ["Director's Name", esc(a.dirName || '-')],
+      ["Director's Date", a.dirDate ? fmt(a.dirDate) : '-'], ['Recorded', `${fmt(a.on)} by ${esc(a.by)}`], ['Remark', esc(a.remark || '-'), true]];
+  }
+  const apEditsHtml = (a) => (a.edits.length ? `<div class="mt-4 border-t border-border pt-3"><div class="mb-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Changes</div><ol class="space-y-2">${a.edits.map((k) => `<li class="rounded-card border border-border bg-subtle/60 p-3 text-sm"><div class="flex flex-wrap items-center gap-2"><b>${fmt(k.on)}</b><span class="text-xs text-muted-foreground">by ${esc(k.by)}</span></div><ul class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">${k.changes.map(([f, x, y]) => `<li>${esc(f)}: <s>${esc(x || '-')}</s> to <b class="text-foreground">${esc(y || '-')}</b></li>`).join('')}</ul></li>`).join('')}</ol></div>` : '');
+  // the record dialog of an appraisal; edit and cancel only while its period is open
+  function apDialog(a, { link = true } = {}) {
+    const p = periodById(a.pid); const r = bySn(a.sn);
+    const acts = (link ? lbtn(`ratings/record/${a.sn}`, 'Open Record', 'id-card') : '') + (p.open ? d3b('ap-cancel', a.no, 'Cancel Appraisal', 'x', 'outline', 'text-destructive') + d3b('ap-edit', a.no, 'Edit', 'pencil', 'primary') : '');
+    d2Dialog({ title: `${fullName(r)} · ${p.name}`, size: 'lg', rows: apRows(a), acts, after: apEditsHtml(a),
+      alert: p.open ? '' : `<div class="mb-4">${notice('info', 'lock', `<b>${esc(p.name)} is closed.</b> Its appraisals can be read and reported but not edited or cancelled.`)}</div>` });
+  }
+  const apByNo = (no) => AP.find((a) => a.no === no);
+  D3ACT['ap-edit'] = (el) => apForm(null, apByNo(el.dataset.id));
+  D3ACT['ap-cancel'] = (el) => apCancel(apByNo(el.dataset.id));
+  D3ACT['ap-new'] = (el) => apForm(el.dataset.id ? bySn(el.dataset.id) : null, null);
+  const gradeCols = () => [['Character', (a) => gradePill(a.char)], ['Efficiency', (a) => gradePill(a.eff)]];
+  // ==== D3 END: shared parts ====
+
+  // ==== D3 BEGIN: Special Drafting (3 pages) ====
+  const SP_TABS = [{ route: 'special/proposal', label: 'Special Draft Proposal' }, { route: 'special/report', label: 'Special Draft Report' }, { route: 'special/upload', label: 'Upload Draft' }];
+  const spRows = (x) => {
+    const r = bySn(x.sn);
+    return [['Official No', x.sn], ['Name', esc(fullName(r))], ['Rate', esc(x.rate)], ['Branch', esc(r.branch)], ['Current Ship', esc(x.from)], ['Joined the Ship', `${fmt(x.since)} · ${mo(x.since)} mo`], ['Drafted To', `<b>${esc(x.to)}</b>`], ['Posting Type', typePill(x.type)],
+      ['WEF', `${fmt(x.wef)}${wefPill(x.wef)}`], ['Authority', esc(x.authority)], ['Deployment/Vice', esc(x.vice || '-')], ['Recorded', `${fmt(x.created)} by ${esc(x.by)}`], ['Remark', esc(x.remark || '-'), true]];
+  };
+  function spDialog(x) {
+    const r = bySn(x.sn);
+    d2Dialog({ title: `${fullName(r)} · special draft`, size: 'lg', rows: spRows(x),
+      alert: `<div class="mb-4">${notice('info', 'info', `<b>Not printed yet.</b> Nothing has moved: ${esc(fullName(r))} changes ship on the WEF once the form is printed on Special Draft Report. Until then the draft can be removed.`)}</div>`,
+      acts: lbtn(`ratings/record/${x.sn}`, 'Open Record', 'id-card') + d3b('sp-remove', x.id, 'Remove', 'trash-2', 'outline', 'text-destructive') + d3b('sp-letter', x.id, 'Draft Letter', 'file-text', 'blue') });
+  }
+  D3ACT['sp-remove'] = (el) => { const x = spById(el.dataset.id); const r = bySn(x.sn);
+    confirmBox({ title: 'Remove Special Draft', text: `Remove the special draft of <b>${esc(fullName(r))}</b> to <b>${esc(x.to)}</b> (WEF ${fmt(x.wef)})? The rating is not changed and can be drafted again. A printed draft cannot be removed.`, label: 'Remove', icon: 'trash-2', tone: 'danger',
+      run: () => { SPD.splice(SPD.indexOf(x), 1); return { done: `Special draft of ${fullName(r)} removed.` }; } }); };
+  D3ACT['sp-letter'] = (el) => { const x = spById(el.dataset.id); const r = bySn(x.sn);
+    d1Pdf({ title: 'Special Draft Letter', file: `Special Draft ${x.sn}.pdf`, meta: [['Official No', x.sn], ['Name', upperName(r)], ['Rate', short(x.rate)], ['Branch', r.branch], ['Current Ship', x.from], ['Joined the Ship', fmt(x.since)]],
+      cols: ['Drafted To', 'Posting Type', 'Deployment/Vice', 'Authority', 'WEF', 'Remark'], rows: [[x.to, x.type, x.vice || '-', x.authority, `${fmt(x.wef)}${x.wef > TODAY ? ' (scheduled)' : ''}`, x.remark || '-']], note: 'The letter for one rating. Printing it does not mark the draft printed: print the form on Special Draft Report.', sign: ['Drafting Officer', 'Director of Personnel (Navy)'] }); };
+
+  // ---- 1. Special Draft Proposal ----
+  function viewSpProposal() {
+    const q = fval('spFind', 'q').toLowerCase();
+    const all = q ? ratings.filter((r) => qMatch(r, q)) : [];
+    const rows = all.filter((r) => r.status === 'current');
+    const left = all.length - rows.length;
+    let found = '';
+    if (!q) found = `<p class="mb-4 text-sm text-muted-foreground">Enter an Official Number or a name. The rating's current details fill in and you add the draft. Special drafts not yet printed are listed below.</p>`;
+    else if (!rows.length) found = `<div class="${CARD} mb-4">${emptyBox('circle-alert', 'No Current Rating Found', left ? `${left} matching ${left === 1 ? 'rating has' : 'ratings have'} left the service. A special draft can only be made for a current rating.` : 'Check the Official Number or the spelling, then search again.')}</div>`;
+    else found = `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> current ${rows.length === 1 ? 'rating' : 'ratings'} found. Choose one to draft.</div>` + d1Table('spFind', rows, {
+      cols: [['Official No', (r) => r.sn], ['Name', (r) => nameSub(r)], ['Current Ship', (r) => esc(r.ship) + (spOf(r.sn) ? subl(`<span class="${pill.warning}">Draft waiting</span>`) : '')], ['On Ship', (r) => shipPill(shipMo(r))]],
+      open: (r) => spFindDialog(r),
+      card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.ship)}`, r: shipPill(shipMo(r)), body: spOf(r.sn) ? `<span class="${pill.warning}">Draft waiting</span>` : esc(r.rate) }),
+    });
+    const list = spOpen().sort((a, b) => a.wef - b.wef || a.sn.localeCompare(b.sn));
+    return pageHeader('Special Draft Proposal', 'Post one rating on a signal, outside the batch cycle')
+      + d1Filters('spFind', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-80' }], { search: 'Find' }) + found
+      + `<div class="mb-3 mt-2 flex flex-wrap items-center gap-3"><h2 class="text-sm font-semibold">Special Drafts Not Yet Printed</h2><span class="${pill.neutral}">${list.length}</span><a href="#special/report" class="${btn.ghost} ml-auto">${ic('file-text')}Special Draft Report</a></div>`
+      + d1Table('spList', list, {
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameSub(bySn(x.sn))], ['Drafted To', (x) => esc(x.to) + subl(esc(x.type))], ['WEF', (x) => `${fmt(x.wef)}${wefPill(x.wef)}`]],
+        open: (x) => spDialog(x),
+        card: (x) => ({ t: esc(fullName(bySn(x.sn))), s: `${x.sn} · ${esc(x.type)}`, r: `<span class="${x.wef > TODAY ? pill.warning : pill.neutral}">${fmt(x.wef)}</span>`, body: `to ${esc(x.to)}` }),
+        empty: ['anchor', 'No Special Drafts Waiting', 'Every special draft has been printed. Find a rating above to draft one.'],
+      });
+  }
+  function spFindDialog(r) {
+    const w = spOf(r.sn);
+    d2Dialog({ title: fullName(r), size: 'md',
+      alert: w ? `<div class="mb-4">${notice('error', 'circle-alert', `<b>${esc(fullName(r))} cannot be drafted again.</b> A special draft to <b>${esc(w.to)}</b> (WEF ${fmt(w.wef)}) is waiting to be printed. Print or remove it first.`)}</div>`
+        : r.sched ? `<div class="mb-4">${notice('warning', 'triangle-alert', `${esc(fullName(r))} already has a move to ${esc(r.sched.to)} scheduled for ${fmt(r.sched.date)}. A special draft is added beside it; check the WEF.`)}</div>` : '',
+      rows: [['Official No', r.sn], ['Rate', esc(r.rate)], ['Branch', esc(r.branch)], ['Current Ship', esc(r.ship)], ['Joined the Ship', fmt(r.shipSince)], ['Months There', shipPill(shipMo(r))], ['Command', esc(r.command)], ['Special Drafts Waiting', w ? '1' : '0']],
+      acts: lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card') + (w ? d3b('sp-view', w.id, 'View Draft', 'eye', 'blue') : d3b('sp-new', r.sn, 'Draft Rating', 'anchor', 'primary')) });
+  }
+  D3ACT['sp-view'] = (el) => spDialog(spById(el.dataset.id));
+  D3ACT['sp-new'] = (el) => spForm(bySn(el.dataset.id));
+  function spForm(r) {
+    const w = spOf(r.sn);
+    d2Form({ title: 'Special Draft', size: 'lg', submit: 'Add Special Draft', icon: 'anchor',
+      body: ratingStrip(r, shipPill(shipMo(r)))
+        + `<dl class="grid grid-cols-4 gap-x-4 gap-y-2 rounded-card border border-border/70 p-3 text-sm phone:grid-cols-2">${[['Rate', short(r.rate)], ['Branch', r.branch], ['Current Ship', r.ship], ['Joined the Ship', `${fmt(r.shipSince)} (${shipMo(r)} mo)`]].map(([k, v]) => `<div class="min-w-0"><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${k}</dt><dd class="mt-0.5 break-words">${esc(v)}</dd></div>`).join('')}</dl>`
+        + (w ? notice('error', 'circle-alert', `A special draft to <b>${esc(w.to)}</b> is already waiting for this rating. Print or remove it first.`) : '')
+        + grid2(fld('Posting Type', sel('type', POSTING, '', '-- Select Posting Type --'), 'type') + fld('Drafted To', sel('to', MORE_SHIPS.filter((s) => s !== r.ship), '', '-- Select Ship --'), 'to')
+          + fld('Authority', inp('authority', '', 'The signal, e.g. NHQ/NP/SD/054/2026'), 'authority') + fld('WEF', inp('wef', '', 'dd/mm/yyyy'), 'wef', { hint: 'The old posting ends the day before; a later date shows as scheduled.' })
+          + wide(fld('Deployment/Vice', inp('vice', '', 'e.g. Vice PO Eze'), 'vice', { opt: true, hint: 'Required when the Posting Type is Vice.' }))
+          + wide(fld('Remark', ta('remark', '', 'Anything the form should carry', 100), 'remark', { opt: true })))
+        + notice('info', 'info', 'Adding does not move the rating. It joins the list of special drafts not yet printed; the move happens on the WEF once the form is printed on Special Draft Report.'),
+      onSubmit: () => {
+        const err = {}; const type = dv('type'); const to = dv('to'); const auth = dv('authority'); const wef = parseDate(dv('wef')); const vice = dv('vice'); const lim = addMonths(TODAY, 12);
+        if (spOf(r.sn)) err.type = `${fullName(r)} already has a special draft waiting. Print or remove it first.`;
+        if (!type) err.type = err.type || 'Choose the posting type.';
+        if (!to) err.to = 'Choose the ship the rating is drafted to.'; else if (to === r.ship) err.to = `${fullName(r)} is already on ${to}.`;
+        if (!auth) err.authority = 'Enter the signal that authorises the draft.';
+        if (!dv('wef')) err.wef = 'Enter the WEF date.'; else if (!wef) err.wef = 'Use dd/mm/yyyy.'; else if (wef < r.shipSince) err.wef = `${fullName(r)} joined ${r.ship} on ${fmt(r.shipSince)}. The WEF cannot be earlier.`; else if (wef > lim) err.wef = 'The WEF is more than a year ahead. Check the date.';
+        if (type === 'Vice' && !vice) err.vice = 'Name the rating this draft replaces.';
+        if (Object.keys(err).length) return { errors: err };
+        makeSp(r, { to, type, authority: auth, wef, vice, remark: dv('remark'), by: 'HICO001' });
+        return { done: `Special draft added: ${fullName(r)} to ${to}, WEF ${fmt(wef)}.`, go: route === 'special/proposal' ? undefined : 'special/proposal' };
+      } });
+  }
+
+  // ---- 2. Special Draft Report ----
+  const spOfType = (t) => spOpen().filter((x) => x.type === t).sort((a, b) => a.wef - b.wef || a.sn.localeCompare(b.sn));
+  const spFormRows = (list) => list.map((x) => { const r = bySn(x.sn); return [x.sn, upperName(r), short(x.rate), r.gender === 'Female' ? 'F' : 'M', x.from, String(mo(x.since)), x.to, x.vice || '-', x.authority, `${fmt(x.wef)}${x.wef > TODAY ? ' (scheduled)' : ''}`]; });
+  const spFormCols = ['Official No', 'Name', 'Rate', 'Sex', 'Current Ship', 'Months', 'Drafted To', 'Deployment/Vice', 'Authority', 'WEF'];
+  function viewSpReport() {
+    const type = S.pick.spType || ''; const list = type ? spOfType(type) : [];
+    const picker = `<section class="${CARD} mb-4 p-4"><div class="w-full max-w-xl"><span class="${LABEL}">Posting Type</span><select name="d1p-spType"><option value="">-- Select Posting Type --</option>${POSTING.map((t) => `<option value="${esc(t)}"${t === type ? ' selected' : ''}>${esc(t)} (${spOfType(t).length} waiting)</option>`).join('')}</select></div></section>`;
+    let body;
+    if (!type) body = `<div class="${CARD} mb-4">${emptyBox('file-text', 'Choose a Posting Type', 'The draft form lists every special draft of that posting type not yet printed, in one form.')}</div>`;
+    else if (!list.length) body = `<div class="${CARD} mb-4">${emptyBox('file-text', `No ${type} Drafts Waiting`, 'Every special draft of this posting type has been printed. A past form can be reprinted below.')}</div>`;
+    else body = factStrip([['Posting Type', typePill(type)], ['Ratings', `<b>${list.length}</b>`], ['Earliest WEF', fmt(list[0].wef)], ['Scheduled', `${list.filter((x) => x.wef > TODAY).length} with a later WEF`]])
+      + d1Table('spRep', list, {
+        cols: [['Official No', (x) => x.sn], ['Name', (x) => nameSub(bySn(x.sn))], ['Drafted To', (x) => esc(x.to) + subl(esc(x.from))], ['WEF', (x) => `${fmt(x.wef)}${wefPill(x.wef)}`]],
+        open: (x) => spDialog(x),
+        card: (x) => ({ t: esc(fullName(bySn(x.sn))), s: `${x.sn} · to ${esc(x.to)}`, r: `<span class="${x.wef > TODAY ? pill.warning : pill.neutral}">${fmt(x.wef)}</span>` }),
+      });
+    const forms = SPFORMS.slice().sort((a, b) => b.on - a.on || b.no.localeCompare(a.no));
+    return pageHeader('Special Draft Report', 'Print the draft form for one posting type', `<button type="button" data-d3="sp-preview" ${list.length ? '' : 'disabled'} class="${btn.primary} disabled:opacity-50">${ic('printer')}Preview Draft Form</button>`)
+      + picker + body
+      + `<div class="mb-3 mt-2 flex items-center gap-3"><h2 class="text-sm font-semibold">Printed Forms</h2><span class="${pill.neutral}">${forms.length}</span></div>`
+      + d1Table('spForms', forms, {
+        cols: [['Form', (f) => `<b class="font-medium">${esc(f.no)}</b>`], ['Posting Type', (f) => typePill(f.type)], ['Printed', (f) => fmt(f.on)], ['Ratings', (f) => String(f.ids.length)]],
+        open: (f) => spFormDialog(f),
+        card: (f) => ({ t: esc(f.no), s: `${esc(f.type)} · ${f.ids.length} ${f.ids.length === 1 ? 'rating' : 'ratings'}`, r: `<span class="${pill.neutral}">${fmt(f.on)}</span>` }),
+        empty: ['file-text', 'No Forms Printed Yet', 'A form is listed here once it has been printed.'],
+      });
+  }
+  function spFormDialog(f) {
+    const items = f.ids.map(spById).filter(Boolean);
+    d2Dialog({ title: f.no, size: 'lg', rows: [['Form', `<b>${esc(f.no)}</b>`], ['Posting Type', typePill(f.type)], ['Printed', `${fmt(f.on)} by ${esc(f.by)}`], ['Ratings', String(items.length)]],
+      after: `<ul class="mt-4 divide-y divide-border/70 rounded-card border border-border/70 text-sm">${items.map((x) => `<li class="flex flex-wrap items-center gap-x-3 px-3 py-2"><b class="font-medium">${esc(fullName(bySn(x.sn)))}</b><span class="text-xs text-muted-foreground">${esc(x.sn)}</span><span class="ml-auto text-xs text-muted-foreground">to ${esc(x.to)} · WEF ${fmt(x.wef)}${wefPill(x.wef)}</span></li>`).join('')}</ul>
+        <p class="mt-3 text-xs text-muted-foreground">A printed special draft is final. A correction is made on the rating's record and is kept in the audit trail.</p>`,
+      acts: d3b('sp-reprint', f.no, 'Reprint Form', 'printer', 'blue') });
+  }
+  D3ACT['sp-reprint'] = (el) => { const f = spFormByNo(el.dataset.id); spFormPdf(f.type, f.ids.map(spById).filter(Boolean), f); };
+  // the draft form as a paper preview; before printing, the footer carries the one button that marks the drafts printed
+  function spFormPdf(type, list, form) {
+    d1Pdf({ title: 'Special Draft Form', file: `Special Draft Form ${type}${form ? ` ${form.no}` : ''}.pdf`, meta: [['Form No', form ? form.no : 'Numbered when printed'], ['Posting Type', type], ['Ratings', String(list.length)], ['Date', fmt(form ? form.on : TODAY)], ['Prepared By', 'HICO001']], cols: spFormCols, rows: spFormRows(list), sign: ['Drafting Officer', 'Director of Personnel (Navy)'] });
+    if (!form) $('#dialog-foot').innerHTML = `<span class="mr-auto self-center text-xs text-muted-foreground phone:hidden">Preview: nothing is marked printed yet</span><button type="button" data-act="close" class="${btn.outline}">Close</button><button type="button" data-d1="download-pdf" class="${btn.outline}">${ic('download')}Download PDF</button><button type="button" data-d3="sp-print" class="${btn.primary}">${ic('printer')}Print and Mark Printed</button>`;
+  }
+  D3ACT['sp-preview'] = () => { const type = S.pick.spType; const list = spOfType(type); if (list.length) spFormPdf(type, list, null); };
+  D3ACT['sp-print'] = () => {
+    const type = S.pick.spType; const list = spOfType(type); if (!list.length) return;
+    const later = list.filter((x) => x.wef > TODAY).length;
+    confirmBox({ title: 'Print and Mark Printed', text: `Print the form for <b>${list.length}</b> ${type} ${list.length === 1 ? 'draft' : 'drafts'} and mark ${list.length === 1 ? 'it' : 'them'} printed?`, label: 'Print and Mark Printed', icon: 'printer',
+      run: () => { const f = printSpForm(type, list, TODAY, 'HICO001'); return { done: `Form ${f.no} printed. ${list.length} ${list.length === 1 ? 'draft' : 'drafts'} marked printed${later ? `; ${later} will take effect on ${later === 1 ? 'its' : 'their'} WEF` : ''}.`, then: () => spFormPdf(type, f.ids.map(spById), f) }; } });
+  };
+
+  // ---- 3. Upload Draft (moved here from Drafting): the template is keyed by Official No ----
+  const spCur = () => current().filter((r) => r !== me);
+  const SP_ISSUES = () => { const c = spCur(); const sn = (i) => c[i].sn; const w = spOpen()[0];
+    return [[4, 'B0611', 'Official No', 'B0611 is not on the roll', 'error'], [7, ratings.filter((r) => r.status === 'former')[0].sn, 'Official No', 'The rating has left the service; only a current rating can be drafted', 'error'], [9, sn(19), 'Drafted To', '"NNS QUORRA" is not in Static Tables, Ships', 'error'],
+      [11, sn(20), 'Posting Type', '"Temp" is not a Posting Type. Use Complement, Vice, TY or DW', 'error'], [13, sn(21), 'WEF', '31/02/2026 is not a date', 'error'], [15, sn(22), 'Deployment/Vice', 'The Posting Type is Vice, so Deployment/Vice must name the rating replaced', 'error'],
+      [16, w ? w.sn : sn(10), 'Duplicate', `Already has a special draft not yet printed${w ? ` (to ${w.to})` : ''}`, 'skipped'], [18, sn(0), 'Duplicate', 'The rating appears twice in this file; the first row was kept', 'skipped']]; };
+  const SP_COLS = ['Official No', 'Drafted To', 'Authority', 'WEF', 'Posting Type', 'Deployment/Vice', 'Remark'];
+  const spFiles = () => { const is = SP_ISSUES();
+    return [{ id: 'ok', name: 'special-drafts-nov-2026.xlsx', size: '31 KB', note: '20 rows, a few with problems', rows: 20, ready: 12, skipped: is.filter((i) => i[4] === 'skipped').length, errors: is.filter((i) => i[4] === 'error').length },
+      { id: 'empty', name: 'special-drafts-empty.xlsx', size: '9 KB', note: 'Headers only, no rows', error: 'The workbook has no rows under the headings. Add the rows and choose the file again.' },
+      { id: 'header', name: 'Draft6-old-format.xlsx', size: '38 KB', note: 'The old Draft6 sheet (SER, Name, Rate, Sex, Svc_No ...)', error: 'Column "Official No" was not found in row 1. The old Draft6 sheet is not accepted: download the template and copy the rows into it.' },
+      { id: 'type', name: 'special-drafts.csv', size: '12 KB', note: 'A CSV file', error: 'Only .xlsx workbooks are accepted. Save the file as an Excel workbook and try again.' }]; };
+  function viewSpUpload() {
+    const us = S.up.special || { step: 0 }; const file = spFiles().find((f) => f.id === us.file); const st = us.step; const ok = file && !file.error;
+    const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
+    const tone = (i) => (i[4] === 'error' ? pill.error : pill.warning);
+    const card3 = ok && st >= 1
+      ? `<div class="grid grid-cols-3 gap-2 text-center"><div class="rounded-ctl bg-success-soft p-2 text-success"><b class="block text-lg">${st === 2 ? us.made : file.ready}</b><span class="text-2xs">${st === 2 ? 'Imported' : 'Ready'}</span></div><div class="rounded-ctl bg-warning-soft p-2 text-warning"><b class="block text-lg">${file.skipped}</b><span class="text-2xs">Skipped</span></div><div class="rounded-ctl bg-error-soft p-2 text-error"><b class="block text-lg">${file.errors}</b><span class="text-2xs">Errors</span></div></div>
+        <button type="button" data-d3="sp-import" ${st === 2 ? 'disabled' : ''} class="${btn.primary} w-full disabled:opacity-50">${ic('check')}${st === 2 ? 'Imported' : `Import ${file.ready} Special Drafts`}</button>`
+      : '<p class="text-sm text-muted-foreground">Choose a workbook to see what will be imported.</p>';
+    return pageHeader('Upload Draft', 'Load special drafts from a workbook')
+      + `<div class="grid grid-cols-3 gap-4 phone:grid-cols-1">
+        <section class="${CARD} space-y-3 p-4">${stepHead(1, 'Download Template', st === 0, st > 0)}<p class="text-sm text-muted-foreground">One row for each special draft. The workbook lists the allowed ships and posting types. The rating's name, rate and current ship are not repeated: they come from the record.</p>
+          <div class="flex flex-wrap gap-1.5">${SP_COLS.map((c) => `<span class="${pill.neutral}">${esc(c)}</span>`).join('')}</div>
+          <button type="button" data-d1="up-template" class="${btn.blue}">${ic('file-spreadsheet')}Download Template</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(2, 'Choose File', st <= 1, st > 1)}
+          <button type="button" data-d3="sp-choose" class="flex w-full flex-col items-center gap-2 rounded-card border-2 border-dashed border-input bg-subtle px-4 py-6 text-center text-sm text-muted-foreground transition-colors hover:border-ring">${ic('file-up', 'icon h-7 w-7')}${file ? `<b class="text-foreground">${esc(file.name)}</b>${file.error ? 'Could not be read' : `${file.rows} rows read`}` : 'Choose an .xlsx workbook'}</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(3, 'Review and Import', st === 1, st > 1)}${card3}</section></div>`
+      + (file && file.error ? `<div class="mt-4">${notice('error', 'circle-alert', `<b>${esc(file.name)} was not read.</b> ${esc(file.error)}`)}</div>` : '')
+      + (st === 2 ? `<div class="mt-4">${notice('success', 'circle-check', `<b>${us.made} special drafts imported.</b> ${file.skipped} skipped as duplicates and ${file.errors} not imported because of errors. They are on <a href="#special/proposal" class="font-semibold underline">Special Draft Proposal</a> as not printed; nothing moves until the form is printed on <a href="#special/report" class="font-semibold underline">Special Draft Report</a>.`)}</div>` : '')
+      + (ok && st >= 1 ? `<div class="mt-4"><div class="mb-2 flex items-center gap-3"><h2 class="text-sm font-semibold">Rows Not ${st === 2 ? 'Imported' : 'Ready'}</h2><button type="button" data-d1="excel" class="${btn.ghost} ml-auto">${ic('download')}Download Error Rows</button></div>`
+        + d1Table('upspecial', SP_ISSUES(), {
+          cols: [['Row', (i) => i[0]], ['Official No', (i) => esc(i[1])], ['Problem', (i) => esc(i[3]) + subl(esc(i[2])), 'whitespace-normal'], ['Result', (i) => `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`]],
+          title: (i) => `Row ${i[0]} · ${i[1]}`, all: (i) => [['Row', i[0]], ['Official No', esc(i[1])], ['Field', esc(i[2])], ['Result', `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`], ['Problem', esc(i[3])]], size: 'md',
+          card: (i) => ({ t: `Row ${i[0]} · ${esc(i[1])}`, s: esc(i[2]), r: `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`, body: esc(i[3]) }) }) + '</div>' : '');
+  }
+  D3ACT['sp-choose'] = () => {
+    S.upPick = (S.up.special || {}).file || 'ok';
+    d1Form({ title: 'Choose File', size: 'md', submit: 'Check File', icon: 'file-up',
+      body: `<p class="text-sm text-muted-foreground">Demo files: each one shows a different result.</p><div class="grid gap-2" role="radiogroup">${spFiles().map((f) => `<label class="flex cursor-pointer items-center gap-3 rounded-card border border-border p-3 hover:bg-subtle"><input type="radio" name="upfile" value="${f.id}" ${f.id === S.upPick ? 'checked' : ''} class="h-4 w-4 accent-primary" /><span class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(f.name)}</b><span class="block text-xs text-muted-foreground">${esc(f.size)} · ${esc(f.note)}</span></span></label>`).join('')}</div>`,
+      onSubmit: () => { const picked = document.querySelector('#dialog input[name="upfile"]:checked'); const id = picked ? picked.value : 'ok'; S.up.special = { file: id, step: 1 }; state.pages.upspecial = 1; return spFiles().find((f) => f.id === id).error ? { done: 'The file could not be read.', tone: 'error' } : { done: 'File checked.' }; } });
+  };
+  D3ACT['sp-import'] = () => { const file = spFiles().find((f) => f.id === S.up.special.file);
+    d1Form({ title: 'Import Special Drafts', size: 'sm', submit: `Import ${file.ready}`, icon: 'check',
+      body: `<p class="text-sm">Import <b>${file.ready}</b> special drafts? ${file.skipped} duplicates and ${file.errors} rows with errors are left out.</p>${notice('info', 'info', 'Each row becomes a special draft that is not printed yet. Nothing moves until the form is printed on Special Draft Report.')}`,
+      onSubmit: () => {
+        const skip = new Set(SP_ISSUES().map((i) => i[1])); const pool = current().filter((r) => !skip.has(r.sn) && !spOf(r.sn)); let made = 0;
+        pool.slice(0, file.ready).forEach((r, i) => { makeSp(r, { to: spDest(r, i + 2), type: POSTING[i % 3], wef: addDays(TODAY, 10 + (i % 4) * 7), authority: 'NHQ/NP/SD/060/2026', by: 'HICO001', vice: i % 3 === 1 ? 'Vice a rating on course' : '' }); made += 1; });
+        S.up.special.step = 2; S.up.special.made = made; return { done: `${made} special drafts imported.` };
+      } }); };
+  // ==== D3 END: Special Drafting ====
+
+  // ==== D3 BEGIN: Naval Character Assessment (3 pages) ====
+  const AS_TABS = [{ route: 'assessment/grading', label: 'Recommendation and Grading' }, { route: 'assessment/report', label: 'Report on Appraisal' }, { route: 'assessment/periods', label: 'Appraisal Periods' }];
+  const apTotal = (p) => apOfPeriod(p).length;
+
+  // ---- 1. Appraisal Periods ----
+  function viewPeriods() {
+    const rows = PERIODS.slice().sort((a, b) => b.start - a.start);
+    return pageHeader('Appraisal Periods', 'The periods appraisals are recorded in', `<button type="button" data-d3="period-new" class="${btn.primary}">${ic('plus')}Add Period</button>`)
+      + stat3([['Open', openPeriods().length, 'text-success'], ['Closed', PERIODS.length - openPeriods().length], ['Appraisals', apActive().length]])
+      + d1Table('apPeriods', rows, {
+        cols: [['Period', (p) => `<b class="font-medium">${esc(p.name)}</b>`], ['Dates', (p) => periodRange(p)], ['Appraisals', (p) => String(apTotal(p))], ['Status', (p) => periodPill(p)]],
+        open: (p) => periodDialog(p),
+        card: (p) => ({ t: esc(p.name), s: periodRange(p), r: periodPill(p), body: `${apTotal(p)} ${apTotal(p) === 1 ? 'appraisal' : 'appraisals'}` }),
+        empty: ['calendar', 'No Appraisal Periods', 'Add the first period to start recording appraisals.', `<button type="button" data-d3="period-new" class="${btn.primary}">${ic('plus')}Add Period</button>`],
+      });
+  }
+  const periodByIdStr = (id) => periodById(+id);
+  function periodDialog(p) {
+    d2Dialog({ title: p.name, size: 'md', rows: [['Period', `<b>${esc(p.name)}</b>`], ['Status', periodPill(p)], ['Starts', fmt(p.start)], ['Ends', fmt(p.end)], ['Appraisals', String(apTotal(p))], ['Closed', p.open ? '-' : `${fmt(p.closedOn)} by ${esc(p.closedBy)}`]],
+      alert: p.open ? '' : `<div class="mb-4">${notice('info', 'lock', '<b>This period is closed and read-only.</b> Its appraisals can be read and reported but not added, edited or cancelled. A closed period is final.')}</div>`,
+      acts: d3b('period-appraisals', p.id, 'View Appraisals', 'list') + (p.open ? d3b('period-close', p.id, 'Close Period', 'lock', 'outline') + d3b('period-edit', p.id, 'Edit', 'pencil', 'primary') : '') });
+  }
+  D3ACT['period-appraisals'] = (el) => { const p = periodByIdStr(el.dataset.id); S.f.apGrading = { period: p.name }; state.pages.apGrading = 1; location.hash = '#assessment/grading'; };
+  D3ACT['period-new'] = () => periodForm(null);
+  D3ACT['period-edit'] = (el) => periodForm(periodByIdStr(el.dataset.id));
+  function periodForm(p) {
+    d2Form({ title: p ? 'Edit Period' : 'Add Period', size: 'md', submit: p ? 'Save Period' : 'Add Period', icon: 'check',
+      body: fld('Name', inp('name', p ? p.name : '', 'e.g. 2027 First Half'), 'name') + grid2(fld('Start Date', inp('start', p ? fmt(p.start) : '', 'dd/mm/yyyy'), 'start') + fld('End Date', inp('end', p ? fmt(p.end) : '', 'dd/mm/yyyy'), 'end'))
+        + (p && apTotal(p) ? notice('info', 'info', `${apTotal(p)} ${apTotal(p) === 1 ? 'appraisal is' : 'appraisals are'} recorded in this period. Changing its dates does not change them.`) : notice('info', 'info', 'A new period opens at once. Close it when its appraisals are complete; a closed period is read-only.')),
+      onSubmit: () => {
+        const err = {}; const name = dv('name'); const start = parseDate(dv('start')); const end = parseDate(dv('end'));
+        if (!name) err.name = 'Enter the period name.'; else if (PERIODS.find((x) => x !== p && x.name.toLowerCase() === name.toLowerCase())) err.name = `A period named ${name} already exists.`;
+        if (!dv('start')) err.start = 'Enter the start date.'; else if (!start) err.start = 'Use dd/mm/yyyy.';
+        if (!dv('end')) err.end = 'Enter the end date.'; else if (!end) err.end = 'Use dd/mm/yyyy.'; else if (start && end <= start) err.end = 'The end must be after the start.';
+        const clash = !err.start && !err.end && PERIODS.find((x) => x !== p && start <= x.end && end >= x.start);
+        if (clash) err.start = `Overlaps ${clash.name} (${periodRange(clash)}). Periods must not overlap.`;
+        if (Object.keys(err).length) return { errors: err };
+        if (p) { Object.assign(p, { name, start, end }); return { done: `${name} saved.` }; }
+        makePeriod(name, start, end); return { done: `${name} added and open.` };
+      } });
+  }
+  D3ACT['period-close'] = (el) => { const p = periodByIdStr(el.dataset.id); const missing = current().filter((r) => !apFor(r.sn, p.id)).length;
+    d2Form({ title: 'Close Period', size: 'md', submit: 'Close Period', icon: 'lock', tone: 'danger', back: 'Keep Open',
+      body: `<p class="text-sm">Close <b>${esc(p.name)}</b>? It holds <b>${apTotal(p)}</b> ${apTotal(p) === 1 ? 'appraisal' : 'appraisals'}.</p>${missing ? notice('warning', 'triangle-alert', `${missing} current ${missing === 1 ? 'rating has' : 'ratings have'} no appraisal in this period. They cannot be added once it is closed.`) : ''}${notice('warning', 'triangle-alert', 'A closed period is final and read-only: its appraisals cannot be added, edited or cancelled.')}`,
+      onSubmit: () => { p.open = false; p.closedOn = TODAY; p.closedBy = 'HICO001'; return { done: `${p.name} closed.` }; } }); };
+
+  // ---- 2. Recommendation and Grading ----
+  function gradingRows(f, { all = false } = {}) {
+    const q = (f.q || '').trim().toLowerCase();
+    return apActive().filter((a) => { const r = bySn(a.sn); const p = periodById(a.pid); return qMatch(r, q) && (!f.period || p.name === f.period) && (!f.ship || a.ship === f.ship) && (!f.rate || a.rate === f.rate) && (!f.branch || r.branch === f.branch) && (!f.grade || a.char === gradeCode(f.grade) || a.eff === gradeCode(f.grade)); })
+      .sort((a, b) => periodById(b.pid).start - periodById(a.pid).start || a.sn.localeCompare(b.sn));
+  }
+  const apCols = () => [['Official No', (a) => a.sn], ['Name', (a) => nameSub(bySn(a.sn), esc(a.ship))], ['Period', (a) => esc(periodById(a.pid).name) + subl(periodById(a.pid).open ? 'Open' : 'Closed')]].concat(gradeCols());
+  const apCard = (a) => ({ t: esc(fullName(bySn(a.sn))), s: `${a.sn} · ${esc(periodById(a.pid).name)}`, r: periodPill(periodById(a.pid)), body: `Character ${a.char} · Efficiency ${a.eff}` });
+  function viewGrading() {
+    const f = S.f.apGrading || {}; const rows = gradingRows(f); const open = openPeriods();
+    return pageHeader('Recommendation and Grading', 'Character and efficiency grades, one appraisal for each rating and period', `<button type="button" data-d3="ap-new" data-id="" class="${btn.primary}">${ic('plus')}Initiate Appraisal</button>`)
+      + d1Filters('apGrading', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-56' }, { name: 'period', label: 'Period', list: PERIODS.slice().sort((a, b) => b.start - a.start).map((p) => p.name), ph: 'All Periods', w: 'w-56' }, { name: 'ship', label: 'Ship', list: SHIP_NAMES, ph: 'All Ships', w: 'w-48' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates', w: 'w-56' }, { name: 'grade', label: 'Grade', list: GRADE_LIST, ph: 'Any Grade', w: 'w-48' }])
+      + (open.length ? '' : `<div class="mb-4">${notice('warning', 'triangle-alert', `<b>No period is open.</b> Appraisals can only be recorded in an open period. <a href="#assessment/periods" class="font-semibold underline">Open Appraisal Periods</a>`)}</div>`)
+      + `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ${rows.length === 1 ? 'appraisal' : 'appraisals'}${f.period ? ` in ${esc(f.period)}` : ''}</div>`
+      + d1Table('apGrading', rows, { cols: apCols(), open: (a) => apDialog(a), card: apCard,
+        empty: ['clipboard-check', 'No Appraisals Found', 'No appraisal matches these filters, or none has been recorded yet.', `<button type="button" data-d1="reset" data-key="apGrading" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`] });
+  }
+  // Initiate (a rating and an open period) or edit (while its period is open)
+  D3ACT['ap-find'] = () => {
+    const box = document.querySelector('#d3-found'); if (!box) return; const sn = dv('sn'); S.apFound = null;
+    if (!sn) { box.innerHTML = notice('error', 'circle-alert', 'Enter an Official Number.'); return; }
+    const r = findRating(sn);
+    if (!r) { box.innerHTML = notice('error', 'circle-alert', `No rating has Official Number <b>${esc(sn)}</b>.`); return; }
+    if (r.status !== 'current') { box.innerHTML = notice('error', 'circle-alert', `${esc(fullName(r))} has left the service and cannot be appraised.`); return; }
+    S.apFound = r; box.innerHTML = ratingStrip(r);
+  };
+  function apForm(r0, a) {
+    const open = openPeriods(); const editing = !!a; const r = editing ? bySn(a.sn) : r0; S.apFound = r || null; const p0 = editing ? periodById(a.pid) : open[open.length - 1];
+    if (!editing && !open.length) { d2Dialog({ title: 'Initiate Appraisal', size: 'md', rows: [], alert: notice('error', 'circle-alert', '<b>No period is open.</b> Appraisals can only be recorded in an open period. Add or open one on Appraisal Periods.'), acts: lbtn('assessment/periods', 'Appraisal Periods', 'calendar') }); return; }
+    const who = editing || r0 ? ratingStrip(r, editing ? periodPill(p0) : '')
+      : `<div class="flex items-end gap-2"><div class="min-w-0 flex-1">${fld('Official No', inp('sn', '', 'e.g. B0539'), 'sn')}</div><button type="button" data-d3="ap-find" class="${btn.outline} mb-0 phone:h-tap">${ic('search')}Find</button></div><div id="d3-found">${notice('info', 'info', 'Find a current rating by Official Number.')}</div><span data-err="who" class="hidden text-xs font-medium text-error"></span>`;
+    d2Form({ title: editing ? 'Edit Appraisal' : 'Initiate Appraisal', size: 'lg', submit: editing ? 'Save Changes' : 'Record Appraisal', icon: 'check',
+      body: who + (editing ? `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1"><div class="rounded-card border border-border/70 p-3 text-sm"><span class="${LABEL}">Period</span><b>${esc(p0.name)}</b></div><div class="rounded-card border border-border/70 p-3 text-sm"><span class="${LABEL}">Appraisal No</span><b>${esc(a.no)}</b></div></div>` : fld('Period', sel('period', open.map((p) => p.name), p0.name, '-- Select Period --'), 'period', { hint: 'Only open periods are listed.' }))
+        + grid2(fld('Character Grade', sel('char', GRADE_LIST, editing ? gradeLabel(a.char) : '', '-- Select Grade --'), 'char') + fld('Efficiency Grade', sel('eff', GRADE_LIST, editing ? gradeLabel(a.eff) : '', '-- Select Grade --'), 'eff', { hint: 'Grades come from Static Tables, Appraisal Ratings.' })
+          + wide(fld('Remark', ta('remark', editing ? a.remark : '', 'The reporting officer\'s remark', 150), 'remark', { opt: true }))
+          + fld("CO's Name", inp('co', editing ? a.co : '', 'e.g. Cdr A. Danjuma'), 'co') + fld("Director's Name", inp('dirName', editing ? a.dirName : '', 'e.g. Capt N. Eze'), 'dirName', { opt: true })
+          + fld("Director's Date", inp('dirDate', editing && a.dirDate ? fmt(a.dirDate) : '', 'dd/mm/yyyy'), 'dirDate', { opt: true, hint: "Enter both the director's name and date, or neither." })),
+      onSubmit: () => {
+        const err = {}; const rt = S.apFound; const ch = gradeCode(dv('char')); const ef = gradeCode(dv('eff')); const dd = dv('dirDate'); const dn = dv('dirName'); const date = parseDate(dd);
+        let p = p0;
+        if (!editing) {
+          if (!rt) err.who = 'Find the rating first.';
+          p = periodByName(dv('period')); if (!p) err.period = 'Choose an open period.'; else if (rt && apFor(rt.sn, p.id)) err.period = `${fullName(rt)} already has an appraisal for ${p.name}. Edit it from the list: there is one appraisal for each rating and period.`;
+        } else if (!p.open) err.char = 'This period is closed. Its appraisals are read-only.';
+        if (!ch) err.char = err.char || 'Choose the Character grade.'; if (!ef) err.eff = 'Choose the Efficiency grade.';
+        if (!dv('co')) err.co = "Enter the CO's name.";
+        if (dd && !date) err.dirDate = 'Use dd/mm/yyyy.'; else if (date && date > TODAY) err.dirDate = "The director's date cannot be in the future."; else if (date && p && date < p.start) err.dirDate = `The date is before the period began (${fmt(p.start)}).`;
+        if (dn && !dd) err.dirDate = err.dirDate || "Enter the director's date too."; if (dd && !dn) err.dirName = "Enter the director's name too.";
+        if (Object.keys(err).length) return { errors: err };
+        if (!editing) { const n = makeAp(rt, p, { char: ch, eff: ef, remark: dv('remark'), co: dv('co'), dirName: dn, dirDate: date, by: 'HICO001', on: TODAY }); return { done: `Appraisal ${n.no} recorded for ${fullName(rt)} in ${p.name}.` }; }
+        const ch2 = []; const diff = (k, x, y) => { if (x !== y) ch2.push([k, x || '', y || '']); };
+        diff('Character Grade', gradeLabel(a.char), gradeLabel(ch)); diff('Efficiency Grade', gradeLabel(a.eff), gradeLabel(ef)); diff('Remark', a.remark, dv('remark')); diff("CO's Name", a.co, dv('co')); diff("Director's Name", a.dirName, dn); diff("Director's Date", a.dirDate ? fmt(a.dirDate) : '', date ? fmt(date) : '');
+        if (!ch2.length) return { errors: { char: 'Nothing was changed.' } };
+        Object.assign(a, { char: ch, eff: ef, remark: dv('remark'), co: dv('co'), dirName: dn, dirDate: date }); a.edits.push({ on: TODAY, by: 'HICO001', changes: ch2 });
+        return { done: `Appraisal ${a.no} saved.` };
+      } });
+  }
+  function apCancel(a) {
+    const r = bySn(a.sn); const p = periodById(a.pid);
+    d2Form({ title: 'Cancel Appraisal', size: 'md', back: 'Keep Appraisal', submit: 'Cancel Appraisal', icon: 'x', tone: 'danger',
+      body: ratingStrip(r, periodPill(p)) + `<div class="text-sm"><b>${esc(a.no)}</b> · ${esc(p.name)} · Character ${gradePill(a.char)} Efficiency ${gradePill(a.eff)}</div>` + fld('Reason', ta('reason', '', 'Why the appraisal is being cancelled', 200), 'reason', { hint: 'Required. It is kept in the audit trail.' })
+        + notice('info', 'info', 'The appraisal leaves the lists and the report; nothing is deleted. The rating can then be appraised again for this period.'),
+      onSubmit: () => { const v = dv('reason'); if (!v) return { errors: { reason: 'Give the reason the appraisal is cancelled.' } }; a.status = 'cancelled'; a.cancel = { reason: v, by: 'HICO001', on: TODAY }; return { done: `Appraisal ${a.no} cancelled.` }; } });
+  }
+
+  // ---- 3. Report on Appraisal ----
+  const countBy = (rows, key) => GRADES.map((g) => rows.filter((a) => a[key] === g.code).length);
+  function viewAppReport() {
+    if (!S.f.apReport) S.f.apReport = { period: '2026 Second Half' };
+    const f = S.f.apReport; const rows = gradingRows(f); const cc = countBy(rows, 'char'); const ec = countBy(rows, 'eff');
+    const top = (c) => (rows.length ? `${Math.round(((c[0] + c[1]) / rows.length) * 100)}%` : '-');
+    const grid = `<section class="${CARD} mb-4 overflow-hidden"><div class="border-b border-border px-4 py-2.5"><h2 class="text-sm font-semibold">Grade Counts</h2></div><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH3}">Grade</th><th class="${TH3} text-right">Character</th><th class="${TH3} text-right">Efficiency</th></tr></thead><tbody>${GRADES.map((g, i) => `<tr class="border-t border-border/70"><td class="px-3 py-2">${gradePill(g.code)}<span class="ml-2 text-xs text-muted-foreground phone:hidden">Score ${esc(g.range)}</span></td><td class="px-3 py-2 text-right font-medium">${cc[i]}</td><td class="px-3 py-2 text-right font-medium">${ec[i]}</td></tr>`).join('')}</tbody></table></section>`;
+    return pageHeader('Report on Appraisal', 'The appraisals of a period, with the grade counts', `<button type="button" data-d3="ar-pdf" ${rows.length ? '' : 'disabled'} class="${btn.blue} disabled:opacity-50">${ic('printer')}Print PDF</button><button type="button" data-d1="excel" ${rows.length ? '' : 'disabled'} class="${btn.outline} disabled:opacity-50">${ic('file-spreadsheet')}Export Excel</button>`)
+      + d1Filters('apReport', [{ name: 'period', label: 'Period', list: PERIODS.slice().sort((a, b) => b.start - a.start).map((p) => p.name), ph: 'All Periods', w: 'w-56' }, { name: 'ship', label: 'Ship', list: SHIP_NAMES, ph: 'All Ships', w: 'w-48' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates', w: 'w-56' }, { name: 'branch', label: 'Branch', list: BRANCHES, ph: 'All Branches', w: 'w-48' }, { name: 'grade', label: 'Grade', list: GRADE_LIST, ph: 'Any Grade', w: 'w-48' }])
+      + stat3([['Appraisals', rows.length], ['Character A or B', top(cc), 'text-success'], ['Efficiency A or B', top(ec), 'text-success']])
+      + (rows.length ? grid : '')
+      + d1Table('apReport', rows, { cols: [['Official No', (a) => a.sn], ['Name', (a) => nameSub(bySn(a.sn), esc(a.ship))], ['Period', (a) => esc(periodById(a.pid).name)]].concat(gradeCols()), open: (a) => apDialog(a), card: apCard,
+        empty: ['clipboard-check', 'No Appraisals in This Report', 'No appraisal matches these filters.', `<button type="button" data-d1="reset" data-key="apReport" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`] });
+  }
+  D3ACT['ar-pdf'] = () => { const f = S.f.apReport || {}; const rows = gradingRows(f); const cc = countBy(rows, 'char'); const ec = countBy(rows, 'eff'); const txt = (c) => GRADES.map((g, i) => `${g.code} ${c[i]}`).join(' · ');
+    d1Pdf({ title: 'Report on Appraisal', file: 'Report on Appraisal.pdf', meta: [['Period', f.period || 'All'], ['Ship', f.ship || 'All'], ['Rate', f.rate ? short(f.rate) : 'All'], ['Branch', f.branch || 'All'], ['Grade', f.grade || 'Any'], ['Appraisals', String(rows.length)], ['Character', txt(cc)], ['Efficiency', txt(ec)]],
+      cols: ['Official No', 'Name', 'Rate', 'Ship', 'Branch', 'Period', 'Character', 'Efficiency', "CO's Name", 'Director'], rows: rows.map((a) => { const r = bySn(a.sn); return [a.sn, upperName(r), short(a.rate), a.ship, r.branch, periodById(a.pid).name, `${a.char} ${gradeOf(a.char).name}`, `${a.eff} ${gradeOf(a.eff).name}`, a.co, a.dirName || '-']; }), sign: ['Prepared By', 'Director of Personnel (Navy)'] }); };
+
+  // ---- the rating's record: its appraisals sit under the Advancement tab (no new tab; see the README) ----
+  function recordAppraisals(r, readOnly) {
+    if (readOnly) return '';
+    const rows = apOfSn(r.sn); const canAdd = r.status === 'current' && openPeriods().length > 0;
+    return `<div class="mb-3 mt-6 flex flex-wrap items-center gap-3"><h2 class="text-sm font-semibold">Appraisals</h2><span class="${pill.neutral}">${rows.length}</span>${canAdd ? d3b('ap-new', r.sn, 'Initiate Appraisal', 'plus', 'outline', 'ml-auto') : ''}</div>`
+      + d1Table('recAp', rows, { cols: [['Period', (a) => `<b class="font-medium">${esc(periodById(a.pid).name)}</b>` + subl(periodById(a.pid).open ? 'Open' : 'Closed')], ['Character', (a) => gradePill(a.char)], ['Efficiency', (a) => gradePill(a.eff)], ["CO's Name", (a) => esc(a.co)]],
+        open: (a) => apDialog(a, { link: false }), card: (a) => ({ t: esc(periodById(a.pid).name), s: `CO ${esc(a.co)}`, r: periodPill(periodById(a.pid)), body: `Character ${a.char} · Efficiency ${a.eff}` }),
+        empty: ['clipboard-check', 'No Appraisals Recorded', r.status === 'current' ? 'Recorded on Recommendation and Grading, once a period is open.' : 'A former rating is not appraised.'] });
+  }
+  // ==== D3 END: Naval Character Assessment ====
+
+  // ==== D3 BEGIN: wiring for the two modules (routes, tabs, events, dashboard and record hooks) ====
+  MODULE_TABS['special-drafting'] = SP_TABS; MODULE_TABS.assessment = AS_TABS;
+  const D3 = {
+    owns: (rt) => /^(special|assessment)\//.test(rt),
+    tabOf: (rt) => rt.split('/').slice(0, 2).join('/'),
+    view: (rt) => {
+      const [mod, page] = rt.split('/');
+      const v = mod === 'special' ? { proposal: viewSpProposal, report: viewSpReport, upload: viewSpUpload }[page] : { grading: viewGrading, report: viewAppReport, periods: viewPeriods }[page];
+      return v ? v() : null;
+    },
+    recordAppraisals,
+    stats: () => ({ month: apActive().filter((a) => a.on.getFullYear() === TODAY.getFullYear() && a.on.getMonth() === TODAY.getMonth()).length, open: openPeriods().length }),
+  };
+  document.addEventListener('click', (e) => { const el = e.target.closest('[data-d3]'); if (!el) return; const fn = D3ACT[el.dataset.d3]; if (fn) fn(el, e); });
+  // ==== D3 END: wiring ====
+
   // ==========================================================================
   // Session lock (password only): after the idle limit, or from the account menu.
   // The screen underneath stays exactly as it was; every open tab locks together.
@@ -3125,6 +3589,7 @@
     else if (route.startsWith('admin/') && ADMIN_TABS.some((t) => t.route === route)) html = viewAdmin(route.slice(6));
     else if (D1.owns(route)) { html = D1.view(route); if (html === null) { location.replace('#dashboard'); return; } }
     else if (D2.owns(route)) { html = D2.view(route); if (html === null) { location.replace('#dashboard'); return; } }
+    else if (D3.owns(route)) { html = D3.view(route); if (html === null) { location.replace('#dashboard'); return; } }
     else { location.replace('#dashboard'); return; }
     view.innerHTML = html;
     renderRail(route);
@@ -3194,7 +3659,7 @@
   function paletteItems() {
     const q = $('#palette-input').value.trim().toLowerCase();
     const screens = [{ label: 'Dashboard', href: 'dashboard', icon: 'layout-dashboard' }, ...RATINGS_TABS.map((t) => ({ label: `Ratings · ${t.label}`, href: t.route, icon: 'users' })), { label: 'New Rating', href: 'ratings/new', icon: 'user-plus' },
-      ...['drafting', 'training-drafting', 'advancement', 'disciplinary', 'discharge', 'tables', 'reports', 'admin'].flatMap((k) => { const m = MODULES.find((x) => x.key === k); return MODULE_TABS[k].map((t) => ({ label: `${m.label} · ${t.label}`, href: t.route, icon: m.icon })); }),
+      ...['drafting', 'special-drafting', 'training-drafting', 'advancement', 'assessment', 'disciplinary', 'discharge', 'tables', 'reports', 'admin'].flatMap((k) => { const m = MODULES.find((x) => x.key === k); return MODULE_TABS[k].map((t) => ({ label: `${m.label} · ${t.label}`, href: t.route, icon: m.icon })); }),
       ...MODULES.filter((m) => m.soon).map((m) => ({ label: m.label, href: `soon/${m.key}`, icon: m.icon }))].filter((s) => !q || s.label.toLowerCase().includes(q));
     const people = (q ? ratings.filter((r) => `${r.sn} ${r.surname} ${r.first} ${r.middle}`.toLowerCase().includes(q)) : ratings.slice(0, 4))
       .slice(0, 6).map((r) => ({ label: fullName(r), sub: `${r.sn} · ${r.status === 'current' ? r.ship : 'Former'}`, href: `ratings/record/${r.sn}`, rating: r }));

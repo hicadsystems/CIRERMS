@@ -542,6 +542,7 @@ async function buildStaticTableListPdf({ title, columns, rows, filterNote = '', 
 
 module.exports = {
   buildStaticTableListPdf,
+  COLOURS,
   buildRatingsListPdf,
   buildRatingTabPdf,
   buildRatingDossierPdf,

@@ -6,8 +6,9 @@ updates the status table as they report back.
 
 ## 1. Goal
 
-**Phase 1, this plan: finish the demo, fully, design first.** Every module except Special Drafting
-and Naval Character Assessment, through every menu item of the old system, every page, every step
+**Phase 1, this plan: finish the demo, fully, design first.** Every module, Special Drafting and
+Naval Character Assessment included (owner, 19/11/2026: D3 designs them, WP11 and WP12 build them),
+through every menu item of the old system, every page, every step
 and every action (list, view, add, edit, delete, approve, close, upload, print, export), with users,
 roles and privileges. In two steps per module:
 
@@ -16,9 +17,9 @@ roles and privileges. In two steps per module:
    owner's approval.
 2. **Build:** the app is made to match the approved design and works end to end on demo data.
 
-**Later, not planned here:** Special Drafting, Naval Character Assessment (section 10 keeps what is
-known of both), then importing the real records from the old SQL Server database once our tables
-are settled. Both modules keep their **Soon** label until then.
+**Later, not planned here:** importing the real records from the old SQL Server database once our
+tables are settled. (Special Drafting and Naval Character Assessment were here until 19/11/2026; section
+10 keeps what is known of both, and section 9e has the decisions for them.)
 
 ## 2. The old system (the reference)
 
@@ -66,6 +67,9 @@ are settled. Both modules keep their **Soon** label until then.
    wider.
    **Type scales with the screen** (owner, 19/11/2026; CONVENTIONS, Frontend): fluid font sizes from
    phone to desktop, light and modest headings on a phone. This too wins over the demo.
+   **Printouts open in the app's own PDF preview** (owner, 19/11/2026): a dialog (a sheet on a phone) with the
+   pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
+   from WP3).
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
 8. Read the old system for the module before designing or building: its menu items, controller
    actions, views, the tables and procedures they use (`docs/legacy/` from WP0 says where).
@@ -86,7 +90,10 @@ are settled. Both modules keep their **Soon** label until then.
 13. **A build package is done when** every old menu action of the module works on demo data and
     matches the demo; privileges are checked on every route and the screens hide what a person may
     not do; every write lands in the audit trail; demo seed data fills every page; a Playwright
-    walk-through presses every action, on desktop and phone, in both themes, with no browser errors;
+    walk-through presses every action, on desktop and phone, in both themes, with no browser errors,
+    and runs in 5 minutes at most (owner, 19/11/2026: rules through the API, every action through the
+    screens once, the other layouts only per screen and its main dialog; it prints its time and fails over 5
+    minutes);
     README and CONVENTIONS describe what was built.
 14. **A design package is done when** every old menu page of its modules has its screen in the demo,
     with every step, dialog, confirmation, upload (template, preview, result), print preview, empty
@@ -102,9 +109,9 @@ are settled. Both modules keep their **Soon** label until then.
 |---|---|---|---|---|
 | Ratings Management | Ratings Management | Employee: viewprofile (View My Details), Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents) | Done, approved | Done |
 | Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList, draftapproval, closedraftreview | D1 | WP7a, WP7b |
-| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | Later | Later |
+| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | D3 | WP11 |
 | Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement (in the code, not in the live menu; included by the owner's decision, 18/11/2026) | D1 | WP8 |
-| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | Later | Later |
+| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | D3 | WP12 |
 | Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | D2 | WP4 |
 | Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | D2 | WP5 |
 | Training Drafting | Training Drafting | TrainingDraft: TrainingDraftiningProcess, Trainingreview, trainingdraftenddate (training history), summaryreport, ExcelUpload | D1 | WP6 |
@@ -129,6 +136,7 @@ Sonnet where screens follow patterns already in the kit.
 |---|---|---|---|---|---|
 | D1 | `design-drafting` | Drafting (9 pages; Upload Draft moved to Special Drafting), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the printouts the in-scope pages load (`docs/legacy/reports.md` section 5, as PDF previews on the pages that print them), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
+| D3 | `design-special` | Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), by rule 14 and section 9e; the sidebar loses its last Soon items and the Appraisals tile counts appraisals | Sonnet 5.5 · medium | D2 | M |
 
 ### Build packages
 
@@ -137,7 +145,7 @@ Sonnet where screens follow patterns already in the kit.
 | WP0 | `legacy-map` | `docs/legacy/`: how the old system is built and where its logic lives; one file per in-scope module (menu item, controller action, view, tables and columns, procedures, rules, reports, upload templates in `App_Data/UploadFormat`, and the old pages' faults we should not copy); the old tables and columns in `docs/legacy/sql/tables.md`, and what every procedure an in-scope page calls does, written in words in its module file (read from the 2017 backup, never copied as SQL; definitions only, never records); a note on whether Drafting should be split in two | Sonnet 5.5 · medium | This plan | M |
 | WP1 | `foundation-access` | Users, roles and privileges modelled on the old ones (a privilege per screen and action: view, add, edit, delete, approve), checked on every route; menus, tabs and buttons hidden without the grant; the audit trail (table and a helper every write calls); the session lock as the demo shows it (password only); routes and screens registered from each module's own folder so later packages only add files; the admin role seeded with every privilege | Opus 5.5 · high | WP0 | L |
 | T1 | `fluid-type` | The fluid type scale (CONVENTIONS, Frontend, "Type scales with the screen"): font sizes in `tailwind.config.js` as `clamp()` from 360 to 1440 px wide, headings lighter and smaller on a phone (the record's name, page titles, stat values, dialog titles), every existing screen checked at 360, 390, 430, 768, 1024 and 1440 px in both themes with nothing cut off or overflowing; CONVENTIONS records the scale. Not `docs/design/`: the demo takes it at its next build | Sonnet 5.5 · medium | WP1 | S |
-| WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it | Sonnet 5.5 · medium | WP1, T1 | M |
+| WP2 | `static-tables` | One table engine for the 16 static tables as the demo shows them (columns, types and links per table, such as Local Government under States), list, add and edit in a dialog, delete with an in-use check; today's lookups move under it. A Training course also carries its Branch, Specialisation and Rates (who may attend; D1, `docs/design/README.md`) | Sonnet 5.5 · medium | WP1, T1 | M |
 | WP3 | `system-admin` | Manage Users (an account for a rating), Manage Roles (with the screens and actions each role may use), Manage Password (reset by official number), Audit Trail (filter by date, user and action), as the demo shows them | Sonnet 5.5 · medium | WP1, T1 | M |
 | WP4 | `disciplinary` | Initiate an incident, pending cases, conclude a case with its sanction, concluded cases, the disciplinary report (PDF and Excel); the rating's record shows the cases | Sonnet 5.5 · medium | WP2, D2 | S |
 | WP5 | `discharge` | Process discharge (the rating moves to Former), print service details, verification forms, the discharge report, upload discharges from Excel | Sonnet 5.5 · high | WP2, D2 | M |
@@ -146,6 +154,8 @@ Sonnet where screens follow patterns already in the kit.
 | WP7b | `drafting-reports` | Batch/Signal Content, Rate DOD History and Draft Report, reading WP7a's tables, with their printouts | Sonnet 5.5 · medium | WP7a | M |
 | WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. Eligibility does not read appraisal grades (WP0) | Opus 5.5 · high | WP2, WP4, D1 | L |
 | WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a, D2 | M |
+| WP11 | `special-drafting` | Special Draft Proposal, Special Draft Report (the draft form by posting type), Upload Draft from Excel, as D3 shows them; a special draft moves the rating on its WEF through WP7a's postings | Sonnet 5.5 · medium | WP7a, D3 | M |
+| WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP2, D3 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
 ## 6. Order: two sessions at a time
@@ -155,9 +165,10 @@ Sonnet where screens follow patterns already in the kit.
 | A | WP0 (and `demo-themes`, already running) | WP0, `demo-themes` |
 | B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 |
 | C | D2, WP2 | D2 after the owner's review, WP2 |
-| D | WP3, WP4 | WP3, WP4 |
+| D | WP3, WP4, then D3 in the first free slot | WP3, WP4, D3 after the owner's review |
 | E | WP6, WP7a | WP6, WP7a |
 | F | WP5, WP8 | WP5, WP8 |
+| F2 | WP12, WP11 (WP11 once WP7a is merged) | WP12, WP11 |
 | G | WP7b, WP9 | WP7b, WP9 |
 | H | WP10 | WP10: the demo is complete |
 
@@ -192,24 +203,27 @@ the next wave once the owner has merged.
 |---|---|---|---|
 | `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
 | WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
-| D1 | Designed; follow-up running (wide tables, section 9a decisions) | `design-drafting` | 19/11/2026: e2b5234, 21 pages, only `docs/design/`; checked by the administrator |
+| D1 | Merged 19/11/2026 (Sonnet 5.5 · high; about $11 at API prices) | `design-drafting` | 19/11/2026: 62992bc, 21 pages with the wide-table rule and the section 9a decisions, only `docs/design/`; checked by the administrator: the demo rebuilds identically, every new page at 1440 and 390 px in both themes, no browser errors, no sideways scrolling |
 | WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
-| T1 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
-| D2 | Not started | `design-casework` | |
-| WP2 | Not started | `static-tables` | |
-| WP3 | Not started | `system-admin` | |
-| WP4 | Not started | `disciplinary` | |
+| T1 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.64) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
+| D2 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $4.56) | `design-casework` | 19/11/2026: bfbb20a, Disciplinary Action (4 pages), Discharge Administration (5), 12 printouts, five dashboard tiles (Memos and Mails dropped, Appraisals Soon), the Reports pages under the wide-table rule, 11 record tabs; only `docs/design/`; fixed two D1 name clashes that hid the Reports pages and the Ratings Batch Upload; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling |
+| WP2 | Merged 19/11/2026, in two merges (Sonnet 5.5 · medium; about $11.77) | `static-tables` | 19/11/2026: 9b1c802; every field of section 9c confirmed; the Death seed and the held "(Inactive)" value fixed (a record reads the lists afresh when it opens); walkthrough restructured to the 5-minute rule. Administrator's run on a fresh database: access walkthrough 166 passed in 74 s, static tables walkthrough 1,444 passed in 92 s |
+| WP3 | On hold (owner, 19/11/2026) (Sonnet 5.5 · medium) | `system-admin` | 19/11/2026: a7c85e2 is the last good commit (accounts named from their rating; access 166, static tables 1,444, system admin 271, all on fresh databases). 1f8a75f on top is unfinished (the app's own PDF preview needs the PDF.js library, whose install was refused in its session; Static Tables' Print List works on the server): do not merge until the owner decides how printouts are previewed |
+| WP4 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `disciplinary` | 19/11/2026: fdd2698, Disciplinary Action (cases, rules, four pages, three PDFs and the Excel report, the Discipline tab); demo accounts B0575 and B0588. Administrator's run, merged with WP3's a7c85e2 on fresh databases: access 166 (75 s), static tables 1,452 (83 s), disciplinary 189 (36 s), system admin 271 (54 s); no account clash. Its PDFs still open through the old preview until the owner decides how printouts are previewed; WP3 then switches every module's |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
 | WP7a | Not started | `drafting-cycle` | |
 | WP7b | Not started | `drafting-reports` | |
 | WP8 | Not started | `advancement` | |
 | WP9 | Not started | `reports` | |
+| D3 | Done, checked; for the owner's review (Sonnet 5.5 · medium) | `design-special` | 19/11/2026: 91884e3, Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), appraisals under the record's Advancement tab, the Appraisals tile; only `docs/design/`; checked by the administrator: rebuilds identically, no browser errors, no sideways scrolling, no Soon items left |
+| WP11 | Not started | `special-drafting` | |
+| WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
 
 ## 9. Open questions
 
-- **Who is due (draft, advancement, training drafting).** The rules lived in the live database's
+- **Who is due (draft, advancement, training drafting, discharge).** The rules lived in the live database's
   procedures and views; we have neither, and the owner has no access to the live server. Known so far
   (`docs/legacy/drafting.md`, `advancement.md`): months on a ship 10 to 20 green, 21 to 24 amber,
   over 24 red; months in rate 48 to 50 green, 51 to 54 amber, over 54 red. The design (D1) goes on
@@ -249,7 +263,155 @@ Asked by D1, decided by the administrator at the owner's request (19/11/2026). T
 7. **Due rules** stay placeholders until Hicad supplies the real ones (section 9). The build keeps
    the thresholds as settings in the database, so the real values go in without a code change.
 
-## 10. Notes for later phases
+## 9b. Design decisions for Disciplinary Action and Discharge Administration
+
+Decided by the administrator before D2 started, at the owner's request (19/11/2026), from the open points in
+`docs/legacy/disciplinary.md` and `discharge.md`. D2, WP4 and WP5 follow them; the owner can change any of them.
+
+1. **Initiating and concluding are separate privileges.** Initiate Incident is the add action; concluding a case
+   (decision date, sanction, decision, authority) is the approve action on Pending Cases. Only a current rating can
+   have a case opened.
+2. **A concluded case is final.** A correction is made with **Correct** on Concluded Cases (the edit action, a
+   required reason, in the audit trail). A case opened by mistake is **Cancelled** from Pending Cases (the delete
+   action, a required reason); nothing is deleted outright, and a cancelled case leaves the lists.
+3. **The Disciplinary Report is a real report**: Concluded Cases with filters (dates, offence, sanction, ship, rate),
+   printed as PDF and exported to Excel; Pending Cases prints its own list. The rating's record gains a
+   **Discipline** tab, seen only by someone who may view Concluded Cases; it is not on My Details and does not count
+   towards the record's completeness.
+4. **Discharge keeps the old flow** (propose, process, report) in D1's patterns: the due list only reads, a proposal
+   is made in a confirming dialog, each rating is processed in its record dialog (exit type, exit date, reason, and
+   the death documents only for a death). **Closing makes the rating Former** on its exit date; a future exit date
+   shows as scheduled and takes effect on that date (as 9a decision 4). A closed discharge is final. `LiveStatus` is
+   not carried over.
+5. **Re-engagement is not a discharge.** It is its own action in the rating's dialog on Process Discharge
+   (re-engagement date, period in months, approved by); the rating stays current, and the Re-engagement Verification
+   form prints from it.
+6. **Who is due for discharge** is unconfirmed, as in section 9: the age and length-of-service bands in
+   `docs/legacy/discharge.md` 1.5 are placeholder rules, kept as database settings by the build.
+7. **A pending disciplinary case shows a warning** on Process Discharge; nothing blocks (as 9a decision 1).
+8. **The discharge upload template** is keyed by official number, as D1's uploads, with the fields the old import
+   reads (section 9).
+
+D2's questions, answered (19/11/2026). By the owner: the Memos and Mails tile is dropped, and Appraisals shows Soon
+until Naval Character Assessment is built; the three verification forms (Re-engagement Verification, Retirement
+Routine, Engagement Form) keep D2's layouts until copies of the real forms arrive, which should be before WP5. By the
+administrator: Correct may change every field of a case except the rating; the Discharge Report also lists
+re-engagements; Upload Discharge skips ratings already in a proposal or already discharged, and its reason is
+optional; the discharge due placeholder is 50 years of age or 20 of service (bands 50/55/60 and 20/30/35), kept as
+settings; Manage Roles (WP3) lists every module's screens from the privilege catalogue, the approve action included.
+
+## 9c. Decisions for Static Tables (WP2)
+
+Decided by the administrator before WP2 started, at the owner's request (19/11/2026), and widened the same day
+at the owner's instruction: the static tables drive the other modules, so each carries everything those modules
+need.
+
+1. **One engine for the 16 tables**, as the demo shows them (Active state, add and edit in a dialog). Five have no
+   table yet and WP2 creates them: Appraisal Ratings, Disciplinary Offence, Disciplinary Sanction, Institution,
+   Training.
+2. **Delete only what nothing uses.** A row in use cannot be deleted (the message says where it is used); it can be
+   made inactive, which takes it out of the dropdowns while records that hold it still show it. A row not in use is
+   deleted after a confirmation. "In use" is read from the database's declared foreign keys, so a later module's
+   tables are covered as soon as they declare theirs.
+3. **A privilege per table**: screen `tables.<slug>` with view, add, edit and delete; Manage Roles groups them under
+   Static Tables. The dropdown lists (`/api/lookups`) stay readable by anyone who may open a ratings screen, My
+   Details included, and carry each table's codes, flags and links for the forms and modules that use them.
+4. **Every table carries what the other modules need, and every old column that held real data**, so the import of
+   the old records loses nothing; the old dead columns (never saved) are dropped. Codes are required where marked,
+   unique, trimmed and upper case. The table below is the specification; the demo shows fewer fields and this
+   decision stands in for its design. Lists show the demo's columns plus the code (four at most); everything else
+   is in the row's dialog.
+5. **Relationship** is the next-of-kin type table (`ref_next_of_kin_type`).
+
+| # | Table (new or existing) | Fields | Why |
+|---|---|---|---|
+| 1 | Appraisal Ratings (new) | Code (5, required), Grade (50, required), lowest and highest score (0 to 100, not overlapping another grade) | Naval Character Assessment grades |
+| 2 | Branch (`ref_branch`) | Name, Code (2, required) | the code is in the drafting and advancement batch numbers (`DOD-SM...`) |
+| 3 | Exit Type (`ref_exit_type`) | Name, Code (2, required), **Rating stays current** (yes for the old A, M and C), **Death** (yes for the deceased type) | decides Current or Former; Discharge offers only the exit types that do not keep a rating current, and asks for the death documents only for a death |
+| 4 | Entry Mode (`ref_entry_mode`) | Name, Code (5, required) | old code kept for the import |
+| 5 | Disciplinary Offence (new) | Name, Code (required), Category (Conduct, Discipline, Duty, Property) | Disciplinary cases (WP4) |
+| 6 | Disciplinary Sanction (new) | Name, Severity (Minor, Major) | Disciplinary cases (WP4) |
+| 7 | Institution (new) | Code (30, as UNIBEN), Name (100, required), Location, Type (University, Polytechnic, College, Secondary School, Training Centre, Training Base, Other) | training courses, and the record's Education and Training entries |
+| 8 | Local Government (`ref_local_government`) | Name, State (required), Code (10) | the old code kept for the import |
+| 9 | Languages (`ref_language`) | Name | |
+| 10 | Relationship (`ref_next_of_kin_type`) | Name, Code (5) | old code kept for the import |
+| 11 | Staff Branch (`ref_staff_branch`) | Name, Code (20), Command (from Commands), Department (20), CDR (20) | the rating form's Staff Branch list follows the chosen Command, as in the old form |
+| 12 | Specialisation Area (`ref_specialisation`) | Name, Code (15, required), Second Description (20) | the code is in the batch numbers; the specialisation is the "department" whose approval Drafting and Advancement ask for |
+| 13 | Ships (`ref_ship`) | Name, Type (Ship, Base, Training: the old Sea, Land, Training), Command (from Commands), Description (150) | where a rating serves; sea or shore time may enter the due rules; printouts show the command |
+| 14 | States (`ref_state`) | Name, Code (5, required), Geo-Political Zone | the rating form fills the zone from the state |
+| 15 | Title (`ref_title`) | Name, Description (50) | old description kept for the import |
+| 16 | Training (new) | Code (10), Course (60, required), Qualification awarded (50), Institution (from Institutions), Weeks (1 to 104), Branch (or Any), Specialisation (or Any), Rates (none means every rate) | who may attend a course (9a decision 6); the training batches and the record's Training entries point to it |
+
+Also, outside the 16 screens (seeded by SQL, as in the old system):
+- **Rates** (`ref_rate`) gain a Code (5, required, as PO); their order (`sort_order`, lowest rate first) decides the
+  next rate in Advancement and the rate groups in the approval totals; the code goes in the advancement batch
+  numbers.
+- **The rating's Education and Training entries point to the tables**: `institution_id` on both and
+  `training_course_id` on Training (nullable; an old entry keeps its text until the import maps it), and their
+  dialogs pick the institution and the course from the tables.
+
+## 9d. Decisions for System Administration (WP3)
+
+Decided by the administrator before WP3 started, at the owner's request (19/11/2026), from
+`docs/legacy/system-admin.md`.
+
+1. **Manage Users.** **Every account belongs to an existing rating; there is no special administrator account, the
+   Hicad one included** (owner, 19/11/2026). Add Account starts by finding the rating; the user name is its
+   official number, and a rating has at most one account (the seeded HICO001 becomes a rating in the demo data). An
+   account also has its role, an optional **Specialisation** (a
+   drafting officer then sees only that department's batches and approvals, as the old `specid`; WP7a and WP8 apply
+   it), phone and e-mail, and an active state. A new account gets a random one-time password, shown once to the
+   administrator, and the person must choose their own at first sign-in. Nothing is deleted: an account is
+   deactivated, which ends its sessions. Nobody can deactivate or change the role of their own account, and the last
+   active full-access administrator cannot be deactivated or moved to another role.
+2. **Manage Roles.** Add, edit and delete roles. A role is a grid of every module's screens and the actions each
+   screen has (view, add, edit, delete, approve), read from the privilege catalogue, grouped by module. The
+   Administrator role (full access) cannot be edited or deleted; a role that still has users cannot be deleted;
+   role names are unique. A change applies from the users' next request, without signing them out.
+3. **Manage Password** is an administrator's reset, by official number or user name: it sets a one-time password,
+   shown once, ends that user's sessions, and makes them choose a new one at next sign-in. The old anonymous
+   e-mailed-code reset is not rebuilt (it allowed account takeover); a person who forgets their password asks an
+   administrator.
+4. **Change Password** (account menu): current password, new password, confirm. Passwords are at least 8 characters
+   with a letter and a digit, and differ from the current one. The person's other sessions are signed out.
+5. **Audit Trail**: filters by dates, user, action and official number, 25 a page from the server, a row opens the
+   entry with what changed (before and after). No password or one-time password is ever written to the audit trail;
+   nothing deletes audit rows.
+
+## 9e. Decisions for Special Drafting and Naval Character Assessment (D3, WP11, WP12)
+
+Decided by the administrator at the owner's request (19/11/2026), from section 10 and `docs/legacy/`. D3, WP11 and
+WP12 follow them; the owner can change any of them.
+
+1. **A special draft posts one rating outside the batch cycle**, on a signal's authority. Special Draft Proposal
+   finds the rating by official number or name (from the menu, with no batch number in the address), fills in their
+   current rate, branch, ship, date joined it and months there, and takes Deployment/Vice, Authority (the signal),
+   WEF, Drafted To, Remark and the **Posting Type** (Complement, Vice, TY, DW: a labelled list). A rating with a
+   special draft not yet printed cannot get a second one. Remove is possible until it is printed.
+2. **The move follows 9a decision 4**: the old posting ends the day before the WEF and the new one starts on it; a
+   future WEF shows on the record as scheduled. A printed special draft is final; a correction is made on the
+   rating's record, in the audit trail.
+3. **Special Draft Report** prints every unprinted special draft of the chosen posting type as one draft form (a PDF
+   preview), and marks them printed; it can also reprint a past form.
+4. **Upload Draft** (moved here from Drafting) imports special drafts from Excel in D1's upload pattern, keyed by
+   official number: Official No, Drafted To, Authority, WEF, Posting Type, Deployment/Vice, Remark.
+5. **Appraisal Periods** is a page of the module (name, start and end dates, open or closed); one appraisal per
+   rating per period; a closed period is read-only.
+6. **Recommendation and Grading**: Initiate Appraisal for a rating and an open period: Character grade and
+   Efficiency grade from the Appraisal Ratings table, remark, the CO's name; the director's date and name are saved
+   (the old page lost them). The list has filters; Edit while the period is open; Cancel with a reason; nothing is
+   deleted outright. Recording is the add action; editing the edit action.
+7. **Report on Appraisal** (never built in the old system) lists the appraisals of a period, filtered by ship, rate,
+   branch and grade, with the grade counts, as PDF and Excel.
+8. The rating's record shows its appraisals (as the old profile did) for someone who may view Recommendation and
+   Grading; the dashboard's Appraisals tile counts appraisals this month.
+
+D3's questions, answered by the administrator (19/11/2026): a special draft moves the rating only once its form is
+printed (on its WEF), so Remove needs no undo; closing an appraisal period is final; the director's name and date are
+optional but go together, and the CO's name is required; the appraisals sit in a list under the record's Advancement
+tab rather than a twelfth tab. The meaning of the posting types TY and DW is for the owner (the demo shows the codes).
+
+## 10. What is known of Special Drafting and Naval Character Assessment
 
 **Special Drafting** posts chosen ratings straight away on a signal's authority, outside the batch
 drafting cycle.

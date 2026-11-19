@@ -384,6 +384,17 @@ module.exports = {
   Administrator is that module's seed. A role change applies from the person's next request (grants are read on
   every request). The screens' shared parts (the View Details row tooltip, the one-time password dialog) are in
   `js/sections/admin-common.js`.
+- **Disciplinary Action** (`src/modules/disciplinary/`, WP4): screens `disciplinary.initiate` (add: find a current
+  rating, open a case), `disciplinary.pending` (view; **approve** concludes a case, **delete** cancels it with a
+  reason), `disciplinary.concluded` (view; **edit** is Correct, with a reason and the before and after kept) and
+  `disciplinary.report` (view: screen, PDF, Excel from one filtered query). A case's state is a `status` column
+  (`pending`, `concluded`, `cancelled`); nothing is deleted; a concluded case is final apart from Correct. Its
+  foreign keys to `ref_disciplinary_offence` and `ref_disciplinary_sanction` feed the Static Tables in-use check. The
+  screens take their dropdowns from `GET /api/disciplinary/options` (the module's own guarded source). The rating's
+  record shows a **Discipline** tab to whoever may view Concluded Cases (`rating-record.js`; never on My Details, not
+  in the completeness). Lists are 25 a page with four key columns, a row opens the case in a dialog (View Details
+  tooltip on desktop; `rowTips` in `js/sections/disciplinary-parts.js`), and filters are in a bar that folds into a
+  Filters button on a phone.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -415,7 +426,7 @@ Every screen has both layouts (desktop 761 px and up, phone 760 px and below) an
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
 Drafting, Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
-Assessment, Disciplinary Action and Discharge Administration (Records); Reports
+Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 
 ## Open items
