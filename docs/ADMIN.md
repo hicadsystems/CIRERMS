@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, the plan, `docs/waves/` |
-| Sessions | WP8 `advancement`: session `session_01G8Rfvi2fJUAw4xP2f498S7` (Opus 5.5, high), started 19/11/2026 after WP7a merged. WP6 with a developer on another device. On WP8's report: run its walkthrough and the five others (drafting included: WP8 may touch WP7a's cycle), owner merges, archive |
+| Sessions | WP8 `advancement` (session `session_01G8Rfvi2fJUAw4xP2f498S7`) done at bf86b3b and checked; owner to merge, then archive. Both large packages then done. WP6 with a developer on another device. Open after WP8: WP5, WP12, WP11, WP7b, WP9 (one at a time); then WP10. Demo ratings must not match other walkthroughs' name searches ("okon", "bassey", "suleiman") |
 | Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
