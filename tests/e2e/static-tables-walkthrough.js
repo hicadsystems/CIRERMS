@@ -231,13 +231,14 @@ async function tableCycle(ctx, t, tag, inUse, label) {
   const found = await rowNames(page, phone);
   check(found.length >= 1 && found.some((n) => n.toLowerCase().includes(word.toLowerCase())), `${label}: search "${word}" finds it`, found.join('|'));
   await search(page, 'zzqqxx-none');
-  check(await page.locator('#app-main').getByText('Nothing Matches').first().isVisible(), `${label}: a search with no match says so`);
+  check(await page.locator('#app-main').getByText('Nothing Matches').locator('visible=true').count() > 0, `${label}: a search with no match says so`);
   await search(page, '');
 
   // add through the dialog
   await page.getByRole('button', { name: `Add ${t.item}` }).first().click();
   let dlg = dialogOf(page);
   await dlg.waitFor();
+  await page.waitForTimeout(600); // the sheet rises, the dialog settles
   if (phone) {
     const box = await dlg.boundingBox();
     check(Math.abs(box.y + box.height - PHONE.height) < 3 && box.width >= PHONE.width - 1, `${label}: the dialog is a bottom sheet`, JSON.stringify(box));
