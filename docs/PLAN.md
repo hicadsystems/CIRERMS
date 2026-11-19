@@ -182,6 +182,8 @@ Sonnet where screens follow patterns already in the kit.
 | G | WP7b, WP9 | WP7b, WP9 |
 | H | WP10 | WP10: the demo is complete |
 
+The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, WP10) will most likely be done by
+other developers, from `docs/waves/`; the administrator checks each branch from its report note.
 Since 19/11/2026 the remaining waves are written out for any developer, one file per wave, in `docs/waves/` (start
 with its `README.md`): model and effort, what to read, what to build, the checks, and the report note.
 
@@ -231,11 +233,12 @@ the next wave once the owner has merged.
 | WP3c | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.41) | `detail-rows` | 19/11/2026: b7407f7, details as label and value rows (`facts`, `factPanels`), the record's Details tab in two panels |
 | D4 | Merged 19/11/2026, approved by the owner (Sonnet 5.5 · medium; about $1.92) | `design-printouts` | 19/11/2026: e66c8ef, 27 printouts as Handlebars templates with a shared stylesheet, partials and local fonts, rendered to PDF by Chromium (`npm run printouts:render`); CIRERMS's header, footer and colours kept; NAVY-PAYROLL's watermark, faint blue page and fonts copied. Checked by the administrator: only `docs/design/`, a script line and its report note; re-rendered, 27 of 27; pages looked at |
 | WP13 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $5.44); followed on master by a commit that finds Chrome or Edge on Windows | `printouts` | 19/11/2026: a337a18, `renderPdf` in `src/shared/printouts/` (one shared Chromium, idle close, tab pool, no internet at render time, settings `PDF_*`), the 27 templates in `src/templates/printouts/`, every existing PDF rebuilt from them, pdfkit removed, footer time in WAT; a WP3b bug in the rating search fixed; the broken walkthrough steps fixed. Administrator's run on fresh databases: access 177 (79 s), static tables 1,474 (88 s), system admin 285 (61 s), disciplinary 191 (42 s); a PDF from the app compared with D4's. Not verified: the Docker image, a bare shared host |
+| WP13b | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvjBLDsKM2HoNu5ubxX` (the owner: the preview looks dull and soft while the downloaded PDF is sharp; no tests) | `preview-sharp` | |
 | WP5 | Not started | `discharge` | |
 | WP6 | Taken 19/11/2026 by a developer on another device (wave E; `docs/waves/wave-E-training-and-drafting.md`); answers given: batch number from the course id, the result in `rating_training.classification`, no due-rule settings for training | `training-drafting` | |
 | WP7a | Merged 19/11/2026 (Opus 5.5 · high; about $19.56) | `drafting-cycle` | 19/11/2026: 5b70cbc, the six drafting pages; batches, rows, approvals, manning, settings (`src/shared/settings`) and scheduled changes (`src/shared/scheduled`, hourly, reusable); the posting move (`postings.move`) for WP11; `cycle.service` flows for WP8; the user's department in the session. Administrator's run on fresh databases: drafting 195 (49 s), access 177, static tables 1,474, system admin 285, disciplinary 191, each under 90 s; screens looked at. Not verified: MariaDB, a real midnight |
 | WP7b | Not started | `drafting-reports` | |
-| WP8 | Done, checked; ready to merge (Opus 5.5 · high) | `advancement` | 19/11/2026: bf86b3b, the seven advancement pages on WP7a's cycle (no WP7a part changed), the next rate only, a future board date scheduled, the rate applied through `rates.service.js`, the three printouts, the upload. Administrator's run on fresh databases: advancement 243 (49 s), drafting 195, access 177, static tables 1,474, system admin 285, disciplinary 191, each under 90 s; screens looked at. Not verified: MariaDB, a real midnight |
+| WP8 | Merged 19/11/2026 (Opus 5.5 · high; about $16.60) | `advancement` | 19/11/2026: bf86b3b, the seven advancement pages on WP7a's cycle (no WP7a part changed), the next rate only, a future board date scheduled, the rate applied through `rates.service.js`, the three printouts, the upload. Administrator's run on fresh databases: advancement 243 (49 s), drafting 195, access 177, static tables 1,474, system admin 285, disciplinary 191, each under 90 s; screens looked at. Not verified: MariaDB, a real midnight |
 | WP9 | Not started | `reports` | |
 | D3 | Merged 19/11/2026, approved by the owner (Sonnet 5.5 · medium; about $2.70) | `design-special` | 19/11/2026: 91884e3, Special Drafting and Naval Character Assessment designed; no Soon items left |
 | WP11 | Not started | `special-drafting` | |

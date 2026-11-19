@@ -126,9 +126,9 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, the plan, `docs/waves/` |
-| Sessions | WP8 `advancement` (session `session_01G8Rfvi2fJUAw4xP2f498S7`) done at bf86b3b and checked; owner to merge, then archive. Both large packages then done. WP6 with a developer on another device. Open after WP8: WP5, WP12, WP11, WP7b, WP9 (one at a time); then WP10. Demo ratings must not match other walkthroughs' name searches ("okon", "bassey", "suleiman") |
-| Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
+| Sessions | WP13b `preview-sharp`: session `session_01G8RfvjBLDsKM2HoNu5ubxX` (Sonnet 5.5, medium), started 19/11/2026: the preview drawn sharp and in true colours (no tests). On report: look at a preview at deviceScaleFactor 1 and 2 against the PDF, owner merges, archive. WP8 merged and archived: both large packages done |
+| Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
 Notes for coming briefs:
