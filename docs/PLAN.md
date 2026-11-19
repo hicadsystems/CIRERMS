@@ -87,7 +87,10 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
 13. **A build package is done when** every old menu action of the module works on demo data and
     matches the demo; privileges are checked on every route and the screens hide what a person may
     not do; every write lands in the audit trail; demo seed data fills every page; a Playwright
-    walk-through presses every action, on desktop and phone, in both themes, with no browser errors;
+    walk-through presses every action, on desktop and phone, in both themes, with no browser errors,
+    and runs in 5 minutes at most (owner, 19/11/2026: rules through the API, every action through the
+    screens once, the other layouts only per screen and its main dialog; it prints its time and fails over 5
+    minutes);
     README and CONVENTIONS describe what was built.
 14. **A design package is done when** every old menu page of its modules has its screen in the demo,
     with every step, dialog, confirmation, upload (template, preview, result), print preview, empty

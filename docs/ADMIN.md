@@ -92,7 +92,8 @@ Then, by package type:
   (Docker Hub rate-limits; use the mirror). `.env` from `.env.example` with those credentials. Check
   the branch out in a worktree, link `node_modules`, `npm run migrate:fresh`, `npm run seed`, start
   two servers as `tests/e2e/access-walkthrough.js` says in its header, and run it (166 checks passed
-  on WP1). Add the package's own walkthrough if it wrote one.
+  on WP1). Add the package's own walkthrough if it wrote one. **Every walkthrough runs in 5 minutes at most**
+  (owner, 19/11/2026; PLAN rule 13): it prints its time and fails over 5 minutes; say so in every build brief.
 - The plan branch: after the owner merges `project-plan`, fast-forward it (`git merge --ff-only
   origin/master`) before the next edit. A shallow clone once turned a merge into an add/add conflict
   and conflict markers were pushed by mistake: always `grep -c '^<<<<<<<'` before committing.
