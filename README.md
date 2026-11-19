@@ -62,7 +62,7 @@ One engine serves all 16 tables. `src/modules/tables/tables.config.js` holds a c
 
 **The tables and their columns** (the amended specification, PLAN 9c; lengths are the old ones; the list shows the demo's columns and the code, four at most, the rest is in the row's dialog). Codes are trimmed, upper case and unique; `*` means required.
 - Appraisal Ratings (new): Code*(5), Grade*(50), Lowest and Highest Score* (0 to 100, low not above high, no overlap with another grade).
-- Branch: Name*, Code*(2) (in the batch numbers, `DOD-SM-...`). Exit Type: Name*, Code*(2), Rating Stays Current (yes for the old codes A, M and C; decides Current or Former). Entry Mode: Name*, Code*(5).
+- Branch: Name*, Code*(2) (in the batch numbers, `DOD-SM-...`). Exit Type: Name*, Code*(2), Rating Stays Current (yes for the old codes A, M and C; decides Current or Former), Death (yes for the deceased exit type: Discharge shows the death documents only for it). Entry Mode: Name*, Code*(5).
 - Offences (new): Name*, Code*(10), Category (Conduct, Discipline, Duty, Property). Sanctions (new): Name*, Severity (Minor, Major).
 - Institution (new): Code(30), Name*(100), Location, Type (University, Polytechnic, College, Secondary School, Training Centre, Training Base, Other).
 - Local Government: Name*, State*, Code(10). Languages: Name. Relationship (the next of kin type table): Name*, Code(5).

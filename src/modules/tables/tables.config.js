@@ -77,6 +77,7 @@ const TABLES = [
       nameColumn('Exit Type'),
       code(2, { required: true, list: true }),
       { key: 'keeps_current', label: 'Rating Stays Current', type: 'bool', list: true, hint: 'Yes keeps a rating on the Current list (the old codes A, M and C). Discharge offers only exit types that do not.' },
+      { key: 'is_death', label: 'Death', type: 'bool', hint: 'Yes for the deceased exit type: Discharge shows the death documents (death certificate, condolence letter, evidence, sworn affidavit) only for it.' },
     ],
   },
   {

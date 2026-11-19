@@ -11,10 +11,12 @@ ALTER TABLE ref_branch
   ADD COLUMN code VARCHAR(2) NULL AFTER name,
   ADD UNIQUE KEY uq_ref_branch_code (code);
 
--- Exit Type: the code (A, M and C kept a rating current) and the flag that decides Current or Former
+-- Exit Type: the code (A, M and C kept a rating current), the flag that decides Current or Former, and
+-- Death (Discharge shows the death documents only for an exit type marked Death)
 ALTER TABLE ref_exit_type
   ADD COLUMN code VARCHAR(2) NULL AFTER name,
   ADD COLUMN keeps_current TINYINT(1) NOT NULL DEFAULT 0 AFTER code,
+  ADD COLUMN is_death TINYINT(1) NOT NULL DEFAULT 0 AFTER keeps_current,
   ADD UNIQUE KEY uq_ref_exit_type_code (code);
 
 ALTER TABLE ref_entry_mode
@@ -195,5 +197,5 @@ ALTER TABLE ref_staff_branch DROP FOREIGN KEY fk_ref_staff_branch_command, DROP 
 ALTER TABLE ref_next_of_kin_type DROP INDEX uq_ref_next_of_kin_type_code, DROP COLUMN code;
 ALTER TABLE ref_local_government DROP INDEX uq_ref_local_government_code, DROP COLUMN code;
 ALTER TABLE ref_entry_mode DROP INDEX uq_ref_entry_mode_code, DROP COLUMN code;
-ALTER TABLE ref_exit_type DROP INDEX uq_ref_exit_type_code, DROP COLUMN keeps_current, DROP COLUMN code;
+ALTER TABLE ref_exit_type DROP INDEX uq_ref_exit_type_code, DROP COLUMN is_death, DROP COLUMN keeps_current, DROP COLUMN code;
 ALTER TABLE ref_branch DROP INDEX uq_ref_branch_code, DROP COLUMN code;

@@ -34,7 +34,7 @@ const SIMPLE_TABLES = Object.freeze({
 // modules: [column, name in the bundle]. Anything not listed is just { id, name }.
 const EXTRAS = Object.freeze({
   branches: [['code', 'code']],
-  exitTypes: [['code', 'code'], ['keeps_current', 'keepsCurrent']],
+  exitTypes: [['code', 'code'], ['keeps_current', 'keepsCurrent'], ['is_death', 'isDeath']],
   entryModes: [['code', 'code']],
   nextOfKinTypes: [['code', 'code']],
   staffBranches: [['code', 'code'], ['command_id', 'commandId'], ['department', 'department'], ['cdr', 'cdr']],
@@ -53,7 +53,7 @@ async function fetchSimpleLookup(key, tableName) {
     `SELECT id, name${extra}, is_active AS isActive FROM ${tableName} ORDER BY sort_order ASC, name ASC`
   );
   // a yes/no flag is true or false in the bundle
-  return rows.map((r) => (r.keepsCurrent === undefined ? r : { ...r, keepsCurrent: !!r.keepsCurrent }));
+  return rows.map((r) => (r.keepsCurrent === undefined ? r : { ...r, keepsCurrent: !!r.keepsCurrent, isDeath: !!r.isDeath }));
 }
 
 const strip = ({ isActive, ...rest }) => rest;

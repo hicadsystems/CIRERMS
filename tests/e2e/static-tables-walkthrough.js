@@ -691,7 +691,7 @@ async function auditAndRatings(browser, db) {
 const SPEC = {
   'appraisal-ratings': { fields: { code: [5, true], name: [50, true], score_low: [0, true], score_high: [100, true] } },
   branch: { fields: { name: [150, true], code: [2, true] } },
-  'exit-type': { fields: { name: [150, true], code: [2, true], keeps_current: [null, false] } },
+  'exit-type': { fields: { name: [150, true], code: [2, true], keeps_current: [null, false], is_death: [null, false] } },
   'entry-mode': { fields: { name: [150, true], code: [5, true] } },
   offences: { fields: { name: [100, true], code: [10, true], category: [null, false] } },
   sanctions: { fields: { name: [100, true], severity: [null, false] } },
@@ -760,6 +760,7 @@ async function specification(browser) {
   check(exit.status === 201 && exit.body.data.keeps_current === 1, 'an Exit Type stores "Rating stays current"');
   let lookups = (await api(page, 'GET', '/api/lookups')).body.data;
   check(lookups.exitTypes.find((x) => x.code === 'A').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'M').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'C').keepsCurrent === true, 'the old codes A, M and C keep a rating current (seed, in /api/lookups)');
+  check(lookups.exitTypes.filter((x) => x.isDeath).map((x) => x.code).join() === 'DE' && lookups.exitTypes.every((x) => typeof x.isDeath === 'boolean'), 'only the deceased exit type is marked Death (both flags are in /api/lookups)');
   check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 4 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not');
 
   // Appraisal Ratings: low not above high, no overlap

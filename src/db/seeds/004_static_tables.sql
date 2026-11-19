@@ -9,13 +9,15 @@ UPDATE ref_branch t JOIN (SELECT 'Seaman' AS c0, 'SM' AS c1 UNION ALL SELECT 'Ma
    SET t.code = m.c1
  WHERE t.code IS NULL;
 
--- Exit Types: codes, and the flag that keeps a rating Current. The old codes A, M and C kept a
+-- Exit Types: codes, the flag that keeps a rating Current, and Death (the deceased exit type). The old codes A, M and C kept a
 -- rating current; their meaning beyond that is not in the repository, so they are named by their code.
 INSERT IGNORE INTO ref_exit_type (name, code, keeps_current, sort_order) VALUES
   ('Serving (A)', 'A', 1, 100), ('Serving (M)', 'M', 1, 101), ('Serving (C)', 'C', 1, 102);
 UPDATE ref_exit_type t JOIN (SELECT 'DECEASED' AS c0, 'DE' AS c1 UNION ALL SELECT 'DISCHARGED', 'DS' UNION ALL SELECT 'DISMISSED', 'DM' UNION ALL SELECT 'MEDICAL DISCHARGE', 'MD' UNION ALL SELECT 'RETIRED', 'RT' UNION ALL SELECT 'VOLUNTARY DISCHARGE', 'VD') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
    SET t.code = m.c1
  WHERE t.code IS NULL;
+
+UPDATE ref_exit_type SET is_death = 1 WHERE name = 'DECEASED' AND updated_at = created_at;
 
 -- Entry Mode codes; the demo shows one switched off (out of the dropdowns)
 UPDATE ref_entry_mode t JOIN (SELECT 'Regular Recruitment' AS c0, 'RECR' AS c1 UNION ALL SELECT 'Specialist Enlistment', 'SPEC' UNION ALL SELECT 'Direct Intake', 'DIR' UNION ALL SELECT 'Sportsmen Enlistment', 'SPORT') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
