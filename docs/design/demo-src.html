@@ -329,8 +329,8 @@
     { label: 'Records', modules: [
       { key: 'advancement', label: 'Advancement Processing', short: 'Advance', icon: 'trending-up', href: 'advancement/due' },
       { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
-      { key: 'disciplinary', label: 'Disciplinary Action', short: 'Discipline', icon: 'gavel', soon: true },
-      { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', soon: true },
+      { key: 'disciplinary', label: 'Disciplinary Action', short: 'Discipline', icon: 'gavel', href: 'disciplinary/initiate' },
+      { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', href: 'discharge/process' },
     ] },
     { label: 'Administration', modules: [
       { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', href: 'tables/appraisal-ratings' },
@@ -557,6 +557,8 @@
     if (route.startsWith('drafting/')) return 'drafting';
     if (route.startsWith('training/')) return 'training-drafting';
     if (route.startsWith('advancement/')) return 'advancement';
+    if (route.startsWith('disciplinary/')) return 'disciplinary';
+    if (route.startsWith('discharge/')) return 'discharge';
     if (route.startsWith('soon/')) return route.slice(5);
     return 'dashboard';
   }
@@ -623,7 +625,7 @@
     const nav = $('#tabs');
     const TABS = MODULE_TABS[moduleOf(route)];
     if (!TABS) { nav.innerHTML = ''; nav.className = 'flex-none'; return; }
-    const cur = route.startsWith('ratings') ? tabRoute(route) : (D1.owns(route) ? D1.tabOf(route) : route);
+    const cur = route.startsWith('ratings') ? tabRoute(route) : (D1.owns(route) ? D1.tabOf(route) : D2.owns(route) ? D2.tabOf(route) : route);
     const desk = `<div class="flex gap-1 overflow-x-auto scrollbar-none border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl phone:hidden">${TABS.map((t) => {
       const on = t.route === cur;
       return `<a href="#${t.route}" ${on ? 'aria-current="page"' : ''} class="relative whitespace-nowrap px-3 py-3 text-sm font-medium transition-colors ${on ? 'text-brand after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand' : 'text-muted-foreground hover:text-foreground'}">${esc(t.label)}</a>`;
@@ -689,7 +691,7 @@
   function viewDashboard() {
     const current = ratings.filter((r) => r.status === 'current');
     const former = ratings.length - current.length;
-    const tile = (label, value, iconName, tone, foot) => `<div class="${CARD} relative overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-card-hover">
+    const tile = (label, value, iconName, tone, foot, span = '') => `<div class="${CARD} ${span} relative overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-card-hover">
         <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full ${tone[1]}"></div>
         <div class="relative flex items-start justify-between gap-3"><div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(label)}</div>
         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-on-fill shadow-md ${tone[0]}">${ic(iconName, 'icon h-5 w-5')}</span></div>
@@ -698,12 +700,14 @@
     const byRate = RATES.map((rate) => [rate, current.filter((r) => r.rate === rate).length]).filter(([, n]) => n);
     const max = Math.max(...byRate.map(([, n]) => n));
     const recent = ratings.slice().sort((a, b) => b.enlisted - a.enlisted).slice(0, 5);
+    const d2s = D2.stats();
     return pageHeader('Dashboard', 'Ratings at a glance', `<button type="button" data-act="new-rating" class="${btn.primary}">${ic('user-plus')}New Rating</button>`) + `
-      <div class="grid grid-cols-4 gap-4 phone:grid-cols-2 phone:gap-3">
-        ${tile('Members', ratings.length, 'users', ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'], `<a href="#ratings/current" class="hover:text-foreground"><b class="text-foreground">${current.length}</b> current</a><a href="#ratings/former" class="hover:text-foreground"><b class="text-foreground">${former}</b> former</a>`)}
-        ${tile('Drafting', 0, 'briefcase', ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'], '<span><b class="text-foreground">0</b> this year</span>')}
-        ${tile('Memos and Mails', 0, 'file-text', ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'], '<span><b class="text-foreground">0</b> unread</span>')}
-        ${tile('Appraisals', 0, 'clipboard-check', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], '<span><b class="text-foreground">0</b> this month</span>')}
+      <div class="grid grid-cols-6 gap-4 phone:grid-cols-2 phone:gap-3">
+        ${tile('Members', ratings.length, 'users', ['from-primary to-primary-hover shadow-primary/30', 'bg-primary/10'], `<a href="#ratings/current" class="hover:text-foreground"><b class="text-foreground">${current.length}</b> current</a><a href="#ratings/former" class="hover:text-foreground"><b class="text-foreground">${former}</b> former</a>`, 'col-span-2 phone:col-span-1')}
+        ${tile('Drafting', d2s.drafted, 'briefcase', ['from-destructive to-destructive-hover shadow-destructive/30', 'bg-destructive/10'], `<a href="#drafting/report" class="hover:text-foreground"><b class="text-foreground">${d2s.drafted}</b> this year</a><a href="#drafting/review" class="hover:text-foreground"><b class="text-foreground">${d2s.openDraft}</b> open</a>`, 'col-span-2 phone:col-span-1')}
+        ${tile('Disciplinary', d2s.pending, 'gavel', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], `<a href="#disciplinary/pending" class="hover:text-foreground"><b class="text-foreground">${d2s.pending}</b> pending</a><a href="#disciplinary/concluded" class="hover:text-foreground"><b class="text-foreground">${d2s.decided}</b> concluded this year</a>`, 'col-span-2 phone:col-span-1')}
+        ${tile('Discharge', d2s.discharged, 'door-open', ['from-secondary to-secondary-hover shadow-secondary/30', 'bg-secondary/10'], `<a href="#discharge/report" class="hover:text-foreground"><b class="text-foreground">${d2s.discharged}</b> this year</a><a href="#discharge/process" class="hover:text-foreground"><b class="text-foreground">${d2s.proposed}</b> proposed</a>`, 'col-span-3 phone:col-span-1')}
+        ${tile('Appraisals', `<span class="text-muted-foreground">Soon</span>`, 'clipboard-check', ['from-brand-fill to-brand-deep shadow-brand-fill/30', 'bg-brand/10'], '<span>Comes with Naval Character Assessment</span>', 'col-span-3 phone:col-span-2')}
       </div>
       <div class="mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1">
         <section class="${CARD} col-span-3 phone:col-span-1">
@@ -808,8 +812,8 @@
 
   // ---- the rating's record: one page, ten tabs ----
   const RECORD_TABS = [
-    ['details', 'Details'], ['nok', 'Next of Kin'], ['spouse', 'Spouse'], ['children', 'Children'], ['advancement', 'Advancement'],
-    ['drafting', 'Drafting'], ['training', 'Training'], ['education', 'Education'], ['language', 'Language'], ['documents', 'Documents'],
+    ['details', 'Details'], ['nok', 'Next of Kin', 'Kin'], ['spouse', 'Spouse'], ['children', 'Children'], ['advancement', 'Advancement', 'Advance'],
+    ['drafting', 'Drafting'], ['training', 'Training'], ['education', 'Education'], ['language', 'Language'], ['documents', 'Documents'], ['discipline', 'Discipline'],
   ];
   function viewRecord(r, { readOnly = false } = {}) {
     if (!r) return empty('search', 'Rating Not Found', `<a href="#ratings/current" class="${btn.outline}">Back to List</a>`);
@@ -817,7 +821,7 @@
     const filled = ['nok', 'spouse', 'children', 'advancement', 'drafting', 'training', 'education', 'language', 'documents'].filter((k) => rec[k].length).length + 1;
     const level = filled * 10 >= 80 ? 'high' : filled * 10 >= 50 ? 'mid' : 'low';
     const levelText = { low: 'text-error', mid: 'text-warning', high: 'text-success' }[level];
-    const tabCount = (k) => (k === 'details' ? '' : rec[k].length ? `<span class="ml-1.5 rounded-full bg-muted px-1.5 text-2xs font-semibold text-muted-foreground">${rec[k].length}</span>` : '');
+    const tabCount = (k) => { const n = k === 'details' ? 0 : k === 'discipline' ? D2.casesOf(r.sn).length : rec[k].length; return n ? `<span class="ml-1 rounded-full bg-muted px-1.5 text-2xs font-semibold text-muted-foreground">${n}</span>` : ''; };
     const tab = state.recordTab;
     const add = (label) => (readOnly ? '' : `<button type="button" data-act="edit" data-what="${esc(label)}" class="${btn.outline}">${ic('plus')}${esc(label)}</button>`);
     const tableCard = (heads, rows, emptyIcon, emptyText, addLabel) => `<div class="${CARD} overflow-hidden">
@@ -859,6 +863,8 @@
       body = tableCard(['Language', 'Read', 'Write', 'Speak'], rec.language.map((l) => [esc(l.language), yes(l.read), yes(l.write), yes(l.speak)]), 'languages', 'No Languages Recorded', 'Add Language');
     } else if (tab === 'documents') {
       body = documentsBlock(r, rec, readOnly);
+    } else if (tab === 'discipline' && !readOnly) {
+      body = D2.recordTab(r);
     }
 
     const actions = readOnly
@@ -874,15 +880,15 @@
           <div class="min-w-0 flex-1">
             <h1 class="text-xl font-semibold tracking-tight">${esc(`${short(r.rate)} ${r.surname} ${r.first} ${r.middle}`)}</h1>
             <div class="text-sm text-muted-foreground">${esc(r.sn)} · ${esc(r.rate)} · ${esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`)}</div>
-            <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${r.status === 'current' ? pill.success : pill.neutral}">${r.status === 'current' ? 'Current' : 'Former'}</span><span class="${pill.info}">${esc(r.branch)}</span><span class="${pill.neutral}">${esc(r.command)}</span></div>
+            <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="${r.status === 'current' ? pill.success : pill.neutral}">${r.status === 'current' ? 'Current' : 'Former'}</span><span class="${pill.info}">${esc(r.branch)}</span><span class="${pill.neutral}">${esc(r.command)}</span>${D2.pills(r)}</div>
           </div>
           <div class="flex flex-wrap gap-2 phone:w-full phone:[&>*]:flex-1">${actions}</div>
         </div>
         <div class="flex items-center gap-3 border-t border-border/70 bg-subtle/60 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(filled / 10)}" data-level="${level}"></div></div><span class="text-xs text-muted-foreground">Record <b class="${levelText}">${filled * 10}%</b> complete</span></div>
       </section>
-      <div class="mb-4 flex gap-1 overflow-x-auto scrollbar-none border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.map(([k, label]) => {
+      <div class="mb-4 flex gap-0 overflow-x-auto scrollbar-none border-b border-border phone:gap-2 phone:border-0" role="tablist">${RECORD_TABS.filter(([k]) => k !== 'discipline' || !readOnly).map(([k, label, short2]) => {
         const on = k === tab;
-        return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-brand desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${esc(label)}${tabCount(k)}</button>`;
+        return `<button type="button" role="tab" aria-selected="${on}" data-act="record-tab" data-tab="${k}" class="inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors desk:relative desk:px-2 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5 ${on ? 'text-brand desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground' : 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground'}">${short2 ? `<span aria-label="${esc(label)}"><span class="desk:hidden">${esc(label)}</span><span class="phone:hidden">${esc(short2)}</span></span>` : esc(label)}${tabCount(k)}</button>`;
       }).join('')}</div>
       ${body}`;
   }
@@ -1068,7 +1074,7 @@
         <span class="min-w-0 flex-1"><b class="block truncate text-sm font-semibold">${esc(r[0])}</b>${r.length > 1 ? `<span class="block truncate text-xs text-muted-foreground">${esc(r.slice(1).join(' · '))}</span>` : ''}</span>
         <span class="${active(r) ? pill.success : pill.neutral}">${active(r) ? 'Active' : 'Inactive'}</span>${ic('chevron-right', 'icon text-muted-foreground')}</button>`).join('') || `<div class="${CARD}">${empty('search', 'Nothing Matches')}</div>`}
         <div class="${CARD}">${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, slug)}</div></div>`;
-    return pageHeader(t.title, `${t.rows.length} entries`, `<button type="button" data-act="table-add" class="${btn.primary}">${ic('plus')}Add ${esc(t.item)}</button>`)
+    return pageHeader(t.title, `${t.rows.length} entries`, `<button type="button" data-d2="table-print" class="${btn.blue}">${ic('printer')}Print List</button><button type="button" data-act="table-add" class="${btn.primary}">${ic('plus')}Add ${esc(t.item)}</button>`)
       + `<div class="mb-3 flex items-center gap-3">${searchBox(slug, `Search ${t.title.toLowerCase()}`)}<span class="ml-auto text-sm text-muted-foreground phone:hidden">${rows.length} shown</span></div>` + table + cards;
   }
   function tableForm(slug, i) {
@@ -1084,7 +1090,7 @@
 
   // ---- Reports: filters, Run Report, results with Print and Export
   function reportShell(r, filters, results) {
-    return pageHeader(r.title, r.sub, `<button type="button" data-act="print" class="${btn.blue}">${ic('printer')}Print PDF</button><button type="button" data-act="exported" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button>`)
+    return pageHeader(r.title, r.sub, `<button type="button" data-d2="report-pdf" data-id="${r.slug}" class="${btn.blue}">${ic('printer')}Print PDF</button><button type="button" data-act="exported" class="${btn.outline}">${ic('file-spreadsheet')}Export Excel</button>`)
       + `<section class="${CARD} mb-4 p-4"><div class="flex flex-wrap items-end gap-3">${filters}<button type="button" data-act="run-report" class="${btn.primary} phone:w-full">${ic('refresh-cw')}Run Report</button></div></section>` + results;
   }
   const stat = (label, value, tone) => `<div class="${CARD} p-4"><div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(label)}</div><div class="mt-1 text-2xl font-bold tracking-tight ${tone || ''}">${value}</div></div>`;
@@ -1093,37 +1099,50 @@
   function viewReport(slug) {
     const r = REPORTS.find((x) => x.slug === slug);
     const st = state.report;
+    const link = (sn) => lbtn(`ratings/record/${sn}`, 'Open Record', 'id-card');
     if (slug === 'ship-history') {
       const rows = ratings.flatMap((x) => record(x).drafting.filter((p) => p.ship === st.ship).map((p) => ({ x, p }))).sort((a, b) => b.p.from - a.p.from);
       const aboard = rows.filter(({ p }) => !p.to).length;
       const months = rows.map(({ p }) => ((p.to || TODAY) - p.from) / 2629800000);
       const avg = months.length ? Math.round(months.reduce((a, b) => a + b, 0) / months.length) : 0;
+      const to = (p) => (p.to ? fmt(p.to) : `<span class="${pill.success}">Aboard</span>`);
       return reportShell(r, repSelect('ship', 'Ship', SHIPS.concat(['NAVTRAC EBUTE-ERO']), st.ship, '-- Select Ship --') + repText('From', '01/01/2010') + repText('To', fmt(TODAY)),
-        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Postings', rows.length)}${stat('Aboard Now', aboard, 'text-primary-hover')}${stat('Average Tour', `${Math.floor(avg / 12)} yr ${avg % 12} mo`)}</div>
-        <div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Official No', 'Name', 'Rate', 'From', 'To', 'Tour'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
-        <tbody>${rows.map(({ x, p }) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 text-muted-foreground">${x.sn}</td><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(fullName(x))}</td><td class="px-4 py-2.5">${short(x.rate)}</td><td class="px-4 py-2.5">${fmt(p.from)}</td><td class="px-4 py-2.5">${p.to ? fmt(p.to) : `<span class="${pill.success}">Aboard</span>`}</td><td class="whitespace-nowrap px-4 py-2.5">${since(p.from)}</td></tr>`).join('') || `<tr><td colspan="6">${empty('ship', 'No Postings Found')}</td></tr>`}</tbody></table></div></div>`);
+        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Postings', rows.length)}${stat('Aboard Now', aboard, 'text-primary-hover')}${stat('Average Tour', `${Math.floor(avg / 12)} yr ${avg % 12} mo`)}</div>`
+        + d1Table('repShip', rows, {
+          cols: [['Official No', ({ x }) => x.sn], ['Name', ({ x }) => nameB(x) + subl(esc(short(x.rate)))], ['From', ({ p }) => fmt(p.from)], ['To', ({ p }) => to(p)]],
+          title: ({ x }) => fullName(x), all: ({ x, p }) => [['Official No', x.sn], ['Name', esc(fullName(x))], ['Rate', esc(x.rate)], ['Ship', esc(st.ship)], ['From', fmt(p.from)], ['To', to(p)], ['Tour', since(p.from)]],
+          acts: ({ x }) => link(x.sn),
+          card: ({ x, p }) => ({ t: esc(fullName(x)), s: `${x.sn} · ${fmt(p.from)} to ${p.to ? fmt(p.to) : 'date'}`, r: p.to ? '' : `<span class="${pill.success}">Aboard</span>`, body: `Tour ${since(p.from)}` }),
+          empty: ['ship', 'No Postings Found', 'No rating has been posted to this ship.'] }));
     }
     if (slug === 'all-personnel') {
       const rows = ratings.filter((x) => (st.status === 'all' || !st.status || x.status === st.status) && (!st.rate || x.rate === st.rate) && (!st.branch || x.branch === st.branch) && (!st.command || x.command === st.command));
-      const pg = paged('all-personnel', rows);
+      const sp = (x) => `<span class="${x.status === 'current' ? pill.success : pill.neutral}">${x.status === 'current' ? 'Current' : 'Former'}</span>`;
       return reportShell(r, repSelect('status', 'Status', ['all', 'current', 'former'], st.status, 'All', 'w-36') + repSelect('rate', 'Rate', RATES, st.rate, 'All Rates') + repSelect('branch', 'Branch', BRANCHES, st.branch, 'All Branches', 'w-48') + repSelect('command', 'Command', COMMANDS, st.command, 'All Commands'),
-        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Personnel', rows.length)}${stat('Current', rows.filter((x) => x.status === 'current').length, 'text-primary-hover')}${stat('Former', rows.filter((x) => x.status === 'former').length, 'text-muted-foreground')}</div>
-        <div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr>${['Official No', 'Name', 'Rate', 'Branch', 'Ship', 'Command', 'Status'].map((h) => `<th class="${TH}">${h}</th>`).join('')}</tr></thead>
-        <tbody>${pg.shown.map((x) => `<tr class="border-t border-border/70"><td class="px-4 py-2.5 text-muted-foreground">${x.sn}</td><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(fullName(x))}</td><td class="px-4 py-2.5">${short(x.rate)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.branch)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.ship)}</td><td class="whitespace-nowrap px-4 py-2.5">${esc(x.command)}</td><td class="px-4 py-2.5"><span class="${x.status === 'current' ? pill.success : pill.neutral}">${x.status === 'current' ? 'Current' : 'Former'}</span></td></tr>`).join('')}</tbody></table></div>
-        ${pager(pg.page, pg.pages, pg.from, pg.to, rows.length, 'all-personnel')}</div>`);
+        `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Personnel', rows.length)}${stat('Current', rows.filter((x) => x.status === 'current').length, 'text-primary-hover')}${stat('Former', rows.filter((x) => x.status === 'former').length, 'text-muted-foreground')}</div>`
+        + d1Table('repAll', rows, {
+          cols: [['Official No', (x) => x.sn], ['Name', (x) => nameB(x) + subl(esc(short(x.rate)))], ['Ship', (x) => (x.status === 'current' ? esc(x.ship) : '-')], ['Status', (x) => sp(x)]],
+          title: fullName, all: (x) => [['Official No', x.sn], ['Name', esc(fullName(x))], ['Rate', esc(x.rate)], ['Status', sp(x)], ['Branch', esc(x.branch)], ['Specialisation', esc(x.spec || '-')], ['Ship', esc(x.status === 'current' ? x.ship : '-')], ['Command', esc(x.command)], ['Date of Birth', fmt(x.dob)], ['Date Joined', fmt(x.enlisted)]],
+          acts: (x) => link(x.sn),
+          card: (x) => ({ t: esc(fullName(x)), s: `${x.sn} · ${esc(x.branch)}`, r: sp(x), body: esc(x.status === 'current' ? x.ship : `Left ${fmt(x.exitDate)}`) }),
+          empty: ['users', 'No Ratings Match', 'Change the filters and run the report again.'] }));
     }
     // disposition: current ratings by ship and rate
     const cols = ['OS', 'AB', 'LS', 'PO', 'CPO', 'WO+'];
-    const bucket = (x) => { const s = short(x.rate); return ['WO', 'MWO', 'NWO'].includes(s) ? 'WO+' : s; };
+    const bucket = (x) => { const s2 = short(x.rate); return ['WO', 'MWO', 'NWO'].includes(s2) ? 'WO+' : s2; };
     const current = ratings.filter((x) => x.status === 'current' && (!st.command || x.command === st.command));
     const ships = [...new Set(current.map((x) => x.ship))].sort();
     const grid = ships.map((sh) => { const on = current.filter((x) => x.ship === sh); return { sh, n: cols.map((c) => on.filter((x) => bucket(x) === c).length), total: on.length }; });
     const max = Math.max(1, ...grid.map((g) => g.total));
     return reportShell(r, repSelect('command', 'Command', COMMANDS, st.command, 'All Commands') + repText('As At', fmt(TODAY)),
-      `<div class="${CARD} overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left"><tr><th class="${TH}">Ship or Unit</th>${cols.map((c) => `<th class="${TH} text-center">${c}</th>`).join('')}<th class="${TH} text-center">Total</th><th class="${TH} w-1/4 phone:hidden"></th></tr></thead>
-      <tbody>${grid.map((g) => `<tr class="border-t border-border/70"><td class="whitespace-nowrap px-4 py-2.5 font-medium">${esc(g.sh)}</td>${g.n.map((n) => `<td class="px-4 py-2.5 text-center ${n ? '' : 'text-muted-foreground/60'}">${n || '-'}</td>`).join('')}<td class="px-4 py-2.5 text-center font-bold">${g.total}</td>
-        <td class="px-4 py-2.5 phone:hidden"><div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-brand-fill to-secondary ${fraction(g.total / max)}"></div></div></td></tr>`).join('')}
-        <tr class="border-t-2 border-border bg-subtle/70 font-bold"><td class="px-4 py-2.5">Total</td>${cols.map((c, i) => `<td class="px-4 py-2.5 text-center">${grid.reduce((a, g) => a + g.n[i], 0)}</td>`).join('')}<td class="px-4 py-2.5 text-center">${current.length}</td><td class="phone:hidden"></td></tr></tbody></table></div></div>`);
+      `<div class="mb-4 grid grid-cols-3 gap-4 phone:gap-2">${stat('Ships and Units', grid.length)}${stat('Current Ratings', current.length, 'text-primary-hover')}${stat('Largest', grid.length ? `<span class="text-base">${esc(grid.slice().sort((a, b) => b.total - a.total)[0].sh)}</span>` : '-')}</div>`
+      + `<div class="${CARD} mb-4 flex flex-wrap gap-x-5 gap-y-1 px-4 py-3 text-sm">${cols.map((c, i) => `<span class="text-muted-foreground">${c} <b class="text-foreground">${grid.reduce((a, g) => a + g.n[i], 0)}</b></span>`).join('')}</div>`
+      + d1Table('repDisp', grid, {
+        cols: [['Ship or Unit', (g) => `<b class="font-medium">${esc(g.sh)}</b>`], ['Ratings', (g) => `<b>${g.total}</b>`, 'w-24'], ['Share', (g) => `<div class="h-2 rounded-full bg-muted"><div class="h-2 rounded-full bg-gradient-to-r from-brand-fill to-secondary ${fraction(g.total / max)}"></div></div>`, 'w-1/3']],
+        title: (g) => g.sh, all: (g) => [['Ship or Unit', esc(g.sh)], ['Ratings', `<b>${g.total}</b>`]].concat(cols.map((c, i) => [c, String(g.n[i])])),
+        acts: () => `<a href="#ratings/current" class="${btn.outline}">${ic('users')}Current Ratings</a>`,
+        card: (g) => ({ t: esc(g.sh), s: cols.map((c, i) => (g.n[i] ? `${c} ${g.n[i]}` : '')).filter(Boolean).join(' · '), r: `<span class="${pill.info}">${g.total}</span>` }),
+        empty: ['ship', 'No Ships Found', 'No current rating matches this command.'] }));
   }
 
   // ---- System Administration
@@ -1982,7 +2001,7 @@
     const f = S.f.report || {}; const from = parseDate(f.from); const to = parseDate(f.to);
     return FLOWS.DOD.batches.flatMap((b) => b.rows.filter((x) => x.wef && !isSched(x)).map((x) => ({ b, x, r: bySn(x.sn) }))).filter(({ b, x, r }) => (!f.spec || r.spec === f.spec) && (!f.signal || (b.signal || '').toLowerCase().includes(f.signal.toLowerCase())) && (!from || x.wef >= from) && (!to || x.wef <= to)).sort((a, c) => c.x.wef - a.x.wef || a.r.surname.localeCompare(c.r.surname));
   }
-  function viewReport() {
+  function viewDraftReport() {
     const f = S.f.report || {}; const from = parseDate(f.from); const to = parseDate(f.to);
     const bad = (f.from && !from) ? 'From is not a date. Use dd/mm/yyyy.' : (f.to && !to) ? 'To is not a date. Use dd/mm/yyyy.' : from && to && from > to ? 'From is after To. Swap the dates.' : '';
     const rows = bad ? [] : draftReportRows();
@@ -2293,7 +2312,7 @@
     { id: 'header', name: `${cfg.sheet}-old-format.xlsx`, size: '38 KB', note: 'Headings from an older sheet', error: `Column "${cfg.cols[0]}" was not found in row 1. Download the template and copy the rows into it.` },
     { id: 'type', name: `${cfg.sheet}.csv`, size: '12 KB', note: 'A CSV file', error: 'Only .xlsx workbooks are accepted. Save the file as an Excel workbook and try again.' },
   ];
-  function viewUpload(key) {
+  function viewImport(key) {
     const cfg = UP[key]; const us = S.up[key] || { step: 0 }; const files = UPFILES(cfg); const file = files.find((f) => f.id === us.file);
     const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
     const ok = file && !file.error; const st = us.step;
@@ -2336,16 +2355,16 @@
     view: (rt) => {
       const [mod, page, id] = rt.split('/');
       if (mod === 'drafting') {
-        const v = { manning: viewManning, proposal: viewProposal, review: viewDraftReview, approval: () => viewApproval('DOD'), close: () => viewClose('DOD'), wef: viewWef, history: viewHistory, report: viewReport }[page];
+        const v = { manning: viewManning, proposal: viewProposal, review: viewDraftReview, approval: () => viewApproval('DOD'), close: () => viewClose('DOD'), wef: viewWef, history: viewHistory, report: viewDraftReport }[page];
         if (page === 'batches') return id ? viewBatchDetail('DOD', id, 'drafting/batches', 'Batch/Signal Content') : viewBatches();
         return v ? v() : null;
       }
       if (mod === 'training') {
-        const v = { process: viewTrainProcess, review: viewTrainReview, history: viewTrainHistory, upload: () => viewUpload('training') }[page];
+        const v = { process: viewTrainProcess, review: viewTrainReview, history: viewTrainHistory, upload: () => viewImport('training') }[page];
         if (page === 'reports') return id ? viewTrainDetail(id) : viewTrainReports();
         return v ? v() : null;
       }
-      const v = { due: viewAdvDue, review: viewAdvReview, approval: () => viewApproval('DOA'), close: () => viewClose('DOA'), board: viewAdvBoard, upload: () => viewUpload('advancement') }[page];
+      const v = { due: viewAdvDue, review: viewAdvReview, approval: () => viewApproval('DOA'), close: () => viewClose('DOA'), board: viewAdvBoard, upload: () => viewImport('advancement') }[page];
       if (page === 'promoted') return id ? viewBatchDetail('DOA', id, 'advancement/promoted', 'Report on Promoted Rates') : viewAdvPromoted();
       return v ? v() : null;
     },
@@ -2367,6 +2386,678 @@
     if (e.target.matches('input[name^="d1f-"]')) { const b = document.querySelector('#view [data-d1="search"]'); if (b) b.click(); } else if (e.target.matches('tr[data-d1]')) e.target.click();
   });
   // ==== D1 END: wiring ====
+
+  // ==== D2 BEGIN: shared parts and demo data for Disciplinary Action and Discharge Administration ====
+  // Built on D1's parts (d1Table, d1Filters, d1Pdf, the dialog form and the upload pieces). One in-memory store, as in D1: what you do
+  // on one page shows on the next, and on the rating's record. Nothing is saved: a reload brings the demo data back.
+  const D2ACT = {};
+  const T2 = (slug) => TABLES.find((t) => t.slug === slug);
+  const OFFENCES = T2('offences').rows.map((r) => r[0]);
+  const SANCTIONS = T2('sanctions').rows.map((r) => r[0]);
+  const EXIT_TYPES = T2('exit-type').rows.map((r) => r[0]);
+  const ENTRY_MODES = T2('entry-mode').rows.map((r) => r[0]).filter((x) => !(T2('entry-mode').off || []).includes(x));
+  const D2S = { view: 'due', prop: '' };
+  const ageOf = (r) => years(r.dob);
+  const losOf = (r) => years(r.enlisted);
+  const qMatch = (r, q) => !q || r.sn.toLowerCase().includes(q) || `${r.surname} ${r.first} ${r.middle}`.toLowerCase().includes(q);
+  const rangeOf = (f) => { const from = parseDate(f.from); const to = parseDate(f.to); const bad = (f.from && !from) ? 'From is not a date. Use dd/mm/yyyy.' : (f.to && !to) ? 'To is not a date. Use dd/mm/yyyy.' : from && to && from > to ? 'From is after To. Swap the dates.' : ''; return { from, to, bad }; };
+
+  // demo data: the Ratings demo has nobody near retirement, so give some current ratings the age and length of service that make them due
+  (function redateService() {
+    const cur = current().filter((r) => r !== me);
+    const LOS = [31, 28, 24, 22, 36, 20, 33, 21, 26, 30, 35, 23];
+    const AGE = [56, 52, 49, 47, 61, 50, 58, 46, 53, 55, 60, 48];
+    ratings.forEach((r, i) => { r.entry = ENTRY_MODES[i % ENTRY_MODES.length]; });
+    cur.slice(0, 12).forEach((r, i) => {
+      r.enlisted = addMonths(TODAY, -(LOS[i] * 12 + (i % 10) + 1));
+      r.dob = addMonths(TODAY, -(AGE[i] * 12 + ((i * 3) % 10) + 1));
+      const rec = record(r);
+      rec.drafting[0].from = r.enlisted;
+      if (rec.training[0] && rec.training[0].course === 'Basic Seamanship') rec.training[0].from = r.enlisted;
+    });
+  })();
+
+  // ---- Disciplinary cases: pending, concluded or cancelled (a cancelled case leaves the lists) ----
+  const CASES = [];
+  const REPORTERS = ['Lt Cdr A. Eze (Divisional Officer)', 'CPO S. Ogunleye (Coxswain)', 'Lt O. Adeyemi (Officer of the Watch)', 'PO B. Bello (Duty Petty Officer)', 'Lt Cdr I. Danladi (Executive Officer)'];
+  const AUTHORITIES = ['Commanding Officer', 'Executive Officer', 'Captain Naval Training Command', 'Flag Officer Commanding Western Naval Command'];
+  const caseNo = (y) => `DC-${y}-${String(CASES.filter((c) => c.no.startsWith(`DC-${y}-`)).length + 1).padStart(4, '0')}`;
+  function makeCase(r, o) {
+    const c = Object.assign({ no: caseNo(o.opened.getFullYear()), sn: r.sn, rate: r.rate, ship: r.ship, openedBy: 'NAVPERS01', status: 'pending', decisionDate: null, sanction: '', decision: '', authority: '', concludedBy: '', concludedOn: null, cancel: null, corrections: [] }, o);
+    CASES.push(c); return c;
+  }
+  const pendingCases = () => CASES.filter((c) => c.status === 'pending');
+  const concludedCases = () => CASES.filter((c) => c.status === 'concluded');
+  const casesOfSn = (sn) => CASES.filter((c) => c.sn === sn && c.status !== 'cancelled');
+  const pendingOf = (sn) => CASES.filter((c) => c.sn === sn && c.status === 'pending');
+  (function seedCases() {
+    const cur = current().filter((r) => r !== me);
+    const formers = ratings.filter((r) => r.status === 'former');
+    const held = FLOWS.DOA.batches.flatMap((b) => b.rows).find((x) => x.rejected === 'Disciplinary action pending');
+    const w = (i) => REPORTERS[i % REPORTERS.length];
+    const specs = [];
+    const add = (r, o) => specs.push([r, o]);
+    if (held) add(bySn(held.sn), { opened: d(2026, 10, 28), incident: d(2026, 10, 27), offence: 'Absence without leave', what: 'Absent from the ship from 0800 on 26/10/2026 until 1730 on 27/10/2026 without leave.', reportedBy: w(0) });
+    add(cur[0], { opened: d(2026, 11, 3), incident: d(2026, 11, 2), offence: 'Negligent performance of duty', what: 'Left the engine room switchboard unattended during the evening watch.', reportedBy: w(1), openedBy: 'NAVPERS02' });
+    add(cur[3], { opened: d(2026, 11, 10), incident: d(2026, 11, 9), offence: 'Insubordination', what: 'Refused a lawful order from the Divisional Officer during Colours.', reportedBy: w(0) });
+    add(cur[8], { opened: d(2026, 11, 13), incident: d(2026, 11, 12), offence: 'Drunkenness on duty', what: 'Reported for the forenoon watch under the influence of alcohol.', reportedBy: w(2) });
+    add(cur[13], { opened: d(2026, 11, 15), incident: d(2026, 11, 14), offence: 'Sleeping on watch', what: 'Found asleep at the gangway by the Officer of the Watch at 0215.', reportedBy: w(2), openedBy: 'NAVPERS02' });
+    add(cur[15], { opened: d(2026, 10, 21), incident: d(2026, 10, 19), offence: 'Loss of service property', what: 'Lost a ship-issue night-vision monocular during the shore patrol.', reportedBy: w(3) });
+    const done = (r, o, by = 'HICO001') => add(r, Object.assign({ status: 'concluded', concludedBy: by }, o));
+    done(cur[16], { opened: d(2026, 8, 15), incident: d(2026, 8, 14), offence: 'Conduct prejudicial to good order', what: 'Took part in a quarrel in the mess that disturbed the watch below.', reportedBy: w(4), decisionDate: d(2026, 9, 2), concludedOn: d(2026, 9, 3), sanction: 'Severe reprimand', decision: 'Found guilty. Severe reprimand, entered on the service record.', authority: AUTHORITIES[0] });
+    done(cur[17], { opened: d(2026, 6, 4), incident: d(2026, 6, 3), offence: 'Absence without leave', what: 'Overstayed leave by three days without a signal.', reportedBy: w(0), decisionDate: d(2026, 6, 19), concludedOn: d(2026, 6, 19), sanction: 'Stoppage of leave', decision: 'Found guilty. Leave stopped for 14 days.', authority: AUTHORITIES[1] });
+    done(cur[18], { opened: d(2026, 3, 10), incident: d(2026, 3, 9), offence: 'Disobedience to standing orders', what: 'Left the ship in civilian clothes against the standing order on dress ashore.', reportedBy: w(1), decisionDate: d(2026, 3, 24), concludedOn: d(2026, 3, 25), sanction: 'Reprimand', decision: 'Found guilty. Reprimanded.', authority: AUTHORITIES[0] });
+    done(cur[19], { opened: d(2025, 11, 21), incident: d(2025, 11, 20), offence: 'Negligent performance of duty', what: 'Failed to secure the magazine after the evening rounds.', reportedBy: w(3), decisionDate: d(2025, 12, 8), concludedOn: d(2025, 12, 9), sanction: 'Extra duties', decision: 'Found guilty. Seven days of extra duties.', authority: AUTHORITIES[2] });
+    done(cur[20], { opened: d(2025, 8, 3), incident: d(2025, 8, 2), offence: 'Drunkenness on duty', what: 'Unfit for duty after returning from shore leave.', reportedBy: w(2), decisionDate: d(2025, 8, 21), concludedOn: d(2025, 8, 22), sanction: 'Fine', decision: 'Found guilty. Fined seven days pay.', authority: AUTHORITIES[1], openedBy: 'NAVPERS02' });
+    done(cur[21], { opened: d(2025, 5, 7), incident: d(2025, 5, 6), offence: 'Loss of service property', what: 'Lost a ship-issue radio handset.', reportedBy: w(4), decisionDate: d(2025, 5, 30), concludedOn: d(2025, 5, 30), sanction: 'Fine', decision: 'Found guilty. Fined the cost of the handset.', authority: AUTHORITIES[0] });
+    done(formers[1], { opened: d(2023, 2, 12), incident: d(2023, 2, 11), offence: 'Insubordination', what: 'Used abusive language to a Petty Officer in front of the watch.', reportedBy: w(1), decisionDate: d(2023, 2, 27), concludedOn: d(2023, 2, 28), sanction: 'Reduction in rate', decision: 'Found guilty. Reduced one rate.', authority: AUTHORITIES[3], ship: 'NNS THUNDER' });
+    add(cur[2], { opened: d(2026, 11, 5), incident: d(2026, 11, 4), offence: 'Sleeping on watch', what: 'Opened against the wrong rating.', reportedBy: w(2), status: 'cancelled', cancel: { reason: 'Opened against the wrong rating; refiled under the correct Official No.', by: 'NAVPERS01', on: d(2026, 11, 6) } });
+    add(cur[22], { opened: d(2026, 9, 9), incident: d(2026, 9, 8), offence: 'Absence without leave', what: 'Reported absent at muster; found to be on an approved course.', reportedBy: w(0), status: 'cancelled', cancel: { reason: 'The rating was on an approved course; there was no absence.', by: 'HICO001', on: d(2026, 9, 10) } });
+    specs.sort((a, b) => a[1].opened - b[1].opened).forEach(([r, o]) => makeCase(r, o));
+    // one concluded case that was corrected afterwards, with its reason on the record
+    const fixed = CASES.find((c) => c.sn === cur[16].sn && c.status === 'concluded');
+    fixed.corrections.push({ on: d(2026, 9, 21), by: 'HICO001', reason: 'The Commanding Officer awarded a reprimand, not a severe reprimand (signal ref NNS/CO/0912).', changes: [['Sanction', 'Severe reprimand', 'Reprimand'], ['Decision', 'Found guilty. Severe reprimand, entered on the service record.', 'Found guilty. Reprimanded, entered on the service record.']] });
+    fixed.sanction = 'Reprimand'; fixed.decision = 'Found guilty. Reprimanded, entered on the service record.';
+  })();
+
+  // ---- Discharge: proposals, the discharge of each rating in one, and re-engagements (a re-engagement is not a discharge) ----
+  const DPROPS = []; const DISCH = []; const REENG = [];
+  const dRowOf = (sn) => DISCH.find((x) => x.sn === sn);
+  const dPending = (sn) => DISCH.find((x) => x.sn === sn && x.state === 'pending');
+  const dClosed = (sn) => DISCH.find((x) => x.sn === sn && x.state === 'closed');
+  const reengOf = (sn) => REENG.filter((x) => x.sn === sn).sort((a, b) => b.date - a.date);
+  const reengActive = (sn) => REENG.some((x) => x.sn === sn && x.until > TODAY);
+  const openProps = () => DPROPS.filter((p) => DISCH.some((x) => x.prop === p.no && x.state === 'pending'));
+  const propNo = (y) => `DIS-${y}-${String(DPROPS.filter((p) => p.no.startsWith(`DIS-${y}-`)).length + 1).padStart(4, '0')}`;
+  const blankDocs = () => ({ death: false, condolence: false, evidence: false, affidavit: false });
+  function makeProp(no, init, by, f = {}) { const p = { no, init, by, branch: f.branch || '', rate: f.rate || '', entry: f.entry || '' }; DPROPS.push(p); return p; }
+  function makeRow(sn, prop, o = {}) { const x = Object.assign({ sn, prop, state: 'pending', type: '', date: null, reason: '', comment: '', approved: '', docs: blankDocs(), by: 'NAVPERS01', closedOn: null, closedBy: '' }, o); DISCH.push(x); return x; }
+  // the rating's own record follows a closed discharge: former on the exit date, or scheduled until then
+  function applyDischarge(r, x) {
+    if (x.date <= TODAY) {
+      const open = postings(r).find((p) => !p.to); if (open) open.to = x.date;
+      r.status = 'former'; r.exitDate = x.date; r.exitReason = x.reason; r.exitSched = null;
+    } else r.exitSched = { date: x.date, type: x.type };
+  }
+  const dueBase = () => current().filter((r) => (ageOf(r) >= 50 || losOf(r) >= 20) && !reengActive(r.sn) && !dClosed(r.sn));
+  // placeholder bands (PLAN 9): age 50 to 54 green, 55 to 59 amber, 60 and over red; service 20 to 29 green, 30 to 34 amber, 35 and over red. Nothing on screen explains them.
+  const agePill = (n) => `<span class="${n < 50 ? pill.neutral : n < 55 ? pill.success : n < 60 ? pill.warning : pill.error}">${n} yrs</span>`;
+  const losPill = (n) => `<span class="${n < 20 ? pill.neutral : n < 30 ? pill.success : n < 35 ? pill.warning : pill.error}">${n} yrs</span>`;
+  (function seedDischarge() {
+    const cur = current().filter((r) => r !== me);
+    const formers = ratings.filter((r) => r.status === 'former');
+    // history: every former rating has a closed discharge
+    const EXIT_OF = { Retired: 'Retired', 'Completed engagement': 'Discharged', 'Discharged at own request': 'Voluntary Discharge', 'Medical discharge': 'Medical Discharge' };
+    formers[2].exitReason = 'Died in service';
+    formers[5].exitReason = 'Dismissed after court martial';
+    formers.forEach((r, i) => {
+      const type = i === 2 ? 'Deceased' : i === 5 ? 'Dismissed' : EXIT_OF[r.exitReason] || 'Retired';
+      const y = r.exitDate.getFullYear();
+      const p = DPROPS.find((q) => q.no === `DIS-${y}-0001`) || makeProp(`DIS-${y}-0001`, addDays(r.exitDate, -40), 'NAVPERS01');
+      makeRow(r.sn, p.no, { state: 'closed', type, date: r.exitDate, reason: r.exitReason, approved: 'Director of Personnel (Navy)', docs: type === 'Deceased' ? { death: true, condolence: true, evidence: false, affidavit: true } : blankDocs(), by: i % 2 ? 'NAVPERS02' : 'NAVPERS01', closedOn: addDays(r.exitDate, -3), closedBy: 'HICO001' });
+    });
+    // this cycle
+    const p1 = makeProp('DIS-2026-0001', d(2026, 11, 4), 'NAVPERS01');
+    const p2 = makeProp('DIS-2026-0002', d(2026, 11, 12), 'NAVPERS02');
+    makeRow(cur[0].sn, p1.no); makeRow(cur[1].sn, p1.no, { type: 'Retired', date: d(2026, 12, 31), reason: 'Reached the retiring age.', approved: 'Director of Personnel (Navy)' });
+    makeRow(cur[3].sn, p1.no);
+    makeRow(cur[5].sn, p1.no, { state: 'closed', type: 'Retired', date: d(2026, 12, 31), reason: 'Reached the retiring age.', approved: 'Director of Personnel (Navy)', closedOn: d(2026, 11, 13), closedBy: 'HICO001' });
+    makeRow(cur[4].sn, p2.no, { by: 'NAVPERS02' }); makeRow(cur[6].sn, p2.no, { by: 'NAVPERS02' }); makeRow(cur[10].sn, p2.no, { by: 'NAVPERS02' });
+    makeRow(cur[14].sn, p2.no, { by: 'NAVPERS02', type: 'Medical Discharge', date: d(2026, 12, 15), reason: 'Found unfit for sea service by the medical board.' });
+    applyDischarge(cur[5], dClosed(cur[5].sn));
+    REENG.push({ sn: cur[9].sn, date: d(2026, 7, 1), months: 12, until: addMonths(d(2026, 7, 1), 12), approved: 'Chief of Naval Staff', by: 'NAVPERS01', on: d(2026, 6, 24) });
+    REENG.push({ sn: cur[11].sn, date: d(2025, 3, 1), months: 24, until: addMonths(d(2025, 3, 1), 24), approved: 'Chief of Naval Staff', by: 'NAVPERS02', on: d(2025, 2, 20) });
+    REENG.push({ sn: cur[10].sn, date: d(2024, 1, 1), months: 12, until: addMonths(d(2024, 1, 1), 12), approved: 'Director of Personnel (Navy)', by: 'NAVPERS01', on: d(2023, 12, 18) });
+  })();
+
+  // ---- small builders ----
+  const ratingStrip = (r, extra = '') => `<div class="flex items-center gap-3 rounded-card border border-border bg-subtle/60 p-3">${avatar(r, 'h-10 w-10 text-xs')}<div class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(fullName(r))}</b><span class="block truncate text-xs text-muted-foreground">${r.sn} · ${esc(r.rate)} · ${esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`)}</span></div>${extra}</div>`;
+  const ta = (name, value = '', ph = '', max = 250) => `<textarea name="${name}" rows="3" maxlength="${max}" placeholder="${esc(ph)}" class="${INPUT.replace('phone:h-tap', '')}">${esc(value)}</textarea>`;
+  const grid2 = (html) => `<div class="grid grid-cols-2 gap-4 phone:grid-cols-1">${html}</div>`;
+  const wide = (html) => `<div class="col-span-2 phone:col-span-1">${html}</div>`;
+  const d2b = (act, id, label, iconName, tone = 'outline', extra = '') => `<button type="button" data-d2="${act}" data-id="${esc(id)}" class="${btn[tone]} ${extra}">${ic(iconName)}${esc(label)}</button>`;
+  const casePill = (c) => `<span class="${c.status === 'pending' ? pill.warning : c.status === 'concluded' ? pill.success : pill.neutral}">${c.status === 'pending' ? 'Pending' : c.status === 'concluded' ? 'Concluded' : 'Cancelled'}</span>`;
+  const caseFlag = (sn) => (pendingOf(sn).length ? `<span class="${pill.warning}">${ic('triangle-alert', 'icon h-3 w-3')}Pending case</span>` : '');
+  const caseWarn = (sn) => { const p = pendingOf(sn); return p.length ? `<div class="mb-4">${notice('warning', 'triangle-alert', `<b>${p.length === 1 ? 'A disciplinary case is pending.' : `${p.length} disciplinary cases are pending.`}</b> ${p.map((c) => `${esc(c.no)}: ${esc(c.offence)}, incident ${fmt(c.incident)}`).join('; ')}. Nothing blocks the discharge and the case stays open. <a href="#disciplinary/pending" class="font-semibold underline">Open Pending Cases</a>`)}</div>` : ''; };
+  const nameSub = (r, extra = '') => nameB(r) + subl(`${esc(short(r.rate))}${extra ? ` · ${extra}` : ''}`);
+  // a read-only record dialog: facts in a grid (a third item makes a fact full width), an optional notice above and more below
+  function d2Dialog({ title, size = 'md', alert = '', rows, acts = '', after = '' }) {
+    openDialog({ title, size, body: `${alert}<dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm phone:grid-cols-1">${rows.map(([k, v, w]) => `<div class="min-w-0 ${w ? 'col-span-2 phone:col-span-1' : ''}"><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${esc(k)}</dt><dd class="mt-0.5 break-words">${v === '' || v == null ? '-' : v}</dd></div>`).join('')}</dl>${after}`,
+      foot: `<button type="button" data-act="close" class="${btn.outline}">Close</button>${acts}` });
+  }
+  // a dialog with a form: the main button runs onSubmit() (D1's submit), the other button closes
+  function d2Form({ title, size = 'md', body, submit = 'Save', icon = 'check', tone = 'primary', onSubmit, back = 'Cancel', foot = '' }) {
+    S.form = onSubmit;
+    openDialog({ title, size, body: `<div class="grid grid-cols-1 gap-4">${body}</div>`,
+      foot: `${foot}<button type="button" data-act="close" class="${btn.outline}">${esc(back)}</button><button type="button" data-d1="submit" class="${btn[tone]}">${ic(icon)}${esc(submit)}</button>` });
+  }
+  const corrHtml = (c) => (c.corrections.length ? `<div class="mt-4 border-t border-border pt-3"><div class="mb-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Corrections</div><ol class="space-y-2">${c.corrections.map((k) => `<li class="rounded-card border border-border bg-subtle/60 p-3 text-sm"><div class="flex flex-wrap items-center gap-2"><b>${fmt(k.on)}</b><span class="text-xs text-muted-foreground">by ${esc(k.by)}</span></div><p class="mt-1">${esc(k.reason)}</p><ul class="mt-1.5 space-y-0.5 text-xs text-muted-foreground">${k.changes.map(([f, a, b]) => `<li>${esc(f)}: <s>${esc(a || '-')}</s> to <b class="text-foreground">${esc(b || '-')}</b></li>`).join('')}</ul></li>`).join('')}</ol></div>` : '');
+  const personName = (sn) => { const r = bySn(sn); return r ? `${short(r.rate)} ${upperName(r)}` : sn; };
+  // ==== D2 END: shared parts ====
+
+  // ==== D2 BEGIN: Disciplinary Action (4 pages) ====
+  const DISC_TABS = [
+    { route: 'disciplinary/initiate', label: 'Initiate Incident' }, { route: 'disciplinary/pending', label: 'Pending Cases' },
+    { route: 'disciplinary/concluded', label: 'Concluded Cases' }, { route: 'disciplinary/report', label: 'Disciplinary Report' },
+  ];
+  const caseRows = (c) => {
+    const r = bySn(c.sn);
+    const rows = [['Case Number', `<b>${esc(c.no)}</b>`], ['Status', casePill(c)], ['Official No', c.sn], ['Name', esc(fullName(r))], ['Rate at the Time', esc(c.rate)], ['Ship at the Time', esc(c.ship)],
+      ['Offence', esc(c.offence)], ['Incident Date', fmt(c.incident)], ['Reported By', esc(c.reportedBy)], ['Opened', `${fmt(c.opened)} by ${esc(c.openedBy)}`], ['What Happened', esc(c.what), true]];
+    if (c.status === 'concluded') rows.push(['Decision Date', fmt(c.decisionDate)], ['Sanction', esc(c.sanction)], ['Authority', esc(c.authority)], ['Concluded', `${fmt(c.concludedOn)} by ${esc(c.concludedBy)}`], ['Decision', esc(c.decision), true]);
+    return rows;
+  };
+  // the record dialog of a case. mode: 'pending' (Conclude, Cancel), 'concluded' (Correct) or 'view' (read only)
+  function caseDialog(c, mode) {
+    const r = bySn(c.sn);
+    const acts = lbtn(`ratings/record/${c.sn}`, 'Open Record', 'id-card') + d2b('case-print', c.no, 'Print Case', 'printer')
+      + (mode === 'pending' ? d2b('case-cancel', c.no, 'Cancel Case', 'x', 'outline', 'text-destructive') + d2b('case-conclude', c.no, 'Conclude', 'gavel', 'primary') : '')
+      + (mode === 'concluded' ? d2b('case-correct', c.no, 'Correct', 'pencil', 'primary') : '')
+      + (mode === 'view' ? lbtn(`disciplinary/${c.status === 'pending' ? 'pending' : 'concluded'}`, c.status === 'pending' ? 'Pending Cases' : 'Concluded Cases', 'list') : '');
+    d2Dialog({ title: `${c.no} · ${r.sn}`, size: 'lg', rows: caseRows(c), acts, after: corrHtml(c),
+      alert: c.status === 'concluded' ? `<div class="mb-4">${notice('info', 'info', 'A concluded case is final. A mistake is changed with <b>Correct</b>, which needs a reason and is recorded in the audit trail.')}</div>` : '' });
+  }
+  const caseOf = (no) => CASES.find((c) => c.no === no);
+  D2ACT['case-conclude'] = (el) => concludeDialog(caseOf(el.dataset.id));
+  D2ACT['case-cancel'] = (el) => cancelDialog(caseOf(el.dataset.id));
+  D2ACT['case-correct'] = (el) => correctDialog(caseOf(el.dataset.id));
+  D2ACT['case-print'] = (el) => casePdf(caseOf(el.dataset.id));
+
+  // ---- 1. Initiate Incident: find a current rating, then the case form ----
+  function viewInitiate() {
+    const f = S.f.dcFind || {}; const q = (f.q || '').trim().toLowerCase();
+    const all = q ? ratings.filter((r) => qMatch(r, q)) : [];
+    const rows = all.filter((r) => r.status === 'current');
+    const left = all.length - rows.length;
+    let body;
+    if (!q) body = `<div class="${CARD}">${emptyBox('gavel', 'Find a Rating', 'Enter an Official Number or a name above. A case can only be opened for a current rating.')}</div>`;
+    else if (!rows.length) body = `<div class="${CARD}">${emptyBox('circle-alert', 'No Current Rating Found', left ? `${left} matching ${left === 1 ? 'rating has' : 'ratings have'} left the service. A case can only be opened for a current rating.` : 'Check the Official Number or the spelling, then search again.')}</div>`;
+    else body = `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> current ${rows.length === 1 ? 'rating' : 'ratings'} found. Choose one to open a case.</div>` + d1Table('dcFind', rows, {
+      cols: [['Official No', (r) => r.sn], ['Name', (r) => nameSub(r)], ['Current Ship', (r) => esc(r.ship)], ['Cases', (r) => (pendingOf(r.sn).length ? caseFlag(r.sn) : `<span class="text-muted-foreground">-</span>`)]],
+      open: (r) => d2Dialog({ title: fullName(r), size: 'md', alert: pendingOf(r.sn).length ? `<div class="mb-4">${notice('warning', 'triangle-alert', `${esc(fullName(r))} already has ${pendingOf(r.sn).length === 1 ? 'a pending case' : `${pendingOf(r.sn).length} pending cases`} (${pendingOf(r.sn).map((c) => esc(c.no)).join(', ')}). A new incident opens a separate case.`)}</div>` : '',
+        rows: [['Official No', r.sn], ['Rate', esc(r.rate)], ['Branch', esc(r.branch)], ['Current Ship', esc(r.ship)], ['Command', esc(r.command)], ['Date Enlisted', fmt(r.enlisted)], ['Cases on File', `${casesOfSn(r.sn).length}`]],
+        acts: lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card') + d2b('case-new', r.sn, 'Open Case', 'gavel', 'primary') }),
+      card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.ship)}`, r: caseFlag(r.sn), body: esc(r.rate) }),
+    });
+    return pageHeader('Initiate Incident', 'Open a disciplinary case against a current rating')
+      + d1Filters('dcFind', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-80' }]) + body;
+  }
+  D2ACT['case-new'] = (el) => caseForm(bySn(el.dataset.id));
+  function caseForm(r) {
+    d2Form({ title: 'Initiate Incident', size: 'lg', submit: 'Open Case', icon: 'gavel',
+      body: ratingStrip(r, caseFlag(r.sn)) + grid2(
+        fld('Incident Date', inp('date', '', 'dd/mm/yyyy'), 'date') + fld('Offence', sel('offence', OFFENCES, '', '-- Select Offence --'), 'offence')
+        + wide(fld('What Happened', ta('what', '', 'Describe the incident: where, when and what was done', 250), 'what', { hint: 'Up to 250 characters.' }))
+        + wide(fld('Reported By', inp('by', '', 'e.g. Lt Cdr A. Eze (Divisional Officer)'), 'by')))
+        + notice('info', 'info', 'The case opens as <b>Pending</b>. Concluding it, with the sanction, is a separate step on Pending Cases.'),
+      onSubmit: () => {
+        const err = {}; const date = parseDate(dv('date')); const offence = dv('offence'); const what = dv('what'); const by = dv('by');
+        if (!dv('date')) err.date = 'Enter the incident date.'; else if (!date) err.date = 'Use dd/mm/yyyy.'; else if (date > TODAY) err.date = 'The incident cannot be in the future.'; else if (date < r.enlisted) err.date = `${fullName(r)} joined on ${fmt(r.enlisted)}. The incident cannot be earlier.`;
+        if (!offence) err.offence = 'Choose the offence.';
+        if (!what) err.what = 'Describe what happened.';
+        if (!by) err.by = 'Say who reported it.';
+        const dup = !err.date && !err.offence && pendingOf(r.sn).find((c) => c.offence === offence && +c.incident === +date);
+        if (dup) err.offence = `This incident is already open as ${dup.no}.`;
+        if (Object.keys(err).length) return { errors: err };
+        const c = makeCase(r, { opened: TODAY, incident: date, offence, what, reportedBy: by, openedBy: 'HICO001' });
+        return { done: `Case ${c.no} opened for ${fullName(r)}.`, go: 'disciplinary/pending' };
+      } });
+  }
+
+  // ---- 2. Pending Cases ----
+  function pendingRows() {
+    const f = S.f.dcPending || {}; const q = (f.q || '').trim().toLowerCase();
+    return pendingCases().filter((c) => qMatch(bySn(c.sn), q) && (!f.offence || c.offence === f.offence)).sort((a, b) => b.opened - a.opened || b.no.localeCompare(a.no));
+  }
+  const caseCols = (last) => [['Official No', (c) => c.sn], ['Name', (c) => nameSub(bySn(c.sn), esc(c.no))], ['Offence', (c) => esc(c.offence), 'whitespace-normal'], last];
+  function viewPending() {
+    const rows = pendingRows();
+    return pageHeader('Pending Cases', 'Incidents waiting for a decision', `<button type="button" data-d2="pending-pdf" ${rows.length ? '' : 'disabled'} class="${btn.blue} disabled:opacity-50">${ic('printer')}Print List</button>`)
+      + d1Filters('dcPending', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-64' }, { name: 'offence', label: 'Offence', list: OFFENCES, ph: 'All Offences', w: 'w-72' }])
+      + `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ${rows.length === 1 ? 'case is' : 'cases are'} waiting for a decision</div>`
+      + d1Table('dcPending', rows, {
+        cols: caseCols(['Incident', (c) => fmt(c.incident)]),
+        open: (c) => caseDialog(c, 'pending'),
+        card: (c) => ({ t: esc(fullName(bySn(c.sn))), s: `${c.sn} · ${esc(c.no)}`, r: casePill(c), body: `${esc(c.offence)} · incident ${fmt(c.incident)}` }),
+        empty: ['gavel', 'No Pending Cases', 'Every case has a decision, or none matches these filters.', `<button type="button" data-d1="reset" data-key="dcPending" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      });
+  }
+  D2ACT['pending-pdf'] = () => { const rows = pendingRows();
+    d1Pdf({ title: 'Pending Disciplinary Cases', file: 'Pending Disciplinary Cases.pdf', meta: [['Cases', String(rows.length)], ['As At', fmt(TODAY)], ['Offence', (S.f.dcPending || {}).offence || 'All']],
+      cols: ['Case', 'Official No', 'Name', 'Ship', 'Offence', 'Incident', 'What Happened', 'Reported By'], rows: rows.map((c) => [c.no, c.sn, personName(c.sn), c.ship, c.offence, fmt(c.incident), c.what, c.reportedBy]), sign: ['Prepared By', 'Director of Personnel (Navy)'] }); };
+  // Conclude (the approve action): the decision date, sanction, decision and authority
+  function concludeDialog(c) {
+    const r = bySn(c.sn);
+    d2Form({ title: 'Conclude Case', size: 'lg', submit: 'Conclude Case', icon: 'gavel',
+      body: ratingStrip(r, casePill(c)) + `<div class="rounded-card border border-border bg-subtle/60 p-3 text-sm"><b>${esc(c.offence)}</b> · incident ${fmt(c.incident)}<span class="mt-1 block text-muted-foreground">${esc(c.what)}</span></div>`
+        + grid2(fld('Decision Date', inp('date', '', 'dd/mm/yyyy'), 'date') + fld('Sanction', sel('sanction', SANCTIONS, '', '-- Select Sanction --'), 'sanction')
+          + wide(fld('Decision', ta('decision', '', 'The finding and what was awarded', 250), 'decision', { hint: 'Up to 250 characters.' })) + wide(fld('Authority', inp('authority', '', 'e.g. Commanding Officer'), 'authority')))
+        + notice('warning', 'triangle-alert', 'Concluding is final. A later change is made with <b>Correct</b> on Concluded Cases, which needs a reason and is recorded in the audit trail.'),
+      onSubmit: () => {
+        const err = {}; const date = parseDate(dv('date'));
+        if (!dv('date')) err.date = 'Enter the decision date.'; else if (!date) err.date = 'Use dd/mm/yyyy.'; else if (date < c.incident) err.date = `The decision cannot be before the incident (${fmt(c.incident)}).`; else if (date > TODAY) err.date = 'The decision cannot be in the future.';
+        if (!dv('sanction')) err.sanction = 'Choose the sanction.';
+        if (!dv('decision')) err.decision = 'Record the decision.';
+        if (!dv('authority')) err.authority = 'Name the authority.';
+        if (Object.keys(err).length) return { errors: err };
+        Object.assign(c, { status: 'concluded', decisionDate: date, sanction: dv('sanction'), decision: dv('decision'), authority: dv('authority'), concludedBy: 'HICO001', concludedOn: TODAY });
+        return { done: `Case ${c.no} concluded: ${c.sanction}.`, go: route.startsWith('disciplinary/') ? 'disciplinary/concluded' : undefined };
+      } });
+  }
+  // Cancel (the delete action): a case opened by mistake leaves the lists; nothing is deleted
+  function cancelDialog(c) {
+    const r = bySn(c.sn);
+    d2Form({ title: 'Cancel Case', size: 'md', back: 'Keep Case', submit: 'Cancel Case', icon: 'x', tone: 'danger',
+      body: ratingStrip(r, casePill(c)) + `<div class="text-sm"><b>${esc(c.no)}</b> · ${esc(c.offence)}, incident ${fmt(c.incident)}</div>`
+        + fld('Reason', ta('reason', '', 'Why the case is being cancelled', 200), 'reason', { hint: 'Required. It is kept in the audit trail.' })
+        + notice('info', 'info', 'Use this for a case opened by mistake. It leaves the lists; nothing is deleted and the audit trail keeps it with this reason.'),
+      onSubmit: () => { const v = dv('reason'); if (!v) return { errors: { reason: 'Give the reason the case is cancelled.' } }; c.status = 'cancelled'; c.cancel = { reason: v, by: 'HICO001', on: TODAY }; return { done: `Case ${c.no} cancelled.` }; } });
+  }
+
+  // ---- 3. Concluded Cases ----
+  function concludedRows(f, { from, to } = {}) {
+    const q = (f.q || '').trim().toLowerCase();
+    return concludedCases().filter((c) => { const r = bySn(c.sn); return qMatch(r, q) && (!f.offence || c.offence === f.offence) && (!f.sanction || c.sanction === f.sanction) && (!f.ship || c.ship === f.ship) && (!f.rate || c.rate === f.rate) && (!from || c.decisionDate >= from) && (!to || c.decisionDate <= to); })
+      .sort((a, b) => b.decisionDate - a.decisionDate || b.no.localeCompare(a.no));
+  }
+  const decidedCols = () => [['Official No', (c) => c.sn], ['Name', (c) => nameSub(bySn(c.sn), esc(c.no))], ['Offence', (c) => esc(c.offence) + subl(esc(c.sanction)), 'whitespace-normal'], ['Decided', (c) => fmt(c.decisionDate)]];
+  const decidedCard = (c) => ({ t: esc(fullName(bySn(c.sn))), s: `${c.sn} · ${esc(c.no)}`, r: `<span class="${pill.success}">${fmt(c.decisionDate)}</span>`, body: `${esc(c.offence)} · ${esc(c.sanction)}` });
+  function viewConcluded() {
+    const f = S.f.dcConcluded || {}; const rg = rangeOf(f);
+    const rows = rg.bad ? [] : concludedRows(f, rg);
+    return pageHeader('Concluded Cases', 'Cases with a decision; a mistake is changed with Correct')
+      + d1Filters('dcConcluded', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-56' }, { name: 'offence', label: 'Offence', list: OFFENCES, ph: 'All Offences', w: 'w-64' }, { name: 'sanction', label: 'Sanction', list: SANCTIONS, ph: 'All Sanctions', w: 'w-52' }, { name: 'from', label: 'Decided From', type: 'date', w: 'w-40' }, { name: 'to', label: 'Decided To', type: 'date', w: 'w-40' }])
+      + (rg.bad ? `<div class="mb-4">${notice('error', 'circle-alert', esc(rg.bad))}</div>` : `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> concluded ${rows.length === 1 ? 'case' : 'cases'}</div>`)
+      + d1Table('dcConcluded', rows, {
+        cols: decidedCols(), open: (c) => caseDialog(c, 'concluded'), card: decidedCard,
+        empty: ['gavel', rg.bad ? 'Check the Dates' : 'No Concluded Cases', rg.bad ? 'Fix the dates above to see the cases.' : 'No case matches these filters.', rg.bad ? '' : `<button type="button" data-d1="reset" data-key="dcConcluded" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      });
+  }
+  // Correct (the edit action): everything but the rating can be changed; a reason is required and the changes are kept
+  function correctDialog(c) {
+    const r = bySn(c.sn);
+    const rows = [['Offence', 'offence'], ['Incident Date', 'incident'], ['What Happened', 'what'], ['Reported By', 'reportedBy'], ['Decision Date', 'decisionDate'], ['Sanction', 'sanction'], ['Decision', 'decision'], ['Authority', 'authority']];
+    d2Form({ title: `Correct ${c.no}`, size: 'xl', submit: 'Save Correction', icon: 'check',
+      body: ratingStrip(r, casePill(c)) + grid2(
+        fld('Offence', sel('offence', OFFENCES, c.offence), 'offence') + fld('Incident Date', inp('incident', fmt(c.incident), 'dd/mm/yyyy'), 'incident')
+        + wide(fld('What Happened', ta('what', c.what, '', 250), 'what')) + wide(fld('Reported By', inp('reportedBy', c.reportedBy), 'reportedBy'))
+        + fld('Decision Date', inp('decisionDate', fmt(c.decisionDate), 'dd/mm/yyyy'), 'decisionDate') + fld('Sanction', sel('sanction', SANCTIONS, c.sanction), 'sanction')
+        + wide(fld('Decision', ta('decision', c.decision, '', 250), 'decision')) + wide(fld('Authority', inp('authority', c.authority), 'authority'))
+        + wide(fld('Reason for the Correction', ta('reason', '', 'What was wrong and what the record should say', 200), 'reason', { hint: 'Required. It is kept with the case and in the audit trail.' }))),
+      onSubmit: () => {
+        const err = {}; const inc = parseDate(dv('incident')); const dec = parseDate(dv('decisionDate'));
+        if (!inc) err.incident = 'Use dd/mm/yyyy.'; else if (inc > TODAY) err.incident = 'The incident cannot be in the future.'; else if (inc < r.enlisted) err.incident = `${fullName(r)} joined on ${fmt(r.enlisted)}.`;
+        if (!dec) err.decisionDate = 'Use dd/mm/yyyy.'; else if (inc && dec < inc) err.decisionDate = 'The decision cannot be before the incident.'; else if (dec > TODAY) err.decisionDate = 'The decision cannot be in the future.';
+        ['what', 'reportedBy', 'decision', 'authority'].forEach((k) => { if (!dv(k)) err[k] = 'This cannot be empty.'; });
+        if (!dv('reason')) err.reason = 'Give the reason for the correction.';
+        if (Object.keys(err).length) return { errors: err };
+        const next = { offence: dv('offence'), incident: inc, what: dv('what'), reportedBy: dv('reportedBy'), decisionDate: dec, sanction: dv('sanction'), decision: dv('decision'), authority: dv('authority') };
+        const show = (k, v) => (v instanceof Date ? fmt(v) : v);
+        const changes = rows.filter(([, k]) => show(k, c[k]) !== show(k, next[k])).map(([label, k]) => [label, show(k, c[k]), show(k, next[k])]);
+        if (!changes.length) return { errors: { reason: 'Nothing was changed. Edit a field first, then give the reason.' } };
+        Object.assign(c, next); c.corrections.push({ on: TODAY, by: 'HICO001', reason: dv('reason'), changes });
+        return { done: `Case ${c.no} corrected: ${changes.map((x) => x[0]).join(', ')}.` };
+      } });
+  }
+
+  // ---- 4. Disciplinary Report: concluded cases for a period, with a printout and a workbook ----
+  function viewDiscReport() {
+    const f = S.f.dcReport || {}; const rg = rangeOf(f);
+    const rows = rg.bad ? [] : concludedRows(f, rg);
+    const by = (k) => { const m = {}; rows.forEach((c) => { m[c[k]] = (m[c[k]] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1])[0]; };
+    const top = by('offence'); const topS = by('sanction');
+    return pageHeader('Disciplinary Report', 'Concluded cases by period, offence, sanction, ship and rate', `<button type="button" data-d2="report-print" ${rows.length ? '' : 'disabled'} class="${btn.blue} disabled:opacity-50">${ic('printer')}Print PDF</button><button type="button" data-d1="excel" ${rows.length ? '' : 'disabled'} class="${btn.outline} disabled:opacity-50">${ic('file-spreadsheet')}Export Excel</button>`)
+      + d1Filters('dcReport', [{ name: 'from', label: 'Decided From', type: 'date', w: 'w-40' }, { name: 'to', label: 'Decided To', type: 'date', w: 'w-40' }, { name: 'offence', label: 'Offence', list: OFFENCES, ph: 'All Offences', w: 'w-64' }, { name: 'sanction', label: 'Sanction', list: SANCTIONS, ph: 'All Sanctions', w: 'w-52' }, { name: 'ship', label: 'Ship', list: SHIP_NAMES, ph: 'All Ships', w: 'w-52' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates', w: 'w-56' }])
+      + (rg.bad ? `<div class="mb-4">${notice('error', 'circle-alert', esc(rg.bad))}</div>`
+        : stat3([['Cases', rows.length], ['Most Common Offence', top ? `<span class="text-base">${esc(top[0])}</span>` : '-'], ['Most Common Sanction', topS ? `<span class="text-base">${esc(topS[0])}</span>` : '-']]))
+      + d1Table('dcReport', rows, {
+        cols: decidedCols(), open: (c) => caseDialog(c, 'view'), card: decidedCard,
+        empty: ['file-text', rg.bad ? 'Check the Dates' : 'No Cases in This Report', rg.bad ? 'Fix the dates above to see the report.' : 'No concluded case matches these filters. Widen the dates or the offence.', rg.bad ? '' : `<button type="button" data-d1="reset" data-key="dcReport" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      });
+  }
+  D2ACT['report-print'] = () => { const f = S.f.dcReport || {}; const rows = concludedRows(f, rangeOf(f));
+    d1Pdf({ title: 'Disciplinary Report', file: 'Disciplinary Report.pdf', meta: [['Period', `${f.from || 'Start'} to ${f.to || fmt(TODAY)}`], ['Offence', f.offence || 'All'], ['Sanction', f.sanction || 'All'], ['Ship', f.ship || 'All'], ['Rate', f.rate ? short(f.rate) : 'All'], ['Cases', String(rows.length)]],
+      cols: ['Case', 'Official No', 'Name', 'Ship', 'Offence', 'Incident', 'Decided', 'Sanction', 'Decision', 'Authority'], rows: rows.map((c) => [c.no, c.sn, personName(c.sn), c.ship, c.offence, fmt(c.incident), fmt(c.decisionDate), c.sanction, c.decision, c.authority]), sign: ['Prepared By', 'Director of Personnel (Navy)'] }); };
+  function casePdf(c) {
+    const r = bySn(c.sn);
+    d1Pdf({ title: 'Disciplinary Case Sheet', file: `Case ${c.no}.pdf`, meta: [['Case Number', c.no], ['Status', c.status === 'pending' ? 'Pending' : 'Concluded'], ['Official No', c.sn], ['Name', upperName(r)], ['Rate', c.rate], ['Ship', c.ship]],
+      cols: ['Item', 'Particulars'], rows: [['Offence', c.offence], ['Incident date', fmt(c.incident)], ['What happened', c.what], ['Reported by', c.reportedBy], ['Opened', `${fmt(c.opened)} by ${c.openedBy}`]]
+        .concat(c.status === 'concluded' ? [['Decision date', fmt(c.decisionDate)], ['Sanction', c.sanction], ['Decision', c.decision], ['Authority', c.authority]] : [['Decision', 'Awaiting decision']]),
+      sign: c.status === 'concluded' ? ['Reporting Officer', 'Authority', 'Director of Personnel (Navy)'] : ['Reporting Officer', 'Commanding Officer'] });
+  }
+
+  // ---- the rating's Discipline tab: seen by whoever may view Concluded Cases; not on My Details, not counted in the record's completeness ----
+  function viewDisciplineTab(r) {
+    const rows = casesOfSn(r.sn).sort((a, b) => b.incident - a.incident);
+    return d1Table('dcRecord', rows, {
+      cols: [['Case', (c) => `<b class="font-medium">${esc(c.no)}</b>`], ['Offence', (c) => esc(c.offence) + subl(`Incident ${fmt(c.incident)}`), 'whitespace-normal'], ['Status', (c) => casePill(c)], ['Sanction', (c) => (c.status === 'concluded' ? esc(c.sanction) + subl(fmt(c.decisionDate)) : '-')]],
+      open: (c) => caseDialog(c, 'view'),
+      card: (c) => ({ t: esc(c.offence), s: `${esc(c.no)} · incident ${fmt(c.incident)}`, r: casePill(c), body: c.status === 'concluded' ? `${esc(c.sanction)} · ${fmt(c.decisionDate)}` : 'Awaiting a decision' }),
+      empty: ['gavel', 'No Disciplinary Record', 'This rating has no pending or concluded case.'],
+    });
+  }
+  // ==== D2 END: Disciplinary Action ====
+
+  // ==== D2 BEGIN: Discharge Administration (5 pages) ====
+  const DIS_TABS = [
+    { route: 'discharge/process', label: 'Process Discharge' }, { route: 'discharge/service', label: 'Print Service Details' }, { route: 'discharge/forms', label: 'Verification Forms' },
+    { route: 'discharge/report', label: 'Discharge Report' }, { route: 'discharge/upload', label: 'Upload Discharge' },
+  ];
+  const typeFor = (t) => (t ? `<span class="${t === 'Deceased' ? pill.error : t === 'Dismissed' ? pill.warning : pill.info}">${esc(t)}</span>` : `<span class="${pill.neutral}">Not processed</span>`);
+  const sched = (x) => x.state === 'closed' && x.date > TODAY;
+
+  // ---- 1. Process Discharge: who is due (reads only), a proposal made in a dialog, then each rating processed ----
+  function dueRows() {
+    const f = S.f.disDue || {}; const q = (f.q || '').trim().toLowerCase();
+    return dueBase().filter((r) => qMatch(r, q) && (!f.branch || r.branch === f.branch) && (!f.rate || r.rate === f.rate) && (!f.entry || r.entry === f.entry)).sort((a, b) => losOf(b) - losOf(a) || ageOf(b) - ageOf(a));
+  }
+  const pendingRowsAll = () => DISCH.filter((x) => x.state === 'pending');
+  function viewProcess() {
+    const due = dueRows(); const propsN = pendingRowsAll().length; const v = D2S.view;
+    const seg = `<div class="mb-4 flex flex-wrap gap-2" role="tablist">${[['due', `Due for Discharge`, dueBase().length], ['prop', 'Proposals', propsN]].map(([k, label, n]) => `<button type="button" role="tab" aria-selected="${v === k}" data-d2="dis-view" data-id="${k}" class="inline-flex h-9 flex-none items-center gap-2 rounded-full border px-4 text-sm font-medium ${v === k ? 'border-brand bg-brand text-brand-foreground' : 'border-border bg-background text-foreground hover:bg-subtle'}">${label}<span class="${v === k ? 'text-brand-foreground' : 'text-muted-foreground'}">${n}</span></button>`).join('')}</div>`;
+    const acts = v === 'due' ? `<button type="button" data-d2="prop-create" ${due.length ? '' : 'disabled'} class="${btn.primary} disabled:opacity-50">${ic('plus')}Create Proposal</button>`
+      : `<button type="button" data-d2="prop-add" class="${btn.primary}">${ic('user-plus')}Add Rating</button>`;
+    return pageHeader('Process Discharge', v === 'due' ? 'Ratings due for discharge; make a proposal of them' : 'Process each rating in a proposal', acts) + seg + (v === 'due' ? viewDue(due) : viewProposals());
+  }
+  D2ACT['dis-view'] = (el) => { closeDialog(); D2S.view = el.dataset.id; render(); };
+  function viewDue(rows) {
+    const inProp = rows.filter((r) => dPending(r.sn)).length;
+    return d1Filters('disDue', [{ name: 'q', label: 'Official No or Name', type: 'text', ph: 'e.g. B0539 or Okafor', w: 'w-56' }, { name: 'branch', label: 'Branch', list: BRANCHES, ph: 'All Branches', w: 'w-48' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates', w: 'w-56' }, { name: 'entry', label: 'Entry Mode', list: ENTRY_MODES, ph: 'All Entry Modes', w: 'w-52' }])
+      + `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ${rows.length === 1 ? 'rating is' : 'ratings are'} due${inProp ? `, ${inProp} already in a proposal` : ''}</div>`
+      + d1Table('disDue', rows, {
+        cols: [['Official No', (r) => r.sn], ['Name', (r) => nameSub(r) + (caseFlag(r.sn) ? `<span class="mt-0.5 block">${caseFlag(r.sn)}</span>` : '')], ['Age', (r) => agePill(ageOf(r))], ['Service', (r) => losPill(losOf(r))]],
+        open: (r) => d2Dialog({ title: fullName(r), size: 'md', alert: caseWarn(r.sn),
+          rows: [['Official No', r.sn], ['Rate', esc(r.rate)], ['Branch', esc(r.branch)], ['Entry Mode', esc(r.entry)], ['Date of Birth', fmt(r.dob)], ['Age', agePill(ageOf(r))], ['Date Enlisted', fmt(r.enlisted)], ['Length of Service', losPill(losOf(r))], ['Current Ship', esc(r.ship)], ['Proposal', dPending(r.sn) ? esc(dPending(r.sn).prop) : '-'], ['Last Re-engagement', reengOf(r.sn)[0] ? `${fmt(reengOf(r.sn)[0].date)} for ${reengOf(r.sn)[0].months} months (ended ${fmt(reengOf(r.sn)[0].until)})` : 'None']],
+          acts: lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card') + (dPending(r.sn) ? d2b('dis-to-prop', dPending(r.sn).prop, 'Go to Proposal', 'list') : '') }),
+        card: (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.branch)}`, r: losPill(losOf(r)), body: `Age ${ageOf(r)}${dPending(r.sn) ? ` · in ${esc(dPending(r.sn).prop)}` : ''}${caseFlag(r.sn) ? ` · ${caseFlag(r.sn)}` : ''}` }),
+        empty: ['users', 'Nobody Is Due', 'No rating matches these filters. Widen the branch, the rate or the entry mode.', `<button type="button" data-d1="reset" data-key="disDue" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      });
+  }
+  D2ACT['dis-to-prop'] = (el) => { D2S.view = 'prop'; D2S.prop = el.dataset.id; closeDialog(); render(); };
+  // one dialog makes a proposal from the filtered list
+  D2ACT['prop-create'] = () => {
+    const f = S.f.disDue || {}; const due = dueRows(); const fresh = due.filter((r) => !dPending(r.sn));
+    if (!fresh.length) { openDialog({ title: 'Create Proposal', size: 'sm', body: notice('warning', 'circle-alert', 'Everyone on this list is already in a proposal. Process them in Proposals, or change the filters.'), foot: `<button type="button" data-act="close" class="${btn.outline}">Close</button><button type="button" data-d2="dis-view" data-id="prop" class="${btn.primary}">${ic('list')}Go to Proposals</button>` }); return; }
+    const no = propNo(TODAY.getFullYear()); const flagged = fresh.filter((r) => pendingOf(r.sn).length);
+    const labels = [['Proposal Number', `<b>${esc(no)}</b>`], ['Branch', esc(f.branch || 'All branches')], ['Rate', esc(f.rate || 'All rates')], ['Entry Mode', esc(f.entry || 'All entry modes')], ['Ratings to Add', `<b>${fresh.length}</b>`], ['Proposed By', 'HICO001']];
+    d2Form({ title: 'Create Proposal', size: 'md', submit: 'Create Proposal', icon: 'plus',
+      body: `<dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">${labels.map(([k, v]) => `<div><dt class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">${k}</dt><dd class="mt-0.5">${v}</dd></div>`).join('')}</dl>`
+        + (due.length - fresh.length ? notice('warning', 'circle-alert', `${due.length - fresh.length} already in a proposal ${due.length - fresh.length === 1 ? 'is' : 'are'} left out.`) : '')
+        + (flagged.length ? notice('warning', 'triangle-alert', `${flagged.length} of these ${flagged.length === 1 ? 'has' : 'have'} a pending disciplinary case. Nothing blocks the proposal.`) : '')
+        + notice('info', 'info', 'Every rating on the list goes into the proposal. Take out anyone who is not to be discharged with Remove, on the proposal.'),
+      onSubmit: () => { const p = makeProp(no, TODAY, 'HICO001', { branch: f.branch, rate: f.rate, entry: f.entry }); fresh.forEach((r) => makeRow(r.sn, p.no, { by: 'HICO001' })); D2S.view = 'prop'; D2S.prop = p.no; return { done: `Proposal ${p.no} created: ${fresh.length} ${fresh.length === 1 ? 'rating' : 'ratings'}.` }; } });
+  };
+  // the proposal's ratings
+  function viewProposals() {
+    const list = openProps(); const sel1 = list.find((p) => p.no === D2S.prop);
+    const rows = pendingRowsAll().filter((x) => !sel1 || x.prop === sel1.no).map((x) => ({ x, r: bySn(x.sn) }));
+    const picker = list.length ? `<section class="${CARD} mb-4 p-4"><div class="w-full max-w-xl"><span class="${LABEL}">Proposal</span><select name="d2p-prop"><option value="">All Proposals</option>${list.map((p) => `<option value="${p.no}"${sel1 && sel1.no === p.no ? ' selected' : ''}>${esc(`${p.no} · proposed ${fmt(p.init)} by ${p.by} · ${DISCH.filter((x) => x.prop === p.no && x.state === 'pending').length} to process`)}</option>`).join('')}</select></div></section>` : '';
+    const set = rows.filter(({ x }) => x.type).length;
+    return picker + (rows.length ? `<div class="${CARD} mb-4 flex items-center gap-3 px-4 py-3"><div class="cirerms-progress-track flex-1"><div class="cirerms-progress-bar ${fraction(set / rows.length)}" data-level="${set === rows.length ? 'high' : set ? 'mid' : 'low'}"></div></div><span class="text-xs text-muted-foreground"><b class="text-foreground">${set}</b> of ${rows.length} have an exit type</span></div>` : '')
+      + d1Table('disProp', rows, {
+        cols: [['Official No', ({ x }) => x.sn], ['Name', ({ r }) => nameSub(r) + (caseFlag(r.sn) ? `<span class="mt-0.5 block">${caseFlag(r.sn)}</span>` : '')], ['Exit Type', ({ x }) => typeFor(x.type) + (x.type && x.date ? subl(`${sched(x) ? 'Scheduled ' : ''}${fmt(x.date)}`) : '')], ['Proposal', ({ x }) => esc(x.prop)]],
+        open: ({ x, r }) => propDialog(x, r),
+        card: ({ x, r }) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(x.prop)}`, r: typeFor(x.type), body: `${caseFlag(r.sn) ? `${caseFlag(r.sn)} · ` : ''}${x.reason ? esc(x.reason) : 'Not processed yet'}` }),
+        empty: ['door-open', 'No Ratings to Process', list.length ? 'This proposal has no rating left.' : 'Make a proposal from the ratings who are due, or add a rating by Official Number.', `<button type="button" data-d2="dis-view" data-id="due" class="${btn.primary}">${ic('list')}Due for Discharge</button>`],
+      });
+  }
+  function propDialog(x, r) {
+    const re = reengOf(r.sn)[0];
+    d2Dialog({ title: fullName(r), size: 'lg', alert: caseWarn(r.sn),
+      rows: [['Proposal', esc(x.prop)], ['Proposed By', esc(x.by)], ['Official No', r.sn], ['Rate', esc(r.rate)], ['Age', agePill(ageOf(r))], ['Length of Service', losPill(losOf(r))], ['Date Enlisted', fmt(r.enlisted)], ['Current Ship', esc(r.ship)],
+        ['Exit Type', typeFor(x.type)], ['Exit Date', x.date ? `${fmt(x.date)}${x.date > TODAY ? ' (in the future)' : ''}` : '-'], ['Exit Reason', esc(x.reason || '-'), true], ['Last Re-engagement', re ? `${fmt(re.date)} for ${re.months} months (ended ${fmt(re.until)})` : 'None']],
+      acts: lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card') + d2b('dis-remove', x.sn, 'Remove', 'trash-2', 'outline', 'text-destructive') + d2b('dis-reengage', x.sn, 'Re-engage', 'refresh-cw', 'blue') + d2b('dis-process', x.sn, 'Process', 'pencil', 'primary') });
+  }
+  // Process: exit type, exit date, reason, the death documents for a death; status Pending or Closed (final)
+  D2ACT['dis-process'] = (el) => {
+    const x = dPending(el.dataset.id); const r = bySn(x.sn); const dead = x.type === 'Deceased';
+    const chk = (name, label, on) => `<label class="flex items-center gap-2.5 text-sm"><input type="checkbox" name="${name}" ${on ? 'checked' : ''} class="h-4 w-4 accent-primary" />${esc(label)}</label>`;
+    d2Form({ title: 'Process Discharge', size: 'lg', submit: 'Save', icon: 'check',
+      body: ratingStrip(r, caseFlag(r.sn)) + caseWarn(r.sn) + grid2(
+        fld('Exit Type', sel('ptype', EXIT_TYPES, x.type, '-- Select Exit Type --'), 'ptype') + fld('Exit Date', inp('pdate', x.date ? fmt(x.date) : '', 'dd/mm/yyyy'), 'pdate', { hint: 'A date after today is scheduled: the rating stays current until then.' })
+        + wide(fld('Exit Reason', inp('preason', x.reason, 'Why the rating is leaving'), 'preason', { hint: 'Up to 100 characters.' }))
+        + fld('Approved By', inp('papproved', x.approved, 'e.g. Director of Personnel (Navy)'), 'papproved', { opt: true }) + fld('Status', sel('pstatus', ['Pending', 'Closed'], 'Pending', '-- Select Status --'), 'pstatus', { hint: 'Closed is final.' })
+        + wide(fld('Comment', ta('pcomment', x.comment, '', 250), 'pcomment', { opt: true }))
+        + `<div data-docs class="${dead ? '' : 'hidden'} col-span-2 phone:col-span-1"><span class="${LABEL}">Documents Available</span><div class="grid grid-cols-2 gap-2.5 phone:grid-cols-1">${chk('pd-death', 'Death Certificate', x.docs.death)}${chk('pd-condolence', 'Condolence Letter', x.docs.condolence)}${chk('pd-evidence', 'Evidence of Payment of Dependants Fund', x.docs.evidence)}${chk('pd-affidavit', 'Sworn Affidavit as Next of Kin', x.docs.affidavit)}</div><span class="mt-1 block text-xs text-muted-foreground">These are recorded only; a missing document does not stop the discharge.</span></div>`),
+      onSubmit: () => {
+        const err = {}; const type = dv('ptype'); const closed = dv('pstatus') === 'Closed'; const date = parseDate(dv('pdate')); const reason = dv('preason');
+        if (!type) err.ptype = 'Choose the exit type.';
+        if (dv('pdate') && !date) err.pdate = 'Use dd/mm/yyyy.'; else if (date && date < r.enlisted) err.pdate = `${fullName(r)} joined on ${fmt(r.enlisted)}. The exit date cannot be earlier.`; else if (closed && !date) err.pdate = 'A closed discharge needs the exit date.';
+        if (!reason) err.preason = 'Give the reason.'; else if (reason.length > 100) err.preason = 'The reason is limited to 100 characters.';
+        if (!dv('pstatus')) err.pstatus = 'Choose the status.';
+        if (Object.keys(err).length) return { errors: err };
+        const data = { type, date, reason, approved: dv('papproved'), comment: dv('pcomment'), docs: type === 'Deceased' ? { death: dv('pd-death'), condolence: dv('pd-condolence'), evidence: dv('pd-evidence'), affidavit: dv('pd-affidavit') } : blankDocs() };
+        if (!closed) { Object.assign(x, data); return { done: `Saved as pending for ${fullName(r)}.` }; }
+        return { then: () => closeConfirm(x, r, data) };
+      } });
+  };
+  // closing is final: its own confirmation says what will happen
+  function closeConfirm(x, r, data) {
+    const future = data.date > TODAY;
+    d2Form({ title: 'Close Discharge', size: 'md', back: 'Go Back', submit: 'Close Discharge', icon: 'check', tone: 'danger',
+      body: ratingStrip(r) + dl([['Exit Type', data.type], ['Exit Date', fmt(data.date)], ['Reason', data.reason], ['Approved By', data.approved || '-']])
+        + notice('warning', 'triangle-alert', '<b>Closed is final.</b> A closed discharge cannot be reopened or edited here; a mistake is corrected on the rating\'s record and recorded in the audit trail.')
+        + notice('info', 'info', future ? `The exit date is in the future, so ${esc(fullName(r))} stays a current rating and shows as <b>scheduled</b>. On ${fmt(data.date)} the rating moves to Former Ratings.` : `${esc(fullName(r))} moves to <b>Former Ratings</b> now, with ${fmt(data.date)} as the exit date.`),
+      onSubmit: () => { Object.assign(x, data, { state: 'closed', closedOn: TODAY, closedBy: 'HICO001' }); applyDischarge(r, x); return { done: future ? `Discharge closed: ${fullName(r)} is scheduled to leave on ${fmt(data.date)}.` : `Discharge closed: ${fullName(r)} is now a former rating.` }; } });
+  }
+  // Re-engage is not a discharge: the rating stays current and leaves the proposal
+  D2ACT['dis-reengage'] = (el) => {
+    const x = dPending(el.dataset.id); const r = bySn(x.sn); const last = reengOf(r.sn)[0];
+    d2Form({ title: 'Re-engage', size: 'md', submit: 'Re-engage', icon: 'refresh-cw', tone: 'blue',
+      body: ratingStrip(r) + (last ? notice('info', 'info', `Last re-engaged on ${fmt(last.date)} for ${last.months} months; it ended ${fmt(last.until)}.`) : '')
+        + grid2(fld('Re-engagement Date', inp('rdate', '', 'dd/mm/yyyy'), 'rdate') + fld('Period (Months)', inp('rmonths', '', 'e.g. 24', 'number'), 'rmonths') + wide(fld('Approved By', inp('rapproved', '', 'e.g. Chief of Naval Staff'), 'rapproved')))
+        + notice('info', 'info', 'Re-engagement is not a discharge. The rating stays current and leaves this proposal; the Re-engagement Verification form prints from it on Verification Forms.'),
+      onSubmit: () => {
+        const err = {}; const date = parseDate(dv('rdate')); const m = Number(dv('rmonths'));
+        if (!dv('rdate')) err.rdate = 'Enter the re-engagement date.'; else if (!date) err.rdate = 'Use dd/mm/yyyy.'; else if (date < r.enlisted) err.rdate = `${fullName(r)} joined on ${fmt(r.enlisted)}.`;
+        if (!dv('rmonths')) err.rmonths = 'Enter the period in months.'; else if (!Number.isInteger(m) || m < 1 || m > 120) err.rmonths = 'Use a whole number of months, 1 to 120.';
+        if (!dv('rapproved')) err.rapproved = 'Say who approved it.';
+        if (Object.keys(err).length) return { errors: err };
+        REENG.push({ sn: r.sn, date, months: m, until: addMonths(date, m), approved: dv('rapproved'), by: 'HICO001', on: TODAY });
+        DISCH.splice(DISCH.indexOf(x), 1);
+        return { done: `${fullName(r)} re-engaged for ${m} months. The rating stays current.` };
+      } });
+  };
+  D2ACT['dis-remove'] = (el) => {
+    const x = dPending(el.dataset.id); const r = bySn(x.sn);
+    d2Form({ title: 'Remove from Proposal', size: 'sm', submit: 'Remove Rating', icon: 'trash-2', tone: 'danger', body: `<p class="text-sm">Remove <b>${esc(fullName(r))}</b> from <b>${esc(x.prop)}</b>? The rating stays current and can be proposed again later.</p>`,
+      onSubmit: () => { DISCH.splice(DISCH.indexOf(x), 1); return { done: 'Removed from the proposal.' }; } });
+  };
+  // Add Rating: any current rating by Official Number (a medical discharge or a death is not tied to the due list)
+  D2ACT['dis-find'] = () => {
+    const box = document.querySelector('#d2-found'); if (!box) return; const sn = dv('asn'); S.found2 = null;
+    if (!sn) { box.innerHTML = notice('error', 'circle-alert', 'Enter an Official Number.'); return; }
+    const r = findRating(sn);
+    if (!r) { box.innerHTML = notice('error', 'circle-alert', `No rating has Official Number <b>${esc(sn)}</b>.`); return; }
+    if (r.status !== 'current') { box.innerHTML = notice('error', 'circle-alert', `${esc(fullName(r))} has already left the service.`); return; }
+    if (dPending(r.sn)) { box.innerHTML = notice('warning', 'circle-alert', `${esc(fullName(r))} is already in proposal <b>${esc(dPending(r.sn).prop)}</b>.`); return; }
+    if (dClosed(r.sn)) { box.innerHTML = notice('warning', 'circle-alert', `${esc(fullName(r))} already has a closed discharge${sched(dClosed(r.sn)) ? `, scheduled for ${fmt(dClosed(r.sn).date)}` : ''}.`); return; }
+    S.found2 = r;
+    box.innerHTML = ratingStrip(r, `${agePill(ageOf(r))}`) + (pendingOf(r.sn).length ? `<div class="mt-2">${notice('warning', 'triangle-alert', 'This rating has a pending disciplinary case. Nothing blocks the proposal.')}</div>` : '') + (reengActive(r.sn) ? `<div class="mt-2">${notice('info', 'info', `Re-engaged until ${fmt(reengOf(r.sn)[0].until)}.`)}</div>` : '');
+  };
+  D2ACT['prop-add'] = () => {
+    const list = openProps(); S.found2 = null;
+    d2Form({ title: 'Add Rating', size: 'md', submit: 'Add to Proposal', icon: 'user-plus',
+      body: `<div><span class="${LABEL}">Official Number</span><div class="flex gap-2"><input name="asn" type="text" placeholder="e.g. B0539" autocomplete="off" class="${INPUT}" /><button type="button" data-d2="dis-find" class="${btn.blue} flex-none">${ic('search')}Find</button></div><span data-err="asn" class="mt-1 hidden text-xs font-medium text-error"></span></div><div id="d2-found"></div>`
+        + fld('Proposal', `<select name="aprop">${list.map((p) => `<option value="${p.no}"${p.no === D2S.prop ? ' selected' : ''}>${esc(p.no)}</option>`).join('')}<option value="__new">New proposal (${esc(propNo(TODAY.getFullYear()))})</option></select>`, 'aprop'),
+      onSubmit: () => {
+        if (!S.found2) return { errors: { asn: 'Find the rating first.' } };
+        const r = S.found2; let no = dv('aprop');
+        if (!no || no === '__new') no = makeProp(propNo(TODAY.getFullYear()), TODAY, 'HICO001').no;
+        makeRow(r.sn, no, { by: 'HICO001' }); D2S.prop = no;
+        return { done: `${fullName(r)} added to ${no}.` };
+      } });
+  };
+
+  // ---- 2 and 3. Print Service Details and Verification Forms: find a rating, then the printout ----
+  const finder = (key, ph) => d1Filters(key, [{ name: 'q', label: 'Official No or Name', type: 'text', ph, w: 'w-80' }]);
+  const findRows = (key) => { const q = ((S.f[key] || {}).q || '').trim().toLowerCase(); return q ? ratings.filter((r) => qMatch(r, q)).sort((a, b) => a.sn.localeCompare(b.sn)) : null; };
+  const statusPill = (r) => `<span class="${r.status === 'current' ? pill.success : pill.neutral}">${r.status === 'current' ? 'Current' : 'Former'}</span>`;
+  const findCols = () => [['Official No', (r) => r.sn], ['Name', (r) => nameSub(r)], ['Status', (r) => statusPill(r) + (r.exitSched ? `<span class="mt-0.5 block text-xs text-muted-foreground">Leaves ${fmt(r.exitSched.date)}</span>` : '')], ['Ship', (r) => esc(r.ship)]];
+  const findCard = (r) => ({ t: esc(fullName(r)), s: `${r.sn} · ${esc(r.rate)}`, r: statusPill(r), body: esc(r.status === 'current' ? r.ship : `Left ${fmt(r.exitDate)}`) });
+  const servicePanel = (r) => `<div class="space-y-4">${ratingStrip(r, statusPill(r))}<div class="rounded-card border border-border p-4"><b class="block text-sm">Personnel Details</b><span class="mt-0.5 block text-sm text-muted-foreground">Identity, date of birth, telephone and the rate history (each rate, from and to).</span><div class="mt-3">${d2b('svc-print', r.sn, 'Print Service Details', 'printer', 'blue')}</div></div></div>`;
+  function formState(r) {
+    const re = reengOf(r.sn)[0]; const dr = dRowOf(r.sn);
+    return [
+      { k: 'reeng', title: 'Re-engagement Verification', text: 'Verifies a re-engagement: date, period and approval.', ok: !!re, why: 'No re-engagement is recorded. Use Re-engage on Process Discharge first.' },
+      { k: 'retire', title: 'Retirement Routine', text: 'The release and clearance routine for a rating leaving.', ok: !!dr, why: 'The rating has no discharge on file. Propose it on Process Discharge first.' },
+      { k: 'engage', title: 'Engagement Form', text: 'Date employed, length of service and engagement history.', ok: true, why: '' },
+    ];
+  }
+  const formsPanel = (r) => `<div class="space-y-4">${ratingStrip(r, statusPill(r))}<div class="grid grid-cols-3 gap-3 phone:grid-cols-1">${formState(r).map((f) => `<div class="flex flex-col rounded-card border border-border p-4"><b class="text-sm">${f.title}</b><span class="mt-0.5 block flex-1 text-sm text-muted-foreground">${f.ok ? f.text : f.why}</span><div class="mt-3">${f.ok ? d2b('form-print', `${f.k}:${r.sn}`, 'Preview', 'file-text', 'blue') : `<button type="button" disabled class="${btn.outline} opacity-50">${ic('file-text')}Preview</button>`}</div></div>`).join('')}</div></div>`;
+  function findPage(key, { title, sub, ph, panel, dlgTitle }) {
+    const rows = findRows(key);
+    let body;
+    if (rows === null) body = `<div class="${CARD}">${emptyBox('search', 'Find a Rating', 'Enter an Official Number or a name above. Current and former ratings are found.')}</div>`;
+    else if (!rows.length) body = `<div class="${CARD}">${emptyBox('circle-alert', 'No Rating Found', 'Check the Official Number or the spelling, then search again.')}</div>`;
+    else if (rows.length === 1) body = `<section class="${CARD} p-4">${panel(rows[0])}</section>`;
+    else body = `<div class="mb-3 text-sm text-muted-foreground"><b class="text-foreground">${rows.length}</b> ratings found. Choose one.</div>` + d1Table(key, rows, { cols: findCols(), open: (r) => openDialog({ title: dlgTitle, size: 'lg', body: panel(r), foot: `<button type="button" data-act="close" class="${btn.outline}">Close</button>${lbtn(`ratings/record/${r.sn}`, 'Open Record', 'id-card')}` }), card: findCard });
+    return pageHeader(title, sub) + finder(key, ph) + body;
+  }
+  const viewService = () => findPage('disSvc', { title: 'Print Service Details', sub: 'The personnel details sheet of one rating', ph: 'e.g. B0539 or Okafor', panel: servicePanel, dlgTitle: 'Print Service Details' });
+  const viewForms = () => findPage('disForms', { title: 'Verification Forms', sub: 'Re-engagement Verification, Retirement Routine and Engagement Form', ph: 'e.g. B0539 or Okafor', panel: formsPanel, dlgTitle: 'Verification Forms' });
+  D2ACT['svc-print'] = (el) => servicePdf(bySn(el.dataset.id));
+  D2ACT['form-print'] = (el) => { const [k, sn] = el.dataset.id.split(':'); formPdf(k, bySn(sn)); };
+  // the rate history from the record's advancements: each rate with the period it was held
+  function rateHistory(r) {
+    const adv = record(r).advancement.slice().sort((a, b) => a.date - b.date); let start = r.enlisted; const out = [];
+    adv.forEach((a) => { out.push([a.from, fmt(start), fmt(a.date)]); start = a.date; });
+    out.push([r.rate, fmt(start), r.status === 'former' ? fmt(r.exitDate) : 'To date']);
+    return out;
+  }
+  function servicePdf(r) {
+    d1Pdf({ title: 'Personnel Details', file: `Personnel Details ${r.sn}.pdf`, meta: [['Official No', r.sn], ['Surname', r.surname.toUpperCase()], ['First Name', r.first], ['Middle Name', r.middle], ['Date of Birth', fmt(r.dob)], ['Telephone', r.phone]],
+      cols: ['Rate', 'From', 'To'], rows: rateHistory(r), note: `Rate history of ${fullName(r)}, from the record's Advancement tab.`, sign: ['Records Officer', 'Director of Personnel (Navy)'] });
+  }
+  // the three forms; the layouts are drawn from the fields of the old datasets (the .rpt layouts cannot be read)
+  function formPdf(kind, r) {
+    const dr = dRowOf(r.sn); const re = reengOf(r.sn);
+    const base = [['Official No', r.sn], ['Name', upperName(r)], ['Rate', r.rate], ['Date Employed', fmt(r.enlisted)], ['Length of Service', `${losOf(r)} years`], ['Age', `${ageOf(r)} years`]];
+    if (kind === 'reeng') {
+      const x = re[0];
+      d1Pdf({ title: 'Re-engagement Verification', file: `Re-engagement Form ${r.sn}.pdf`, meta: base.concat([['Re-engagement Date', fmt(x.date)], ['Period', `${x.months} months`], ['Ends', fmt(x.until)]]),
+        cols: ['Item', 'Particulars', 'Verified'], rows: [['Official number and name', `${r.sn} ${upperName(r)}`, ''], ['Date employed', fmt(r.enlisted), ''], ['Length of service at re-engagement', `${years(r.enlisted, x.date)} years`, ''], ['Re-engagement date and period', `${fmt(x.date)} for ${x.months} months`, ''], ['Approved by', x.approved, ''], ['Earlier re-engagements', re.length > 1 ? re.slice(1).map((y) => `${fmt(y.date)} (${y.months} months)`).join('; ') : 'None', '']], sign: ['Rating', 'Verifying Officer', 'Director of Personnel (Navy)'] });
+    } else if (kind === 'retire') {
+      d1Pdf({ title: 'Retirement Routine', file: `Release Routine ${r.sn}.pdf`, meta: base.concat([['Exit Type', dr.type || 'To be decided'], ['Exit Date', dr.date ? fmt(dr.date) : 'To be decided'], ['Proposal', dr.prop]]),
+        cols: ['Section', 'Cleared By', 'Date'], rows: [['Ship or unit', '', ''], ['Stores and equipment', '', ''], ['Medical', '', ''], ['Accounts and pay', '', ''], ['Documents and records', '', '']], note: dr.reason ? `Reason: ${dr.reason}` : '', sign: ['Rating', 'Commanding Officer', 'Director of Personnel (Navy)'] });
+    } else {
+      d1Pdf({ title: 'Engagement Form', file: `Engagement Form ${r.sn}.pdf`, meta: base.concat([['Branch', r.branch], ['Entry Mode', r.entry]]),
+        cols: ['Engagement', 'Date', 'Period', 'Ends', 'Approved By'], rows: [['First engagement', fmt(r.enlisted), '-', '-', 'Recruitment board']].concat(re.slice().reverse().map((x, i) => [`Re-engagement ${i + 1}`, fmt(x.date), `${x.months} months`, fmt(x.until), x.approved])), sign: ['Rating', 'Divisional Officer', 'Commanding Officer'] });
+    }
+  }
+
+  // ---- 4. Discharge Report: closed discharges and re-engagements ----
+  const disRecords = () => DISCH.filter((x) => x.state === 'closed').map((x) => ({ kind: 'd', sn: x.sn, type: x.type, date: x.date, x, r: bySn(x.sn) }))
+    .concat(REENG.map((x) => ({ kind: 'r', sn: x.sn, type: 'Re-engagement', date: x.date, x, r: bySn(x.sn) })));
+  function disReportRows(f, { from, to } = {}) {
+    return disRecords().filter((o) => (!f.type || o.type === f.type) && (!f.rate || o.r.rate === f.rate) && (!f.branch || o.r.branch === f.branch) && (!from || o.date >= from) && (!to || o.date <= to)).sort((a, b) => b.date - a.date || a.sn.localeCompare(b.sn));
+  }
+  const recType = (o) => (o.kind === 'r' ? `<span class="${pill.success}">Re-engagement</span>` : typeFor(o.type)) + (o.kind === 'd' && o.date > TODAY ? ` <span class="${pill.warning}">Scheduled</span>` : '');
+  function viewDisReport() {
+    const f = S.f.disReport || {}; const rg = rangeOf(f); const rows = rg.bad ? [] : disReportRows(f, rg);
+    const n = (fn) => rows.filter(fn).length;
+    return pageHeader('Discharge Report', 'Closed discharges and re-engagements, by exit date', `<button type="button" data-d2="dis-report-pdf" ${rows.length ? '' : 'disabled'} class="${btn.blue} disabled:opacity-50">${ic('printer')}Print PDF</button><button type="button" data-d1="excel" ${rows.length ? '' : 'disabled'} class="${btn.outline} disabled:opacity-50">${ic('file-spreadsheet')}Export Excel</button>`)
+      + d1Filters('disReport', [{ name: 'from', label: 'Exit From', type: 'date', w: 'w-40' }, { name: 'to', label: 'Exit To', type: 'date', w: 'w-40' }, { name: 'type', label: 'Exit Type', list: EXIT_TYPES.concat(['Re-engagement']), ph: 'All Types', w: 'w-52' }, { name: 'rate', label: 'Rate', list: RATES, ph: 'All Rates', w: 'w-56' }, { name: 'branch', label: 'Branch', list: BRANCHES, ph: 'All Branches', w: 'w-48' }])
+      + (rg.bad ? `<div class="mb-4">${notice('error', 'circle-alert', esc(rg.bad))}</div>` : stat3([['Discharges', n((o) => o.kind === 'd' && o.date <= TODAY)], ['Scheduled', n((o) => o.kind === 'd' && o.date > TODAY), 'text-warning'], ['Re-engagements', n((o) => o.kind === 'r'), 'text-success']]))
+      + d1Table('disReport', rows, {
+        cols: [['Official No', (o) => o.sn], ['Name', (o) => nameSub(o.r)], ['Type', (o) => recType(o), 'whitespace-normal'], ['Exit Date', (o) => fmt(o.date)]],
+        open: (o) => d2Dialog({ title: fullName(o.r), size: 'md',
+          rows: [['Official No', o.sn], ['Rate', esc(o.r.rate)], ['Type', recType(o)], [o.kind === 'r' ? 'Re-engagement Date' : 'Exit Date', fmt(o.date)], ['Date Employed', fmt(o.r.enlisted)], ['Length of Service', `${years(o.r.enlisted, o.date)} years`]]
+            .concat(o.kind === 'r' ? [['Period', `${o.x.months} months`], ['Ends', fmt(o.x.until)], ['Approved By', esc(o.x.approved)], ['Recorded', `${fmt(o.x.on)} by ${esc(o.x.by)}`]]
+              : [['Exit Reason', esc(o.x.reason || '-')], ['Approved By', esc(o.x.approved || '-')], ['Proposal', esc(o.x.prop)], ['Closed', `${fmt(o.x.closedOn)} by ${esc(o.x.closedBy)}`], ['Comment', esc(o.x.comment || '-')], ['Death Documents', o.x.type === 'Deceased' ? esc(['Death certificate', 'Condolence letter', 'Evidence of payment', 'Sworn affidavit'].filter((_, i) => Object.values(o.x.docs)[i]).join(', ') || 'None recorded') : '-']]),
+          acts: lbtn(`ratings/record/${o.sn}`, 'Open Record', 'id-card') + d2b('form-print', `${o.kind === 'r' ? 'reeng' : 'retire'}:${o.sn}`, o.kind === 'r' ? 'Re-engagement Verification' : 'Retirement Routine', 'file-text', 'blue') }),
+        card: (o) => ({ t: esc(fullName(o.r)), s: `${o.sn} · ${esc(o.type)}`, r: `<span class="${o.kind === 'd' && o.date > TODAY ? pill.warning : pill.success}">${fmt(o.date)}</span>`, body: esc(o.kind === 'r' ? `${o.x.months} months` : o.x.reason || '') }),
+        empty: ['file-text', rg.bad ? 'Check the Dates' : 'No Records in This Report', rg.bad ? 'Fix the dates above to see the report.' : 'No closed discharge or re-engagement matches these filters.', rg.bad ? '' : `<button type="button" data-d1="reset" data-key="disReport" class="${btn.outline}">${ic('rotate-ccw')}Reset Filters</button>`],
+      });
+  }
+  D2ACT['dis-report-pdf'] = () => { const f = S.f.disReport || {}; const rows = disReportRows(f, rangeOf(f));
+    d1Pdf({ title: 'Discharge Report', file: 'Discharge Report.pdf', meta: [['Period', `${f.from || 'Start'} to ${f.to || 'No limit'}`], ['Exit Type', f.type || 'All'], ['Rate', f.rate ? short(f.rate) : 'All'], ['Branch', f.branch || 'All'], ['Records', String(rows.length)]],
+      cols: ['Official No', 'Name', 'Rate', 'Date Employed', 'Service', 'Type', 'Exit Date', 'Reason', 'Approved By'], rows: rows.map((o) => [o.sn, upperName(o.r), short(o.r.rate), fmt(o.r.enlisted), `${years(o.r.enlisted, o.date)} yrs`, o.type, `${fmt(o.date)}${o.kind === 'd' && o.date > TODAY ? ' (scheduled)' : ''}`, o.kind === 'r' ? `${o.x.months} months` : o.x.reason || '-', o.x.approved || '-']), sign: ['Prepared By', 'Director of Personnel (Navy)'] }); };
+
+  // ---- 5. Upload Discharge: the template is keyed by Official No; each row closes a discharge ----
+  const pickD = (n) => { const pool = current().filter((r) => r !== me && !dRowOf(r.sn)); return pool[(n * 2 + 1) % pool.length].sn; };
+  UP.discharge = { title: 'Upload Discharge', sub: 'Close many discharges from one workbook', noun: 'discharges', template: 'Discharge Upload Template.xlsx', sheet: 'discharges',
+    cols: ['Official No', 'Exit Type', 'Exit Date', 'Authority', 'Approved By', 'Comment'], effect: 'closes the discharge: the rating moves to Former Ratings on its exit date, or shows as scheduled if the date is later',
+    issues: [[6, 'B0611', 'Official No', 'B0611 is not on the roll', 'error'], [9, pickD(1), 'Exit Type', '"Retirement" is not in Static Tables, Exit Type', 'error'], [13, pickD(2), 'Exit Date', '31/02/2026 is not a date', 'error'], [16, pickD(3), 'Exit Date', 'The exit date is before the date the rating joined', 'error'],
+      [20, ratings.filter((r) => r.status === 'former')[0].sn, 'Duplicate', 'Already discharged: the rating left the service and is a former rating', 'skipped'], [24, ratings.find((r) => dPending(r.sn)).sn, 'Duplicate', 'Already in an open proposal; process it on Process Discharge', 'skipped']] };
+  function viewDisUpload() {
+    const key = 'discharge'; const cfg = UP[key]; const us = S.up[key] || { step: 0 }; const files = UPFILES(cfg); const file = files.find((f) => f.id === us.file);
+    const stepHead = (n, title, on, done) => `<div class="flex items-center gap-3"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-semibold ${done ? 'bg-primary text-primary-foreground' : on ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'}">${done ? ic('check') : n}</span><h2 class="text-sm font-semibold">${title}</h2></div>`;
+    const ok = file && !file.error; const st = us.step; const tone = (i) => (i[4] === 'error' ? pill.error : pill.warning);
+    const card3 = ok && st >= 1
+      ? `<div class="grid grid-cols-3 gap-2 text-center"><div class="rounded-ctl bg-success-soft p-2 text-success"><b class="block text-lg">${file.ready}</b><span class="text-2xs">${st === 2 ? 'Closed' : 'Ready'}</span></div><div class="rounded-ctl bg-warning-soft p-2 text-warning"><b class="block text-lg">${file.skipped}</b><span class="text-2xs">Skipped</span></div><div class="rounded-ctl bg-error-soft p-2 text-error"><b class="block text-lg">${file.errors}</b><span class="text-2xs">Errors</span></div></div>
+        <button type="button" data-d2="dis-import" ${st === 2 ? 'disabled' : ''} class="${btn.primary} w-full disabled:opacity-50">${ic('check')}${st === 2 ? 'Imported' : `Import ${file.ready} Discharges`}</button>`
+      : '<p class="text-sm text-muted-foreground">Choose a workbook to see what will be imported.</p>';
+    return pageHeader(cfg.title, cfg.sub)
+      + `<div class="grid grid-cols-3 gap-4 phone:grid-cols-1">
+        <section class="${CARD} space-y-3 p-4">${stepHead(1, 'Download Template', st === 0, st > 0)}<p class="text-sm text-muted-foreground">One row for each discharge. The workbook lists the allowed exit types. The rating's name, rate and ship are not repeated: they come from the record.</p>
+          <div class="flex flex-wrap gap-1.5">${cfg.cols.map((c) => `<span class="${pill.neutral}">${esc(c)}</span>`).join('')}</div>
+          <button type="button" data-d1="up-template" class="${btn.blue}">${ic('file-spreadsheet')}Download Template</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(2, 'Choose File', st <= 1, st > 1)}
+          <button type="button" data-d1="up-choose" data-id="${key}" class="flex w-full flex-col items-center gap-2 rounded-card border-2 border-dashed border-input bg-subtle px-4 py-6 text-center text-sm text-muted-foreground transition-colors hover:border-ring">${ic('file-up', 'icon h-7 w-7')}${file ? `<b class="text-foreground">${esc(file.name)}</b>${file.error ? 'Could not be read' : `${file.rows} rows read`}` : 'Choose an .xlsx workbook'}</button></section>
+        <section class="${CARD} space-y-3 p-4">${stepHead(3, 'Review and Import', st === 1, st > 1)}${card3}</section></div>`
+      + (file && file.error ? `<div class="mt-4">${notice('error', 'circle-alert', `<b>${esc(file.name)} was not read.</b> ${esc(file.error)}`)}</div>` : '')
+      + (st === 2 ? `<div class="mt-4">${notice('success', 'circle-check', `<b>${file.ready} discharges closed.</b> ${file.skipped} skipped as duplicates and ${file.errors} not imported because of errors. Each import ${cfg.effect}. Closed is final.`)}</div>` : '')
+      + (ok && st >= 1 ? `<div class="mt-4"><div class="mb-2 flex items-center gap-3"><h2 class="text-sm font-semibold">Rows Not ${st === 2 ? 'Imported' : 'Ready'}</h2><button type="button" data-d1="excel" class="${btn.ghost} ml-auto">${ic('download')}Download Error Rows</button></div>`
+        + d1Table('updischarge', cfg.issues, {
+          cols: [['Row', (i) => i[0]], ['Official No', (i) => esc(i[1])], ['Problem', (i) => esc(i[3]) + subl(esc(i[2])), 'whitespace-normal'], ['Result', (i) => `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`]],
+          title: (i) => `Row ${i[0]} · ${i[1]}`, all: (i) => [['Row', i[0]], ['Official No', esc(i[1])], ['Field', esc(i[2])], ['Result', `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`], ['Problem', esc(i[3])]], size: 'md',
+          card: (i) => ({ t: `Row ${i[0]} · ${esc(i[1])}`, s: esc(i[2]), r: `<span class="${tone(i)}">${i[4] === 'error' ? 'Error' : 'Skipped'}</span>`, body: esc(i[3]) }) }) + '</div>' : '');
+  }
+  D2ACT['dis-import'] = () => { const file = UPFILES(UP.discharge).find((f) => f.id === S.up.discharge.file);
+    d2Form({ title: 'Import Discharges', size: 'sm', submit: `Import ${file.ready}`, icon: 'check', tone: 'danger',
+      body: `<p class="text-sm">Close <b>${file.ready}</b> discharges? ${file.skipped} duplicates and ${file.errors} rows with errors are left out.</p>${notice('warning', 'triangle-alert', 'Each row closes a discharge, and a closed discharge is final. A rating with a past exit date moves to Former Ratings; a later date shows as scheduled.')}`,
+      onSubmit: () => { S.up.discharge.step = 2; return { done: `${file.ready} discharges imported.` }; } }); };
+
+  // ---- the Report menu's two PDFs and the Static Tables list printout (the old pages loaded these Crystal reports) ----
+  D2ACT['report-pdf'] = (el) => {
+    const slug = el.dataset.id; const st = state.report;
+    if (slug === 'all-personnel') {
+      const rows = ratings.filter((x) => (st.status === 'all' || !st.status || x.status === st.status) && (!st.rate || x.rate === st.rate) && (!st.branch || x.branch === st.branch) && (!st.command || x.command === st.command));
+      d1Pdf({ title: 'Ratings Report', file: 'Personel.pdf', meta: [['Status', st.status && st.status !== 'all' ? (st.status === 'current' ? 'Current' : 'Former') : 'All'], ['Rate', st.rate ? short(st.rate) : 'All'], ['Branch', st.branch || 'All'], ['Command', st.command || 'All'], ['Ratings', String(rows.length)]],
+        cols: ['Official No', 'Rate', 'Surname', 'First Name', 'Branch', 'Specialisation', 'Ship', 'Command', 'Date of Birth', 'Date Joined'], rows: rows.map((x) => [x.sn, short(x.rate), x.surname.toUpperCase(), `${x.first} ${x.middle}`, x.branch, x.spec || '-', x.status === 'current' ? x.ship : '-', x.command, fmt(x.dob), fmt(x.enlisted)]), sign: ['Prepared By', 'Director of Personnel (Navy)'] });
+    } else if (slug === 'disposition') {
+      const rows = current().filter((x) => !st.command || x.command === st.command).sort((a, b) => a.ship.localeCompare(b.ship) || RATES.indexOf(b.rate) - RATES.indexOf(a.rate));
+      d1Pdf({ title: 'Disposition Report', file: 'Disposition Report.pdf', meta: [['Area Office', st.command || 'All'], ['As At', fmt(TODAY)], ['Current Ratings', String(rows.length)]],
+        cols: ['Official No', 'Surname', 'First Name', 'Rate', 'Sex', 'Trade', 'Ship or Unit', 'Area Office', 'WEF'], rows: rows.map((x) => [x.sn, x.surname.toUpperCase(), x.first, short(x.rate), x.gender === 'Female' ? 'F' : 'M', x.spec || '-', x.ship, x.command, fmt(x.shipSince)]), sign: ['Prepared By', 'Director of Personnel (Navy)'] });
+    } else toast('Demo only: the Ship History Report is an Excel workbook; use Export Excel.');
+  };
+  // one generic list printout for every Static Tables page
+  D2ACT['table-print'] = () => {
+    const slug = route.slice(7); const t = T2(slug); const q = (state.qs[slug] || '').trim().toLowerCase();
+    const rows = t.rows.filter((r) => !q || r.join(' ').toLowerCase().includes(q));
+    d1Pdf({ title: t.title, file: `${t.title}.pdf`, meta: [['List', t.title], ['Entries', String(rows.length)], ['Printed By', 'HICO001']], cols: ['#'].concat(t.cols, ['Status']),
+      rows: rows.map((r, i) => [String(i + 1)].concat(r.map(String), [(t.off || []).includes(r[0]) ? 'Inactive' : 'Active'])), sign: ['Prepared By', 'Director of Personnel (Navy)'] });
+  };
+  // ==== D2 END: Discharge Administration ====
+
+  // ==== D2 BEGIN: wiring for the two modules (routes, tabs, events, dashboard and record hooks) ====
+  MODULE_TABS.disciplinary = DISC_TABS; MODULE_TABS.discharge = DIS_TABS;
+  const D2 = {
+    owns: (rt) => /^(disciplinary|discharge)\//.test(rt),
+    tabOf: (rt) => rt.split('/').slice(0, 2).join('/'),
+    view: (rt) => {
+      const [mod, page] = rt.split('/');
+      const v = mod === 'disciplinary' ? { initiate: viewInitiate, pending: viewPending, concluded: viewConcluded, report: viewDiscReport }[page]
+        : { process: viewProcess, service: viewService, forms: viewForms, report: viewDisReport, upload: viewDisUpload }[page];
+      return v ? v() : null;
+    },
+    casesOf: (sn) => casesOfSn(sn),
+    recordTab: (r) => viewDisciplineTab(r),
+    pills: (r) => `${r.exitSched ? `<span class="${pill.warning}">Leaves ${fmt(r.exitSched.date)}</span>` : ''}${r.status === 'current' && reengActive(r.sn) ? `<span class="${pill.success}">Re-engaged to ${fmt(reengOf(r.sn)[0].until)}</span>` : ''}`,
+    stats: () => {
+      const y = TODAY.getFullYear();
+      const drafted = FLOWS.DOD.batches.reduce((n, b) => n + b.rows.filter((x) => !x.rejected && x.wef && x.wef <= TODAY && x.wef.getFullYear() === y).length, 0);
+      return { drafted, openDraft: openBatches('DOD').length, pending: pendingCases().length, decided: concludedCases().filter((c) => c.decisionDate.getFullYear() === y).length, discharged: DISCH.filter((x) => x.state === 'closed' && x.date.getFullYear() === y).length, proposed: pendingRowsAll().length };
+    },
+  };
+  document.addEventListener('click', (e) => { const el = e.target.closest('[data-d2]'); if (!el) return; const fn = D2ACT[el.dataset.d2]; if (fn) fn(el, e); });
+  document.addEventListener('change', (e) => {
+    const n = e.target.getAttribute && e.target.getAttribute('name'); if (!n) return;
+    if (n === 'd2p-prop') { D2S.prop = e.target.value; state.pages.disProp = 1; render(); }
+    else if (n === 'ptype') { const box = document.querySelector('#dialog [data-docs]'); if (box) box.classList.toggle('hidden', e.target.value !== 'Deceased'); }
+  });
+  // ==== D2 END: wiring ====
 
   // ==========================================================================
   // Session lock (password only): after the idle limit, or from the account menu.
@@ -2433,6 +3124,7 @@
     else if (route.startsWith('reports/') && REPORTS.some((t) => t.slug === route.slice(8))) html = viewReport(route.slice(8));
     else if (route.startsWith('admin/') && ADMIN_TABS.some((t) => t.route === route)) html = viewAdmin(route.slice(6));
     else if (D1.owns(route)) { html = D1.view(route); if (html === null) { location.replace('#dashboard'); return; } }
+    else if (D2.owns(route)) { html = D2.view(route); if (html === null) { location.replace('#dashboard'); return; } }
     else { location.replace('#dashboard'); return; }
     view.innerHTML = html;
     renderRail(route);
@@ -2502,7 +3194,7 @@
   function paletteItems() {
     const q = $('#palette-input').value.trim().toLowerCase();
     const screens = [{ label: 'Dashboard', href: 'dashboard', icon: 'layout-dashboard' }, ...RATINGS_TABS.map((t) => ({ label: `Ratings · ${t.label}`, href: t.route, icon: 'users' })), { label: 'New Rating', href: 'ratings/new', icon: 'user-plus' },
-      ...['drafting', 'training-drafting', 'advancement', 'tables', 'reports', 'admin'].flatMap((k) => { const m = MODULES.find((x) => x.key === k); return MODULE_TABS[k].map((t) => ({ label: `${m.label} · ${t.label}`, href: t.route, icon: m.icon })); }),
+      ...['drafting', 'training-drafting', 'advancement', 'disciplinary', 'discharge', 'tables', 'reports', 'admin'].flatMap((k) => { const m = MODULES.find((x) => x.key === k); return MODULE_TABS[k].map((t) => ({ label: `${m.label} · ${t.label}`, href: t.route, icon: m.icon })); }),
       ...MODULES.filter((m) => m.soon).map((m) => ({ label: m.label, href: `soon/${m.key}`, icon: m.icon }))].filter((s) => !q || s.label.toLowerCase().includes(q));
     const people = (q ? ratings.filter((r) => `${r.sn} ${r.surname} ${r.first} ${r.middle}`.toLowerCase().includes(q)) : ratings.slice(0, 4))
       .slice(0, 6).map((r) => ({ label: fullName(r), sub: `${r.sn} · ${r.status === 'current' ? r.ship : 'Former'}`, href: `ratings/record/${r.sn}`, rating: r }));
