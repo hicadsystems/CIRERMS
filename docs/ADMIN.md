@@ -116,16 +116,16 @@ WP0, WP1, D1 and T1:
    (it is in `docs/PLAN.md` section 7), listing branch and last commit, what was built against the
    scope, checks and results, anything not verified, what the next package must know; then stop.
 
-## 6. Where things stand (19/11/2026)
+## 6. Where things stand (19/11/2026, wave C)
 
 | Item | State |
 |---|---|
-| master | WP0 (`docs/legacy/`), WP1 (access, audit, lock, module registration), the plan, the demo with light and dark mode |
-| `project-plan` | Commits ahead of master: section 9a decisions, status updates, this handbook. Owner to merge |
-| D1 `design-drafting` | Session `session_01G8RfvhowaPjDAhdbMMevYk`. Done at 62992bc (21 pages, wide tables, section 9a decisions) and checked by the administrator. Sent to the owner to review; changes they ask for go on the same branch. Owner merges, then archive the session |
-| T1 `fluid-type` | Session `session_01G8Rfvn3mdwH2Gn2PpotpHL`. Done at c0ed596 and checked by the administrator (166 passed, phone screens looked at). Owner to merge, then archive the session |
-| Next, wave C | D2 `design-casework` (Sonnet 5.5, medium) once D1 is merged: Disciplinary, Discharge, the in-scope printouts, dashboard tiles; add after D1's blocks in `demo-src.html` (D1 marked them "D1 BEGIN / D1 END"; D2 goes before the "Session lock" section). WP2 `static-tables` (Sonnet 5.5, medium) once T1 is merged |
-| Later waves | D: WP3, WP4. E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
+| master | WP0, WP1, T1 (fluid type), D1 (Drafting, Training Drafting, Advancement in the demo), the plan, the demo with light and dark mode |
+| `project-plan` | Section 9b and 9c decisions, wave C status. Owner to merge |
+| D1, T1 | Merged 19/11/2026; sessions archived |
+| D2 `design-casework` | Session `session_01G8RfvnRMAeYTMGRGgXUgG9` (Sonnet 5.5, medium), started 19/11/2026 with the section 9b decisions in its brief. On report: check, send the owner `demo.html` to review (Memos and Mails and Appraisals tiles are the owner's call), owner merges, archive |
+| WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA` (Sonnet 5.5, medium), started 19/11/2026 with the section 9c decisions in its brief. On report: check, run the access walkthrough and its own `tests/e2e/static-tables-walkthrough.js`, owner merges, archive |
+| Next, wave D | WP3 `system-admin` and WP4 `disciplinary` (both Sonnet 5.5, medium) once WP2 is merged (WP4 also needs D2). Later waves: E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`

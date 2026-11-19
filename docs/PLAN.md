@@ -192,11 +192,11 @@ the next wave once the owner has merged.
 |---|---|---|---|
 | `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
 | WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
-| D1 | Done, checked; for the owner's review (Sonnet 5.5 · high) | `design-drafting` | 19/11/2026: 62992bc, 21 pages with the wide-table rule and the section 9a decisions, only `docs/design/`; checked by the administrator: the demo rebuilds identically, every new page at 1440 and 390 px in both themes, no browser errors, no sideways scrolling |
+| D1 | Merged 19/11/2026 (Sonnet 5.5 · high; about $11 at API prices) | `design-drafting` | 19/11/2026: 62992bc, 21 pages with the wide-table rule and the section 9a decisions, only `docs/design/`; checked by the administrator: the demo rebuilds identically, every new page at 1440 and 390 px in both themes, no browser errors, no sideways scrolling |
 | WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
-| T1 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
-| D2 | Not started | `design-casework` | |
-| WP2 | Not started | `static-tables` | |
+| T1 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.64) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
+| D2 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvnRMAeYTMGRGgXUgG9`; decisions in section 9b | `design-casework` | |
+| WP2 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvmkVq1wRk75f9xaxJA`; decisions in section 9c | `static-tables` | |
 | WP3 | Not started | `system-admin` | |
 | WP4 | Not started | `disciplinary` | |
 | WP5 | Not started | `discharge` | |
@@ -209,7 +209,7 @@ the next wave once the owner has merged.
 
 ## 9. Open questions
 
-- **Who is due (draft, advancement, training drafting).** The rules lived in the live database's
+- **Who is due (draft, advancement, training drafting, discharge).** The rules lived in the live database's
   procedures and views; we have neither, and the owner has no access to the live server. Known so far
   (`docs/legacy/drafting.md`, `advancement.md`): months on a ship 10 to 20 green, 21 to 24 amber,
   over 24 red; months in rate 48 to 50 green, 51 to 54 amber, over 54 red. The design (D1) goes on
@@ -248,6 +248,58 @@ Asked by D1, decided by the administrator at the owner's request (19/11/2026). T
    rating in Update Training History.
 7. **Due rules** stay placeholders until Hicad supplies the real ones (section 9). The build keeps
    the thresholds as settings in the database, so the real values go in without a code change.
+
+## 9b. Design decisions for Disciplinary Action and Discharge Administration
+
+Decided by the administrator before D2 started, at the owner's request (19/11/2026), from the open points in
+`docs/legacy/disciplinary.md` and `discharge.md`. D2, WP4 and WP5 follow them; the owner can change any of them.
+
+1. **Initiating and concluding are separate privileges.** Initiate Incident is the add action; concluding a case
+   (decision date, sanction, decision, authority) is the approve action on Pending Cases. Only a current rating can
+   have a case opened.
+2. **A concluded case is final.** A correction is made with **Correct** on Concluded Cases (the edit action, a
+   required reason, in the audit trail). A case opened by mistake is **Cancelled** from Pending Cases (the delete
+   action, a required reason); nothing is deleted outright, and a cancelled case leaves the lists.
+3. **The Disciplinary Report is a real report**: Concluded Cases with filters (dates, offence, sanction, ship, rate),
+   printed as PDF and exported to Excel; Pending Cases prints its own list. The rating's record gains a
+   **Discipline** tab, seen only by someone who may view Concluded Cases; it is not on My Details and does not count
+   towards the record's completeness.
+4. **Discharge keeps the old flow** (propose, process, report) in D1's patterns: the due list only reads, a proposal
+   is made in a confirming dialog, each rating is processed in its record dialog (exit type, exit date, reason, and
+   the death documents only for a death). **Closing makes the rating Former** on its exit date; a future exit date
+   shows as scheduled and takes effect on that date (as 9a decision 4). A closed discharge is final. `LiveStatus` is
+   not carried over.
+5. **Re-engagement is not a discharge.** It is its own action in the rating's dialog on Process Discharge
+   (re-engagement date, period in months, approved by); the rating stays current, and the Re-engagement Verification
+   form prints from it.
+6. **Who is due for discharge** is unconfirmed, as in section 9: the age and length-of-service bands in
+   `docs/legacy/discharge.md` 1.5 are placeholder rules, kept as database settings by the build.
+7. **A pending disciplinary case shows a warning** on Process Discharge; nothing blocks (as 9a decision 1).
+8. **The discharge upload template** is keyed by official number, as D1's uploads, with the fields the old import
+   reads (section 9).
+
+## 9c. Decisions for Static Tables (WP2)
+
+Decided by the administrator before WP2 started, at the owner's request (19/11/2026).
+
+1. **One engine for the 16 tables**, as the demo shows them (columns, Active state, add and edit in a dialog). Five
+   have no table yet and WP2 creates them with the demo's columns: Appraisal Ratings, Disciplinary Offence,
+   Disciplinary Sanction, Institution, Training.
+2. **Delete only what nothing uses.** A row in use cannot be deleted (the message says where it is used); it can be
+   made inactive, which takes it out of the dropdowns while records that hold it still show it. A row not in use is
+   deleted after a confirmation.
+3. **A privilege per table**: screen `tables.<slug>` with view, add, edit and delete; Manage Roles groups them under
+   Static Tables. The dropdown lists (`/api/lookups`) stay readable by anyone who may open a ratings screen, My
+   Details included.
+4. **A Training course says who may attend** (9a decision 6): Course, Institution (from the Institution table),
+   Weeks, Branch (or Any), Specialisation (or Any) and Rates (none means every rate). The list shows Course,
+   Institution and Weeks; the rest is in the row's dialog. The demo lacks the three fields; this decision stands in
+   for its design.
+5. **Codes** only where the demo shows a Code column (Appraisal Ratings, Offences). The old codes that carry meaning
+   (Exit Type A/M/C, Branch, State and others in `docs/legacy/static-tables.md` 17) are settled before the import of
+   the old records.
+6. **Relationship** is the next-of-kin type table (`ref_next_of_kin_type`). Rates and the other dropdown tables that
+   are not among the 16 stay seeded by SQL, as in the old system.
 
 ## 10. Notes for later phases
 
