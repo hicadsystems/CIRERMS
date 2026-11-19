@@ -18,7 +18,7 @@
  * the Discipline tab on a rating's record, every rule refused with its message (in the dialogs and
  * on the API), the Static Tables in-use refusal, and the audit trail. Then each layout (1440 and
  * 390 px, light and dark) draws every page and dialog with nothing overflowing; the role that may
- * initiate and view but not conclude (NAVPERS02), a rating and a report-only role are checked.
+ * initiate and view but not conclude (B0588), a rating and a report-only role are checked.
  */
 const fs = require('fs');
 const os = require('os');
@@ -32,10 +32,10 @@ const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:3000';
 const SHOTS = process.env.SHOTS || '';
 const ADMIN = { username: 'HICO001', password: 'Admin@123' };
-const OFFICER = { username: 'NAVPERS01', password: 'Admin@123' };
-const INITIATOR = { username: 'NAVPERS02', password: 'Admin@123' };
+const OFFICER = { username: 'B0575', password: 'Admin@123' };
+const INITIATOR = { username: 'B0588', password: 'Admin@123' };
 const RATING = { username: 'B0539', password: 'Rating@123' };
-const REPORTER = { username: 'WTDREPORT', password: 'Report@123' };
+const REPORTER = { username: 'B0601F', password: 'Report@123' };
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
@@ -589,11 +589,11 @@ async function layoutPass(browser, viewport, theme) {
 // ---------------------------------------------------------------------------
 async function limitedRoles(browser, db) {
   console.log('\nRoles that may not do everything');
-  // NAVPERS02: initiate and view
+  // B0588: initiate and view
   let s = await open(browser, { viewport: DESKTOP, theme: 'dark' });
   await signIn(s.page, INITIATOR);
   await go(s.page, 'disciplinary/pending'); await waitRows(s.page);
-  for (const t of ['Initiate Incident', 'Pending Cases', 'Concluded Cases', 'Disciplinary Report']) check(await s.page.locator('a', { hasText: t }).filter({ visible: true }).count() > 0, `NAVPERS02 sees the ${t} tab`);
+  for (const t of ['Initiate Incident', 'Pending Cases', 'Concluded Cases', 'Disciplinary Report']) check(await s.page.locator('a', { hasText: t }).filter({ visible: true }).count() > 0, `B0588 sees the ${t} tab`);
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
   check(await dialogOf(s.page).getByRole('button', { name: 'Conclude', exact: true }).count() === 0 && await dialogOf(s.page).getByRole('button', { name: 'Cancel Case' }).count() === 0, 'without approve and delete: no Conclude and no Cancel Case');
   check(await dialogOf(s.page).getByRole('button', { name: 'Print Case' }).count() === 1, 'but Print Case is there');
@@ -621,12 +621,12 @@ async function limitedRoles(browser, db) {
   await dialogOf(s.page).locator('[name="what_happened"]').fill('Opened by the initiator role.');
   await dialogOf(s.page).locator('[name="reported_by"]').fill('Walk-through Officer');
   await dialogOf(s.page).getByRole('button', { name: 'Open Case' }).last().click();
-  check(/opened for/.test(await toastText(s.page, /opened for/)), 'NAVPERS02 can open a case');
+  check(/opened for/.test(await toastText(s.page, /opened for/)), 'B0588 can open a case');
   check((await api(s.page, 'GET', '/api/disciplinary/rating/B0539/cases')).status === 200, 'it may view Concluded Cases, so the Discipline tab\'s list is open to it');
   check(s.errors.length === 0, 'no browser errors', s.errors.join(' | '));
   await s.context.close();
 
-  // the Disciplinary Actions role (NAVPERS01) has everything
+  // the Disciplinary Actions role (B0575) has everything
   s = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(s.page, OFFICER);
   await go(s.page, 'disciplinary/pending'); await waitRows(s.page);

@@ -6,14 +6,16 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const config = require('../../config');
+const { COLOURS } = require('../../shared/pdf');
 const { dmy: formatDisplayDate } = require('./disciplinary.format');
 
 const LOGO = path.join(config.publicDir, 'assets', 'navy-logo.png');
-const INK = '#1d2939';
-const MUTED = '#556070';
-const BLUE = '#0074a8';
-const LINE = '#d3d7db';
-const STRIPE = '#f5f7f9';
+const INK = COLOURS.darkInk;
+const MUTED = COLOURS.mutedInk;
+const BLUE = COLOURS.navyBlue;
+const LINE = COLOURS.border;
+const STRIPE = COLOURS.rowStripe;
+const argb = (hex) => `FF${hex.slice(1).toUpperCase()}`;
 const d = (v) => formatDisplayDate(v) || '-';
 const t = (v) => (v === null || v === undefined || v === '' ? '-' : String(v));
 const nameOf = (c) => `${c.rate ? `${c.rate} ` : ''}${c.name}`;
@@ -84,7 +86,7 @@ function table(doc, cols, rows) {
     doc.rect(m, y, usable, 20).fill(BLUE);
     let x = m;
     cols.forEach((c, i) => {
-      doc.fillColor('#faf9f0').font('Helvetica-Bold').fontSize(8).text(c.h, x + 4, y + 6, { width: widths[i] - 8, lineBreak: false });
+      doc.fillColor(STRIPE).font('Helvetica-Bold').fontSize(8).text(c.h, x + 4, y + 6, { width: widths[i] - 8, lineBreak: false });
       x += widths[i];
     });
     doc.y = y + 20;
@@ -190,8 +192,8 @@ async function reportWorkbook({ rows, labels, generatedBy }) {
   ws.addRow([]);
   const head = ws.addRow(['Case', 'Official No', 'Name', 'Rate', 'Ship', 'Offence', 'Incident Date', 'What Happened', 'Reported By', 'Decision Date', 'Sanction', 'Decision', 'Authority']);
   head.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: 'FFFAF9F0' } };
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0074A8' } };
+    cell.font = { bold: true, color: { argb: argb(STRIPE) } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argb(BLUE) } };
   });
   rows.forEach((c) => ws.addRow([c.caseNumber, c.serviceNumber, c.name, c.rate, c.ship, c.offence, d(c.incidentDate), c.what, c.reportedBy, d(c.decisionDate), c.sanction, c.decision, c.authority]));
   [14, 14, 30, 24, 22, 30, 14, 44, 30, 14, 20, 44, 28].forEach((w, i) => { ws.getColumn(i + 1).width = w; });
