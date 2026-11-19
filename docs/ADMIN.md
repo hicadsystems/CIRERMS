@@ -125,7 +125,8 @@ WP0, WP1, D1 and T1:
 | D1, T1, D2 | Merged 19/11/2026; sessions archived |
 | WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit). On report: check, run the three walkthroughs, owner merges, archive |
 | WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA`. The owner merged the branch by mistake at 540100d before its report; master checked (see PLAN status). Told to fix the Death seed and keep adding commits on top. On report: check the new commits and its walkthrough (it runs over 15 minutes: run it in the background), owner merges `static-tables` again, archive |
-| Next | WP4 `disciplinary` (Sonnet 5.5, medium) once WP2 is finished and merged (D2 is merged). Then wave E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
+| WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
+| Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`
