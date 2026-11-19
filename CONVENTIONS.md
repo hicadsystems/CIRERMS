@@ -35,7 +35,8 @@ CIRERMS/
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
 │  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
-│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js
+│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js,
+│  │                            # settings/ (values the business may change: the due rules), scheduled/ (changes that take effect on a later date)
 │  ├─ templates/printouts/      # the printout templates (.hbs), partials, printout.css, helpers.js, fonts: D4's approved design
 │  └─ modules/
 │     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
@@ -171,6 +172,7 @@ DROP TABLE ratings;
 10. `20261120_030000_users_admin.sql` — `users`: e-mail, phone, Specialisation, `must_change_password`, `password_changed_at` (WP3)
 11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
+13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -427,6 +429,34 @@ module.exports = {
   in the completeness). Lists are 25 a page with four key columns, a row opens the case in a dialog (View Details
   tooltip on desktop; `rowTips` in `js/sections/disciplinary-parts.js`), and filters are in a bar that folds into a
   Filters button on a phone.
+- **Drafting** (`src/modules/drafting/`, WP7a): screens `drafting.manning` (view, add, edit, delete),
+  `drafting.proposal` (view; **add** makes a batch), `drafting.review` (view, add, edit, delete), `drafting.approval`
+  (view, **approve**), `drafting.close` (view; **edit** closes), `drafting.wef` (view; **edit** sets the WEF). A user
+  with a Specialisation (`req.user.specialisationId`, from `users.specialisation_id`) is held to that department by
+  the service. Three parts are written to be reused:
+  - **The batch cycle** (`cycle.service.js`, its SQL in `cycle.repo.js`): `batches` (a `flow`: DOD for drafting, DOA
+    for advancement), `batch_approvals` and a flow's own rows table. A package registers its flow
+    (`cycle.registerFlow('DOA', { rowsTable, target, targetLabel, closedStatus, noun })`; the rows table has `id`,
+    `batch_id`, `service_number`, `rate_id`, `specialisation_id`, `approval_id`, `status` with `proposed`,
+    `not_recommended` and its closed status) and calls `batchCode`, `previewBatch`, `openOrCreateBatch` (numbering:
+    the code and a six-digit counter per code), `refreshStatus` (open or approved, after any change to rows),
+    `clearApproval`, `departments` (the approval list with the rate groups in the Rates table's order),
+    `approveDepartment`, `readiness` and `closeBatch` (final; the authority unique across every batch) inside its own
+    transaction. Each audits what it writes.
+  - **The posting move** (`postings.service.js`): `move(tx, actor, { serviceNumber, shipId, wef, authority, remarks,
+    source: { table, id } })` ends the open posting the day before the WEF and opens the new one on it, or, for a WEF
+    after today, schedules it; `onSource(table, { applied, cancelled })` tells the caller's record when a scheduled
+    move is made (or cannot be); `scheduledFor(serviceNumber)` is what is still to come (the record's Drafting tab
+    shows it, `js/sections/drafting-record.js`). Never write `rating_drafting` for a move any other way.
+  - **Scheduled changes** (`src/shared/scheduled`): `register(kind, { apply, cancelled })` at load, `schedule(tx,
+    actor, { kind, serviceNumber, effectiveDate, payload, source })`, `cancel`, `forRating`, `applyDue({ today })`. The
+    server (`src/server.js`) applies the changes due at start and then every hour, each in its own transaction (actor
+    `SYSTEM` in the audit trail); a handler's AppError cancels the change with its message, any other error leaves it
+    for the next run.
+  - **Settings** (`src/shared/settings`, table `settings`: `setting_key`, `value`, `description`): `number(key)`,
+    `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
+    `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
+    rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -457,9 +487,10 @@ module.exports = {
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Drafting, Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
+Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
 Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
+Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
 
 ## Open items
 

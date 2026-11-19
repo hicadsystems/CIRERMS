@@ -27,6 +27,7 @@ function formatUserDto(row) {
     roleId: row.role_id,
     fullAccess: !!row.full_access,
     serviceNumber: row.service_number || null,
+    specialisationId: row.specialisation_id || null, // a drafting officer's department (Drafting)
     lastLoginAt: row.last_login_at || null,
     mustChangePassword: !!row.must_change_password,
   };
