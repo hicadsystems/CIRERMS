@@ -124,7 +124,7 @@ WP0, WP1, D1 and T1:
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP4, D3, the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
 | D1, T1, D2, WP2, WP3, WP4, D3 | Merged 19/11/2026; sessions archived |
-| WP3b `rating-search` | Session `session_01G8Rfvmw9nU1P9zY2F6pwpH` (Sonnet 5.5, medium), started 19/11/2026 at the owner's request: the rating search select everywhere an official number picks a rating. No walkthroughs (owner): check the search on a few screens. Its report lists walkthrough steps that type into replaced fields: the next package (WP6 or WP7a) updates them. Owner merges, archive |
+| WP3b `rating-search` | Session `session_01G8Rfvmw9nU1P9zY2F6pwpH`. Done at 7c31158 and checked. Owner to merge, then archive. The next build package updates these walkthrough steps: system admin (Add Account ~347-359 and ~794, Manage Password ~502-528, ~812, ~1028, Audit ~662, ~677) and disciplinary (Initiate ~218, ~556, ~621; Pending and Concluded `setFilter(..., 'q', ...)` ~159, ~286-385) |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
 | Sessions | One at a time while the weekly limit is at its warning level, unless the owner says otherwise |
 | Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
@@ -149,6 +149,7 @@ Notes for coming briefs:
   `core/access.js` and `shell/lock.js` in `docs/design/components.md`.
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
+- **WP10:** demo data: B0575's middle name is stored in lower case ("archibong"); names should read in capitals.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
   typed official number. The next build package fixes the walkthrough steps WP3b lists.
