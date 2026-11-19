@@ -74,7 +74,22 @@ export const AREAS = [
     key: 'operations',
     label: 'Operations',
     modules: [
-      { key: 'drafting', label: 'Drafting', short: 'Drafting', icon: 'briefcase', soon: true },
+      {
+        key: 'drafting',
+        label: 'Drafting',
+        short: 'Drafting',
+        icon: 'briefcase',
+        href: 'drafting/manning',
+        // the draft cycle (WP7a); Batch/Signal Content, Rate DOD History and Draft Report come with WP7b
+        tabs: [
+          { route: 'drafting/manning', label: 'Update Manning Requirement', icon: 'ship', screen: 'drafting.manning' },
+          { route: 'drafting/proposal', label: 'Print Draft Proposal', icon: 'users', screen: 'drafting.proposal' },
+          { route: 'drafting/review', label: 'Review/Print Draft', icon: 'list', screen: 'drafting.review' },
+          { route: 'drafting/approval', label: 'Draft Approval', icon: 'shield-check', screen: 'drafting.approval' },
+          { route: 'drafting/close', label: 'Close Draft', icon: 'lock', screen: 'drafting.close' },
+          { route: 'drafting/wef', label: 'Update WEF', icon: 'calendar', screen: 'drafting.wef' },
+        ],
+      },
       { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
       { key: 'training-drafting', label: 'Training Drafting', short: 'Training', icon: 'graduation-cap', soon: true },
     ],
@@ -180,6 +195,13 @@ export const PAGES = [
     view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' },
   },
   { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details', view: { file: 'rating-record.js', mount: 'mountMyDetails' } },
+  // Drafting (WP7a): the draft cycle, each page needs view
+  { pattern: 'drafting/manning', module: 'drafting', tab: 'drafting/manning', title: 'Update Manning Requirement', subtitle: 'What each ship or unit needs, and who is aboard now. It advises; it never blocks a draft', short: 'Manning', screen: 'drafting.manning', view: { file: 'drafting.js', mount: 'mountManning' } },
+  { pattern: 'drafting/proposal', module: 'drafting', tab: 'drafting/proposal', title: 'Print Draft Proposal', subtitle: 'Ratings due for a draft; make a batch of them for review', short: 'Draft Proposal', screen: 'drafting.proposal', view: { file: 'drafting.js', mount: 'mountProposal' } },
+  { pattern: 'drafting/review', module: 'drafting', tab: 'drafting/review', title: 'Review/Print Draft', subtitle: 'Choose where each rating is drafted to', short: 'Review Draft', screen: 'drafting.review', view: { file: 'drafting.js', mount: 'mountReview' } },
+  { pattern: 'drafting/approval', module: 'drafting', tab: 'drafting/approval', title: 'Draft Approval', subtitle: 'Approve each department\u2019s draft before its batch is closed', short: 'Draft Approval', screen: 'drafting.approval', view: { file: 'drafting.js', mount: 'mountApproval' } },
+  { pattern: 'drafting/close', module: 'drafting', tab: 'drafting/close', title: 'Close Draft', subtitle: 'Close a reviewed and approved draft with its authority', short: 'Close Draft', screen: 'drafting.close', view: { file: 'drafting.js', mount: 'mountClose' } },
+  { pattern: 'drafting/wef', module: 'drafting', tab: 'drafting/wef', title: 'Update WEF', subtitle: 'Date each posting: the rating moves to the new ship from that date', short: 'Update WEF', screen: 'drafting.wef', view: { file: 'drafting.js', mount: 'mountWef' } },
   // Disciplinary Action (WP4): Initiate Incident needs add; the others need view
   { pattern: 'disciplinary/initiate', module: 'disciplinary', tab: 'disciplinary/initiate', title: 'Initiate Incident', subtitle: 'Open a disciplinary case against a current rating', short: 'Initiate Incident', screen: 'disciplinary.initiate', action: 'add', view: { file: 'disciplinary.js', mount: 'mountInitiate' } },
   { pattern: 'disciplinary/pending', module: 'disciplinary', tab: 'disciplinary/pending', title: 'Pending Cases', subtitle: 'Incidents waiting for a decision', short: 'Pending Cases', screen: 'disciplinary.pending', view: { file: 'disciplinary.js', mount: 'mountPending' } },
