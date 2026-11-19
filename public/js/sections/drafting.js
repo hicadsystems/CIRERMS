@@ -403,10 +403,7 @@ export async function mountApproval(outlet, { info } = {}) {
     empty: { icon: 'shield-check', title: 'No Draft Waiting', text: 'There are no open batches. Make one from the due list first.' },
   });
 
-  function statusPill(d) {
-    if (d.status === 'approved') return pill('Approved', 'success');
-    return pill(d.partly ? 'Approve Again' : 'Waiting', 'warning');
-  }
+  const statusPill = (d) => (d.status === 'approved' ? pill('Approved', 'success') : pill('Waiting', 'warning'));
 
   function rateGroups(d) {
     return h('div', { className: 'grid grid-cols-4 gap-2 phone:grid-cols-4', dataset: { rateGroups: '' } }, d.rateGroups.map((g) => h('div', { className: cx('rounded-ctl border border-border px-2 py-1.5 text-center', g.count ? 'bg-subtle/60' : 'opacity-60') }, [
@@ -441,7 +438,7 @@ export async function mountApproval(outlet, { info } = {}) {
           h('span', { className: 'block truncate text-xs text-muted-foreground', text: `${x.serviceNumber} · ${x.currentShip} to ${x.proposedShip || '?'} · ${x.batchNumber}` }),
         ]),
         x.proposedShip ? (x.approval ? pill('Approved', 'success') : pill('Waiting', 'warning')) : pill('Not set', 'warning'),
-      ])), res.meta.total > res.data.length ? h('p', { className: 'text-xs text-muted-foreground', text: `The first ${res.data.length} of ${res.meta.total}; Export Excel has them all.` }) : null);
+      ])), ...(res.meta.total > res.data.length ? [h('p', { className: 'text-xs text-muted-foreground', text: `The first ${res.data.length} of ${res.meta.total}; Export Excel has them all.` })] : []));
     } catch (err) { rowsBox.replaceChildren(notice('error', 'circle-alert', err.message || 'Could not load the ratings.')); }
   }
 

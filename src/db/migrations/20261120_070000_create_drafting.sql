@@ -3,6 +3,9 @@
 -- scheduled changes (a move that takes effect on a later date) and the batch, approval and close tables
 -- (Advancement, WP8, adds its own rows table beside draft_rows). docs/legacy/drafting.md section 15.
 
+-- Links to users (who did it) are ON DELETE SET NULL: accounts are deactivated, never deleted, but a
+-- test that removes the accounts it made must not be stopped by them.
+
 -- Settings: one row per value the business may change without a code change (the due rules: drafting,
 -- advancement, discharge). Read and changed through src/shared/settings only.
 CREATE TABLE settings (
@@ -16,7 +19,7 @@ CREATE TABLE settings (
   updated_by  INT UNSIGNED NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_settings_key (setting_key),
-  CONSTRAINT fk_settings_updated_by FOREIGN KEY (updated_by) REFERENCES users (id)
+  CONSTRAINT fk_settings_updated_by FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Scheduled changes: a change to a rating that takes effect on a later date (a posting with a future WEF;
@@ -43,7 +46,7 @@ CREATE TABLE scheduled_changes (
   KEY ix_scheduled_changes_rating (service_number, status),
   KEY ix_scheduled_changes_source (source_table, source_id),
   CONSTRAINT fk_scheduled_changes_rating FOREIGN KEY (service_number) REFERENCES ratings (service_number) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_scheduled_changes_user FOREIGN KEY (scheduled_by) REFERENCES users (id)
+  CONSTRAINT fk_scheduled_changes_user FOREIGN KEY (scheduled_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Manning requirement: what a ship or unit needs, per rate and specialisation. Advisory only.
@@ -96,8 +99,8 @@ CREATE TABLE batches (
   CONSTRAINT fk_batches_branch FOREIGN KEY (branch_id) REFERENCES ref_branch (id),
   CONSTRAINT fk_batches_specialisation FOREIGN KEY (specialisation_id) REFERENCES ref_specialisation (id),
   CONSTRAINT fk_batches_rate FOREIGN KEY (rate_id) REFERENCES ref_rate (id),
-  CONSTRAINT fk_batches_initiated_by FOREIGN KEY (initiated_by) REFERENCES users (id),
-  CONSTRAINT fk_batches_closed_by FOREIGN KEY (closed_by) REFERENCES users (id)
+  CONSTRAINT fk_batches_initiated_by FOREIGN KEY (initiated_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_batches_closed_by FOREIGN KEY (closed_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- A department's approval (the department is the specialisation) of its ratings in the open batches of a
@@ -117,7 +120,7 @@ CREATE TABLE batch_approvals (
   PRIMARY KEY (id),
   KEY ix_batch_approvals_dept (flow, specialisation_id),
   CONSTRAINT fk_batch_approvals_specialisation FOREIGN KEY (specialisation_id) REFERENCES ref_specialisation (id),
-  CONSTRAINT fk_batch_approvals_user FOREIGN KEY (approved_by) REFERENCES users (id)
+  CONSTRAINT fk_batch_approvals_user FOREIGN KEY (approved_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- A rating in a draft batch: where they are (ship, date joined, months there, at the time of the proposal),
@@ -165,9 +168,9 @@ CREATE TABLE draft_rows (
   CONSTRAINT fk_draft_rows_approval FOREIGN KEY (approval_id) REFERENCES batch_approvals (id),
   CONSTRAINT fk_draft_rows_posting FOREIGN KEY (posting_id) REFERENCES rating_drafting (id) ON DELETE SET NULL,
   CONSTRAINT fk_draft_rows_scheduled FOREIGN KEY (scheduled_change_id) REFERENCES scheduled_changes (id) ON DELETE SET NULL,
-  CONSTRAINT fk_draft_rows_not_recommended_by FOREIGN KEY (not_recommended_by) REFERENCES users (id),
-  CONSTRAINT fk_draft_rows_added_by FOREIGN KEY (added_by) REFERENCES users (id),
-  CONSTRAINT fk_draft_rows_wef_set_by FOREIGN KEY (wef_set_by) REFERENCES users (id)
+  CONSTRAINT fk_draft_rows_not_recommended_by FOREIGN KEY (not_recommended_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_draft_rows_added_by FOREIGN KEY (added_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_draft_rows_wef_set_by FOREIGN KEY (wef_set_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- DOWN

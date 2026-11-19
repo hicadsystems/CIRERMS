@@ -170,7 +170,7 @@ async function listDue(f, { page = 1, pageSize = 25 } = {}) {
 /** Every due rating not already in a batch (making a batch), locked. */
 async function dueFresh(f, conn) {
   const w = dueWhere(f);
-  return db.query(`${DUE_SELECT} ${w.sql} AND pend.service_number IS NULL ORDER BY months DESC, r.service_number FOR UPDATE OF r`,
+  return db.query(`${DUE_SELECT} ${w.sql} AND pend.service_number IS NULL ORDER BY months DESC, r.service_number FOR UPDATE`,
     [f.today, ...w.params], conn);
 }
 

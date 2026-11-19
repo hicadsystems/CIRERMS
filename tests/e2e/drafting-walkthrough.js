@@ -583,9 +583,12 @@ async function layoutPass(browser, viewport, theme) {
     await shot(page, `${viewport.width}-${theme}-${route.replace('/', '-')}`);
     await openMain();
     await dialogOf(page).waitFor();
+    await page.waitForFunction(() => !document.querySelector('#overlay-root')?.textContent.includes('Loading'), null, { timeout: 10000 });
     await page.waitForTimeout(150);
     const fits = await dialogOf(page).evaluate((d) => d.scrollWidth <= d.clientWidth + 1 && d.getBoundingClientRect().right <= window.innerWidth + 1);
     check(fits, `${label} ${route}: its dialog fits`);
+    const words = `${await main(page).innerText()} ${await dialogOf(page).innerText()}`;
+    check(!/\b(null|undefined|NaN|\[object Object\])\b/.test(words), `${label} ${route}: no null, undefined or NaN on the page or in the dialog`);
     await shot(page, `${viewport.width}-${theme}-${route.replace('/', '-')}-dialog`);
     await closeAll(page);
   }
