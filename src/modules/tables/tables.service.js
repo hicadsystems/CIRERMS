@@ -18,6 +18,12 @@ function tableOf(slug) {
   return cfg;
 }
 
+// the values the service works out for the screens (a grade's score range)
+function decorate(cfg, row) {
+  if (cfg.rule === 'score-range') return { ...row, score_range: `${row.score_low} - ${row.score_high}` };
+  return row;
+}
+
 function toId(raw) {
   const id = Number.parseInt(raw, 10);
   return Number.isFinite(id) && id > 0 ? id : null;
@@ -36,7 +42,8 @@ async function getMeta(slug) {
     options: c.options,
     blank: c.blank,
     hint: c.hint,
-    list: c.list !== false,
+    upper: !!c.upper,
+    list: c.list === true,
     name: c.type === 'ref' ? `${stem(c.key)}_name` : undefined,
   }));
   const options = {};
@@ -57,7 +64,7 @@ async function list(slug, query = {}) {
   const page = Math.min(Math.max(1, Number.parseInt(query.page, 10) || 1), totalPages);
   const offset = (page - 1) * pageSize;
   const rows = await repo.list(cfg, { search, status, limit: pageSize, offset });
-  return { items: rows.map((r, i) => ({ ...r, no: offset + i + 1 })), total, page, pageSize, totalPages };
+  return { items: rows.map((r, i) => ({ ...decorate(cfg, r), no: offset + i + 1 })), total, page, pageSize, totalPages };
 }
 
 /** "In use: 12 ratings and 2 training courses". */
@@ -73,7 +80,7 @@ async function get(slug, rawId) {
   const row = id ? await repo.findById(cfg, id) : null;
   if (!row) throw notFound(`That ${cfg.item.toLowerCase()} was not found.`);
   const usage = await repo.usageCounts(cfg, id);
-  return { ...row, usage: usage.map((u) => ({ table: u.table, count: u.count, text: `${u.count} ${u.count === 1 ? u.noun[0] : u.noun[1]}` })), in_use: usage.length > 0 };
+  return { ...decorate(cfg, row), usage: usage.map((u) => ({ table: u.table, count: u.count, text: `${u.count} ${u.count === 1 ? u.noun[0] : u.noun[1]}` })), in_use: usage.length > 0 };
 }
 
 /** Checks a body against the config: the values to store, or a 422 with a message per field. */
@@ -83,7 +90,12 @@ async function validate(cfg, body, existingId, conn) {
   const fields = {};
 
   for (const c of cfg.columns) {
+    if (c.type === 'virtual') continue;
     const raw = input[c.key];
+    if (c.type === 'bool') {
+      values[c.key] = raw === true || raw === 1 || raw === '1' || raw === 'true' ? 1 : 0;
+      continue;
+    }
     if (c.type === 'multi') {
       const list = Array.isArray(raw) ? raw : [];
       const ids = [...new Set(list.map(toId))];
@@ -101,7 +113,8 @@ async function validate(cfg, body, existingId, conn) {
       continue;
     }
     if (c.type === 'text') {
-      const v = String(raw).trim().replace(/\s+/g, ' ');
+      let v = String(raw).trim().replace(/\s+/g, ' ');
+      if (c.upper) v = v.toUpperCase();
       if (c.max && v.length > c.max) fields[c.key] = `${c.label} can be at most ${c.max} characters.`;
       else values[c.key] = v;
     } else if (c.type === 'select') {
@@ -126,6 +139,15 @@ async function validate(cfg, body, existingId, conn) {
     if ((c.scope || []).some((k) => fields[k] || values[k] === null)) continue;
     if (await repo.findDuplicate(cfg, c, values[c.key], values, existingId, conn)) {
       fields[c.key] = `${c.label} "${values[c.key]}" already exists${c.scope && c.scope.length ? ' there' : ''}.`;
+    }
+  }
+
+  // a grade's scores: low not above high, and no overlap with another grade
+  if (cfg.rule === 'score-range' && !fields.score_low && !fields.score_high) {
+    if (values.score_low > values.score_high) fields.score_high = 'Highest Score cannot be below the Lowest Score.';
+    else {
+      const other = await repo.findOverlap(cfg, values.score_low, values.score_high, existingId, conn);
+      if (other) fields.score_low = `These scores overlap "${other.name}" (${other.score_low} - ${other.score_high}).`;
     }
   }
 

@@ -81,8 +81,13 @@ export async function mountStaticTable(outlet, { slug, info } = {}) {
   const allow = { add: can(screen, 'add'), edit: can(screen, 'edit'), del: can(screen, 'delete') };
   const base = `/api/tables/${slug}`;
   const meta = (await api.get(`${base}/meta`)).data;
-  const listed = meta.columns.filter((c) => c.list);
-  const cellOf = (c, row) => (c.type === 'ref' ? row[c.name] : row[c.key]);
+  // the list shows the demo's columns and the code, the name first
+  const listed = meta.columns.filter((c) => c.list).sort((a, b) => (b.key === 'name') - (a.key === 'name'));
+  const cellOf = (c, row) => {
+    if (c.type === 'ref') return row[c.name];
+    if (c.type === 'bool') return row[c.key] ? 'Yes' : 'No';
+    return row[c.key];
+  };
   const lower = meta.title.toLowerCase();
 
   const addButton = allow.add ? button({ label: `Add ${meta.item}`, icon: 'plus', variant: 'primary', onClick: () => openForm(null) }) : null;
@@ -144,14 +149,18 @@ export async function mountStaticTable(outlet, { slug, info } = {}) {
         control = multis[c.key].el;
       } else if (c.type === 'ref') {
         control = selectInput({ name: c.key, options: refOptions(meta.options[c.key] || [], raw), value: raw ?? '', placeholder: c.blank || '-- Select --', disabled: readOnly });
+      } else if (c.type === 'bool') {
+        control = selectInput({ name: c.key, options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], value: full ? String(raw ? 1 : 0) : '0', placeholder: null, disabled: readOnly });
+      } else if (c.type === 'virtual') {
+        return null;
       } else if (c.type === 'select') {
         control = selectInput({ name: c.key, options: c.options, value: raw ?? '', placeholder: '-- Select --', disabled: readOnly });
       } else if (c.type === 'number') {
         control = textInput({ name: c.key, type: 'number', value: raw ?? '', min: c.min, max: c.max, step: '1', inputmode: 'numeric', disabled: readOnly });
       } else {
-        control = textInput({ name: c.key, value: raw ?? '', maxlength: c.max, disabled: readOnly, autocomplete: 'off' });
+        control = textInput({ name: c.key, value: raw ?? '', maxlength: c.max, disabled: readOnly, autocomplete: 'off', className: c.upper ? 'uppercase placeholder:normal-case' : '' });
       }
-      return field({ label: c.required ? `${c.label} *` : c.label, control, hint: c.hint, className: c.type === 'multi' ? 'col-span-2 phone:col-span-1' : '' });
+      return field({ label: c.required ? `${c.label} *` : c.label, control, hint: c.hint, className: c.type === 'multi' || c.hint ? 'col-span-2 phone:col-span-1' : '' });
     });
     const status = field({ label: 'Status', control: selectInput({ name: 'is_active', options: STATUS, value: full ? String(full.is_active ? 1 : 0) : '1', placeholder: null, disabled: readOnly }) });
 
@@ -160,7 +169,7 @@ export async function mountStaticTable(outlet, { slug, info } = {}) {
         `In use: ${full.usage.map((u) => u.text).join(', ')}. It cannot be deleted; make it Inactive to take it out of the dropdowns.`)
       : null;
 
-    const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, [...controls, status, note]);
+    const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, [...controls.filter(Boolean), status, note]);
     const dlg = openDialog({
       title: row ? `${readOnly ? '' : 'Edit '}${meta.item}` : `Add ${meta.item}`,
       size: 'md',
@@ -176,6 +185,7 @@ export async function mountStaticTable(outlet, { slug, info } = {}) {
     function payload() {
       const body = {};
       meta.columns.forEach((c) => {
+        if (c.type === 'virtual') return;
         if (c.type === 'multi') { body[c.key] = multis[c.key].get(); return; }
         const el = form.querySelector(`[name="${CSS.escape(c.key)}"]`);
         body[c.key] = el ? el.value : '';

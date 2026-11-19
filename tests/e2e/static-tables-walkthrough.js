@@ -188,14 +188,16 @@ async function noSideScroll(page) {
 // Fills the add / edit dialog for a table from its columns (GET .../meta): a name, and a value
 // for every other field, as a person would.
 // ---------------------------------------------------------------------------
+const SCORES = { score_low: '41', score_high: '44' };
 async function fillDialog(page, meta, tag, { onlyName = false } = {}) {
   const dlg = dialogOf(page);
   const name = `WT ${meta.item} ${tag}`;
   for (const c of meta.columns) {
     if (c.key === 'name') { await dlg.locator('input[name="name"]').fill(name); continue; }
     if (onlyName) continue;
-    if (c.type === 'text') await dlg.locator(`input[name="${c.key}"]`).fill(c.key === 'code' ? `W${tag}`.slice(0, c.max || 5) : c.key === 'score_range' ? '1 - 2' : 'Test');
-    else if (c.type === 'number') await dlg.locator(`input[name="${c.key}"]`).fill('12');
+    // codes are typed in lower case: they are kept upper case
+    if (c.type === 'text') await dlg.locator(`input[name="${c.key}"]`).fill(c.key === 'code' ? `z${tag}`.slice(0, c.max || 5) : 'Test');
+    else if (c.type === 'number') await dlg.locator(`input[name="${c.key}"]`).fill(SCORES[c.key] || '12');
     else if (c.type === 'select' || (c.type === 'ref' && c.required)) await choose(page, c.key);
     else if (c.type === 'multi') {
       await choose(page, `${c.key}__pick`);
@@ -242,7 +244,7 @@ async function tableCycle(ctx, t, tag, inUse, label) {
     const box = await dlg.boundingBox();
     check(box.x > 100 && box.y > 20 && box.x + box.width < DESKTOP.width - 100, `${label}: the dialog is centred`, JSON.stringify(box));
   }
-  if (t.slug === 'training' && tag.endsWith('0')) await shot(page, `${label.replace(/[ ,]+/g, '-')}-training-add`);
+  if (t.slug === 'training' && tag === '0') await shot(page, `${label.replace(/[ ,]+/g, '-')}-training-add`);
   // a missing required field shows an error under it
   await dlg.getByRole('button', { name: 'Save' }).click();
   await dlg.locator('[data-field-error]:not(.hidden)').first().waitFor({ timeout: 5000 });
@@ -366,6 +368,9 @@ async function setup(db) {
 async function cleanup(db) {
   await db.query("DELETE FROM users WHERE username IN ('WTVIEW', 'WTTABLES', 'WTPART')");
   await db.query("DELETE FROM roles WHERE name IN ('WT Viewer', 'WT Tables', 'WT Partial')");
+  await db.query("UPDATE ref_appraisal_rating SET score_high = 44 WHERE code = 'E'").catch(() => {});
+  await db.query("DELETE FROM rating_training WHERE classification = 'WT'").catch(() => {});
+  await db.query("DELETE FROM rating_education WHERE qualification LIKE 'WT %'").catch(() => {});
   // anything a failed run left behind
   for (const t of TABLES) await db.query(`DELETE FROM ${t.table} WHERE name LIKE 'WT %'`).catch(() => {});
 }
@@ -394,7 +399,7 @@ async function adminCycle(browser, db, viewport, theme, idx) {
   for (let i = 0; i < TABLES.length; i += 1) {
     const t = TABLES[i];
     const inUse = await inUseRow(db, t);
-    await tableCycle(ctx, t, `${idx}${String(i).padStart(2, '0')}`, inUse, `${t.slug} (${label0})`);
+    await tableCycle(ctx, t, String(idx), inUse, `${t.slug} (${label0})`);
   }
   // screenshots of a few tables
   const shotName = (s) => `${label0.replace(/[ ,]+/g, '-')}-${s}`;
@@ -427,7 +432,7 @@ async function trainingRules(browser) {
   await goTable(page, 'training');
   // the list shows Course, Institution and Weeks; the rest is in the dialog
   const heads = (await page.locator('#app-main table thead th').allInnerTexts()).map((s) => s.trim().toLowerCase());
-  check(['#', 'course', 'institution', 'weeks', 'status'].every((h) => heads.includes(h)) && !heads.includes('branch') && !heads.includes('rates'), 'the list shows Course, Institution and Weeks only', heads.join(','));
+  check(['#', 'course', 'institution', 'weeks', 'status'].every((h) => heads.includes(h)) && !heads.includes('branch') && !heads.includes('rates') && !heads.includes('qualification awarded'), 'the list shows Course, Institution and Weeks (and the code); the rest is in the dialog', heads.join(','));
   await page.getByRole('button', { name: 'Add Course' }).first().click();
   const dlg = dialogOf(page);
   await dlg.waitFor();
@@ -436,6 +441,8 @@ async function trainingRules(browser) {
   await dlg.locator('input[name="name"]').fill(name);
   await choose(page, 'institution_id');
   await dlg.locator('input[name="weeks"]').fill('9');
+  await dlg.locator('input[name="code"]').fill('wtr');
+  await dlg.locator('input[name="qualification"]').fill('Test Award');
   await choose(page, 'branch_id', 'Seaman');
   await choose(page, 'rate_ids__pick', 'Able Seaman');
   await choose(page, 'rate_ids__pick', 'Leading Seaman');
@@ -447,7 +454,7 @@ async function trainingRules(browser) {
   await dlg.waitFor({ state: 'detached' });
   const row = (await api(page, 'GET', `/api/tables/training?q=${encodeURIComponent(name)}`)).body.data[0];
   const full = (await api(page, 'GET', `/api/tables/training/${row.id}`)).body.data;
-  check(full.weeks === 9 && full.branch_name === 'Seaman' && full.specialisation_id === null && full.rate_ids.length === 1 && full.rate_names[0].includes('Leading Seaman'), 'the course holds weeks, branch, any specialisation and one rate', JSON.stringify(full));
+  check(full.code === 'WTR' && full.qualification === 'Test Award' && full.weeks === 9 && full.branch_name === 'Seaman' && full.specialisation_id === null && full.rate_ids.length === 1 && full.rate_names[0].includes('Leading Seaman'), 'the course holds weeks, branch, any specialisation and one rate', JSON.stringify(full));
   // edit: back to every rate and any branch
   await openRowByName(page, false, name);
   await dlg.locator('[data-chips="rate_ids"] button').first().click();
@@ -678,21 +685,194 @@ async function auditAndRatings(browser, db) {
   await ctx.context.close();
 }
 
+// ---------------------------------------------------------------------------
+// The specification (PLAN 9c): each table's fields, lengths and rules, field by field
+// ---------------------------------------------------------------------------
+const SPEC = {
+  'appraisal-ratings': { fields: { code: [5, true], name: [50, true], score_low: [0, true], score_high: [100, true] } },
+  branch: { fields: { name: [150, true], code: [2, true] } },
+  'exit-type': { fields: { name: [150, true], code: [2, true], keeps_current: [null, false] } },
+  'entry-mode': { fields: { name: [150, true], code: [5, true] } },
+  offences: { fields: { name: [100, true], code: [10, true], category: [null, false] } },
+  sanctions: { fields: { name: [100, true], severity: [null, false] } },
+  institution: { fields: { code: [30, false], name: [100, true], location: [100, false], type: [null, false] } },
+  'local-government': { fields: { name: [150, true], state_id: [null, true], code: [10, false] } },
+  languages: { fields: { name: [150, true] } },
+  relationship: { fields: { name: [150, true], code: [5, false] } },
+  'staff-branch': { fields: { name: [150, true], code: [20, false], command_id: [null, false], department: [20, false], cdr: [20, false] } },
+  specialisation: { fields: { name: [150, true], code: [15, true], second_description: [20, false] } },
+  ships: { fields: { name: [150, true], type: [null, true], command_id: [null, false], description: [150, false] } },
+  states: { fields: { name: [150, true], code: [5, true], geo_political_zone_id: [null, false] } },
+  title: { fields: { name: [150, true], description: [50, false] } },
+  training: { fields: { code: [10, false], name: [60, true], qualification: [50, false], institution_id: [null, true], weeks: [1, true], branch_id: [null, false], specialisation_id: [null, false], rate_ids: [null, false] } },
+};
+const OPTIONS = {
+  'offences.category': ['Conduct', 'Discipline', 'Duty', 'Property'],
+  'sanctions.severity': ['Minor', 'Major'],
+  'institution.type': ['University', 'Polytechnic', 'College', 'Secondary School', 'Training Centre', 'Training Base', 'Other'],
+  'ships.type': ['Ship', 'Base', 'Training'],
+};
+
+async function specification(browser) {
+  console.log('\nThe specification, table by table');
+  const ctx = await open(browser, { viewport: DESKTOP, theme: 'light' });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  for (const t of TABLES) {
+    const meta = (await api(page, 'GET', `/api/tables/${t.slug}/meta`)).body.data;
+    const real = meta.columns.filter((c) => c.type !== 'virtual');
+    const want = SPEC[t.slug].fields;
+    check(JSON.stringify(real.map((c) => c.key).sort()) === JSON.stringify(Object.keys(want).sort()), `${t.slug}: the fields are ${Object.keys(want).join(', ')}`, real.map((c) => c.key).join(','));
+    for (const [key, [limit, required]] of Object.entries(want)) {
+      const c = real.find((x) => x.key === key);
+      if (!c) continue;
+      const okRequired = !!c.required === required;
+      const okLimit = limit === null || c.max === limit || c.min === limit;
+      check(okRequired && okLimit, `${t.slug}.${key}: ${required ? 'required' : 'optional'}${limit === null ? '' : `, ${limit}`}`, JSON.stringify({ required: c.required, max: c.max, min: c.min }));
+      const opts = OPTIONS[`${t.slug}.${key}`];
+      if (opts) check(JSON.stringify(c.options) === JSON.stringify(opts), `${t.slug}.${key}: ${opts.join(', ')}`);
+      if (key === 'code') check(c.upper === true, `${t.slug}.code: kept upper case`);
+    }
+  }
+  // lists: the demo's columns and the code, four at most
+  for (const t of TABLES) {
+    const meta = (await api(page, 'GET', `/api/tables/${t.slug}/meta`)).body.data;
+    const listed = meta.columns.filter((c) => c.list);
+    check(listed.length >= 1 && listed.length <= 4, `${t.slug}: the list shows ${listed.length} columns (${listed.map((c) => c.label).join(', ')})`);
+  }
+
+  // codes: trimmed, upper case, unique, required where marked
+  const made = [];
+  const post = async (slug, body) => { const r = await api(page, 'POST', `/api/tables/${slug}`, body); if (r.status === 201) made.push([slug, r.body.data.id]); return r; };
+  const branch = await post('branch', { name: 'WT Code Branch', code: ' qz ' });
+  check(branch.status === 201 && branch.body.data.code === 'QZ', 'a code is trimmed and kept upper case ("qz" becomes QZ)', JSON.stringify(branch.body));
+  const dupCode = await post('branch', { name: 'WT Code Branch 2', code: 'qz' });
+  check(dupCode.status === 422 && dupCode.body.error.fields.code, 'a duplicate code is refused, whatever its case');
+  const longCode = await post('branch', { name: 'WT Code Branch 3', code: 'ABC' });
+  check(longCode.status === 422 && longCode.body.error.fields.code, 'a code over its length is refused (Branch: 2)');
+  const noCode = await post('branch', { name: 'WT Code Branch 4' });
+  check(noCode.status === 422 && noCode.body.error.fields.code, 'a required code left empty is refused (Branch)');
+  const noCodeOk = await post('relationship', { name: 'WT No Code Rel' });
+  check(noCodeOk.status === 201 && noCodeOk.body.data.code === null, 'an optional code may be left empty (Relationship)');
+
+  // Exit Type: the flag that keeps a rating current
+  const exit = await post('exit-type', { name: 'WT Serving Exit', code: 'wz', keeps_current: true });
+  check(exit.status === 201 && exit.body.data.keeps_current === 1, 'an Exit Type stores "Rating stays current"');
+  let lookups = (await api(page, 'GET', '/api/lookups')).body.data;
+  check(lookups.exitTypes.find((x) => x.code === 'A').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'M').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'C').keepsCurrent === true, 'the old codes A, M and C keep a rating current (seed, in /api/lookups)');
+  check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 4 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not');
+
+  // Appraisal Ratings: low not above high, no overlap
+  const g1 = await api(page, 'POST', '/api/tables/appraisal-ratings', { code: 'x1', name: 'WT Backwards', score_low: 50, score_high: 40 });
+  check(g1.status === 422 && g1.body.error.fields.score_high, 'a grade whose lowest score is above its highest is refused');
+  const g2 = await api(page, 'POST', '/api/tables/appraisal-ratings', { code: 'x2', name: 'WT Overlap', score_low: 80, score_high: 95 });
+  check(g2.status === 422 && g2.body.error.fields.score_low && /overlap/.test(g2.body.error.fields.score_low), 'a grade overlapping another is refused', JSON.stringify(g2.body));
+  const g3 = await api(page, 'POST', '/api/tables/appraisal-ratings', { code: 'x3', name: 'WT Range', score_low: 101, score_high: 105 });
+  check(g3.status === 422, 'scores run from 0 to 100');
+  const grades = (await api(page, 'GET', '/api/tables/appraisal-ratings')).body.data;
+  check(grades.map((g) => g.score_range).join('|') === '90 - 100|75 - 89|60 - 74|45 - 59|0 - 44', 'the seeded grades have their score ranges', grades.map((g) => g.score_range).join('|'));
+
+  // links the later modules read, in /api/lookups
+  check(lookups.branches.find((b) => b.code === 'SM').name === 'Seaman', 'lookups: the Seaman branch has code SM');
+  check(lookups.specialisations.every((x) => x.code), 'lookups: every specialisation has a code');
+  const lagos = lookups.states.find((x) => x.name === 'Lagos');
+  check(lagos.code === 'LA' && lookups.geoPoliticalZones.find((z) => z.id === lagos.geoPoliticalZoneId).name === 'South West', 'lookups: a state carries its code and zone (Lagos, LA, South West)');
+  check(lookups.states.every((x) => x.code && x.geoPoliticalZoneId), 'lookups: every state has both');
+  const aradu = lookups.ships.find((x) => x.name === 'NNS ARADU');
+  check(aradu.type === 'Ship' && aradu.commandId && lookups.commands.find((c) => c.id === aradu.commandId), 'lookups: a ship carries its type and command');
+  check(lookups.ships.some((x) => x.type === 'Base'), 'lookups: ships and bases are told apart');
+  const tr = lookups.staffBranches.find((x) => x.name === 'Training');
+  check(tr.code === 'TRG' && tr.commandId, 'lookups: a staff branch carries its code and command');
+  check(lookups.titles.find((x) => x.name === 'PO').description === 'Petty Officer', 'lookups: a title carries its description');
+  check(lookups.rates.map((r) => r.code).join(',') === 'OS,AB,LS,PO,CPO,WO,MWO,NWO', 'rates have codes, in rank order, lowest first', lookups.rates.map((r) => r.code).join(','));
+  check(lookups.institutions.length >= 6 && lookups.trainingCourses.length >= 8 && lookups.appraisalRatings.length === 5 && lookups.offences.length >= 8 && lookups.sanctions.length >= 8, 'lookups: the new tables are served too (institutions, courses, grades, offences, sanctions)');
+  const gun = lookups.trainingCourses.find((c) => c.name === 'Gunnery Course');
+  check(gun.rateIds.length === 3 && gun.specialisationId && gun.branchId === null, 'lookups: a course carries its rates, specialisation and "any" branch');
+
+  // a rating's training entry links an institution and a course; the record shows the names
+  const inst = lookups.institutions.find((x) => x.name === 'NNS Quorra');
+  const entry = await api(page, 'POST', '/api/ratings/B0539/records/training', { institution_id: inst.id, training_course_id: gun.id, classification: 'WT', start_date: '2020-01-01' });
+  const row = entry.body && entry.body.data && entry.body.data.items.find((r) => r.training_course_id === gun.id);
+  check(entry.status === 201 && row && row.institution === 'NNS Quorra' && row.qualification === 'Gunnery Course' && row.institution_id === inst.id, 'a training entry picks its course and institution; the record keeps their names', JSON.stringify(entry.body && entry.body.error));
+  const edu = await api(page, 'POST', '/api/ratings/B0539/records/education', { institution_id: inst.id, qualification: 'WT Cert' });
+  const eduRow = edu.body && edu.body.data && edu.body.data.items.find((r) => r.qualification === 'WT Cert');
+  check(edu.status === 201 && eduRow && eduRow.institution === 'NNS Quorra' && eduRow.institution_id === inst.id, 'an education entry picks its institution');
+  const legacy = await api(page, 'POST', '/api/ratings/B0539/records/education', { institution: 'Old Text School', qualification: 'WT Old' });
+  check(legacy.status === 201, 'an entry with only text (before the table) is still accepted');
+  const noInst = await api(page, 'POST', '/api/ratings/B0539/records/training', { qualification: 'x' });
+  check(noInst.status === 422 && noInst.body.error.fields.institution_id, 'a training entry with no institution or course is refused');
+  const refusedInst = await api(page, 'DELETE', `/api/tables/institution/${inst.id}`);
+  check(refusedInst.status === 409 && /training record/.test(refusedInst.body.error.message) && /education record/.test(refusedInst.body.error.message), 'the in-use check reads declared foreign keys: the institution is held by training and education entries', refusedInst.body && refusedInst.body.error.message);
+  const refusedCourse = await api(page, 'DELETE', `/api/tables/training/${gun.id}`);
+  check(refusedCourse.status === 409 && /training record/.test(refusedCourse.body.error.message), 'a course a rating took cannot be deleted either');
+  for (const [tabKey, list] of [['training', entry], ['education', legacy]]) {
+    for (const it of list.body.data.items.filter((r) => r.classification === 'WT' || /^WT /.test(`${r.qualification}`))) await api(page, 'DELETE', `/api/ratings/B0539/records/${tabKey}/${it.id}`);
+  }
+  for (const [slug, id] of made.reverse()) await api(page, 'DELETE', `/api/tables/${slug}/${id}`);
+  check(ctx.errors.length === 0, 'specification: no browser errors', ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
+// ---------------------------------------------------------------------------
+// The rating form: State fills the zone, Command narrows the Staff Branch list
+// ---------------------------------------------------------------------------
+async function ratingFormLinks(browser) {
+  console.log('\nThe rating form follows the tables');
+  const ctx = await open(browser, { viewport: DESKTOP, theme: 'light' });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
+  await page.waitForSelector('text=Edit Details');
+  await page.getByRole('button', { name: /Edit Contact/ }).first().click();
+  let dlg = dialogOf(page);
+  await dlg.waitFor();
+  await choose(page, 'state_id', 'Lagos');
+  const zones = (await api(page, 'GET', '/api/lookups')).body.data.geoPoliticalZones;
+  const zoneValue = await dlg.locator('input.custom-dropdown-hidden[name="geo_political_zone_id"]').inputValue();
+  check(zones.find((z) => String(z.id) === zoneValue).name === 'South West', 'choosing the state Lagos fills the zone South West');
+  await choose(page, 'state_id', 'Kano');
+  const zone2 = await dlg.locator('input.custom-dropdown-hidden[name="geo_political_zone_id"]').inputValue();
+  check(zones.find((z) => String(z.id) === zone2).name === 'North West', 'choosing Kano changes it to North West');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /Edit Official/ }).first().click();
+  dlg = dialogOf(page);
+  await dlg.waitFor();
+  const before = await dlg.locator('[name="staff_branch_id"]').first().evaluate((w) => w.options.length);
+  await choose(page, 'command_id', 'Logistics Command');
+  const after = await dlg.locator('[name="staff_branch_id"]').first().evaluate((w) => Array.from(w.options).map((o) => o.text));
+  check(after.includes('Logistics') && !after.includes('Training') && !after.includes('Operations'), 'choosing the Logistics Command narrows the Staff Branch list to its staff branches', `${before} -> ${after.join('|')}`);
+  await page.keyboard.press('Escape');
+  check(ctx.errors.length === 0, 'rating form: no browser errors', ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
 async function main() {
   const db = await connect();
   await setup(db);
   const browser = await chromium.launch();
   try {
     const contexts = [[DESKTOP, 'light'], [DESKTOP, 'dark'], [PHONE, 'light'], [PHONE, 'dark']];
-    for (let i = 0; i < contexts.length; i += 1) await adminCycle(browser, db, contexts[i][0], contexts[i][1], i);
-    await trainingRules(browser);
-    await lgaRules(browser);
-    await withoutGrants(browser, 'light', DESKTOP);
-    await withoutGrants(browser, 'dark', PHONE);
-    await viewerRun(browser, 'light', DESKTOP);
-    await viewerRun(browser, 'dark', PHONE);
-    await keeperRun(browser);
-    await auditAndRatings(browser, db);
+    // ONLY=spec,links,cycle,training,lga,rating,viewer,keeper,audit runs just those parts
+    const want = (n) => !process.env.ONLY || process.env.ONLY.split(',').includes(n);
+    if (want('spec')) await specification(browser);
+    if (want('links')) await ratingFormLinks(browser);
+    if (want('cycle')) {
+      await db.query("UPDATE ref_appraisal_rating SET score_high = 40 WHERE code = 'E'"); // room for the cycle's grade (41 to 44)
+      for (let i = 0; i < contexts.length; i += 1) await adminCycle(browser, db, contexts[i][0], contexts[i][1], i);
+      await db.query("UPDATE ref_appraisal_rating SET score_high = 44 WHERE code = 'E'");
+    }
+    if (want('training')) await trainingRules(browser);
+    if (want('lga')) await lgaRules(browser);
+    if (want('rating')) {
+      await withoutGrants(browser, 'light', DESKTOP);
+      await withoutGrants(browser, 'dark', PHONE);
+    }
+    if (want('viewer')) {
+      await viewerRun(browser, 'light', DESKTOP);
+      await viewerRun(browser, 'dark', PHONE);
+    }
+    if (want('keeper')) await keeperRun(browser);
+    if (want('audit')) await auditAndRatings(browser, db);
   } finally {
     await browser.close();
     await cleanup(db).catch(() => {});

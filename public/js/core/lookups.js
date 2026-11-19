@@ -55,3 +55,17 @@ export function filterLgas(lookups, stateId) {
   const target = Number(stateId);
   return (lookups.localGovernments || []).filter((l) => Number(l.stateId) === target);
 }
+
+/** The staff branches of a command (and those not tied to one); all of them until a command is chosen. */
+export function filterStaffBranches(lookups, commandId) {
+  const all = (lookups && lookups.staffBranches) || [];
+  if (!commandId) return all;
+  const target = Number(commandId);
+  return all.filter((b) => !b.commandId || Number(b.commandId) === target);
+}
+
+/** The geo-political zone of a state, or null. */
+export function zoneOfState(lookups, stateId) {
+  const st = ((lookups && lookups.states) || []).find((x) => String(x.id) === String(stateId));
+  return st && st.geoPoliticalZoneId ? st.geoPoliticalZoneId : null;
+}

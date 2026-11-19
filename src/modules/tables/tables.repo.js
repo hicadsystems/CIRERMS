@@ -6,10 +6,10 @@
  * a connection (`conn`, the transaction's, or null for the pool).
  */
 const db = require('../../db');
-const { stem } = require('./tables.config');
+const { stem, nounFor } = require('./tables.config');
 
 const q = (identifier) => `\`${identifier}\``;
-const own = (cfg) => cfg.columns.filter((c) => c.type !== 'multi');
+const own = (cfg) => cfg.columns.filter((c) => c.type !== 'multi' && c.type !== 'virtual');
 const refs = (cfg) => cfg.columns.filter((c) => c.type === 'ref');
 const multis = (cfg) => cfg.columns.filter((c) => c.type === 'multi');
 
@@ -31,7 +31,7 @@ function filter(cfg, { search = '', status = '' }) {
   if (search) {
     const like = `%${search.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
     const fields = ['t.name'];
-    own(cfg).forEach((c) => { if (c.key !== 'name' && c.type !== 'number' && c.type !== 'ref') fields.push(`t.${q(c.key)}`); });
+    own(cfg).forEach((c) => { if (c.key !== 'name' && c.type !== 'number' && c.type !== 'bool' && c.type !== 'ref') fields.push(`t.${q(c.key)}`); });
     refs(cfg).forEach((c) => fields.push(`j_${c.key}.name`));
     where.push(`(${fields.map((f) => `${f} LIKE ?`).join(' OR ')})`);
     fields.forEach(() => params.push(like));
@@ -149,15 +149,44 @@ async function findDuplicate(cfg, column, value, values, exceptId, conn = null) 
   return rows[0] || null;
 }
 
-/** How many rows of one table refer to this row, for each place in `usedBy`. */
+/**
+ * The places that refer to a row: every declared foreign key that points at this table, read from
+ * information_schema (a cascading link, such as a course's rates, does not count: it goes with the row).
+ */
+async function referrers(cfg, conn = null) {
+  return db.query(
+    `SELECT k.TABLE_NAME AS tableName, k.COLUMN_NAME AS columnName
+       FROM information_schema.KEY_COLUMN_USAGE k
+       JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
+         ON rc.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA AND rc.CONSTRAINT_NAME = k.CONSTRAINT_NAME AND rc.TABLE_NAME = k.TABLE_NAME
+      WHERE k.TABLE_SCHEMA = DATABASE() AND k.REFERENCED_TABLE_NAME = ? AND k.REFERENCED_COLUMN_NAME = 'id'
+        AND rc.DELETE_RULE <> 'CASCADE'
+      ORDER BY k.TABLE_NAME, k.COLUMN_NAME`,
+    [cfg.table],
+    conn
+  );
+}
+
+/** How many rows of each referring table hold this row. */
 async function usageCounts(cfg, id, conn = null) {
   const out = [];
-  for (const u of cfg.usedBy) {
-    const rows = await db.query(`SELECT COUNT(*) AS c FROM ${q(u.table)} WHERE ${q(u.column)} = ?`, [id], conn);
-    const n = Number(rows[0].c);
-    if (n > 0) out.push({ table: u.table, count: n, noun: u.noun });
+  const byTable = new Map();
+  for (const r of await referrers(cfg, conn)) {
+    const rows = await db.query(`SELECT COUNT(*) AS c FROM ${q(r.tableName)} WHERE ${q(r.columnName)} = ?`, [id], conn);
+    byTable.set(r.tableName, (byTable.get(r.tableName) || 0) + Number(rows[0].c));
   }
+  byTable.forEach((count, table) => { if (count > 0) out.push({ table, count, noun: nounFor(table) }); });
   return out;
+}
+
+/** The other grade whose scores overlap [low, high] (Appraisal Ratings). */
+async function findOverlap(cfg, low, high, exceptId, conn = null) {
+  const rows = await db.query(
+    `SELECT name, score_low, score_high FROM ${q(cfg.table)} WHERE score_low <= ? AND score_high >= ?${exceptId ? ' AND id <> ?' : ''} LIMIT 1`,
+    exceptId ? [high, low, exceptId] : [high, low],
+    conn
+  );
+  return rows[0] || null;
 }
 
 /** Every row of a table a 'ref' or 'multi' column picks from. */
@@ -181,6 +210,7 @@ module.exports = {
   remove,
   findDuplicate,
   usageCounts,
+  findOverlap,
   refOptions,
   refExists,
 };

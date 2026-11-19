@@ -29,6 +29,8 @@ import { readForm, dateField } from './rating-fields.js';
 
 const YES_NO = [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }];
 const opts = (list = []) => list.map((x) => ({ value: x.id, label: x.name }));
+// an entry recorded before the institutions were a table still holds its name as text
+const heldText = (row) => (row && row.institution && !row.institution_id ? `Recorded as "${row.institution}": pick it from the list to link it` : undefined);
 const d = (v) => formatDisplayDate(v);
 const tick = (v) => (Number(v) ? h('span', { className: 'text-success', 'aria-label': 'Yes' }, icon('check')) : h('span', { className: 'text-muted-foreground', 'aria-label': 'No', text: '-' }));
 
@@ -84,9 +86,9 @@ export const CHILD_TABS = [
   },
   {
     key: 'training', label: 'Training', bundleKey: 'training', noun: 'Course', addLabel: 'Add Course', icon: 'graduation-cap', pdf: true,
-    fields: () => [
-      { name: 'qualification', label: 'Course or Qualification' },
-      { name: 'institution', label: 'Institution', required: true },
+    fields: (L, row) => [
+      { name: 'training_course_id', label: 'Course', type: 'select', lookup: 'trainingCourses', options: opts(L.trainingCourses), hint: 'Picked from the Training table; its institution is used when none is picked' },
+      { name: 'institution_id', label: 'Institution', type: 'select', lookup: 'institutions', options: opts(L.institutions), hint: heldText(row) },
       { name: 'classification', label: 'Result or Class' },
       { name: 'start_date', label: 'From', type: 'date' },
       { name: 'end_date', label: 'To', type: 'date' },
@@ -95,9 +97,9 @@ export const CHILD_TABS = [
   },
   {
     key: 'education', label: 'Education', bundleKey: 'education', noun: 'Qualification', addLabel: 'Add Qualification', icon: 'book-open', pdf: true,
-    fields: () => [
+    fields: (L, row) => [
       { name: 'qualification', label: 'Qualification' },
-      { name: 'institution', label: 'Institution', required: true },
+      { name: 'institution_id', label: 'Institution', type: 'select', lookup: 'institutions', options: opts(L.institutions), hint: heldText(row) },
       { name: 'classification', label: 'Class or Grade' },
       { name: 'start_date', label: 'From', type: 'date' },
       { name: 'end_date', label: 'To', type: 'date' },
@@ -131,7 +133,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   const base = `/api/ratings/${encodeURIComponent(serviceNumber)}/records/${tab.key}`;
 
   function openForm(row = null) {
-    const fields = tab.fields(lookups);
+    const fields = tab.fields(lookups, row);
     const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' },
       fields.map((f) => field({ label: f.required ? `${f.label} *` : f.label, control: control(f, row, lookups), hint: f.hint, className: f.span === 'full' ? 'col-span-2 phone:col-span-1' : '' })));
     const dlg = openDialog({ title: row ? `Edit ${tab.noun}` : tab.addLabel, size: 'lg', body: form, initialFocus: 'input:not([type="hidden"]), [name]' });
@@ -145,6 +147,8 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
       dlg.setDismissible(false);
       try {
         const payload = readForm(form);
+        // an entry still held as text keeps it until an institution is picked
+        if (row && row.institution && !payload.institution_id) payload.institution = row.institution;
         const res = row ? await api.put(`${base}/${row.id}`, payload) : await api.post(base, payload);
         dlg.setDismissible(true);
         dlg.close('saved');
