@@ -81,8 +81,8 @@ async function open(browser, { viewport, theme }) {
   const phone = viewport.width < 700;
   const context = await browser.newContext({ viewport, colorScheme: theme, deviceScaleFactor: 1, isMobile: phone, hasTouch: phone });
   const errors = [];
-  // responses the walk-through provokes on purpose (403 without a grant, 409 a row in use, 422 a bad value)
-  const expected = new Set([403, 409, 422]);
+  // responses the walk-through provokes on purpose (403 without a grant, 404 a deleted row, 409 a row in use, 422 a bad value)
+  const expected = new Set([403, 404, 409, 422]);
   context.on('page', (p) => {
     p.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     p.on('console', (m) => {
