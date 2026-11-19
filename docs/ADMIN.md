@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, the plan |
-| Sessions | All archived; none running. The owner: one session at a time while the weekly limit is at its warning level, unless they say otherwise |
+| Sessions | D4 `design-printouts`: session `session_01G8RfvjS1GqPbvash52hsRp` (Sonnet 5.5, medium), started 19/11/2026. On report: check (only `docs/design/` and a script line), render the PDFs, send them to the owner to review, owner merges, archive; then WP13. One session at a time while the weekly limit is at its warning level |
 | Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
@@ -154,6 +154,11 @@ Notes for coming briefs:
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
   typed official number. The next build package fixes the walkthrough steps WP3b lists.
+- **PDF making (owner, 19/11/2026):** HTML templates turned into PDF by Chromium. Keep CIRERMS's PDF conventions (crest,
+  header, footer with RESTRICTED and Page X of Y, colours), copy NAVY-PAYROLL's crest watermark, faint blue background
+  (#f8fbff) and fonts (Inter, Libre Baskerville; bundled, not fetched), and improve the rest to the standard of the owner's
+  NAVY-PAYROLL (`hicadsystems/navy-payroll`, public: `templates/*.html`, `lib/chromiumPdfGenerator.js`). D4 designs the
+  templates, WP13 builds the renderer; pdfkit goes. Show the owner D4's rendered PDFs to review.
 - **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF
   viewer (owner, 19/11/2026). WP4 keeps its PDF opening behind one helper; when WP3 is merged, tell WP4 to merge master
   and switch. Every later build brief says so.

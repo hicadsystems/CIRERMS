@@ -74,7 +74,7 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
    **Details read as label and value on one row** (owner, 19/11/2026; WP3c): the label left in normal case, the value
    right, a divider under each row, "N/A" when empty; on a wide page two panels with brand-coloured headings; never
    small capital labels stacked above values. This wins over the demo.
-   **Printouts open in the app's own PDF preview** (owner, 19/11/2026; pdfkit makes the PDFs on the server, PDF.js draws them in the page): a dialog (a sheet on a phone) with the
+   **Printouts open in the app's own PDF preview** (owner, 19/11/2026; PDF.js draws the real pages in the page; the PDFs are HTML templates turned into PDF by Chromium on the server, keeping CIRERMS's PDF conventions and improved to the standard of the owner's NAVY-PAYROLL application, from WP13): a dialog (a sheet on a phone) with the
    pages drawn, Download PDF and Print, never the browser's PDF viewer and its toolbar (`public/js/ui/pdf-preview.js`,
    from WP3).
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
@@ -144,7 +144,7 @@ Sonnet where screens follow patterns already in the kit.
 | D1 | `design-drafting` | Drafting (9 pages; Upload Draft moved to Special Drafting), Training Drafting (5) and Advancement Processing (7: its 5 live pages plus Approval and Close): every page, step and dialog, by rule 14 | Sonnet 5.5 · high | WP0, `demo-themes` | L |
 | D2 | `design-casework` | Disciplinary Action (4 pages) and Discharge Administration (5), the printouts the in-scope pages load (`docs/legacy/reports.md` section 5, as PDF previews on the pages that print them), and the dashboard tiles as they will read once the modules exist | Sonnet 5.5 · medium | D1 (both edit the demo source) | M |
 | D3 | `design-special` | Special Drafting (Special Draft Proposal, Special Draft Report, Upload Draft) and Naval Character Assessment (Recommendation and Grading, Report on Appraisal, Appraisal Periods), by rule 14 and section 9e; the sidebar loses its last Soon items and the Appraisals tile counts appraisals | Sonnet 5.5 · medium | D2 | M |
-| D4 | `design-printouts` | PDF reforming, design: one house style for every printout (page, header, facts, tables, signatures, footer with the marking and page numbers) and every printout in it, in the demo (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D3 | M |
+| D4 | `design-printouts` | PDF reforming, design: every printout as an HTML (Handlebars) template, keeping CIRERMS's PDF conventions (crest, header, footer with RESTRICTED and Page X of Y, colours), copying NAVY-PAYROLL's crest watermark, faint blue page background (#f8fbff) and fonts (Inter, Libre Baskerville), and improving the rest to NAVY-PAYROLL's standard; rendered to PDF for the owner's review (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D3 | M |
 
 ### Build packages
 
@@ -164,7 +164,7 @@ Sonnet where screens follow patterns already in the kit.
 | WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a | M |
 | WP11 | `special-drafting` | Special Draft Proposal, Special Draft Report (the draft form by posting type), Upload Draft from Excel, as D3 shows them; a special draft moves the rating on its WEF through WP7a's postings | Sonnet 5.5 · medium | WP7a, D3 | M |
 | WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP13 | M |
-| WP13 | `printouts` | PDF reforming, build: the shared PDF layout to D4's design, every PDF the app makes today rebuilt on it, and the walkthrough steps WP3b and WP3c broke fixed (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D4 | M |
+| WP13 | `printouts` | PDF reforming, build: a Chromium renderer (as NAVY-PAYROLL's) with Handlebars, D4's templates in `src/templates/printouts/`, every PDF the app makes today rebuilt from them and pdfkit removed; the walkthrough steps WP3b and WP3c broke fixed (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D4 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
 ## 6. Order: two sessions at a time
@@ -229,7 +229,7 @@ the next wave once the owner has merged.
 | WP4 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $6.48) | `disciplinary` | 19/11/2026: fdd2698, Disciplinary Action (cases, rules, four pages, three PDFs and the Excel report, the Discipline tab); checked with WP3's a7c85e2 on fresh databases: access 166, static tables 1,452, disciplinary 189, system admin 271 |
 | WP3b | Merged 19/11/2026 (Sonnet 5.5 · medium; about $2.02) | `rating-search` | 19/11/2026: 7c31158, the rating search select (10 a time, at least 2 characters) in Add Account, Manage Password, the Audit Trail filter, Initiate Incident, the Pending and Concluded filters and Documents; checked on 15,000 ratings and in the browser |
 | WP3c | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.41) | `detail-rows` | 19/11/2026: b7407f7, details as label and value rows (`facts`, `factPanels`), the record's Details tab in two panels |
-| D4 | Not started (wave P; `docs/waves/wave-P-printouts.md`) | `design-printouts` | |
+| D4 | Done with the owner's table-header change (e66c8ef); for the owner to merge (Sonnet 5.5 · medium) | `design-printouts` | 19/11/2026: e66c8ef, 27 printouts as Handlebars templates with a shared stylesheet, partials and local fonts, rendered to PDF by Chromium (`npm run printouts:render`); CIRERMS's header, footer and colours kept; NAVY-PAYROLL's watermark, faint blue page and fonts copied. Checked by the administrator: only `docs/design/`, a script line and its report note; re-rendered, 27 of 27; pages looked at |
 | WP13 | Not started (wave P) | `printouts` | |
 | WP5 | Not started | `discharge` | |
 | WP6 | Not started | `training-drafting` | |
@@ -323,6 +323,12 @@ settings; Manage Roles (WP3) lists every module's screens from the privilege cat
 
 Added by the administrator (19/11/2026): closing a discharge also deactivates the rating's user account, if it has
 one (its sessions end), since every account belongs to a rating.
+
+D4's questions, answered by the administrator (19/11/2026; the owner can change any): the "Generated by" stamp reads
+`dd/mm/yyyy hh:mm` in Nigerian time (WAT), not UTC; the header stays on page 1 only and the footer on every page, as the
+app's PDFs do now; the watermark stays at payroll's 0.02; the three verification forms and the special draft letter keep
+their indicative layouts until the owner supplies the real ones. The owner's review (19/11/2026): table headers have no
+background; their text is navy blue (#0074a8) with a 1.3px navy line (#0074a8) under it.
 
 ## 9c. Decisions for Static Tables (WP2)
 

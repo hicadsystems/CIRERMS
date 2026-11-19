@@ -16,8 +16,8 @@ package you take before you start, so two people never take the same one.
 
 | Wave | File | Package | Branch | Needs merged first | Model · effort (AI session) | Size | Migration block | Seed file |
 |---|---|---|---|---|---|---|---|---|
-| P | `wave-P-printouts.md` | D4 PDF design (design only) | `design-printouts` | (all merged) | Sonnet 5.5 · medium | M | none | none |
-| P | `wave-P-printouts.md` | WP13 PDF rebuild | `printouts` | D4 | Sonnet 5.5 · medium | M | `13` (if any) | none |
+| P | `wave-P-printouts.md` | D4 PDF design: HTML templates (design only) | `design-printouts` | (all merged) | Sonnet 5.5 · medium | M | none | none |
+| P | `wave-P-printouts.md` | WP13 PDFs by Chromium from the templates | `printouts` | D4 | Sonnet 5.5 · medium | M | `13` (if any) | none |
 | E | `wave-E-training-and-drafting.md` | WP6 Training Drafting | `training-drafting` | WP13 | Sonnet 5.5 · high | M | `06` | `007_training_drafting.sql` |
 | E | `wave-E-training-and-drafting.md` | WP7a Drafting Cycle | `drafting-cycle` | WP13 | Opus 5.5 · high | L | `07` | `008_drafting.sql` |
 | F | `wave-F-discharge-and-advancement.md` | WP5 Discharge Administration | `discharge` | WP13 | Sonnet 5.5 · high | M | `05` | `009_discharge.sql` |
@@ -74,9 +74,10 @@ The project's rules (`docs/PLAN.md` section 3 and `CONVENTIONS.md` hold them in 
   phone. 25 rows a page, paged by the server.
 - **Every add and edit opens in a dialog** (a bottom sheet on a phone), with errors under the fields, a
   confirmation for anything that removes or closes, and a toast after.
-- **Printouts** are made on the server with pdfkit, on the shared PDF layout (WP13, `src/shared/pdf*`), and open in
-  the app's own preview (`openPdfPreview` in `public/js/ui/pdf-preview.js`): never the browser's PDF viewer, never an
-  `<iframe>`, `<embed>` or `<object>` of a PDF.
+- **Printouts** are HTML templates (Handlebars, in `src/templates/printouts/`, keeping CIRERMS's PDF conventions,
+  improved to the standard of the owner's NAVY-PAYROLL application, designed by D4) turned into PDFs on the server by Chromium (`renderPdf`, WP13), and open
+  in the app's own preview (`openPdfPreview` in `public/js/ui/pdf-preview.js`, which draws the real pages): never
+  the browser's PDF viewer, never an `<iframe>`, `<embed>` or `<object>` of a PDF.
 - **Look**: colour tokens only (no `bg-white`, `text-white`, `#fff`, hex or Tailwind palette colours in the app),
   light and dark mode, desktop and phone, the fluid type scale, Lucide icons from the sprite, dates `dd/mm/yyyy`,
   no inline scripts or `on*=` handlers (the Content Security Policy forbids them). Rebuild the CSS

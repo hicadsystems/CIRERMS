@@ -16,7 +16,7 @@ Common to both:
   section) shows.
 - A list of who is due only reads. A batch is created only when a confirming dialog is confirmed, never on a
   search or a page load. A rating already in an open batch is shown with its batch and left out of a new one.
-- Ratings are picked with the rating search select. Printouts use WP13's shared layout and open in the app's
+- Ratings are picked with the rating search select. Printouts are Handlebars templates rendered by WP13's Chromium renderer (`renderPdf`) and open in the app's
   preview. Details are label and value rows.
 
 ---

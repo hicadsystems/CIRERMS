@@ -4,7 +4,7 @@ Two packages that can run at the same time, by two developers. WP12 can start as
 waits for WP7a, whose posting move it uses.
 
 Read `docs/waves/README.md` first: its rules, checks and report note are binding. Ratings are picked with the
-rating search select; printouts use WP13's shared layout and open in the app's preview; details are label and
+rating search select; printouts are Handlebars templates rendered by WP13's Chromium renderer (`renderPdf`) and open in the app's preview; details are label and
 value rows.
 
 ---
