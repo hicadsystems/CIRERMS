@@ -37,8 +37,22 @@ async function prepare() {
   if (cfg.chromiumPath) {
     if (!fs.existsSync(cfg.chromiumPath)) throw new Error(`PDF_CHROMIUM_PATH points to a file that does not exist: ${cfg.chromiumPath}`);
     launchOptions = { executablePath: cfg.chromiumPath, headless: true, args: [...base, '--no-sandbox', '--disable-setuid-sandbox'] };
+  } else if (process.platform === 'win32') {
+    const candidates = [
+      path.join(process.env.PROGRAMFILES || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env['PROGRAMFILES(X86)'] || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env['PROGRAMFILES(X86)'] || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(process.env.PROGRAMFILES || '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    ];
+    const executablePath = candidates.find((candidate) => fs.existsSync(candidate));
+    if (!executablePath) {
+      throw new Error('No Chrome or Edge installation was found. Set PDF_CHROMIUM_PATH to a browser executable.');
+    }
+    launchOptions = { executablePath, headless: true, args: [...base, '--no-sandbox', '--disable-setuid-sandbox'] };
   } else {
-    const sparticuz = require('@sparticuz/chromium');
+    const sparticuzModule = require('@sparticuz/chromium');
+    const sparticuz = sparticuzModule.default || sparticuzModule;
     const tmp = cfg.tempDir || path.join(os.tmpdir(), 'cirerms-chromium');
     fs.mkdirSync(tmp, { recursive: true });
     // --single-process and --no-zygote stop web fonts loading; the headless shell has no font renderer
