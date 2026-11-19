@@ -121,10 +121,10 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP4, D3, the plan |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP4, D3, the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
-| D1, T1, D2, WP2, WP3, WP4, D3 | Merged 19/11/2026; sessions archived |
-| WP3b `rating-search` | Session `session_01G8Rfvmw9nU1P9zY2F6pwpH`. Done at 7c31158 and checked. Owner to merge, then archive. The next build package updates these walkthrough steps: system admin (Add Account ~347-359 and ~794, Manage Password ~502-528, ~812, ~1028, Audit ~662, ~677) and disciplinary (Initiate ~218, ~556, ~621; Pending and Concluded `setFilter(..., 'q', ...)` ~159, ~286-385) |
+| D1, T1, D2, WP2, WP3, WP3b, WP4, D3 | Merged 19/11/2026; sessions archived |
+| WP3c `detail-rows` | Session `session_01G8Rfvj5QXdAWhBCrLbhPaC` (Sonnet 5.5, medium), started 19/11/2026 at the owner's request: the `facts` kit part and any hand-made label-above-value areas become label and value rows (app only; no tests, owner). Done at b7407f7, looked at. Owner merges, then archive. Walkthrough steps that expect "-" for an empty value now see "N/A", and the Details tab is one card with two panels. The next build package updates the walkthrough steps WP3b and WP3c list (system admin: Add Account ~347-359, ~794; Manage Password ~502-528, ~812, ~1028; Audit ~662, ~677; disciplinary: Initiate ~218, ~556, ~621; Pending and Concluded filters ~159, ~286-385) |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
 | Sessions | One at a time while the weekly limit is at its warning level, unless the owner says otherwise |
 | Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
