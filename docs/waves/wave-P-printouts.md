@@ -1,98 +1,126 @@
 # Wave P: printouts (PDF reforming)
 
-Two packages, one after the other: D4 designs every printout properly in the design demo; after the owner approves
-it (by merging), WP13 builds the shared PDF layout to that design and rebuilds the printouts the app already makes.
-Every later package then makes its printouts on WP13's layout, so nothing is printed twice in two styles.
+The owner's decision (19/11/2026): printouts are **HTML templates turned into PDFs by Chromium**, as in the owner's
+NAVY-PAYROLL application, and **the owner's PDF design there is the reference**. In the app a PDF shows as real
+pages in our own preview (PDF.js draws the pages; never the browser's PDF viewer and its toolbar).
+
+Two packages, one after the other: D4 designs every printout as an HTML template in that design, and the owner
+reviews them as real PDFs; after the owner approves (by merging), WP13 makes the app render its PDFs from those
+templates with Chromium and rebuilds every printout the app makes today. Every later package then adds its
+printouts as templates the same way.
 
 Read `docs/waves/README.md` first: its rules and checks are binding for both packages.
 
+**The reference.** NAVY-PAYROLL is public: `git clone --depth 1 https://github.com/hicadsystems/navy-payroll`
+(read only). Study:
+- `templates/*.html`: one Handlebars template per printout (for example `personnel-report.html`,
+  `payslip-template.html`, `payroll-register.html`, `salary-summary.html`, `nhf-report.html`): the page set-up
+  (`@page`), the header, the crest as a faint watermark, the fonts (Libre Baskerville for headings, Inter or
+  Helvetica for text), the type sizes, the colours, the tables, the totals and the footers.
+- `lib/chromiumPdfGenerator.js`: how the server turns HTML into PDF with Chromium (one shared browser kept open
+  while busy and closed when idle, a small pool of tabs, waiting for fonts, A4, margins, timeouts, a size limit on
+  the HTML), and `lib/pdfGate.js`.
+- `controllers/Reports/payrollRegisterController.js` and `reportsFallbackController.js`: how a template is filled
+  with Handlebars and handed to the generator.
+- `package.json`: `puppeteer`, `puppeteer-core`, `@sparticuz/chromium`, `handlebars`.
+
 ---
 
-## D4 `design-printouts`: design every printout (design only)
+## D4 `design-printouts`: every printout as an HTML template (design only)
 
 - **Branch:** `design-printouts` · **Needs merged first:** nothing more (D1, D2, D3 are merged)
 - **AI session:** Sonnet 5.5, effort medium · **Size:** M
-- **Changes only** `docs/design/` (`demo-src.html`, the built `demo.html` via `npm run demo:build`, `README.md`,
-  `components.md`). Put your code between `==== D4 BEGIN: ... ====` and `==== D4 END: ... ====` markers, after D3's
-  blocks and before the "Session lock" section.
+- **Changes only** `docs/design/`: a new folder `docs/design/printouts/`, plus `README.md` and `components.md`.
 
 ### Read first
 - `docs/PLAN.md` sections 3 (rule 14 is your definition of done) and 9a to 9e.
-- `docs/design/README.md`: the printout tables in the D1, D2 and D3 sections, and how the demo's PDF preview works
-  (`demo-src.html`: the shared preview D1 built, used by D2 and D3).
+- NAVY-PAYROLL's templates, as above: the house style comes from there.
+- `docs/design/README.md`: the printout tables in the D1, D2 and D3 sections (which printouts exist, what opens
+  them, their fields) and the demo's PDF previews of them in `docs/design/demo.html`.
 - `docs/legacy/reports.md` section 5 (the old Crystal reports and their fields; their layouts cannot be read).
-- The PDFs the app makes today (run the app; `src/shared/pdf.js`): Personnel Dossier (a rating's record, Print
-  Dossier), the rating report (Current Ratings, a row's Print Report), the ratings list export, the Static Tables
-  list (Print List), and the three Disciplinary printouts (Pending Cases list, Disciplinary Report, Case Sheet).
+- The PDFs the app makes today (run the app): Personnel Dossier (a rating's record, Print Dossier), the rating
+  report (Current Ratings, a row's Print Report), the ratings list export, the Static Tables list (Print List), and
+  the three Disciplinary printouts (Pending Cases list, Disciplinary Report, Case Sheet).
 
 ### Design
-1. **One house style for every printout**, shown first in the demo as a style sheet page (for example a "Printout
-   Style" entry under Reports, or a section of the README with a preview), covering:
-   - A4; portrait by default, landscape for lists with many columns; margins; the grid.
-   - The header: the crest, "NIGERIAN NAVY — CIRERMS", the system's full name, the document title, its reference or
-     number (batch, case, form number), the date printed.
-   - Facts as label and value rows (as the app's `facts`), two columns where they fit.
-   - Tables: a header band repeated on every page, light row stripes, numbers right-aligned, a totals row where it
-     applies, a row never split across pages.
-   - Signature blocks (name, rank, appointment, signature and date lines) where the old forms had them.
-   - The footer on every page: the security marking ("RESTRICTED"), "Generated by" with the person's name as the app
-     writes a rating's name, the date and time, and "Page X of Y".
-   - Type sizes and weights, the brand colours used sparingly, and legibility when printed in black and white (no
-     dark backgrounds, no colour that carries meaning on its own).
-2. **Every printout** in that style, in the demo's PDF preview, with believable data and at least one example that
-   runs to more than one page: the app's seven listed above, D1's nine (Manning Requirement Report, Draft Form, Draft
-   Batch Summary, Draft Report for a batch and for all, Draft History, Training Draft Report, Advancement Form,
-   Batch Summary Report for Advancement, Advancement Report), D2's (Personnel Details, Re-engagement Verification,
-   Retirement Routine, Engagement Form, Discharge Report, Ratings Report (All Personnel), Disposition Report), and
-   D3's (Special Draft Form, Special Draft Letter, Report on Appraisal). The three verification forms keep D2's
-   content until the owner supplies the real forms.
-3. **README**: a "Printouts" section with the house style and a table of every printout: its name, the page and
-   button that print it, orientation, sections, fields, and which package builds it.
+1. **The house style**, taken from NAVY-PAYROLL and made CIRERMS's (the Nigerian Navy crest, "NIGERIAN NAVY —
+   CIRERMS", the system's full name): one shared stylesheet, `docs/design/printouts/printout.css`, and shared
+   partials (`header.hbs`, `footer.hbs`, `signatures.hbs`) for: A4 portrait and A4 landscape; the header (crest,
+   titles, the document's reference or number, the date printed); the crest watermark; facts as label and value
+   rows; tables (header row repeated on every page, rows never split across pages, numbers right-aligned, totals);
+   signature blocks; the footer on every page (the marking "RESTRICTED", "Generated by" with the person's name as
+   the app writes a rating's name, the date and time, "Page X of Y"). Legible in black and white. Fonts kept as
+   files in the folder (no fetching from the internet when a PDF is made).
+2. **Every printout as a Handlebars template**, `docs/design/printouts/<name>.hbs`, with a sample data file
+   `<name>.sample.json` (believable data, at least one that runs past one page): the app's seven above; D1's
+   (Manning Requirement Report, Draft Form, Draft Batch Summary, Draft Report for a batch and for all, Draft
+   History, Training Draft Report, Advancement Form, Batch Summary Report for Advancement, Advancement Report); D2's
+   (Personnel Details, Re-engagement Verification, Retirement Routine, Engagement Form, Discharge Report, Ratings
+   Report (All Personnel), Disposition Report); D3's (Special Draft Form, Special Draft Letter, Report on
+   Appraisal). The three verification forms keep D2's content until the owner supplies the real forms.
+3. **A build script**, `docs/design/printouts/render.js` (`npm run printouts:render`), that fills each template
+   with its sample data and renders it to `docs/design/printouts/pdf/<name>.pdf` with Chromium (Playwright's
+   Chromium is enough for this design step; the app's renderer is WP13's). Commit the PDFs: they are what the owner
+   reviews.
+4. **README**: a "Printouts" section with the house style and a table of every printout: its template, the page and
+   button that print it, orientation, sections, fields, and the package that wires it into the app.
 
 ### Check
-`npm run demo:build` runs clean; open the demo with Playwright at 1440 and 390 px, light and dark: every printout
-opens in its preview, no browser errors, no sideways scrolling; look at every printout yourself, page 2 included.
+`npm run printouts:render` makes every PDF with no errors; open every PDF and look at it, page 2 included, and at
+one printed in black and white (greyscale).
 
 ### Report
-`docs/reports/D4.md` on your branch (see `docs/reports/README.md`): every printout designed, the house style in
-brief, what the owner should look at first, questions for the owner. Then tell the owner (an AI session working
-for the administrator sends it with `send_message` to the administrator session named in `docs/PLAN.md` section 7).
+`docs/reports/D4.md` on your branch (see `docs/reports/README.md`): every printout, the house style in brief, what
+the owner should look at first, questions for the owner. Then tell the owner (an AI session working for the
+administrator sends it with `send_message` to the administrator session named in `docs/PLAN.md` section 7). The
+administrator sends the owner the PDFs to review.
 
 ---
 
-## WP13 `printouts`: the shared PDF layout, and the existing printouts rebuilt
+## WP13 `printouts`: Chromium renders the app's PDFs from the templates
 
 - **Branch:** `printouts` · **Needs merged first:** D4 (approved by the owner's merge)
 - **AI session:** Sonnet 5.5, effort medium · **Size:** M · **Migration block:** `13` (only if you need one) ·
   **Seed:** none
+- **New packages** (the owner's decision): `puppeteer-core` and `@sparticuz/chromium` (or `puppeteer`), and
+  `handlebars`, pinned exactly, as NAVY-PAYROLL uses them. If your session's permission check refuses an install,
+  stop and say so in your report; do not work around it.
 
 ### Read first
 - `docs/waves/README.md` (rules, checks, report note), `CONVENTIONS.md` in full, `docs/PLAN.md` section 3.
-- `docs/design/README.md`, the "Printouts" section (D4) and its previews in `docs/design/demo.html`.
-- `src/shared/pdf.js` (pdfkit helpers today: the crest, colours, `stampPageFooters`, `buildStaticTableListPdf`),
-  `src/modules/disciplinary/disciplinary.documents.js`, the ratings module's PDF code, `public/js/ui/pdf-preview.js`.
+- `docs/design/printouts/` and the "Printouts" section of `docs/design/README.md` (D4, approved).
+- NAVY-PAYROLL's `lib/chromiumPdfGenerator.js`, `lib/pdfGate.js` and a report controller, as above.
+- CIRERMS today: `src/shared/pdf.js` (pdfkit), `src/modules/disciplinary/disciplinary.documents.js`, the ratings
+  module's PDF code, the Static Tables print route, `public/js/ui/pdf-preview.js` (the preview stays as it is).
 
 ### Build
-1. **The shared layout** in `src/shared/` (one module, for example `src/shared/pdf/`): page setup (A4, portrait or
-   landscape), the header, the facts rows, tables with the header repeated on every page and rows never split,
-   signature blocks, the footer with the marking, "Generated by", date and "Page X of Y", exactly as D4 designed
-   them. One function per part, documented at the top of the file, so later packages build a printout in a few
-   lines. No hex colours outside its one palette.
-2. **Rebuild every PDF the app makes today** on it, matching D4: Personnel Dossier, the rating report, the ratings
+1. **The renderer**, `src/shared/printouts/` (one module, documented at the top): a Chromium generator modelled on
+   NAVY-PAYROLL's (one shared browser started on first use, kept open while busy and closed after an idle time,
+   restarted after many pages, a small pool of tabs, waits for fonts, A4 portrait or landscape, timeouts, a limit
+   on the HTML size, settings from `.env` with sensible defaults, errors logged and never left hanging); Handlebars
+   with D4's partials and helpers (dates `dd/mm/yyyy`, a rating's name, numbers); the templates moved from
+   `docs/design/printouts/` to `src/templates/printouts/` (D4's stay as the design record); fonts and the crest
+   served from the app's own files, no internet fetch at render time. One call: `renderPdf('<template>', data,
+   { landscape })` returns the PDF.
+2. **Rebuild every PDF the app makes today** from its D4 template: Personnel Dossier, the rating report, the ratings
    list export, the Static Tables lists (all 16), and the three Disciplinary printouts. They keep opening in the
-   app's own preview.
-3. **Fix the walkthrough steps** that the rating search select (WP3b) and the label-and-value rows (WP3c) broke, so
+   app's own preview. Remove pdfkit and `src/shared/pdf.js` once nothing uses them.
+3. **Running on the server**: `README.md` says what the server needs for Chromium (as NAVY-PAYROLL's deployment
+   does) and how to set the renderer's settings; `.env.example` lists them.
+4. **Fix the walkthrough steps** that the rating search select (WP3b) and the label-and-value rows (WP3c) broke, so
    every walkthrough passes again: in `tests/e2e/system-admin-walkthrough.js` Add Account (about lines 347-359 and
    794), Manage Password (about 502-528, 812, 1028) and the Audit Trail filter (about 662, 677); in
    `tests/e2e/disciplinary-walkthrough.js` Initiate Incident (about 218, 556, 621) and the Pending and Concluded
    filters (`setFilter(..., 'q', ...)`, about 159 and 286-385); and any step expecting "-" for an empty value
    (now "N/A") or the record's Details tab as four cards (now one card with two panels).
-4. `CONVENTIONS.md`: how a package makes a printout with the shared layout. `README.md`: what was rebuilt.
+5. `CONVENTIONS.md` (Libraries and Frontend): printouts are Handlebars templates in `src/templates/printouts/`
+   rendered by Chromium with `renderPdf`, and how a later package adds one. `README.md`: what was rebuilt.
 
 ### Check
-All four walkthroughs pass on a fresh database, each within 5 minutes (access, static tables, system admin,
-disciplinary). Open every rebuilt printout in the app's preview and compare it
-with D4's design, page 2 included; download one and open it.
+All four walkthroughs (access, static tables, system admin, disciplinary) pass on a fresh database, each within
+5 minutes, with checks that each rebuilt printout opens in the preview with its pages. Open every rebuilt printout
+in the app and compare it with D4's PDF, page 2 included; download one and open it. Make twenty PDFs in a row and
+see the browser stay up and close when idle.
 
 ### Report
 `docs/reports/WP13.md` on your branch, then tell the owner (or `send_message` to the administrator session).
