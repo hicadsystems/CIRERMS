@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="landscape"}}
+</head>
+<body>
+{{> header}}
+{{#if summary}}
+<div class="summary">{{#each summary}}<div class="item"><div class="label">{{label}}</div><div class="value">{{value}}</div></div>{{/each}}</div>
+{{/if}}
+{{> facts items=facts cols=4}}
+{{> datatable table}}
+{{#if note}}<p class="note">{{note}}</p>{{/if}}
+{{#if signatures}}{{> signatures items=signatures}}{{/if}}
+</body>
+</html>

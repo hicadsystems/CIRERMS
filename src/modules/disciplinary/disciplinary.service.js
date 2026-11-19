@@ -349,7 +349,7 @@ async function correct(id, body, actor) {
 
 // ---- printouts and the workbook ---------------------------------------------
 
-const who = (actor) => (actor && actor.username) || '';
+const who = (actor) => (actor && (actor.fullName || actor.username)) || '';
 
 async function pendingPdf(q, actor) {
   const f = { ...filtersFrom(q, ['serviceNumber', 'offenceId']), status: 'pending' };

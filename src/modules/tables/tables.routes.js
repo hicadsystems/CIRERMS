@@ -32,7 +32,7 @@ for (const t of TABLES) {
 
   // the list as a PDF (Print List), following the search and status filter; before `/:id`
   router.get(`${base}/print`, requirePrivilege(screen, 'view'), asyncHandler(async (req, res) => {
-    const out = await service.printList(t.slug, req.query, req.user.username);
+    const out = await service.printList(t.slug, req.query, req.user.fullName || req.user.username);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${out.fileName}"`);
     res.setHeader('X-Content-Type-Options', 'nosniff');

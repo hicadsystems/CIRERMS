@@ -65,6 +65,19 @@ const config = Object.freeze({
     maxDocBytes: toInt(process.env.MAX_DOC_SIZE_MB, 15) * 1024 * 1024,
     maxExcelBytes: toInt(process.env.MAX_EXCEL_SIZE_MB, 10) * 1024 * 1024,
   }),
+
+  // Printouts: PDFs made by Chromium from the HTML templates (src/shared/printouts). Settings are read at
+  // first use; with no PDF_CHROMIUM_PATH the browser comes from @sparticuz/chromium.
+  pdf: Object.freeze({
+    chromiumPath: (process.env.PDF_CHROMIUM_PATH || '').trim(),
+    tabPoolSize: toInt(process.env.PDF_TAB_POOL_SIZE, 2),
+    browserIdleMs: toInt(process.env.PDF_BROWSER_IDLE_MS, 60000),
+    browserMaxPages: toInt(process.env.PDF_BROWSER_MAX_PAGES, 300),
+    timeoutMs: toInt(process.env.PDF_TIMEOUT_MS, 60000),
+    fontWaitMs: toInt(process.env.PDF_FONT_WAIT_MS, 5000),
+    maxHtmlMb: toPositiveNumber(process.env.PDF_MAX_HTML_MB, 10),
+    tempDir: process.env.PDF_TEMP_DIR ? path.resolve(ROOT_DIR, process.env.PDF_TEMP_DIR) : '',
+  }),
 });
 
 module.exports = config;
