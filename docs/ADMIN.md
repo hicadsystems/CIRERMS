@@ -14,9 +14,12 @@ sessions, checks what they deliver, and tells the owner what is ready to merge. 
   `https://github.com/hicadsystems/cirerms`, the model and effort the plan names for the package
   (`claude-opus-5-5` or `claude-sonnet-5-5`; `low`, `medium` or `high`), and a full brief (section 5).
   Two sessions at a time at most.
-- **Never subscribe to or watch a session** (owner's rule). Each session sends one report to the
-  administrator session with `send_message` and stops. Reports arrive as notifications: read them
-  with `ReadNotifications`.
+- **Never subscribe to, watch or schedule checks on a session** (owner's rule, repeated 19/11/2026:
+  it saves tokens). No `send_later` or scheduled task to look in on one. Each session sends one report
+  to the administrator session with `send_message` and stops; every brief names the administrator's
+  id from `docs/PLAN.md` section 7. Reports arrive as notifications: read them with
+  `ReadNotifications`. When the administrator hands over, the outgoing one forwards any report that
+  still reaches it.
 - **Check every branch** before telling the owner it is ready (section 4). The owner merges on
   GitHub; you never open a PR.
 - After the owner merges, update the plan's status, archive the finished session
@@ -119,7 +122,7 @@ WP0, WP1, D1 and T1:
 |---|---|
 | master | WP0 (`docs/legacy/`), WP1 (access, audit, lock, module registration), the plan, the demo with light and dark mode |
 | `project-plan` | Commits ahead of master: section 9a decisions, status updates, this handbook. Owner to merge |
-| D1 `design-drafting` | Session `session_01G8RfvhowaPjDAhdbMMevYk` (Sonnet 5.5, high). Designed 21 pages (e2b5234), applied the wide-table rule (ae3af45, checked). Now applying the section 9a decisions. Its brief names the previous administrator's id, so its report may go there: read it from D1's transcript (`list_events`, kinds assistant) if no notification comes. Then: check it, send the owner `demo.html` to review, owner merges, archive the session |
+| D1 `design-drafting` | Session `session_01G8RfvhowaPjDAhdbMMevYk`. Done at 62992bc (21 pages, wide tables, section 9a decisions) and checked by the administrator. Sent to the owner to review; changes they ask for go on the same branch. Owner merges, then archive the session |
 | T1 `fluid-type` | Session `session_01G8Rfvn3mdwH2Gn2PpotpHL`. Done at c0ed596 and checked by the administrator (166 passed, phone screens looked at). Owner to merge, then archive the session |
 | Next, wave C | D2 `design-casework` (Sonnet 5.5, medium) once D1 is merged: Disciplinary, Discharge, the in-scope printouts, dashboard tiles; add after D1's blocks in `demo-src.html` (D1 marked them "D1 BEGIN / D1 END"; D2 goes before the "Session lock" section). WP2 `static-tables` (Sonnet 5.5, medium) once T1 is merged |
 | Later waves | D: WP3, WP4. E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
@@ -133,6 +136,8 @@ Notes for coming briefs:
   for every button; grants for roles other than Administrator in the package's seed.
 - **WP2:** `/api/lookups` is guarded by "any ratings screen"; under the static-tables engine it gets
   its own `tables.*` privileges and stays readable by the ratings screens (My Details too).
+  A Training course also carries Branch, Specialisation and Rates (who may attend), which D1's
+  training design needs and the approved Static Tables design lacks (`docs/design/README.md`).
 - **WP3:** screens on the read APIs WP1 made (`/api/access/privileges`, `/api/access/roles`,
   `/api/audit`); add `admin.users`, `admin.password` and role add/edit/delete; Administrator
   (full access) is not editable; the account menu's Change Password; also mention
