@@ -184,9 +184,9 @@ the next wave once the owner has merged.
 | Pkg | Status | Branch | Last report |
 |---|---|---|---|
 | `demo-themes` (extra: light and dark mode and the sign-in page in the demo) | Merged 18/11/2026 (Sonnet 5.5 · low) | `demo-themes` | 18/11/2026: 3dcaa39, only `docs/design/` changed; screens checked at 1440 and 390 px in both themes, no errors. Not tested: device-follow while open, cross-tab sync, reduced motion |
-| WP0 | Done, checked, ready to merge (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
-| D1 | Not started | `design-drafting` | |
-| WP1 | Not started | `foundation-access` | |
+| WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
+| D1 | Running since 19/11/2026, Sonnet 5.5 · high | `design-drafting` | |
+| WP1 | Running since 19/11/2026, Opus 5.5 · high | `foundation-access` | |
 | D2 | Not started | `design-casework` | |
 | WP2 | Not started | `static-tables` | |
 | WP3 | Not started | `system-admin` | |
