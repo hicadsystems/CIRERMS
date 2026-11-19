@@ -1,6 +1,7 @@
 'use strict';
 
 const db = require('../../db');
+const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 
 const escapeLike = (s) => String(s).replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -21,10 +22,11 @@ async function listEntries(filters, { page, pageSize }) {
   const { sql, params } = whereClause(filters);
   const [countRow] = await db.query(`SELECT COUNT(*) AS total FROM audit_trail a ${sql}`, params);
   const items = await db.query(
-    `SELECT a.id, a.created_at, a.user_id, a.username, u.full_name, a.action, a.table_name, a.record_id,
+    `SELECT a.id, a.created_at, a.user_id, a.username, ${NAME_COLUMNS}, a.action, a.table_name, a.record_id,
             a.ip_address, JSON_LENGTH(a.changes) AS change_count
        FROM audit_trail a
        LEFT JOIN users u ON u.id = a.user_id
+       ${NAME_JOINS}
        ${sql}
       ORDER BY a.created_at DESC, a.id DESC
       LIMIT ? OFFSET ?`,
@@ -35,9 +37,10 @@ async function listEntries(filters, { page, pageSize }) {
 
 async function findEntry(id) {
   const rows = await db.query(
-    `SELECT a.*, u.full_name
+    `SELECT a.*, ${NAME_COLUMNS}
        FROM audit_trail a
        LEFT JOIN users u ON u.id = a.user_id
+       ${NAME_JOINS}
       WHERE a.id = ?
       LIMIT 1`,
     [id]
@@ -54,8 +57,9 @@ async function listTables() {
 
 async function listUsers() {
   return db.query(
-    `SELECT u.id, u.username, u.full_name
+    `SELECT u.id, u.username, ${NAME_COLUMNS}
        FROM users u
+       ${NAME_JOINS}
       WHERE EXISTS (SELECT 1 FROM audit_trail a WHERE a.user_id = u.id)
       ORDER BY u.username`
   );

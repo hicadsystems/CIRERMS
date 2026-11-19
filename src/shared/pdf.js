@@ -95,6 +95,8 @@ function stampPageFooters(doc, generatedBy) {
   const stampDate = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
   for (let i = 0; i < range.count; i += 1) {
     doc.switchToPage(range.start + i);
+    // the footer sits inside the bottom margin: without this, writing there adds a blank page
+    doc.page.margins.bottom = 0;
     const margin = doc.page.margins.left;
     const footerY = doc.page.height - 28;
     const width = doc.page.width - margin * 2;
@@ -518,7 +520,30 @@ async function buildRatingDossierPdf({ rating, children, generatedBy = '' }) {
   return collectPdfBuffer(doc);
 }
 
+/**
+ * Build the generic list printout of a Static Table: the crest, the table's title, its list columns
+ * (code included where it has one), the Active state, the number of rows, the date printed and page
+ * numbers. Landscape when there are more than four columns.
+ */
+async function buildStaticTableListPdf({ title, columns, rows, filterNote = '', generatedBy = '' }) {
+  const wide = columns.length > 4;
+  const doc = new PDFDocument({
+    size: 'A4',
+    layout: wide ? 'landscape' : 'portrait',
+    margins: { top: 32, bottom: 36, left: 32, right: 32 },
+    bufferPages: true,
+  });
+  const printed = formatDisplayDate(new Date().toISOString().slice(0, 10));
+  const parts = [`${rows.length} ${rows.length === 1 ? 'entry' : 'entries'}`, `Printed ${printed}`];
+  if (filterNote) parts.unshift(filterNote);
+  drawOfficialHeader(doc, { title: String(title).toUpperCase(), subtitle: parts.join(' | ') });
+  drawTable(doc, [{ header: 'No', weight: 0.5, value: (_, i) => i + 1 }, ...columns], rows);
+  stampPageFooters(doc, generatedBy);
+  return collectPdfBuffer(doc);
+}
+
 module.exports = {
+  buildStaticTableListPdf,
   COLOURS,
   buildRatingsListPdf,
   buildRatingTabPdf,

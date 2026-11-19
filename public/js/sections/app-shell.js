@@ -19,6 +19,7 @@ import { emptyState } from '../ui/empty-state.js';
 import { closeAllDialogs } from '../ui/dialog.js';
 import { closeMenus } from '../ui/menu.js';
 import { setUser } from '../shell/session.js';
+import { openChangePassword } from '../shell/password.js';
 import { startLock } from '../shell/lock.js';
 import { renderRail, isFolded, setFolded } from '../shell/rail.js';
 import { renderModuleTabs } from '../shell/module-tabs.js';
@@ -137,6 +138,10 @@ async function initAppShell() {
   bindChrome();
   // a locked session shows the lock first; the page draws once it is unlocked
   await startLock(me.session || {});
+  // a new or reset account chooses its own password before anything else opens
+  while (me.user.mustChangePassword) {
+    if (await openChangePassword({ forced: true })) me.user.mustChangePassword = false;
+  }
 
   const routes = PAGES.map((page) => ({ pattern: page.pattern, mount: (outlet, ctx) => mountPage(page, outlet, ctx) }));
   startRouter({

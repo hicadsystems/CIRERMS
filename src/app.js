@@ -28,6 +28,8 @@ app.use(
         fontSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
         frameSrc: ["'self'", 'blob:'],
+        // PDF.js draws the app's own PDF preview in a worker served from our own origin
+        workerSrc: ["'self'", 'blob:'],
         objectSrc: ["'self'", 'blob:'],
         baseUri: ["'self'"],
         formAction: ["'self'"],
@@ -56,6 +58,16 @@ mountModules(app);
 
 // Catch unknown /api/* routes with JSON 404
 app.use('/api', notFoundHandler);
+
+// PDF.js (the pdfjs-dist package), served from our own origin for the app's PDF preview
+// (public/js/ui/pdf-preview.js): the library and worker, and the fonts a PDF may name without embedding
+try {
+  const pdfjsDir = path.dirname(require.resolve('pdfjs-dist/package.json'));
+  app.use('/vendor/pdfjs/build', express.static(path.join(pdfjsDir, 'build'), { maxAge: config.isProduction ? '1d' : 0 }));
+  app.use('/vendor/pdfjs/standard_fonts', express.static(path.join(pdfjsDir, 'standard_fonts'), { maxAge: config.isProduction ? '1d' : 0 }));
+} catch (_) {
+  console.warn('[CIRERMS] pdfjs-dist is not installed: run npm install; the PDF preview needs it.');
+}
 
 // Serve static SPA shell & partials from public/
 app.use(
