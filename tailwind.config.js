@@ -3,6 +3,17 @@
 // Every colour is a token in public/css/input.css; this file only names them.
 const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 
+// One fluid type scale: each step grows linearly from its phone size at 360 px wide to its
+// desktop size at 1440 px wide, and is held at either end. Sizes are [phone px, desktop px].
+const fluid = ([p, d]) => {
+  const rem = (px) => `${+(px / 16).toFixed(4)}rem`;
+  const slope = (d - p) / 1080;                       // px of text per px of screen
+  if (slope === 0) return rem(p);
+  const base = +(p - 360 * slope).toFixed(4);
+  return `clamp(${rem(p)}, ${base}px + ${+(slope * 100).toFixed(4)}vw, ${rem(d)})`;
+};
+const step = (size, line) => [fluid(size), { lineHeight: fluid(line) }];
+
 module.exports = {
   content: [
     './public/**/*.html',
@@ -76,7 +87,15 @@ module.exports = {
         page: '83.75rem',          // 1340 px: a page's content on a wide screen
       },
       fontSize: {
-        '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11 px: group labels, counts
+        // [phone px, desktop px] for the size, then for its line height (see CONVENTIONS, Frontend)
+        '2xs': step([11, 11], [16, 16]),   // group labels, counts
+        xs: step([12, 12], [16, 16]),
+        sm: step([13, 14], [20, 20]),      // body text, never below 13 px on a phone
+        base: step([15, 16], [22, 24]),
+        lg: step([16, 18], [24, 28]),
+        xl: step([18, 20], [26, 28]),      // a record's name
+        '2xl': step([20, 24], [28, 32]),   // a page title
+        '3xl': step([22, 30], [28, 36]),   // a stat value, the sign-in heading
       },
       borderRadius: {
         ctl: '0.5rem',             // 8 px: fields, buttons, menu items

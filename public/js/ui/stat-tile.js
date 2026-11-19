@@ -21,7 +21,7 @@ const TONES = {
 
 export function statTile({ label, value = '--', icon = 'users', tone = 'primary', foot = null, className = '' } = {}) {
   const [badge, glow] = TONES[tone] || TONES.primary;
-  const number = h('div', { className: 'relative mt-1 text-3xl font-bold tracking-tight', text: value });
+  const number = h('div', { className: 'relative mt-1 text-3xl font-bold tracking-tight phone:font-semibold', text: value });
   const tile = h('div', { className: cx(CARD, 'relative overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-card-hover', className) }, [
     h('div', { className: cx('pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full', glow) }),
     h('div', { className: 'relative flex items-start justify-between gap-3' }, [

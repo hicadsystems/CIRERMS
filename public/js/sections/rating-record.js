@@ -101,10 +101,10 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details' })
       may.remove ? button({ label: 'Delete', icon: 'trash-2', variant: 'outline', className: 'text-destructive phone:hidden', onClick: removeRating }) : null,
     ];
     fill(head, [
-      h('div', { className: 'flex flex-wrap items-center gap-4 p-4' }, [
+      h('div', { className: 'flex flex-wrap items-center gap-3 p-4 desk:gap-4' }, [
         photoAvatar(r),
         h('div', { className: 'min-w-0 flex-1' }, [
-          h(readOnly ? 'h2' : 'h1', { className: 'text-xl font-semibold tracking-tight', text: name }),
+          h(readOnly ? 'h2' : 'h1', { className: 'break-words text-xl font-semibold tracking-tight', text: name }),
           h('div', { className: 'text-sm text-muted-foreground', text: [r.service_number, r.rate_name, where].filter(Boolean).join(' · ') }),
           h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5' }, [
             pill(r.status === 'former' ? 'Former' : 'Current', r.status === 'former' ? 'neutral' : 'success'),
