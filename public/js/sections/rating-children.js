@@ -24,6 +24,7 @@ import { openDialog } from '../ui/dialog.js';
 import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
+import { optionsWithHeld } from '../core/lookups.js';
 import { readForm, dateField } from './rating-fields.js';
 
 const YES_NO = [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }];
@@ -38,7 +39,7 @@ export const CHILD_TABS = [
       { name: 'first_name', label: 'First Name', required: true },
       { name: 'last_name', label: 'Last Name', required: true },
       { name: 'mobile_number', label: 'Mobile Number', type: 'tel' },
-      { name: 'next_of_kin_type_id', label: 'Relationship', type: 'select', options: opts(L.nextOfKinTypes) },
+      { name: 'next_of_kin_type_id', label: 'Relationship', type: 'select', lookup: 'nextOfKinTypes', options: opts(L.nextOfKinTypes) },
     ],
   },
   {
@@ -62,7 +63,7 @@ export const CHILD_TABS = [
   {
     key: 'advancement', label: 'Advancement', bundleKey: 'advancement', noun: 'Advancement', addLabel: 'Add Advancement', icon: 'trending-up', pdf: true,
     fields: (L) => [
-      { name: 'rate_id', label: 'Rate', type: 'select', options: opts(L.rates), required: true },
+      { name: 'rate_id', label: 'Rate', type: 'select', lookup: 'rates', options: opts(L.rates), required: true },
       { name: 'start_date', label: 'Start Date', type: 'date' },
       { name: 'end_date', label: 'End Date', type: 'date' },
       { name: 'decoration', label: 'Decoration' },
@@ -74,8 +75,8 @@ export const CHILD_TABS = [
   {
     key: 'drafting', label: 'Drafting', bundleKey: 'drafting', noun: 'Posting', addLabel: 'Add Posting', icon: 'ship', pdf: true, look: 'timeline',
     fields: (L) => [
-      { name: 'ship_id', label: 'Ship or Unit', type: 'select', options: opts(L.ships), required: true },
-      { name: 'rate_id', label: 'Rate at Posting', type: 'select', options: opts(L.rates) },
+      { name: 'ship_id', label: 'Ship or Unit', type: 'select', lookup: 'ships', options: opts(L.ships), required: true },
+      { name: 'rate_id', label: 'Rate at Posting', type: 'select', lookup: 'rates', options: opts(L.rates) },
       { name: 'start_date', label: 'From', type: 'date' },
       { name: 'end_date', label: 'To', type: 'date', hint: 'Leave empty for the current posting' },
       { name: 'remarks', label: 'Remarks', span: 'full' },
@@ -106,7 +107,7 @@ export const CHILD_TABS = [
   {
     key: 'language', label: 'Language', bundleKey: 'language', noun: 'Language', addLabel: 'Add Language', icon: 'languages',
     fields: (L) => [
-      { name: 'language_id', label: 'Language', type: 'select', options: opts(L.languages), required: true },
+      { name: 'language_id', label: 'Language', type: 'select', lookup: 'languages', options: opts(L.languages), required: true },
       { name: 'can_read', label: 'Can Read', type: 'yesno' },
       { name: 'can_write', label: 'Can Write', type: 'yesno' },
       { name: 'can_speak', label: 'Can Speak', type: 'yesno' },
@@ -117,9 +118,10 @@ export const CHILD_TABS = [
 
 export const childTab = (key) => CHILD_TABS.find((t) => t.key === key) || null;
 
-function control(f, row) {
+function control(f, row, lookups) {
   const raw = row ? row[f.name] : undefined;
-  if (f.type === 'select') return selectInput({ name: f.name, options: f.options || [], value: raw ?? '' });
+  // a select of a lookup also offers the value this row holds when it has since been made inactive
+  if (f.type === 'select') return selectInput({ name: f.name, options: f.lookup ? optionsWithHeld(lookups, f.lookup, raw) : f.options || [], value: raw ?? '' });
   if (f.type === 'yesno') return selectInput({ name: f.name, options: YES_NO, value: row ? String(Number(raw) ? 1 : 0) : '1', placeholder: null });
   if (f.type === 'date') return dateField(f.name, raw);
   return textInput({ name: f.name, type: f.type || 'text', value: raw == null ? '' : String(raw), required: !!f.required });
@@ -131,7 +133,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   function openForm(row = null) {
     const fields = tab.fields(lookups);
     const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' },
-      fields.map((f) => field({ label: f.required ? `${f.label} *` : f.label, control: control(f, row), hint: f.hint, className: f.span === 'full' ? 'col-span-2 phone:col-span-1' : '' })));
+      fields.map((f) => field({ label: f.required ? `${f.label} *` : f.label, control: control(f, row, lookups), hint: f.hint, className: f.span === 'full' ? 'col-span-2 phone:col-span-1' : '' })));
     const dlg = openDialog({ title: row ? `Edit ${tab.noun}` : tab.addLabel, size: 'lg', body: form, initialFocus: 'input:not([type="hidden"]), [name]' });
     const saveBtn = button({ label: 'Save', icon: 'check', variant: 'primary', onClick: () => save() });
     dlg.setFooter([button({ label: 'Cancel', variant: 'outline', onClick: () => dlg.close() }), saveBtn]);

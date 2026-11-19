@@ -30,11 +30,16 @@ const SIMPLE_TABLES = Object.freeze({
   specialisations: 'ref_specialisation',
 });
 
+// Every row of a table in dropdown order, flagged active or not: the active ones fill the
+// dropdowns, the inactive ones are kept apart so a record that still holds one can show it.
 async function fetchSimpleLookup(tableName) {
   return db.query(
-    `SELECT id, name FROM ${tableName} WHERE is_active = 1 ORDER BY sort_order ASC, name ASC`
+    `SELECT id, name, is_active AS isActive FROM ${tableName} ORDER BY sort_order ASC, name ASC`
   );
 }
+
+const activeOf = (rows) => rows.filter((r) => r.isActive).map((r) => ({ id: r.id, name: r.name }));
+const inactiveOf = (rows) => rows.filter((r) => !r.isActive).map((r) => ({ id: r.id, name: r.name }));
 
 async function fetchReligionDenominations(religionId = null) {
   if (religionId) {
@@ -72,6 +77,12 @@ async function fetchLocalGovernments(stateId = null) {
   );
 }
 
+async function fetchInactiveLocalGovernments() {
+  return db.query(
+    `SELECT id, state_id AS stateId, name FROM ref_local_government WHERE is_active = 0 ORDER BY state_id ASC, sort_order ASC, name ASC`
+  );
+}
+
 async function fetchDocumentCategories() {
   return db.query(
     `SELECT id, code, name
@@ -88,15 +99,19 @@ async function fetchAllLookups() {
     fetchReligionDenominations(),
     fetchLocalGovernments(),
     fetchDocumentCategories(),
+    fetchInactiveLocalGovernments(),
   ]);
 
-  const bundle = {};
+  const bundle = { inactive: {} };
   entries.forEach(([key], idx) => {
-    bundle[key] = results[idx];
+    bundle[key] = activeOf(results[idx]);
+    const off = inactiveOf(results[idx]);
+    if (off.length) bundle.inactive[key] = off;
   });
   bundle.religionDenominations = results[entries.length];
   bundle.localGovernments = results[entries.length + 1];
   bundle.documentCategories = results[entries.length + 2];
+  if (results[entries.length + 3].length) bundle.inactive.localGovernments = results[entries.length + 3];
 
   return bundle;
 }

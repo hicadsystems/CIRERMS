@@ -15,7 +15,7 @@ import { h, cx } from '../ui/html.js';
 import { field, textInput, selectInput } from '../ui/field.js';
 import { INPUT } from '../ui/classes.js';
 import { populateSelect } from '../core/dom.js';
-import { filterDenominations, filterLgas } from '../core/lookups.js';
+import { filterDenominations, filterLgas, optionsWithHeld } from '../core/lookups.js';
 import { formatDisplayDate, yearsBetween, durationSince, parseDisplayDate, wireDateField } from '../core/dates.js';
 
 const sel = (name, label, lookup, extra = {}) => ({ name, label, type: 'select', lookup, ...extra });
@@ -112,11 +112,12 @@ function withAge(dob) {
 
 const asOptions = (list = []) => list.map((x) => ({ value: x.id, label: x.name }));
 
+// a record that holds a value since made inactive (Static Tables) still offers it
 function optionsFor(f, lookups, values) {
   if (f.options) return f.options;
   if (f.cascade === 'religion') return asOptions(filterDenominations(lookups, values.religion_id));
-  if (f.cascade === 'state') return asOptions(filterLgas(lookups, values.state_id));
-  return asOptions(lookups[f.lookup] || []);
+  if (f.cascade === 'state') return optionsWithHeld(lookups, 'localGovernments', values[f.name], filterLgas(lookups, values.state_id));
+  return optionsWithHeld(lookups, f.lookup, values[f.name]);
 }
 
 function cascadePlaceholder(f, values) {

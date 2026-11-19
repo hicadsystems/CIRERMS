@@ -18,7 +18,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
-| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Static Tables, Reports and the System Administration screens (their look is agreed in `docs/design/demo.html`; WP1 built what they need underneath). The other non-Ratings modules |
+| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports and the System Administration screens (their look is agreed in `docs/design/demo.html`; WP1 built what they need underneath). The other non-Ratings modules |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
 ## Folder layout
@@ -41,6 +41,7 @@ CIRERMS/
 │     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js
 │     ├─ access/                # roles and the privilege catalogue (read side, for Manage Roles)
 │     ├─ audit/                 # the audit trail (read side, for Audit Trail)
+│     ├─ tables/                # Static Tables: tables.module.js  tables.config.js (one config per table)  tables.routes.js  tables.service.js  tables.repo.js
 │     ├─ dashboard/             # dashboard.module.js  dashboard.routes.js  dashboard.service.js  dashboard.repo.js
 │     ├─ ratings/               # ratings.module.js  ratings.routes.js  ratings.service.js  ratings.repo.js
 │     └─ lookups/               # lookups.module.js  lookups.routes.js  lookups.service.js  lookups.repo.js
@@ -51,7 +52,7 @@ CIRERMS/
 │  │                            # dates, dom, lookups, icons, choices, theme-boot (light or dark before the page draws) and theme (the switch)
 │  ├─ js/shell/                 # rail, module-tabs, phone (header, bottom bar, More sheet), search-palette, session, lock (the session lock)
 │  ├─ js/ui/                    # the component kit (docs/design/components.md)
-│  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents),
+│  ├─ js/sections/              # one file per screen (dashboard, ratings-list, rating-record, ratings-upload, ratings-documents, static-table),
 │  │                            # the record's parts (rating-*.js) and app-shell.js (loads each page's screen from nav.js)
 │  ├─ css/                      # tailwind input.css (design tokens) + compiled output.css
 │  └─ assets/                   # navy-logo.png (app crest), navy-crest.webp (large crest, sign in), icons.svg (built by scripts/build-icons.js)
@@ -126,7 +127,9 @@ naval wording ("Official Number" / "Service No") while the DB and API standardis
   and unique (populated only when a user account belongs to a rating).
 - **Lookup tables (`ref_*`)** carry `name`, `sort_order`, `is_active` (plus `code` on `ref_document_category`,
   `religion_id` on `ref_religion_denomination`, and `state_id` on `ref_local_government`). Dropdown queries filter
-  `is_active = 1` and sort by `sort_order, name`.
+  `is_active = 1` and sort by `sort_order, name`; a record that holds a value since made inactive still shows it,
+  and its edit form still offers it (`/api/lookups` keeps the inactive rows apart, `optionsWithHeld` in
+  `js/core/lookups.js`). The 16 Static Tables are maintained through one engine (see *Access, audit and modules*).
 - **`ratings.status`** is `ENUM('current','former')` paired with optional `exit_type_id`, `exit_date`, `exit_reason`.
 - Real `DATE` / `DATETIME` columns. Missing date = `NULL` — never `0001-01-01`.
 - Derived values (**current ship** from the open `rating_drafting` row where `end_date IS NULL`,
@@ -334,6 +337,17 @@ module.exports = {
   (`{ file, mount, props }`: the section file and the function that draws it, loaded when the page opens).
   A page opened without the grant shows the not-allowed state; `#dashboard` without the grant goes to the
   person's first page.
+- **Static Tables** (`src/modules/tables/`): one engine for the 16 tables, driven by `tables.config.js`.
+  The privilege of each is its own screen, `tables.<slug>` (view, add, edit, delete); the routes are
+  `/api/tables/<slug>` (list, `meta`, one row, add, edit, delete), each guarded by that screen. The screen
+  is `js/sections/static-table.js`, which draws every table from its `meta` (a list of 25 a page from the
+  server with search, Add and Edit in a dialog, Delete after a confirmation). **A row nothing uses is deleted;
+  a row in use is refused with 409 `IN_USE` and says where it is used** (the config's `usedBy`: table, column,
+  noun); it is made Inactive instead. To add a table: its `ref_` migration, an entry in `TABLES` in
+  `tables.config.js` and in `js/core/nav.js`, and its seed. To add a column: the migration and an entry in
+  its `columns` (`text`, `select`, `number`, `ref`, `multi`, with `required`, `max`, `unique`, `list`). A
+  package that adds a table pointing at a static table (WP4's incidents at Offences and Sanctions, WP6's
+  training history at Training) adds its `usedBy` entry. Codes only where the demo shows a Code column.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -365,8 +379,8 @@ Every screen has both layouts (desktop 761 px and up, phone 760 px and below) an
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
 Drafting, Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
-Assessment, Disciplinary Action and Discharge Administration (Records); Static Tables, Reports and System
-Administration (Administration).
+Assessment, Disciplinary Action and Discharge Administration (Records); Reports and System
+Administration (Administration). Static Tables is built (16 tabs, `tables.<slug>`).
 
 ## Open items
 
