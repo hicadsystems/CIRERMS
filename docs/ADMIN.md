@@ -121,12 +121,12 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP4, D3, the plan |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP4, D3, the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
-| D1, T1, D2, WP2, WP4, D3 | Merged 19/11/2026; sessions archived |
-| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`. Done at 01cf6df and checked (four walkthroughs, preview seen). Owner to merge, then archive |
+| D1, T1, D2, WP2, WP3, WP4, D3 | Merged 19/11/2026; sessions archived |
+| WP3b `rating-search` | Session `session_01G8Rfvmw9nU1P9zY2F6pwpH` (Sonnet 5.5, medium), started 19/11/2026 at the owner's request: the rating search select everywhere an official number picks a rating. No walkthroughs (owner): check the search on a few screens. Its report lists walkthrough steps that type into replaced fields: the next package (WP6 or WP7a) updates them. Owner merges, archive |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
-| (no new session) | The owner (19/11/2026): open no other session until WP3 is done |
+| Sessions | One at a time while the weekly limit is at its warning level, unless the owner says otherwise |
 | Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
 | Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
@@ -150,6 +150,8 @@ Notes for coming briefs:
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
+- **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
+  typed official number. The next build package fixes the walkthrough steps WP3b lists.
 - **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF
   viewer (owner, 19/11/2026). WP4 keeps its PDF opening behind one helper; when WP3 is merged, tell WP4 to merge master
   and switch. Every later build brief says so.
