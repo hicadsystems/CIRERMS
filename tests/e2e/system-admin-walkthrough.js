@@ -10,8 +10,8 @@
  *   npm start                                   # the app on :3000
  *   NODE_PATH=$(npm root -g) node tests/e2e/system-admin-walkthrough.js
  *
- * BASE changes the address; SHOTS=<dir> saves screenshots there; ONLY=admin,guards,none,view,audit and
- * COMBOS=0,1,2,3 (desktop light, desktop dark, phone light, phone dark) run part of it. It reads .env for the database,
+ * BASE changes the address; SHOTS=<dir> saves screenshots there; ONLY=admin,guards,none,view,audit runs
+ * part of it. It prints its total time and fails when that is over 5 minutes. It reads .env for the database,
  * to add throw-away roles and accounts (one with no administration grants, one that may only
  * view, one that manages users) and removes them again when it ends; the accounts and roles it
  * makes through the screens carry the name prefix WT. Exits non-zero when a check fails. Browser
@@ -59,7 +59,7 @@ function check(ok, label, detail = '') {
 async function shot(page, name) {
   if (!SHOTS) return;
   fs.mkdirSync(SHOTS, { recursive: true });
-  await page.waitForTimeout(450); // let a dialog finish opening
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => null)))); // a dialog finishes opening
   await page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
 }
 
@@ -118,11 +118,17 @@ const footBtn = (dlg, name) => dlg.locator('button:not([aria-pressed])').filter(
 const dialogOf = (page) => page.locator('#overlay-root [role="dialog"]').last();
 const noSideScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
+/** The text of the toast that matches `re`; it is closed with its button so it never covers anything. */
 async function toastText(page, re) {
   const t = page.locator('#toast-root [role]', { hasText: re }).last();
   await t.waitFor({ timeout: 8000 });
-  return (await t.innerText()).trim();
+  const text = (await t.innerText()).trim();
+  await t.getByRole('button', { name: 'Dismiss' }).click();
+  return text;
 }
+
+/** The next list answer from the server (users, roles or audit). */
+const listResponse = (page) => page.waitForResponse((r) => /\/api\/(users|access\/roles|audit)(\?|$)/.test(r.url()) && r.request().method() === 'GET' && r.status() === 200);
 
 async function choose(page, name, label) {
   const dlg = dialogOf(page);
@@ -149,13 +155,15 @@ async function go(page, route) {
 
 /** Types into the screen's search box and waits for the list to follow. */
 async function search(page, text) {
+  const answered = listResponse(page);
   await page.fill('#app-main input[type="search"]', text);
-  await page.waitForTimeout(700);
+  await answered;
   await listReady(page);
 }
 
 /** Sets a toolbar filter: the inline dropdown on desktop, the Filter sheet on a phone. */
 async function filterBy(page, phone, name, label) {
+  const answered = listResponse(page);
   if (phone) {
     await page.getByRole('button', { name: /^Filter/ }).click();
     const dlg = dialogOf(page);
@@ -170,7 +178,7 @@ async function filterBy(page, phone, name, label) {
     await options.first().waitFor();
     await options.filter({ hasText: label }).first().click();
   }
-  await page.waitForTimeout(300);
+  await answered;
   await listReady(page);
 }
 
@@ -181,6 +189,14 @@ async function clearFilters(page, phone) {
   } else {
     await page.reload();
   }
+  await listReady(page);
+}
+
+/** Presses Search or Reset on the Audit Trail and waits for the list. */
+async function auditGo(page, name) {
+  const answered = listResponse(page);
+  await page.locator('#app-main').getByRole('button', { name, exact: true }).click();
+  await answered;
   await listReady(page);
 }
 
@@ -199,7 +215,11 @@ async function setup(db) {
   const hash = (pw) => bcrypt.hashSync(pw, 8);
   const role = async (name, description) => (await db.query('INSERT INTO roles (name, description, full_access) VALUES (?, ?, 0)', [name, description]))[0].insertId;
   const grant = (roleId, pairs) => Promise.all(pairs.map(([s, a]) => db.query('INSERT IGNORE INTO role_privileges (role_id, privilege_id) SELECT ?, id FROM privileges WHERE screen = ? AND action = ?', [roleId, s, a])));
-  const user = (who, roleId) => db.query('INSERT INTO users (username, password_hash, full_name, role_id, is_active) VALUES (?, ?, ?, ?, 1)', [who.username, hash(who.password), `WT ${who.username}`, roleId]);
+  // every account belongs to a rating
+  const user = async (who, roleId) => {
+    await db.query("INSERT INTO ratings (service_number, status, surname, first_name) VALUES (?, 'current', 'WALKTHROUGH', ?)", [who.username, who.username]);
+    await db.query('INSERT INTO users (username, password_hash, full_name, role_id, service_number, is_active) VALUES (?, ?, ?, ?, ?, 1)', [who.username, hash(who.password), `WT ${who.username}`, roleId, who.username]);
+  };
 
   const none = await role('WT No Admin', 'walk-through: dashboard and the ratings list only');
   await grant(none, [['dashboard.home', 'view'], ['ratings.list', 'view']]);
@@ -215,9 +235,11 @@ async function setup(db) {
 }
 
 async function cleanup(db) {
-  await db.query("DELETE FROM user_sessions WHERE user_id IN (SELECT id FROM users WHERE username LIKE 'WT%')").catch(() => {});
-  await db.query("DELETE FROM users WHERE username LIKE 'WT%'");
+  // the accounts this run made (the seeded ones stay), then its roles and ratings
+  const seeded = ['HICO001', 'HICO002', 'HICO003', 'HICO004', 'HICO005', 'B0539', 'B0541', 'B0562'];
+  await db.query(`DELETE FROM users WHERE username NOT IN (${seeded.map(() => '?').join(',')})`, seeded);
   await db.query("DELETE FROM roles WHERE name LIKE 'WT %'");
+  await db.query("DELETE FROM ratings WHERE service_number LIKE 'WT%'");
 }
 
 const isPlausibleOneTime = (p) => /^[A-Za-z0-9]{12}$/.test(p) && /[A-Za-z]/.test(p) && /\d/.test(p);
@@ -245,9 +267,9 @@ async function adminSuite(browser, viewport, theme, idx) {
   const { page } = ctx;
   await signIn(page, ADMIN);
   const tag = `${TAG}${idx}`;
-  const newUser = `WTU${tag}`;
+  const linked = 'B0588';
+  const newUser = linked; // an account's user name is its rating's official number
   const roleName = `WT Role ${tag}`;
-  const linked = ['B0588', 'B0601F', 'B0614', 'B0627'][idx];
 
   // ---- the sidebar item and the tabs
   if (!phone) {
@@ -309,35 +331,30 @@ async function adminSuite(browser, viewport, theme, idx) {
   dlg = dialogOf(page);
   await dlg.locator('input[name="fullName"]').waitFor();
   check(await dlg.locator('.custom-dropdown-wrapper[name="roleId"] input:not(.custom-dropdown-hidden)').first().isDisabled(), 'your own role cannot be changed in the form');
-  check(await dlg.locator('input[name="username"]').isDisabled(), 'the user name is fixed once the account exists');
+  check(/cannot be changed/.test(await dlg.innerText()) && (await dlg.locator('input[name="serviceNumber"]').count()) === 0, 'the rating, and so the user name, is fixed once the account exists');
   await dlg.getByRole('button', { name: 'Cancel' }).click();
   await dlg.waitFor({ state: 'detached' });
 
-  // ---- Add Account: validation, then the account with its one-time password
+  // ---- Add Account: it starts from a rating; validation, then the account with its one-time password
   await search(page, '');
   await page.getByRole('button', { name: 'Add Account' }).first().click();
   dlg = dialogOf(page);
-  await dlg.locator('input[name="username"]').waitFor();
+  await dlg.locator('input[name="ratingSearch"]').waitFor();
   await shot(page, `users-add-${phone ? 'phone' : 'desktop'}-${theme}`);
   await dlg.getByRole('button', { name: 'Add Account' }).click();
   await dlg.locator('[data-field-error]:not(.hidden)').first().waitFor();
-  check((await dlg.locator('[data-field-error]:not(.hidden)').allInnerTexts()).some((t) => /User name is required/.test(t)), 'Add Account: an empty form shows what is missing');
-  await dlg.locator('input[name="username"]').fill('HICO001');
-  await dlg.locator('input[name="fullName"]').fill(`WT Person ${tag}`);
+  check((await dlg.locator('[data-field-error]:not(.hidden)').allInnerTexts()).some((t) => /Find the rating/.test(t)), 'Add Account: with no rating the form is refused');
+  await dlg.locator('input[name="ratingSearch"]').fill('NOSUCH99');
+  await dlg.getByText('No rating matches').waitFor();
+  check(true, 'Add Account: an official number no rating has finds nothing');
+  await dlg.locator('input[name="ratingSearch"]').fill('B0541');
+  const taken = dlg.locator('[data-rating="B0541"]');
+  await taken.waitFor();
+  check(await taken.isDisabled() && /Has account B0541/.test(await taken.innerText()), 'Add Account: a rating that already has an account cannot be picked');
+  await dlg.locator('input[name="ratingSearch"]').fill(linked.slice(0, 4));
+  await dlg.locator(`[data-rating="${linked}"]`).click();
+  check(/B0588|B0601F|B0614|B0627/.test(await dlg.locator('[data-rating-chosen]').innerText()) && (await dlg.locator('input[name="fullName"]').inputValue()).length > 3, 'Add Account: picking a rating shows it and fills the name');
   await choose(page, 'roleId', 'Records Clerk');
-  await dlg.getByRole('button', { name: 'Add Account' }).click();
-  await dlg.locator('text=already in use').waitFor();
-  check(true, 'Add Account: a user name already taken is refused');
-  await dlg.locator('input[name="username"]').fill(newUser);
-  await dlg.locator('input[name="serviceNumber"]').fill('NOSUCH99');
-  await dlg.getByRole('button', { name: 'Add Account' }).click();
-  await dlg.locator('text=No rating has this official number').waitFor();
-  check(true, 'Add Account: an official number no rating has is refused');
-  await dlg.locator('input[name="serviceNumber"]').fill('B0541');
-  await dlg.getByRole('button', { name: 'Add Account' }).click();
-  await dlg.locator('text=Already linked to the account').waitFor();
-  check(true, 'Add Account: a rating already linked to another account is refused');
-  await dlg.locator('input[name="serviceNumber"]').fill(linked);
   await dlg.locator('input[name="email"]').fill('not-an-email');
   await dlg.getByRole('button', { name: 'Add Account' }).click();
   await dlg.locator('text=valid e-mail').waitFor();
@@ -573,10 +590,10 @@ async function adminSuite(browser, viewport, theme, idx) {
   await dlg.waitFor({ state: 'detached' });
 
   // a person on the role: the role's change applies at their next request, without signing them out
-  const holder = `WTH${tag}`;
+  const holder = 'B0601F';
   const hashPw = bcrypt.hashSync('Holder1pw', 8);
   secrets.add('Holder1pw');
-  const createdHolder = await api(page, 'POST', '/api/users', { username: holder, fullName: `WT Holder ${tag}`, roleId: roleRow.id });
+  const createdHolder = await api(page, 'POST', '/api/users', { serviceNumber: holder, fullName: `WT Holder ${tag}`, roleId: roleRow.id });
   check(createdHolder.status === 201, 'a person is given the role');
   await dbExec("UPDATE users SET password_hash = ?, must_change_password = 0 WHERE username = ?", [hashPw, holder]);
   const hp = await open(browser, { viewport, theme });
@@ -634,15 +651,11 @@ async function adminSuite(browser, viewport, theme, idx) {
     await options.filter({ hasText: label }).first().click();
   };
   await selectFilter('action', 'INSERT');
-  await page.locator('#app-main').getByRole('button', { name: 'Search', exact: true }).click();
-  await page.waitForTimeout(400);
-  await listReady(page);
+  await auditGo(page, 'Search');
   let pills = await rowsOf(page, phone).allInnerTexts();
   check(pills.length > 0 && pills.every((t) => /INSERT/.test(t)), 'Audit filter: by action', `${pills.length}`);
   await filterIn('record').fill(newUser);
-  await page.locator('#app-main').getByRole('button', { name: 'Search', exact: true }).click();
-  await page.waitForTimeout(400);
-  await listReady(page);
+  await auditGo(page, 'Search');
   check((await rowsOf(page, phone).count()) === 1, 'Audit filter: by record (the new account’s INSERT)');
   await rowsOf(page, phone).first().click();
   dlg = dialogOf(page);
@@ -654,17 +667,13 @@ async function adminSuite(browser, viewport, theme, idx) {
   await shot(page, `audit-entry-${phone ? 'phone' : 'desktop'}-${theme}`);
   await dlg.getByRole('button', { name: 'Close' }).first().click();
   await dlg.waitFor({ state: 'detached' });
-  await page.locator('#app-main').getByRole('button', { name: 'Reset', exact: true }).click();
-  await page.waitForTimeout(400);
-  await listReady(page);
+  await auditGo(page, 'Reset');
   await selectFilter('action', 'UPDATE');
   await filterIn('record').fill(newUser);
   await filterIn('user').fill('HICO001');
   await filterIn('from').fill(new Date().toLocaleDateString('en-GB'));
   await filterIn('to').fill(new Date().toLocaleDateString('en-GB'));
-  await page.locator('#app-main').getByRole('button', { name: 'Search', exact: true }).click();
-  await page.waitForTimeout(400);
-  await listReady(page);
+  await auditGo(page, 'Search');
   const upd = await rowsOf(page, phone).count();
   check(upd >= 5, 'Audit filter: dates, user, action and record together (edit, deactivate, reactivate, two resets)', `${upd}`);
   await filterIn('from').fill('31/02/2026');
@@ -672,9 +681,7 @@ async function adminSuite(browser, viewport, theme, idx) {
   await page.locator('#app-main').getByText('Use dd/mm/yyyy').waitFor();
   check(true, 'Audit filter: a date that is not a date is refused');
   await filterIn('from').fill('');
-  await page.locator('#app-main').getByRole('button', { name: 'Reset', exact: true }).click();
-  await page.waitForTimeout(400);
-  await listReady(page);
+  await auditGo(page, 'Reset');
   check((await rowsOf(page, phone).count()) === auditCount || (await rowsOf(page, phone).count()) === 25, 'Audit filter: Reset clears the filters');
 
   // ---- Change Password from the account menu
@@ -750,6 +757,80 @@ async function changePasswordFromMenu(browser, viewport, theme, idx, username, s
 }
 
 // ---------------------------------------------------------------------------
+// Another layout or theme: each screen and its main dialog open, nothing overflows sideways, and the
+// flows that differ on a phone (cards, the Filter sheet, the account menu's Change Password)
+// ---------------------------------------------------------------------------
+async function glance(browser, viewport, theme) {
+  const phone = viewport.width < 700;
+  const where = `${phone ? 'phone' : 'desktop'}, ${theme}`;
+  const kind = phone ? 'phone' : 'desktop';
+  console.log(`\nAdministrator, ${where} (each screen and its main dialog)`);
+  const ctx = await open(browser, { viewport, theme });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  const dialogFits = (dlg) => dlg.locator('xpath=ancestor-or-self::*[@role="dialog"]').first().evaluate((d) => d.scrollWidth <= d.clientWidth + 1);
+
+  await go(page, 'admin/users');
+  await shot(page, `users-list-${kind}-${theme}`);
+  check(await noSideScroll(page), 'Manage Users: no sideways scroll');
+  check((await rowsOf(page, phone).count()) >= 8, 'Manage Users: the accounts are listed');
+  await filterBy(page, phone, 'active', 'Inactive');
+  check((await rowsOf(page, phone).allInnerTexts()).every((t) => /Inactive/.test(t)), 'Manage Users: the filter works' + (phone ? ' (the Filter sheet)' : ''));
+  await clearFilters(page, phone);
+  await rowsOf(page, phone).first().click();
+  let dlg = dialogOf(page);
+  await dlg.waitFor();
+  check(await dialogFits(dlg), 'Manage Users: the account dialog fits');
+  await shot(page, `users-account-${kind}-${theme}`);
+  await dlg.getByRole('button', { name: /Close|Edit/ }).first().click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Add Account' }).first().click();
+  dlg = dialogOf(page);
+  await dlg.locator('input[name="ratingSearch"]').fill('B05');
+  await dlg.locator('[data-rating]').first().waitFor();
+  check(await dialogFits(dlg), 'Add Account: the dialog fits, with the rating results');
+  await shot(page, `users-add-${kind}-${theme}`);
+  await page.keyboard.press('Escape');
+
+  await go(page, 'admin/roles');
+  await shot(page, `roles-list-${kind}-${theme}`);
+  check(await noSideScroll(page), 'Manage Roles: no sideways scroll');
+  await rowsOf(page, phone).nth(1).click();
+  dlg = dialogOf(page);
+  await dlg.locator('[data-screen]').first().waitFor();
+  check(await dialogFits(dlg), 'Manage Roles: the role dialog and its grid fit');
+  await shot(page, `roles-add-${kind}-${theme}`);
+  await page.keyboard.press('Escape');
+
+  await go(page, 'admin/password');
+  check(await noSideScroll(page), 'Manage Password: no sideways scroll');
+  await page.fill('#app-main input[name="q"]', 'B0541');
+  await page.getByRole('button', { name: 'Find Account' }).click();
+  await page.locator('[data-result]').getByText('Records Clerk').first().waitFor();
+  await shot(page, `password-found-${kind}-${theme}`);
+
+  await go(page, 'admin/audit');
+  check(await noSideScroll(page), 'Audit Trail: no sideways scroll');
+  await shot(page, `audit-${kind}-${theme}`);
+  await rowsOf(page, phone).first().click();
+  dlg = dialogOf(page);
+  await dlg.getByText('What Changed').waitFor();
+  check(await dialogFits(dlg), 'Audit Trail: the entry dialog fits');
+  await page.keyboard.press('Escape');
+
+  if (phone) await page.click('#phone-header button[aria-label="Account"]');
+  else await page.click('#rail button[aria-haspopup="menu"]');
+  await page.getByRole('menuitem', { name: 'Change Password' }).click();
+  dlg = dialogOf(page);
+  await dlg.locator('input[name="currentPassword"]').waitFor();
+  check(await dialogFits(dlg), 'Change Password: the dialog fits');
+  await shot(page, `change-password-${kind}-${theme}`);
+  await page.keyboard.press('Escape');
+  check(ctx.errors.length === 0, `${where}: no browser errors`, ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
+// ---------------------------------------------------------------------------
 // The guards: self, the last administrator, the Administrator role, a role with users, names
 // ---------------------------------------------------------------------------
 async function guards(browser) {
@@ -798,7 +879,7 @@ async function guards(browser) {
   const lastMove = await api(mctx.page, 'PUT', `/api/users/${me.id}`, { fullName: me.fullName, roleId: roleId('Auditor') });
   check(lastMove.status === 409 && lastMove.body.error.code === 'LAST_ADMIN', 'the last active administrator cannot be moved to another role');
   // with a second administrator, the first can be moved
-  const second = await api(page, 'POST', '/api/users', { username: `WTA${TAG}`, fullName: 'WT Second Admin', roleId: adminRole });
+  const second = await api(page, 'POST', '/api/users', { serviceNumber: 'B0614', fullName: 'WT Second Admin', roleId: adminRole });
   check(second.status === 201, 'a second administrator is added');
   const moved = await api(mctx.page, 'PUT', `/api/users/${second.body.data.user.id}`, { fullName: 'WT Second Admin', roleId: roleId('Auditor') });
   check(moved.status === 200, 'with another administrator active, one may be moved');
@@ -807,8 +888,23 @@ async function guards(browser) {
   check(mctx.errors.length === 0, 'guards: no browser errors (manager)', mctx.errors.join(' | '));
   await mctx.context.close();
 
+  // every account belongs to a rating, and a rating has at most one account
+  const noRating = await api(page, 'POST', '/api/users', { fullName: 'No Rating', roleId: roleId('Rating') });
+  check(noRating.status === 422 && noRating.body.error.fields.serviceNumber, 'an account cannot be made without a rating');
+  const unknownRating = await api(page, 'POST', '/api/users', { serviceNumber: 'NOSUCH99', fullName: 'Nobody', roleId: roleId('Rating') });
+  check(unknownRating.status === 422 && /No rating/.test(unknownRating.body.error.fields.serviceNumber), 'nor for a rating that does not exist');
+  const secondAccount = await api(page, 'POST', '/api/users', { serviceNumber: 'B0541', fullName: 'Second', roleId: roleId('Rating') });
+  check(secondAccount.status === 409 && secondAccount.body.error.code === 'RATING_HAS_ACCOUNT', 'a rating cannot get a second account');
+  const hicoRating = (await api(page, 'GET', '/api/ratings/HICO001')).body;
+  check(hicoRating && hicoRating.data, 'the administrator is a rating too (HICO001)');
+  const myDetails = await api(page, 'GET', '/api/ratings/HICO001');
+  check(myDetails.status === 200, 'My Details works for the administrator');
+  const delRated = await api(page, 'DELETE', '/api/ratings/B0541');
+  check(delRated.status === 409 && delRated.body.error.code === 'HAS_ACCOUNT', 'a rating that has an account cannot be deleted');
+  const dbRefuses = await dbExec("INSERT INTO users (username, password_hash, full_name, role_id, service_number) VALUES ('WTNULL', 'x', 'x', 1, NULL)").then(() => false, () => true);
+  check(dbRefuses, 'the database refuses an account with no rating');
   // an inactive Specialisation cannot be newly picked
-  const noSpec = await api(page, 'POST', '/api/users', { username: `WTS${TAG}`, fullName: 'WT Spec', roleId: roleId('Rating'), specialisationId: 99999 });
+  const noSpec = await api(page, 'POST', '/api/users', { serviceNumber: 'B0627', fullName: 'WT Spec', roleId: roleId('Rating'), specialisationId: 99999 });
   check(noSpec.status === 422 && noSpec.body.error.fields.specialisationId, 'a Specialisation that does not exist is refused');
   check(ctx.errors.length === 0, 'guards: no browser errors', ctx.errors.join(' | '));
   await ctx.context.close();
@@ -844,7 +940,7 @@ async function withoutGrants(browser, viewport, theme) {
     check(r.status === 403 && r.body.error.code === 'FORBIDDEN', `GET ${url}: 403`, `${r.status}`);
   }
   const writes = [
-    ['POST', '/api/users', { username: 'WTX', fullName: 'x', roleId: 1 }],
+    ['POST', '/api/users', { serviceNumber: 'B0627', fullName: 'x', roleId: 1 }],
     ['PUT', '/api/users/2', { fullName: 'x', roleId: 1 }],
     ['POST', '/api/users/2/deactivate'],
     ['POST', '/api/users/2/reactivate'],
@@ -900,7 +996,7 @@ async function viewOnly(browser, viewport, theme) {
   await go(page, 'admin/audit');
   check((await rowsOf(page, phone).count()) > 0, 'the Audit Trail opens with the view grant');
   for (const [m, url, body] of [
-    ['POST', '/api/users', { username: 'WTX', fullName: 'x', roleId: 1 }],
+    ['POST', '/api/users', { serviceNumber: 'B0627', fullName: 'x', roleId: 1 }],
     ['PUT', '/api/users/2', { fullName: 'x', roleId: 1 }],
     ['POST', '/api/users/2/deactivate'],
     ['POST', '/api/users/2/reset-password'],
@@ -929,15 +1025,15 @@ async function auditHoldsEverything(browser) {
     if (p >= r.meta.totalPages) break;
   }
   const has = (action, table, pred = () => true) => rows.some((r) => r.action === action && r.table === table && pred(r));
-  check(has('INSERT', 'users', (r) => /^WTU/.test(r.recordId)), 'an account added is in the trail (INSERT users)');
-  check(has('UPDATE', 'users', (r) => /^WTU/.test(r.recordId)), 'an account edited, deactivated, reactivated or reset is in the trail (UPDATE users)');
+  check(has('INSERT', 'users', (r) => r.recordId === 'B0588'), 'an account added is in the trail (INSERT users)');
+  check(has('UPDATE', 'users', (r) => r.recordId === 'B0588'), 'an account edited, deactivated, reactivated or reset is in the trail (UPDATE users)');
   check(has('INSERT', 'roles', (r) => /^WT Role/.test(r.recordId)), 'a role added is in the trail (INSERT roles)');
   check(has('UPDATE', 'roles', (r) => /^WT Role/.test(r.recordId)), 'a role edited is in the trail (UPDATE roles)');
   check(has('DELETE', 'roles', (r) => /^WT Role/.test(r.recordId)), 'a role deleted is in the trail (DELETE roles)');
   check(rows.every((r) => r.username && r.ip), 'every row names who and where from');
   // what each entry says; and none of it a password
   const details = [];
-  for (const r of rows.filter((x) => (x.table === 'users' || x.table === 'roles') && /WT/.test(x.recordId || '')).slice(0, 80)) details.push((await api(page, 'GET', `/api/audit/${r.id}`)).body.data);
+  for (const r of rows.filter((x) => (x.table === 'users' || x.table === 'roles') && /WT|^B0(588|601F)$/.test(x.recordId || '')).slice(0, 80)) details.push((await api(page, 'GET', `/api/audit/${r.id}`)).body.data);
   const text = JSON.stringify(details) + JSON.stringify(rows);
   const leaked = [...secrets].filter((s) => text.includes(s));
   check(leaked.length === 0, 'no password or one-time password is in the audit trail', leaked.join(','));
@@ -948,7 +1044,7 @@ async function auditHoldsEverything(browser) {
   check(!!roleEdit && roleEdit.changes.some((c) => c.field === 'privileges removed'), 'a role edit records the privileges added and removed');
   // a refused write leaves nothing
   const before = (await api(page, 'GET', '/api/audit')).body.meta.total;
-  await api(page, 'POST', '/api/users', { username: 'HICO001', fullName: 'Dup', roleId: 1 });
+  await api(page, 'POST', '/api/users', { serviceNumber: 'HICO001', fullName: 'Dup', roleId: 1 });
   await api(page, 'DELETE', '/api/access/roles/1');
   const after = (await api(page, 'GET', '/api/audit')).body.meta.total;
   check(before === after, 'a refused write leaves no audit row');
@@ -962,13 +1058,18 @@ async function auditHoldsEverything(browser) {
 }
 
 async function main() {
+  const started = Date.now();
   dbConn = await connect();
   await setup(dbConn);
   const browser = await chromium.launch();
   try {
     const combos = [[DESKTOP, 'light'], [DESKTOP, 'dark'], [PHONE, 'light'], [PHONE, 'dark']];
     const want = (n) => !process.env.ONLY || process.env.ONLY.split(',').includes(n);
-    if (want('admin')) for (let i = 0; i < combos.length; i += 1) if (!process.env.COMBOS || process.env.COMBOS.split(',').includes(String(i))) await adminSuite(browser, combos[i][0], combos[i][1], i);
+    // every action once at desktop light; the other layouts and themes: each screen and its main dialog
+    if (want('admin')) {
+      await adminSuite(browser, DESKTOP, 'light', 0);
+      for (const [vp, th] of combos.slice(1)) await glance(browser, vp, th);
+    }
     if (want('guards')) await guards(browser);
     if (want('none')) {
       await withoutGrants(browser, DESKTOP, 'light');
@@ -984,7 +1085,12 @@ async function main() {
     await cleanup(dbConn).catch(() => {});
     await dbConn.end();
   }
-  console.log(`\n${passes} passed, ${failures} failed`);
+  const seconds = Math.round((Date.now() - started) / 1000);
+  console.log(`\n${passes} passed, ${failures} failed, ${seconds} s`);
+  if (seconds > 300) {
+    console.log(`  FAIL  the walk-through must run in 5 minutes at most: it took ${seconds} s`);
+    failures += 1;
+  }
   process.exit(failures ? 1 : 0);
 }
 

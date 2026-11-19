@@ -17,7 +17,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Data | Own database. No data shared with payroll |
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
-| Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Optional `users.service_number` links a login account to a rating for *View My Details*; admin accounts (e.g. `HICO001`) leave it `NULL`. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
+| Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Every account belongs to a rating (owner's rule, 19/11/2026): `users.service_number` is required, unique, and is the account's user name, the Hicad administrator `HICO001` included (a rating of that official number is in the demo data); it also decides *View My Details*, which so works for every account. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
 | Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports (its look is agreed in `docs/design/demo.html`). The other modules not yet built. System Administration is built (WP3) |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
@@ -121,12 +121,12 @@ naval wording ("Official Number" / "Service No") while the DB and API standardis
 
 - **`ratings` uses `service_number VARCHAR(20)` as its natural primary key** (no surrogate `id`).
   Every child table (`rating_*`) references `ratings(service_number)` with `ON DELETE CASCADE ON UPDATE CASCADE`,
-  and `users.service_number` references it with `ON DELETE SET NULL ON UPDATE CASCADE`, so correcting a service
-  number cascades cleanly across all related records.
+  and `users.service_number` references it with `ON DELETE RESTRICT ON UPDATE CASCADE` (a rating that has an account
+  cannot be deleted: accounts are deactivated), so correcting a service number cascades cleanly across all related records.
 - **All other tables** (`users`, `ref_*`, `rating_*`) have `id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY`,
   plus `created_at`, `updated_at`, `created_by`.
-- **Login accounts (`users`) are separate from personnel records (`ratings`)**; `users.service_number` is nullable
-  and unique (populated only when a user account belongs to a rating).
+- **Login accounts (`users`) are separate from personnel records (`ratings`)**; `users.service_number` is required
+  and unique: every account belongs to exactly one rating, and a rating has at most one account.
 - **Lookup tables (`ref_*`)** carry `name`, `sort_order`, `is_active` (plus `code` on `ref_document_category`,
   `religion_id` on `ref_religion_denomination`, and `state_id` on `ref_local_government`). Dropdown queries filter
   `is_active = 1` and sort by `sort_order, name`; a record that holds a value since made inactive still shows it,
@@ -166,6 +166,7 @@ DROP TABLE ratings;
 8. `20261120_010300_create_audit_trail.sql` — `audit_trail`
 9. `20261120_020000_create_static_tables.sql` — the Static Tables' columns and new tables (WP2)
 10. `20261120_030000_users_admin.sql` — `users`: e-mail, phone, Specialisation, `must_change_password`, `password_changed_at` (WP3)
+11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -413,5 +414,5 @@ Assessment, Disciplinary Action and Discharge Administration (Records); Reports
 ## Open items
 
 - Real dropdown values (rate, title, religion denomination, tribe, state/LGA, ship, ...) — realistic placeholders seeded until official lists are supplied.
-- Demo data: generated synthetic ratings shaped like the real records (`HICO001` admin + `B0539` rating-linked login).
+- Demo data: generated synthetic ratings shaped like the real records (`HICO001` the administrator, itself a rating, and `B0539`; every login account is a rating).
 - MySQL vs Postgres — final call pending (all SQL isolated in `src/modules/*/*.repo.js`).

@@ -78,7 +78,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     const isSelf = u.id === me.id;
     const rows = [
       ['Role', u.role],
-      ['Linked Rating', u.serviceNumber ? h('a', { href: `#ratings/edit/${encodeURIComponent(u.serviceNumber)}`, className: 'font-medium text-brand underline-offset-2 hover:underline', text: u.serviceNumber }) : 'None'],
+      ['Rating', h('a', { href: `#ratings/edit/${encodeURIComponent(u.serviceNumber)}`, className: 'font-medium text-brand underline-offset-2 hover:underline', text: u.serviceNumber })],
       ['Specialisation', u.specialisation || 'None'],
       ['E-mail', u.email],
       ['Phone', u.phone],
@@ -168,27 +168,78 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     const spec = meta.specialisations
       .filter((s) => s.active || (u && u.specialisationId === s.id))
       .map((s) => ({ value: s.id, label: s.active ? s.name : `${s.name} (Inactive)` }));
+    // Add Account starts by finding the rating the account is for; its official number is the user name
+    const pickedInput = h('input', { type: 'hidden', name: 'serviceNumber', value: u ? u.serviceNumber : '' });
+    const results = h('div', { className: 'mt-2 space-y-1', dataset: { ratingResults: '' } });
+    const chosen = h('div', { className: 'mt-2 hidden', dataset: { ratingChosen: '' } });
+    const searchInput = textInput({ name: 'ratingSearch', placeholder: 'Official number or name', autocomplete: 'off', maxlength: 50 });
+    let timer = null;
+    let seq = 0;
+    function choose(r) {
+      pickedInput.value = r.serviceNumber;
+      results.replaceChildren();
+      searchInput.closest('[data-search-wrap]').classList.add('hidden');
+      chosen.classList.remove('hidden');
+      chosen.replaceChildren(h('div', { className: 'flex items-center gap-3 rounded-card border border-border bg-subtle px-3 py-2' }, [
+        h('span', { className: 'min-w-0 flex-1 text-sm' }, [h('b', { text: r.serviceNumber }), h('span', { className: 'block truncate text-muted-foreground', text: [r.name, r.rate].filter(Boolean).join(' · ') })]),
+        button({ label: 'Change', variant: 'ghost', onClick: () => {
+          pickedInput.value = '';
+          chosen.classList.add('hidden');
+          searchInput.closest('[data-search-wrap]').classList.remove('hidden');
+          searchInput.focus();
+        } }),
+      ]));
+      const fn = form.querySelector('[name="fullName"]');
+      if (fn && !fn.value) fn.value = r.name;
+    }
+    searchInput.addEventListener('input', () => {
+      clearTimeout(timer);
+      const term = searchInput.value.trim();
+      if (term.length < 2) { results.replaceChildren(); return; }
+      timer = setTimeout(async () => {
+        const mine = ++seq;
+        try {
+          const rows = (await api.get(`/api/users/ratings?q=${encodeURIComponent(term)}`)).data;
+          if (mine !== seq) return;
+          results.replaceChildren(...(rows.length ? rows.map((r) => h('button', {
+            type: 'button',
+            disabled: !!r.account,
+            className: cx('flex w-full items-center gap-3 rounded-ctl border border-border px-3 py-2 text-left text-sm', r.account ? 'cursor-not-allowed opacity-60' : 'hover:bg-subtle'),
+            dataset: { rating: r.serviceNumber },
+            onClick: () => choose(r),
+          }, [
+            h('span', { className: 'min-w-0 flex-1' }, [h('b', { text: r.serviceNumber }), h('span', { className: 'block truncate text-muted-foreground', text: [r.name, r.rate].filter(Boolean).join(' · ') })]),
+            r.account ? pill(`Has account ${r.account}`, 'neutral') : null,
+          ])) : [h('p', { className: 'px-1 text-sm text-muted-foreground', text: 'No rating matches.' })]));
+        } catch (_) {
+          results.replaceChildren();
+        }
+      }, 250);
+    });
+    const ratingField = u
+      ? field({ label: 'Official Number (User Name)', control: h('div', { className: 'rounded-ctl border border-border bg-subtle px-3 py-2 text-sm font-semibold', text: u.serviceNumber }), hint: 'The account belongs to this rating; it cannot be changed.', className: 'col-span-2 phone:col-span-1' })
+      : field({
+        label: 'Rating *',
+        className: 'col-span-2 phone:col-span-1',
+        control: h('div', {}, [h('div', { dataset: { searchWrap: '' } }, [searchInput, results]), chosen, pickedInput]),
+        hint: 'Every account belongs to a rating. Find it by official number or name; its official number becomes the user name.',
+      });
     const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, [
-      field({
-        label: 'User Name *',
-        control: textInput({ name: 'username', value: u ? u.username : '', maxlength: 50, disabled: !!u, autocomplete: 'off' }),
-        hint: u ? 'The user name cannot be changed.' : 'A rating’s official number, or an administrator’s own, such as HICO001.',
-      }),
+      ratingField,
       field({ label: 'Full Name *', control: textInput({ name: 'fullName', value: u ? u.fullName : '', maxlength: 150 }) }),
       field({
         label: 'Role *',
         control: selectInput({ name: 'roleId', options: meta.roles.map((r) => ({ value: r.id, label: r.name })), value: u ? u.roleId : '', disabled: isSelf }),
         hint: isSelf ? 'You cannot change the role of your own account.' : '',
       }),
-      field({ label: 'Linked Rating', optional: true, control: textInput({ name: 'serviceNumber', value: u ? u.serviceNumber || '' : '', maxlength: 20, className: 'uppercase placeholder:normal-case', placeholder: 'Official number' }), hint: 'The rating this person is: it opens View My Details.' }),
       field({ label: 'Specialisation', optional: true, control: selectInput({ name: 'specialisationId', options: spec, value: u ? u.specialisationId || '' : '', placeholder: '-- None --' }), hint: 'A drafting officer then sees only this department’s batches and approvals.' }),
       field({ label: 'Phone', optional: true, control: textInput({ name: 'phone', type: 'tel', value: u ? u.phone || '' : '', maxlength: 30 }) }),
-      field({ label: 'E-mail', optional: true, className: 'col-span-2 phone:col-span-1', control: textInput({ name: 'email', type: 'email', value: u ? u.email || '' : '', maxlength: 150 }) }),
+      field({ label: 'E-mail', optional: true, control: textInput({ name: 'email', type: 'email', value: u ? u.email || '' : '', maxlength: 150 }) }),
       u ? null : h('div', { className: 'col-span-2 flex items-start gap-2 rounded-card bg-info-soft px-4 py-3 text-sm text-info phone:col-span-1', role: 'note' }, [
         'A one-time password is shown once the account is saved. The person chooses their own at first sign-in.',
       ]),
     ]);
-    const dlg = openDialog({ title: u ? 'Edit Account' : 'Add Account', size: 'lg', body: form, initialFocus: u ? 'input[name="fullName"]' : 'input[name="username"]' });
+    const dlg = openDialog({ title: u ? 'Edit Account' : 'Add Account', size: 'lg', body: form, initialFocus: u ? 'input[name="fullName"]' : 'input[name="ratingSearch"]' });
     const save = button({ label: u ? 'Save' : 'Add Account', icon: 'check', variant: 'primary', onClick: () => submit() });
     dlg.setFooter([button({ label: 'Cancel', variant: 'outline', onClick: () => dlg.close() }), save]);
     form.addEventListener('submit', (e) => { e.preventDefault(); submit(); });
@@ -200,10 +251,9 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     async function submit() {
       clearFieldErrors(form);
       const body = {
-        username: val('username'),
         fullName: val('fullName'),
         roleId: isSelf ? u.roleId : val('roleId'),
-        serviceNumber: val('serviceNumber'),
+        serviceNumber: u ? u.serviceNumber : pickedInput.value,
         specialisationId: val('specialisationId'),
         phone: val('phone'),
         email: val('email'),

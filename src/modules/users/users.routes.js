@@ -28,6 +28,11 @@ router.get('/lookup', requirePrivilege('admin.password', 'view'), asyncHandler(a
   res.json({ data: await usersService.lookup(req.query.q) });
 }));
 
+// Add Account's first step: find the rating the account is for
+router.get('/ratings', requirePrivilege('admin.users', 'add'), asyncHandler(async (req, res) => {
+  res.json({ data: await usersService.findRatings(req.query.q) });
+}));
+
 router.get('/:id', requirePrivilege('admin.users', 'view'), asyncHandler(async (req, res) => {
   res.json({ data: await usersService.get(req.params.id) });
 }));

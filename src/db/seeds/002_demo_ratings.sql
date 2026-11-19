@@ -868,8 +868,27 @@ VALUES
 -- ============================================================================
 -- 4. System Login Accounts (`users` table — separate from `ratings`)
 -- ============================================================================
--- HICO001 / Admin@123  (Administrator; service_number = NULL)
+-- HICO001 / Admin@123  (Administrator; a rating too, service_number = HICO001)
 -- B0539   / Rating@123 (Rating-linked account; demonstrates "View My Details")
+-- HICO001: the Hicad administrator is a rating too (every account belongs to one; WP3)
+INSERT IGNORE INTO ratings (
+  service_number, status, rate_id, title_id, surname, first_name, gender_id, date_of_birth,
+  email_address, phone, branch_id, command_id, seniority_date, entry_mode_id, date_employed, specialisation_id
+) VALUES (
+  'HICO001', 'current',
+  (SELECT id FROM ref_rate WHERE name = 'Master Warrant Officer (MWO)'),
+  (SELECT id FROM ref_title WHERE name = 'WO'),
+  'ADMINISTRATOR', 'HICO',
+  (SELECT id FROM ref_gender WHERE name = 'Male'), '1980-02-14',
+  'hico.admin@navy.mil.ng', '08031112200',
+  (SELECT id FROM ref_branch WHERE name = 'Seaman'),
+  (SELECT id FROM ref_command WHERE name = 'Western Naval Command'),
+  '2020-01-01',
+  (SELECT id FROM ref_entry_mode WHERE name = 'Regular Recruitment'),
+  '2000-03-01',
+  (SELECT id FROM ref_specialisation WHERE name = 'ICT / Cyber')
+);
+
 INSERT IGNORE INTO users (username, password_hash, full_name, role_id, service_number, is_active)
 VALUES
   (
@@ -877,7 +896,7 @@ VALUES
     '$2a$10$DPILpLh/fazxj74u1LMyd.vUIgQbxiAqrYUXzz8C9DZpgh2bJhT42',
     'HICO Administrator',
     (SELECT id FROM roles WHERE name = 'Administrator'),
-    NULL,
+    'HICO001',
     1
   ),
   (

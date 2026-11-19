@@ -7,7 +7,6 @@ const usersRepo = require('./users.repo');
 const { validationError, notFound, conflict } = require('../../shared/errors');
 
 const PAGE_SIZE = 25;
-const USERNAME = /^[A-Za-z0-9][A-Za-z0-9._-]{1,48}[A-Za-z0-9]$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^\+?[0-9][0-9 ()-]{5,28}$/;
 
@@ -86,23 +85,31 @@ async function lookup(term) {
   return toDto(row);
 }
 
-/** Checks and cleans the fields of an add or an edit; `current` is the account being edited. */
+/**
+ * Checks and cleans the fields of an add or an edit; `current` is the account being edited. Every account
+ * belongs to a rating: on an add the official number is required, the rating must exist and have no account
+ * yet, and it becomes the user name. On an edit the rating (and so the user name) is fixed.
+ */
 async function parseFields(body, { current = null } = {}, conn = null) {
   const errors = {};
   const f = {
-    username: current ? current.username : text(body.username, 50),
     fullName: text(body.fullName, 150),
     roleId: Number.parseInt(body.roleId, 10) || null,
-    serviceNumber: text(body.serviceNumber, 20),
+    serviceNumber: current ? current.service_number : (text(body.serviceNumber, 20) || '').toUpperCase() || null,
     email: text(body.email, 150),
     phone: text(body.phone, 30),
     specialisationId: Number.parseInt(body.specialisationId, 10) || null,
   };
-  if (f.serviceNumber) f.serviceNumber = f.serviceNumber.toUpperCase();
 
   if (!current) {
-    if (!f.username) errors.username = 'User name is required.';
-    else if (!USERNAME.test(f.username)) errors.username = 'Use 3 to 50 letters, numbers, dots, dashes or underscores.';
+    if (!f.serviceNumber) {
+      errors.serviceNumber = 'Find the rating this account is for.';
+    } else if (!(await usersRepo.findRating(f.serviceNumber, conn))) {
+      errors.serviceNumber = 'No rating has this official number.';
+    } else {
+      const holder = await usersRepo.findByServiceNumber(f.serviceNumber, conn);
+      if (holder) errors.serviceNumber = `This rating already has the account ${holder.username}.`;
+    }
   }
   if (!f.fullName) errors.fullName = 'Full name is required.';
   if (!f.roleId) errors.roleId = 'Choose a role.';
@@ -116,16 +123,30 @@ async function parseFields(body, { current = null } = {}, conn = null) {
     if (!s) errors.specialisationId = 'That Specialisation does not exist.';
     else if (!s.is_active && !(current && current.specialisation_id === s.id)) errors.specialisationId = 'That Specialisation is inactive.';
   }
-  if (f.serviceNumber) {
-    if (!(await usersRepo.findRating(f.serviceNumber, conn))) {
-      errors.serviceNumber = 'No rating has this official number.';
-    } else {
-      const holder = await usersRepo.findByServiceNumber(f.serviceNumber, conn);
-      if (holder && (!current || holder.id !== current.id)) errors.serviceNumber = `Already linked to the account ${holder.username}.`;
+  if (Object.keys(errors).length) {
+    const dup = errors.serviceNumber && errors.serviceNumber.includes('already has');
+    const e = validationError(dup ? errors.serviceNumber : 'Check the highlighted fields.', errors);
+    if (dup) {
+      e.status = 409;
+      e.code = 'RATING_HAS_ACCOUNT';
     }
+    throw e;
   }
-  if (Object.keys(errors).length) throw validationError('Check the highlighted fields.', errors);
   return f;
+}
+
+/** Ratings to start an account from (official number or name), each with the account it already has. */
+async function findRatings(term) {
+  const q = text(term, 50);
+  if (!q || q.length < 2) return [];
+  const rows = await usersRepo.searchRatings(q, 8);
+  return rows.map((r) => ({
+    serviceNumber: r.service_number,
+    name: [r.surname, r.first_name, r.middle_name].filter(Boolean).join(' '),
+    rate: r.rate_name || null,
+    status: r.status,
+    account: r.account || null,
+  }));
 }
 
 /** Adds an account with a random one-time password, returned once and kept nowhere in clear. */
@@ -134,8 +155,8 @@ async function create(body, actor) {
   const passwordHash = await password.hash(oneTime);
   const id = await db.transaction(async (tx) => {
     const f = await parseFields(body, {}, tx.connection);
-    if (await usersRepo.findByUsername(f.username, tx.connection)) {
-      throw conflict('That user name is already in use.', 'DUPLICATE_USERNAME', { username: 'That user name is already in use.' });
+    if (await usersRepo.findByUsername(f.serviceNumber, tx.connection)) {
+      throw conflict('That user name is already in use.', 'DUPLICATE_USERNAME', { serviceNumber: 'That user name is already in use.' });
     }
     const newId = await usersRepo.insert({ ...f, passwordHash, createdBy: actor.userId }, tx.connection);
     const after = await usersRepo.findById(newId, tx.connection);
@@ -222,4 +243,4 @@ async function resetPassword(idRaw, actor) {
   return { user: await get(id), username, oneTimePassword: oneTime };
 }
 
-module.exports = { list, get, meta, lookup, create, update, setActive, resetPassword };
+module.exports = { list, get, meta, lookup, findRatings, create, update, setActive, resetPassword };

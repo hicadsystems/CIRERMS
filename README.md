@@ -31,7 +31,7 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
    - **Details**: Basic Details, Contact, Health and Official as cards, each edited in a dialog.
    - **Next of Kin** (with photo), **Spouse**, **Children**, **Advancement**, **Drafting** (a timeline with the current posting), **Training**, **Education**, **Language**: Add and Edit in dialogs, Delete after a confirm, tab PDFs where the old system had them.
    - **Documents**: category chips (`DRAFTING`, `CERTIFICATE`, `REQUEST_FORM`, `EMOLUMENT`, `GEN_FORM`, `OTHER`), file list, preview, download and upload.
-6. **My Details** (`#ratings/my-details`) — the same record read-only, resolved from `users.service_number` (a clear notice for an unlinked admin like `HICO001`; the full record for `B0539`).
+6. **My Details** (`#ratings/my-details`) — the same record read-only, resolved from `users.service_number` (works for every account, as every account belongs to a rating: the full record for `HICO001` and for `B0539`).
 7. **Batch Upload** (`#ratings/upload`) — **Download Template** (with an embedded lookup reference sheet), **Upload Workbook**, **Review and Commit**: compulsory fields, dates and lookups enforced, duplicate Official Numbers skipped, the rest added in one transaction.
 8. **Documents** (`#ratings/documents`) — find a rating by Official No or name, then its Navpers files by category, with preview, download and upload.
 9. **Search** (Ctrl K, or the search button) — finds screens and ratings by Official No or name.
@@ -100,7 +100,8 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 |---|---|---|
 | `GET /api/users?q=&roleId=&active=&page=` | the accounts, 25 a page (`q` searches user name, name, official number and e-mail); never a hash | `admin.users` view |
 | `GET /api/users/meta`, `GET /api/users/:id` | the roles and Specialisations for the dialogs; one account | view |
-| `POST /api/users` | add an account: a random one-time password comes back once, in the response only | add |
+| `GET /api/users/ratings?q=` | Add Account's first step: ratings matching an official number or name, with the account each has | add |
+| `POST /api/users` | add an account for a rating (`serviceNumber`, required: it becomes the user name): a random one-time password comes back once, in the response only | add |
 | `PUT /api/users/:id` | edit (the user name is fixed) | edit |
 | `POST /api/users/:id/deactivate` / `reactivate` | an account is never deleted; deactivating ends its sessions | edit |
 | `GET /api/users/lookup?q=` | one account by official number or user name | `admin.password` view |
@@ -110,7 +111,7 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 | `POST /api/auth/change-password` | Change Password (account menu): current, new, confirm | any signed-in account |
 | `GET /api/audit`, `/api/audit/:id`, `/api/audit/filters` | the trail (WP1) | `admin.audit` view |
 
-**An account** has a user name (a rating's official number, or an administrator's own such as `HICO001`; fixed once made), full name, role, an optional **Linked Rating** (an official number that must exist in Ratings and not be linked to another account; it opens *View My Details*), an optional **Specialisation** (stored and shown here; the drafting packages apply it), phone, e-mail and an active state. **Nothing is deleted**: an account is deactivated, which ends its sessions, and can be reactivated.
+**An account belongs to a rating** (owner's rule, 19/11/2026; no special administrator account): Add Account starts by finding an existing rating by official number or name, and that official number is the account's **user name** (fixed once made). A rating has at most one account, and none can be made or saved without its rating; the database requires it (`users.service_number NOT NULL`, unique). The Hicad administrator `HICO001` is a rating too (a record in the demo data), so *View My Details* works for every account. A rating that has an account cannot be deleted (accounts are deactivated). An account also has a full name, role, an optional **Specialisation** (stored and shown here; the drafting packages apply it), phone, e-mail and an active state. **Nothing is deleted**: an account is deactivated, which ends its sessions, and can be reactivated. A deployment that already had accounts with no rating gets one made for each (its user name as official number) by migration `20261120_030100`.
 
 **Guards** (the server refuses, with the reason): nobody deactivates, resets or changes the role of their own account (they may edit the rest of it, and use Change Password); the last active full-access administrator cannot be deactivated or moved to another role; the Administrator role (full access) cannot be edited or deleted; a role that still has users cannot be deleted; role names are unique, whatever the case; a role must hold at least one privilege, every pair must exist in the catalogue, and a screen's other actions need its View.
 
@@ -124,8 +125,8 @@ Choices made where the design and decisions were silent (also in the report):
 
 - **Manage Roles** is a list of roles with a dialog for each role's grid, not the demo's role list beside a grid, so it follows the wide-table rule (key columns, row opens a dialog) and a 25-a-page list; a screen's actions are toggles (not a six-column table) so the grid never scrolls sideways on a phone. Toggling an action turns View on; turning View off clears the screen's other actions. *Select All* and *Clear* act on one module.
 - **Manage Password** is the administrator's reset (decision 3), not the demo's change-your-own-password form; that form is *Change Password* in the account menu.
-- **Linked Rating** is typed as an official number and checked, not picked from a list of every rating.
-- **The user name cannot be changed** after the account is made (the audit trail and sign-in use it).
+- **Add Account's rating** is found by a search box (official number or name, up to 8 results; a rating that already has an account is shown but cannot be picked), not a list of every rating; the full name is filled from the rating and can be changed.
+- **The user name cannot be changed** after the account is made (it is the rating's official number; the audit trail and sign-in use it).
 - **Search** in Manage Users matches user name, name, official number and e-mail; the Audit Trail's *Official No* filter matches the record key (so it also finds a user name or role name for those tables).
 - **Seeded roles other than Administrator**: Records Officer, Records Clerk, Auditor (the demo's names) with the grants the old system's privilege names map to (`UpdateDetails`, `NewRatings`, `BatchCreation`, the two lists, `ViewDocument`); the old role bundles themselves are not in the code. Grants for the later modules' screens come with their packages.
 
@@ -133,15 +134,15 @@ Choices made where the design and decisions were silent (also in the report):
 
 ## 3. Demo Credentials
 
-| Username | Password | Role | Linked Service No. | Purpose |
+| Username | Password | Role | Rating (Service No.) | Purpose |
 |---|---|---|---|---|
-| `HICO001` | `Admin@123` | Administrator | `NULL` | Every privilege; demonstrates unlinked admin notice on *View My Details*. |
+| `HICO001` | `Admin@123` | Administrator | `HICO001` | Every privilege; a rating too, so *View My Details* shows its record. |
 | `B0539` | `Rating@123` | Rating | `B0539` | *View My Details* only: linked to **PO Okonkwo Chukwuemeka**, sees the read-only dossier and nothing else (403 from every other API). |
-| `HICO002` | `Officer@123` | Records Officer | `NULL` | Keeps the ratings records (new rating, batch upload, documents, edits); no administration. |
-| `HICO003` | `Officer@123` | Records Officer | `NULL` | As `HICO002`, tied to the **Navigation** Specialisation (a drafting officer will then see only that department's batches and approvals). |
+| `HICO002` | `Officer@123` | Records Officer | `HICO002` | Keeps the ratings records (new rating, batch upload, documents, edits); no administration. |
+| `HICO003` | `Officer@123` | Records Officer | `HICO003` | As `HICO002`, tied to the **Navigation** Specialisation (a drafting officer will then see only that department's batches and approvals). |
 | `B0541` | `Clerk@123` | Records Clerk | `B0541` | Looks up and updates records and documents; cannot add or upload. |
-| `HICO004` | `Auditor@123` | Auditor | `NULL` | Reads the records and the Audit Trail; changes nothing. |
-| `HICO005` | `Tables@123` | Static Tables | `NULL` | Maintains the 16 Static Tables (the old `StaticTables` role). |
+| `HICO004` | `Auditor@123` | Auditor | `HICO004` | Reads the records and the Audit Trail; changes nothing. |
+| `HICO005` | `Tables@123` | Static Tables | `HICO005` | Maintains the 16 Static Tables (the old `StaticTables` role). |
 | `B0562` | `Rating@123` | Rating | `B0562` | **Inactive**: cannot sign in (shows the deactivated state). |
 
 An account made in Manage Users or reset in Manage Password has a **one-time password** that the person must replace at first sign-in; the seeded accounts above do not (so the demo opens straight in).
@@ -213,7 +214,7 @@ npm start
 NODE_PATH=$(npm root -g) node tests/e2e/static-tables-walkthrough.js
 ```
 
-`tests/e2e/system-admin-walkthrough.js` (WP3) walks Manage Users, Manage Roles, Manage Password, the Audit Trail and Change Password as the Administrator at 1440 and 390 px in light and dark (every action through the dialogs), then the guards, a new account's forced first change, a reset ending a session, a role change applying on the next request, accounts with no grants or view only (no buttons, 403 from the API), and the audit trail holding every write and no password. It adds throw-away `WT` roles and accounts and removes them when it ends.
+`tests/e2e/system-admin-walkthrough.js` (WP3) walks Manage Users, Manage Roles, Manage Password, the Audit Trail and Change Password as the Administrator at 1440 and 390 px in light and dark (every action through the dialogs), then the guards (an account cannot be made without a rating, a rating cannot get a second one), a new account's forced first change, a reset ending a session, a role change applying on the next request, accounts with no grants or view only (no buttons, 403 from the API), and the audit trail holding every write and no password. Every action runs once at desktop light; the other layouts and themes open each screen and its main dialog and the flows that differ on a phone. It runs in about a minute and fails if it takes over 5 minutes. It adds throw-away `WT` roles, ratings and accounts and removes them when it ends.
 
 ```bash
 npm run migrate:fresh

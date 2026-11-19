@@ -522,7 +522,14 @@ async function findDocumentById(docId, serviceNumber, conn = null) {
   return rows[0] || null;
 }
 
+/** The user account that belongs to the rating, if any. */
+async function findAccountUsername(serviceNumber, conn = null) {
+  const rows = await db.query('SELECT username FROM users WHERE service_number = ? LIMIT 1', [serviceNumber], conn);
+  return rows[0] ? rows[0].username : null;
+}
+
 module.exports = {
+  findAccountUsername,
   listRatings,
   findByServiceNumber,
   existsByServiceNumber,

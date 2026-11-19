@@ -383,6 +383,10 @@ async function deleteRating(serviceNumberRaw, actor) {
     throw notFound(`No rating found with Official Number "${sn}".`);
   }
 
+  const account = await ratingsRepo.findAccountUsername(sn);
+  if (account) {
+    throw conflict(`This rating has a user account (${account}) and cannot be deleted. Accounts are deactivated, not deleted.`, 'HAS_ACCOUNT');
+  }
   const docs = await ratingsRepo.listDocuments(sn);
   await db.transaction(async (tx) => {
     const before = await ratingsRepo.findRawRating(sn, tx.connection);
