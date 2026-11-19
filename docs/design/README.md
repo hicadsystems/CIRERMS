@@ -60,7 +60,7 @@ the demo after `npm run demo:build`.
 
 Three modules, 21 pages, built into the same demo (`demo-src.html`, each module in its own block between
 `==== D1 BEGIN` and `==== D1 END` markers). Open the sidebar items **Drafting**, **Training Drafting** and
-**Advancement Processing**; Special Drafting and Naval Character Assessment stay *Soon*. The old rules and fields
+**Advancement Processing** (Special Drafting and Naval Character Assessment came with D3, below). The old rules and fields
 come from `docs/legacy/` (`drafting.md`, `training-drafting.md`, `advancement.md`), the faults listed there are not
 copied.
 
@@ -323,3 +323,96 @@ Choices D2 made where nothing was decided (unchanged):
 - **Static Tables**: a *Print List* button beside *Add*; **Reports**: the *Print PDF* button of `reportShell` now calls the printouts above.
 - **A D1 fault fixed**: D1's `function viewReport()` (Draft Report) had the same name as the Reports module's `viewReport(slug)`, and a later function declaration
   wins, so **every Reports page showed the Draft Report**. D1's is now `viewDraftReport`. The same happened to the Ratings **Batch Upload** (`viewUpload()`), which D1's `viewUpload(key)` replaced, so that page threw an error; D1's is now `viewImport`.
+
+## Special Drafting and Naval Character Assessment (package D3)
+
+Two modules, 6 pages, built into the same demo (`demo-src.html`, between `==== D3 BEGIN` and `==== D3 END` markers, after D2's wiring and before the
+session lock). **Special Drafting** and **Naval Character Assessment** lose *Soon*: the sidebar has none left. The old fields and rules come from
+`docs/legacy/` (`drafting.md` section 6, `advancement.md`, `static-tables.md` section 1, `reports.md` section 5) and PLAN sections 9a, 9e and 10; the
+faults listed there are not copied. D3 reuses D1's and D2's parts, so everything under *What is common to all three modules* (D1) holds here: the lists
+read only, a write happens in a confirming dialog, each row opens a record dialog (a sheet on a phone) with its actions and a View Details tooltip,
+printouts are a PDF preview, uploads go Download Template, Choose File, Review and Import with every problem row listed.
+
+**Behaviour of the demo.** One in-memory store, as in D1 and D2. Draft a rating on *Special Draft Proposal*, print its form on *Special Draft Report*, then
+open its record: the Drafting tab shows the new posting, or **Drafted to X wef dd/mm/yyyy, Scheduled** for a later WEF. Record appraisals, edit, cancel and
+close a period, and the list, the report, the record's Appraisals and the dashboard tile all follow. Nothing is saved: a reload brings the data back.
+
+### Special Drafting (old menu: Special Draft, Special Draft Report, and Upload Draft moved from Drafting; 3 pages)
+
+| Old page | New screen (tab) | What changed, and why |
+|---|---|---|
+| Special Draft (`draftings/SpecialDraft`) | **Special Draft Proposal**: *Find* by Official No or name (partial match, current ratings only), a list of ratings found, a row opens the rating's current details (rate, branch, ship, date joined it, months there) with **Draft Rating**, then the form (Posting Type, Drafted To, Authority, WEF, Deployment/Vice, Remark). Below: **Special Drafts Not Yet Printed**, a row opens the draft with **Remove**, **Draft Letter** and Open Record | The old name search failed from the menu (it needed a batch number in the address); the page now opens from the menu and finds by number or name. The posting type is a **labelled list** (Complement, Vice, TY, DW; the old page had a bare box). Surname and first name are no longer saved into each other's columns (the record holds the names). The **duplicate check** the old code had commented out is back: a rating with a draft not yet printed shows *cannot be drafted again* in its dialog and the form refuses a second. Deployment/Vice is required for a Vice draft. WEF cannot be before the rating joined its ship nor more than a year ahead. **Draft Letter** is a one-rating letter preview and does not mark anything printed |
+| Special Draft Report (`specialdraftinglist`) | **Special Draft Report**: a labelled **Posting Type** list (with the count waiting), the drafts of that type, **Preview Draft Form** (a PDF preview: *Special Draft Form*), **Print and Mark Printed** (a confirmation first), and **Printed Forms** (a row opens the form with **Reprint Form**) | The old box had no label and the code called it a date. Printing marks every draft of the type printed **in one step with the form number** (`SDF-2026-0003`), and only after the preview was seen and confirmed. A printed form can be reprinted from the list; reprinting changes nothing |
+| Upload Draft (`draftings/ExcelUpload`, under Drafting in the old menu) | **Upload Draft**: Download Template, Choose File, Review and Import | The old sheet (`Draft6.xlsx`: SER, Name, Rate, Sex, Svc_No, Present_Ship, DOJ, ...) repeated what the record has, stopped at the first bad row, matched ships on *Description* and gave a success message that counted the whole table. The template is **keyed by Official No**: **Official No, Drafted To, Authority, WEF, Posting Type, Deployment/Vice, Remark** (9e decision 4). Every row is read first; each problem row is listed (not on the roll, former rating, ship not in Static Tables, bad posting type, bad date, Vice without Deployment/Vice) and a rating with a draft waiting, or twice in the file, is *skipped*; the rest are imported in one go as drafts **not yet printed**. The old Draft6 sheet is refused with a message that says so |
+
+**A special draft moves the rating when its form is printed, on its WEF** (decisions 1 to 3). *Add* only joins the list, so *Remove* needs no undo. Printing ends the old
+posting the day before the WEF and starts the new one on it (9a decision 4); a WEF after today leaves the ship as it is and the record shows the move as
+**Scheduled** (the same line D1 added to the Drafting tab). The demo cannot move the clock, so a scheduled move stays scheduled. A printed draft is final; a correction is
+made on the rating's record, under the audit trail.
+
+### Naval Character Assessment (old menu: Recommendation and Grading, Report on Appraisal; 3 pages here)
+
+| Old page | New screen (tab) | What changed, and why |
+|---|---|---|
+| (switched off in the old menu: Appraisal Period setup) | **Appraisal Periods**: counts (open, closed, appraisals), a list (period, dates, appraisals, status), a row opens the period with **View Appraisals**, **Edit** and **Close Period**; **Add Period** | The old system had no way to manage periods. A period has a name, a start and an end; names are unique and periods may not overlap. A period opens when added and **closes for good**: **Close Period** warns how many current ratings have no appraisal, and a closed period is read-only (nothing added, edited or cancelled in it) |
+| Recommendation and Grading (`AppraisalHistory/List`, Create, Edit) | **Recommendation and Grading**: filters Official No or name, **Period, Ship, Rate, Grade**; the list (rating, period, Character, Efficiency); a row opens the appraisal with **Edit** and **Cancel Appraisal** (only while its period is open); **Initiate Appraisal** | The old *Rate* column showed the name and the form's *Rate* picked the official number; the **director's date and name were never saved**; there was no delete and no paging. Now: find the rating by Official No, an **open** period, **Character** and **Efficiency** grades from Static Tables, Appraisal Ratings (code, name and score range), Remark, **CO's Name**, **Director's Name and Date** (saved). **One appraisal per rating per period**: a second is refused with the reason. **Edit** lists what changed in the dialog; **Cancel** needs a reason and the appraisal leaves the lists (nothing is deleted outright), after which the rating can be appraised again for the period. 25 a page, cards on a phone |
+| Report on Appraisal (menu link to the dashboard; never built) | **Report on Appraisal**: filters Period, Ship, Rate, Branch, Grade; three figures, **Grade Counts** (each grade by Character and by Efficiency), the list, **Print PDF**, **Export Excel** | New. A row opens the appraisal read-only. The printout is *Report on Appraisal*: the filters, the grade counts in the header, then official no, name, rate, ship, branch, period, both grades, CO and director |
+| The rating's profile (appraisal history) | **The record's Advancement tab** gains an **Appraisals** list (period, grades, CO), each row opening the appraisal; **Initiate Appraisal** from there when a period is open | See *The rating's record* below |
+
+### The rating's record: where the appraisals went (decision 8)
+
+I chose to put the appraisals **under the Advancement tab**, below the advancement lines, and **not** to add a twelfth tab. The strip already holds 11 tabs (Discipline was
+the eleventh, D2) with the short labels *Kin* and *Advance*, and a twelfth would not fit at 1280 px without scrolling or another round of shortening. Appraisals sit
+next to advancement in the career a board reads, the Advancement tab keeps its width, and the strip measures the same at 1280, 1440 and 1024 (checked). Like the
+Discipline tab it is **seen only by someone who may view Recommendation and Grading** (the demo's Administrator), is **not on My Details** and **does not count towards the
+record's completeness**. The Advancement tab's badge still counts advancements only. Eligibility for advancement does not read the grades (WP0).
+
+### Printouts (new, PDF previews in D1's style)
+
+| Printout | Opens from | Fields |
+|---|---|---|
+| Special Draft Form | Special Draft Report, *Preview Draft Form* (and *Reprint Form*) | form no, posting type, ratings, date, then official no, name, rate, sex, current ship, months, drafted to, deployment/vice, authority, WEF (scheduled marked); the footer of the first preview carries **Print and Mark Printed** |
+| Special Draft Letter | a draft's dialog, *Draft Letter* | the rating's details and the one draft; indicative layout (the old letter's `.rpt` cannot be read) |
+| Report on Appraisal | Report on Appraisal, *Print PDF* | the filters, the grade counts for both grades, then the list |
+
+### Dashboard tile
+
+**Appraisals** stops showing *Soon*: it counts the appraisals recorded this month (cancelled ones excluded), with the number of open periods; both link to their pages.
+
+### Decisions (PLAN 9e) and how they show
+
+1. **A special draft posts one rating outside the batch cycle**: found from the menu by number or name, details filled in, Posting Type a labelled list, a second draft refused, Remove until printed.
+2. **The move follows 9a decision 4**, as above; a printed draft is final.
+3. **Special Draft Report** prints one form for the posting type and marks the drafts printed; past forms can be reprinted.
+4. **Upload Draft** is keyed by Official No with the seven columns of 9e.
+5. **Appraisal Periods** is a page; one appraisal per rating per period; a closed period is read-only.
+6. **Recommendation and Grading** as the table above: grades from Appraisal Ratings, director's date and name saved, Edit while open, Cancel with a reason.
+7. **Report on Appraisal** with the grade counts, PDF and Excel.
+8. **The record shows the appraisals**; the tile counts appraisals this month.
+
+Privileges the build should map (WP1/WP3 catalogue): Special Drafting: Special Draft Proposal and Special Draft Report and the printed forms = view; Draft Rating and Upload Draft = add; Remove = delete;
+**Print and Mark Printed** = edit (it writes the postings; a stricter choice is the approve action). Naval Character Assessment: Appraisal Periods, Recommendation and Grading and Report on Appraisal = view;
+Add Period and Initiate Appraisal = add; Edit Period, Close Period and Edit Appraisal = edit; Cancel Appraisal = delete; the record's Appraisals list needs view of Recommendation and Grading.
+
+### Choices D3 made where nothing was decided (the owner can change any)
+
+- **Nothing moves until the form is printed.** The brief says a special draft moves the rating on its WEF; adding only lists it, so Remove stays simple and a printed draft is final.
+- **Closing a period is final** (no reopen), as a closed batch is in D1. A period opened by mistake can be edited while open.
+- **Periods must not overlap**; names are unique; there is no delete.
+- **Director's name and date are optional but paired** (give both or neither), since the director may not have signed when the CO's grading is recorded; the date is not in the future and not before the period began.
+- **Remark is optional; CO's Name is required.** The old page's required fields are not documented; the CO's name is the one signed field.
+- **Edit an appraisal needs no reason**, only a change (the dialog keeps a list of what changed); **Cancel needs one**. Both go in the audit trail in the build.
+- **The report's Grade filter matches either grade**; Branch is the rating's branch; Ship and Rate are those **at the time** of the appraisal.
+- **Only current ratings** can be drafted or appraised. A WEF may be up to 12 months ahead.
+- **TY and DW** are shown by their codes: the old code gives no expansion (question for the owner). The demo seeds one draft of each type.
+- **Print and Mark Printed** is the *edit* action in the privilege map above.
+- **Draft Letter** does not mark anything printed.
+
+### Shared lines D3 touched (all in `demo-src.html`; nothing else outside `docs/design/`)
+
+- **Sidebar**: *Special Drafting* and *Naval Character Assessment* get their `href` and lose `soon`; `moduleOf` knows `special/` and `assessment/`; the router asks `D3.owns` beside `D1.owns`
+  and `D2.owns` (in `render` and `renderTabs`); the command palette lists both modules' pages.
+- **Dashboard**: the Appraisals tile (a count and the open periods instead of *Soon*), with `const d3s = D3.stats();`.
+- **The record**: one line, the Advancement tab appends `D3.recordAppraisals(r, readOnly)`; `RECORD_TABS` and the strip are unchanged.
+- Nothing in `components.md`: D3 adds no new part (it uses the kit D1 and D2 built).
+
