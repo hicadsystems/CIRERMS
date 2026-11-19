@@ -124,7 +124,7 @@ WP0, WP1, D1 and T1:
 | master | WP0, WP1, T1, D1, D2, WP2 (merged early at 540100d, see below), the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
 | D1, T1, D2 | Merged 19/11/2026; sessions archived |
-| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit), and told the owner's rule that every account belongs to an existing rating, HICO001 included (PLAN 9d). On report: check, run the three walkthroughs, owner merges, archive |
+| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`, ON HOLD by the owner. a7c85e2 good; 1f8a75f unfinished (PDF preview with PDF.js, install refused in its session; Print List). Waiting for the owner's choice: PDF.js preview over our pdfkit files (recommended), or printouts as HTML made into PDFs by headless Chromium (Puppeteer), or the browser viewer with its toolbar hidden. The app makes PDFs with pdfkit; Chromium is only in our test containers |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
 | WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
 | D3 `design-special` | Session `session_01G8Rfvj9QeAuEJNKNHHRpuq` (Sonnet 5.5, medium), started 19/11/2026 at the owner's word ("the most important"), alongside WP3's last fixes and WP4. On report: check, send the owner `demo.html`, owner merges, archive. Then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
