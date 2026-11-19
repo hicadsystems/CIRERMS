@@ -2,7 +2,8 @@
 -- are new, the old system's StaticTables role and its privileges. The names of the other tables'
 -- rows (branches, states, local governments, ships ...) are already in 001_lookups.sql, as the demo
 -- shows them. Insert-only-missing and safe to rerun: a value an administrator has since set or edited
--- is left as it is (codes only where still empty; other columns while updated_at = created_at).
+-- is left as it is: each UPDATE applies only while its row still has no code (or, for ships, no
+-- command), and sets the flags with the code in the same statement, so nothing depends on timestamps.
 
 -- Branch codes (the drafting and advancement batch numbers use them: DOD-SM-...)
 UPDATE ref_branch t JOIN (SELECT 'Seaman' AS c0, 'SM' AS c1 UNION ALL SELECT 'Marine Engineering', 'ME' UNION ALL SELECT 'Weapon Engineering', 'WE' UNION ALL SELECT 'Logistics', 'LG' UNION ALL SELECT 'Medical', 'MD' UNION ALL SELECT 'Information Technology', 'IT' UNION ALL SELECT 'Education', 'ED' UNION ALL SELECT 'Naval Police', 'NP' UNION ALL SELECT 'Music', 'MU' UNION ALL SELECT 'Physical Training', 'PT') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
@@ -14,18 +15,13 @@ UPDATE ref_branch t JOIN (SELECT 'Seaman' AS c0, 'SM' AS c1 UNION ALL SELECT 'Ma
 INSERT IGNORE INTO ref_exit_type (name, code, keeps_current, sort_order) VALUES
   ('Serving (A)', 'A', 1, 100), ('Serving (M)', 'M', 1, 101), ('Serving (C)', 'C', 1, 102);
 UPDATE ref_exit_type t JOIN (SELECT 'DECEASED' AS c0, 'DE' AS c1 UNION ALL SELECT 'DISCHARGED', 'DS' UNION ALL SELECT 'DISMISSED', 'DM' UNION ALL SELECT 'MEDICAL DISCHARGE', 'MD' UNION ALL SELECT 'RETIRED', 'RT' UNION ALL SELECT 'VOLUNTARY DISCHARGE', 'VD') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
-   SET t.code = m.c1
+   SET t.code = m.c1, t.is_death = IF(m.c1 = 'DE', 1, t.is_death)
  WHERE t.code IS NULL;
 
-UPDATE ref_exit_type SET is_death = 1 WHERE name = 'DECEASED' AND updated_at = created_at;
-
--- Entry Mode codes; the demo shows one switched off (out of the dropdowns)
+-- Entry Mode codes; the demo shows one (Sportsmen Enlistment) switched off, out of the dropdowns
 UPDATE ref_entry_mode t JOIN (SELECT 'Regular Recruitment' AS c0, 'RECR' AS c1 UNION ALL SELECT 'Specialist Enlistment', 'SPEC' UNION ALL SELECT 'Direct Intake', 'DIR' UNION ALL SELECT 'Sportsmen Enlistment', 'SPORT') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
-   SET t.code = m.c1
+   SET t.code = m.c1, t.is_active = IF(m.c1 = 'SPORT', 0, t.is_active)
  WHERE t.code IS NULL;
-
-UPDATE ref_entry_mode SET is_active = 0
- WHERE name = 'Sportsmen Enlistment' AND updated_at = created_at;
 
 -- Relationship: the demo's list beside the two types the demo ratings use, with codes
 INSERT IGNORE INTO ref_next_of_kin_type (name, sort_order) VALUES
@@ -48,7 +44,7 @@ UPDATE ref_specialisation t JOIN (SELECT 'Gunnery' AS c0, 'GUN' AS c1 UNION ALL 
 -- Ships and bases: Type (as the demo shows), command and description
 UPDATE ref_ship t JOIN (SELECT 'NNS ARADU' AS c0, 'Ship' AS c1, 'Western Naval Command' AS c2 UNION ALL SELECT 'NNS THUNDER', 'Ship', 'Western Naval Command' UNION ALL SELECT 'NNS OKPABANA', 'Ship', 'Eastern Naval Command' UNION ALL SELECT 'NNS CENTENARY', 'Ship', 'Eastern Naval Command' UNION ALL SELECT 'NNS UNITY', 'Ship', 'Western Naval Command' UNION ALL SELECT 'NNS PROSPERITY', 'Ship', 'Central Naval Command' UNION ALL SELECT 'NNS KADA', 'Ship', 'Eastern Naval Command' UNION ALL SELECT 'NNS VICTORY', 'Ship', 'Western Naval Command' UNION ALL SELECT 'NNS BEECROFT', 'Base', 'Western Naval Command' UNION ALL SELECT 'NNS PATHFINDER', 'Base', 'Western Naval Command' UNION ALL SELECT 'NNS DELTA', 'Base', 'Eastern Naval Command' UNION ALL SELECT 'NNS JUBILEE', 'Base', 'Eastern Naval Command' UNION ALL SELECT 'NNS QUORRA', 'Base', 'Naval Training Command' UNION ALL SELECT 'NAVTRAC EBUTE-ERO', 'Base', 'Naval Training Command' UNION ALL SELECT 'NHQ ABUJA', 'Base', 'Naval Headquarters') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
    SET t.type = m.c1, t.command_id = (SELECT id FROM ref_command WHERE name = m.c2)
- WHERE t.updated_at = t.created_at;
+ WHERE t.command_id IS NULL;
 
 -- States: code and geo-political zone (the rating form fills the zone from the state)
 UPDATE ref_state t JOIN (SELECT 'Abia' AS c0, 'AB' AS c1, 'South East' AS c2 UNION ALL SELECT 'Anambra', 'AN', 'South East' UNION ALL SELECT 'Ebonyi', 'EB', 'South East' UNION ALL SELECT 'Enugu', 'EN', 'South East' UNION ALL SELECT 'Imo', 'IM', 'South East' UNION ALL SELECT 'Adamawa', 'AD', 'North East' UNION ALL SELECT 'Bauchi', 'BA', 'North East' UNION ALL SELECT 'Borno', 'BO', 'North East' UNION ALL SELECT 'Gombe', 'GO', 'North East' UNION ALL SELECT 'Taraba', 'TA', 'North East' UNION ALL SELECT 'Yobe', 'YO', 'North East' UNION ALL SELECT 'Akwa Ibom', 'AK', 'South South' UNION ALL SELECT 'Bayelsa', 'BY', 'South South' UNION ALL SELECT 'Cross River', 'CR', 'South South' UNION ALL SELECT 'Delta', 'DE', 'South South' UNION ALL SELECT 'Edo', 'ED', 'South South' UNION ALL SELECT 'Rivers', 'RI', 'South South' UNION ALL SELECT 'Benue', 'BE', 'North Central' UNION ALL SELECT 'FCT - Abuja', 'FC', 'North Central' UNION ALL SELECT 'Kogi', 'KO', 'North Central' UNION ALL SELECT 'Kwara', 'KW', 'North Central' UNION ALL SELECT 'Nasarawa', 'NA', 'North Central' UNION ALL SELECT 'Niger', 'NI', 'North Central' UNION ALL SELECT 'Plateau', 'PL', 'North Central' UNION ALL SELECT 'Ekiti', 'EK', 'South West' UNION ALL SELECT 'Lagos', 'LA', 'South West' UNION ALL SELECT 'Ogun', 'OG', 'South West' UNION ALL SELECT 'Ondo', 'ON', 'South West' UNION ALL SELECT 'Osun', 'OS', 'South West' UNION ALL SELECT 'Oyo', 'OY', 'South West' UNION ALL SELECT 'Jigawa', 'JI', 'North West' UNION ALL SELECT 'Kaduna', 'KD', 'North West' UNION ALL SELECT 'Kano', 'KN', 'North West' UNION ALL SELECT 'Katsina', 'KT', 'North West' UNION ALL SELECT 'Kebbi', 'KE', 'North West' UNION ALL SELECT 'Sokoto', 'SO', 'North West' UNION ALL SELECT 'Zamfara', 'ZA', 'North West') m ON m.c0 = t.name COLLATE utf8mb4_unicode_ci
