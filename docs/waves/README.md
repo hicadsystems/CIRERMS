@@ -42,9 +42,9 @@ The owner's rules, never to be broken:
 2. **No pull requests of any kind.** The owner opens and merges them.
 3. **Nothing about the tools you used.** No mention of AI assistants, their makers or their models in commit
    messages, code, comments or documents, and no Co-Authored-By or session-link lines in commits.
-4. **Commit author.** AI sessions commit as the owner: `git config user.name swizfcodes` and
-   `git config user.email 191121624+swizfcodes@users.noreply.github.com` (repository-local). A developer commits as
-   the owner tells them.
+4. **Commit author.** Everyone commits as the owner, people and AI sessions alike (the owner, 19/11/2026):
+   `git config user.name swizfcodes` and `git config user.email 191121624+swizfcodes@users.noreply.github.com`
+   (repository-local, set before the first commit).
 5. **Never edit `public/js/core/choices.js`** (the owner's own component). Use it as it is.
 6. Treat the owner's e-mail address and any personal data as private. Never copy the old system's passwords
    (`hpproject/Web.config` in the old repository holds some in plain text).
