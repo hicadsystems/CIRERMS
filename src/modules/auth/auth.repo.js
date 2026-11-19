@@ -4,7 +4,7 @@ const db = require('../../db');
 const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 
 const USER_COLUMNS = `u.id, u.username, u.password_hash, u.service_number, u.is_active, u.last_login_at,
-       u.role_id, u.must_change_password, r.name AS role_name, r.full_access,
+       u.role_id, u.must_change_password, u.specialisation_id, r.name AS role_name, r.full_access,
        ${NAME_COLUMNS}`;
 
 async function findByUsername(username, conn = null) {

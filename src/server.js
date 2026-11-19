@@ -5,6 +5,7 @@ const config = require('./config');
 const db = require('./db');
 const { privilegeCatalogue } = require('./modules');
 const accessService = require('./modules/access/access.service');
+const scheduled = require('./shared/scheduled');
 
 async function start() {
   try {
@@ -28,6 +29,8 @@ async function start() {
     console.log(
       `[CIRERMS] Server listening on http://${config.host}:${config.port} (env=${config.env})`
     );
+    // changes that take effect on a later date (a posting's WEF): applied at start, then every hour
+    scheduled.start();
   });
 
   const shutdown = async (signal) => {

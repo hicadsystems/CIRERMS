@@ -26,6 +26,7 @@ import { toast } from '../ui/toast.js';
 import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { optionsWithHeld } from '../core/lookups.js';
 import { readForm, dateField } from './rating-fields.js';
+import { scheduledMoves } from './drafting-record.js';
 
 const YES_NO = [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }];
 const opts = (list = []) => list.map((x) => ({ value: x.id, label: x.name }));
@@ -221,7 +222,8 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   if (tab.look === 'timeline') {
     return h('div', { className: CARD }, [
       band,
-      h('ol', { className: 'relative mx-4 my-4 ml-6 border-l-2 border-border' }, rows.map((p) => {
+      // Drafting: a move still to come (a WEF after today) shows first, as scheduled
+      h('ol', { className: 'relative mx-4 my-4 ml-6 border-l-2 border-border' }, [tab.key === 'drafting' ? scheduledMoves(serviceNumber) : null, ...rows.map((p) => {
         const current = !p.end_date;
         const what = p.ship_name || 'posting';
         return h('li', { className: 'relative pb-5 pl-5 last:pb-0' }, [
@@ -235,7 +237,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
             rowActions(p, what),
           ]),
         ]);
-      })),
+      })]),
     ]);
   }
 
