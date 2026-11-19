@@ -126,8 +126,8 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, the plan |
-| Sessions | D4 `design-printouts`: session `session_01G8RfvjS1GqPbvash52hsRp` (Sonnet 5.5, medium), started 19/11/2026. On report: check (only `docs/design/` and a script line), render the PDFs, send them to the owner to review, owner merges, archive; then WP13. One session at a time while the weekly limit is at its warning level |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, the plan, `docs/waves/` |
+| Sessions | WP13 `printouts`: session `session_01G8RfvmWbA9sZ5DSVdu7bcx` (Sonnet 5.5, medium), started 19/11/2026. It installs handlebars, puppeteer-core and @sparticuz/chromium (the owner's decision); if its permission check refuses, ask the owner to approve in its session. On report: run the four walkthroughs, compare its PDFs with D4's, owner merges, archive. One session at a time while the weekly limit is at its warning level |
 | Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
