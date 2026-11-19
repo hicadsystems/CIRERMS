@@ -125,7 +125,7 @@ WP0, WP1, D1 and T1:
 | `project-plan` | Even with master after the owner's merge of PR 16 |
 | D1, T1, D2 | Merged 19/11/2026; sessions archived |
 | WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj` (Sonnet 5.5, medium), started 19/11/2026 with the section 9d decisions; also asked to move toasts clear of dialog buttons on a phone (kit), and told the owner's rule that every account belongs to an existing rating, HICO001 included (PLAN 9d). On report: check, run the three walkthroughs, owner merges, archive |
-| WP2 `static-tables` | Session `session_01G8RfvmkVq1wRk75f9xaxJA`. Done at 9b1c802, checked (fresh database: access 166 in 74 s, static tables 1,444 in 92 s). Owner to merge `static-tables` a second time, then archive |
+| WP2 | Merged 19/11/2026 (two merges); session archived |
 | WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2` (Sonnet 5.5, medium), started 19/11/2026 (WP2's tables were on master). On report: check, run the walkthroughs (long ones in the background), owner merges, archive |
 | D3 `design-special` | Not started. The owner (19/11/2026) wants Special Drafting and Naval Character Assessment designed and built this phase: D3 (Sonnet 5.5, medium) in the first free slot after WP3 or WP4, with PLAN 9e in its brief; then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
 | Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
