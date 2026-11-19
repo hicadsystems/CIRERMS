@@ -195,7 +195,7 @@ the next wave once the owner has merged.
 | D1 | Merged 19/11/2026 (Sonnet 5.5 · high; about $11 at API prices) | `design-drafting` | 19/11/2026: 62992bc, 21 pages with the wide-table rule and the section 9a decisions, only `docs/design/`; checked by the administrator: the demo rebuilds identically, every new page at 1440 and 390 px in both themes, no browser errors, no sideways scrolling |
 | WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
 | T1 | Merged 19/11/2026 (Sonnet 5.5 · medium; about $0.64) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
-| D2 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvnRMAeYTMGRGgXUgG9`; decisions in section 9b | `design-casework` | |
+| D2 | Designed and checked; owner reviewing; follow-up running (wide tables on the Reports pages, dashboard tiles, record tabs) | `design-casework` | 19/11/2026: 1ec6855, Disciplinary Action (4 pages), Discharge Administration (5), 12 printouts, dashboard tiles; only `docs/design/`; fixed two D1 name clashes that hid the Reports pages and the Ratings Batch Upload; checked by the administrator |
 | WP2 | Running since 19/11/2026, Sonnet 5.5 · medium, session `session_01G8RfvmkVq1wRk75f9xaxJA`; decisions in section 9c | `static-tables` | |
 | WP3 | Not started | `system-admin` | |
 | WP4 | Not started | `disciplinary` | |
@@ -278,6 +278,14 @@ Decided by the administrator before D2 started, at the owner's request (19/11/20
 8. **The discharge upload template** is keyed by official number, as D1's uploads, with the fields the old import
    reads (section 9).
 
+D2's questions, answered (19/11/2026). By the owner: the Memos and Mails tile is dropped, and Appraisals shows Soon
+until Naval Character Assessment is built; the three verification forms (Re-engagement Verification, Retirement
+Routine, Engagement Form) keep D2's layouts until copies of the real forms arrive, which should be before WP5. By the
+administrator: Correct may change every field of a case except the rating; the Discharge Report also lists
+re-engagements; Upload Discharge skips ratings already in a proposal or already discharged, and its reason is
+optional; the discharge due placeholder is 50 years of age or 20 of service (bands 50/55/60 and 20/30/35), kept as
+settings; Manage Roles (WP3) lists every module's screens from the privilege catalogue, the approve action included.
+
 ## 9c. Decisions for Static Tables (WP2)
 
 Decided by the administrator before WP2 started, at the owner's request (19/11/2026), and widened the same day
@@ -305,7 +313,7 @@ need.
 |---|---|---|---|
 | 1 | Appraisal Ratings (new) | Code (5, required), Grade (50, required), lowest and highest score (0 to 100, not overlapping another grade) | Naval Character Assessment grades |
 | 2 | Branch (`ref_branch`) | Name, Code (2, required) | the code is in the drafting and advancement batch numbers (`DOD-SM...`) |
-| 3 | Exit Type (`ref_exit_type`) | Name, Code (2, required), **Rating stays current** (yes for the old A, M and C) | decides Current or Former; Discharge offers only the exit types that do not keep a rating current |
+| 3 | Exit Type (`ref_exit_type`) | Name, Code (2, required), **Rating stays current** (yes for the old A, M and C), **Death** (yes for the deceased type) | decides Current or Former; Discharge offers only the exit types that do not keep a rating current, and asks for the death documents only for a death |
 | 4 | Entry Mode (`ref_entry_mode`) | Name, Code (5, required) | old code kept for the import |
 | 5 | Disciplinary Offence (new) | Name, Code (required), Category (Conduct, Discipline, Duty, Property) | Disciplinary cases (WP4) |
 | 6 | Disciplinary Sanction (new) | Name, Severity (Minor, Major) | Disciplinary cases (WP4) |

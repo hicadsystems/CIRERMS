@@ -138,11 +138,14 @@ Notes for coming briefs:
   its own `tables.*` privileges and stays readable by the ratings screens (My Details too).
   Its full specification is PLAN 9c (widened at the owner's instruction, 19/11/2026: the codes, links and
   flags every other module needs, and every old column that held data). Check each table against it.
-- **WP3:** a user may be tied to a Specialisation (the old `AspNetUsers.specid`): a drafting officer then sees
+- **WP3:** Manage Roles lists every module's screens from the privilege catalogue, the approve action
+  included (the approved demo shows only view, add, edit and delete; PLAN 9b). A user may be tied to a Specialisation (the old `AspNetUsers.specid`): a drafting officer then sees
   only that department's batches and approvals (`docs/legacy/drafting.md` 3). Screens on the read APIs WP1 made (`/api/access/privileges`, `/api/access/roles`,
   `/api/audit`); add `admin.users`, `admin.password` and role add/edit/delete; Administrator
   (full access) is not editable; the account menu's Change Password; also mention
   `core/access.js` and `shell/lock.js` in `docs/design/components.md`.
+- **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
+  D2's layouts stand.
 - **Security, told to the owner:** the old repository's `hpproject/Web.config` holds database
   passwords in plain text; they should be changed if still in use. Never copy them.
 
