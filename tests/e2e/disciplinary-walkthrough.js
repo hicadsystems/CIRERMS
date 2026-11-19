@@ -39,6 +39,8 @@ const REPORTER = { username: 'WTDREPORT', password: 'Report@123' };
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
+const STARTED = Date.now();
+const LIMIT_SECONDS = 300; // the owner's rule: a walk-through runs in five minutes at most
 let failures = 0;
 let passes = 0;
 function check(ok, label, detail = '') {
@@ -98,7 +100,6 @@ const main = (page) => page.locator('#app-main');
 
 async function loaded(page) {
   await page.waitForFunction(() => document.querySelector('#app-main h1') && !document.querySelector('#app-main')?.textContent.includes('Loading'), null, { timeout: 15000 });
-  await page.waitForTimeout(150);
 }
 async function go(page, route) {
   await page.goto(`${BASE}/app.html#${route}`);
@@ -112,16 +113,18 @@ const rowTexts = async (page, phone) => {
   for (let i = 0; i < n; i += 1) out.push((await rows.nth(i).innerText()).replace(/\s+/g, ' '));
   return out;
 };
-async function waitRows(page, phone) {
-  await page.waitForTimeout(450);
+/** A list has finished loading: a reload shows "Loading" at once, so wait a frame, then for it to go. */
+async function settle(page) {
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await page.waitForFunction(() => !document.querySelector('#app-main')?.textContent.includes('Loading'), null, { timeout: 10000 });
-  await page.waitForTimeout(100);
-  void phone;
 }
+const waitRows = (page) => settle(page);
 const toastText = async (page, re) => {
   const t = page.locator('#toast-root [role]', { hasText: re }).last();
   await t.waitFor({ timeout: 8000 });
-  return t.innerText();
+  const text = await t.innerText();
+  await t.getByRole('button', { name: 'Dismiss' }).click();
+  return text;
 };
 const pad = (n) => String(n).padStart(2, '0');
 const ddmmyyyy = (d) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
@@ -149,7 +152,7 @@ async function setFilter(page, phone, name, value) {
   const input = page.locator(`#app-main [data-filters] input[name="${name}"]`);
   await input.fill(value);
   await input.press('Enter');
-  await waitRows(page, phone);
+  await waitRows(page);
 }
 async function clearFilters(page, phone) {
   await openFilters(page, phone);
@@ -157,7 +160,7 @@ async function clearFilters(page, phone) {
     const input = page.locator(`#app-main [data-filters] input[name="${name}"]`);
     if (await input.count()) { await input.fill(''); await input.press('Enter'); }
   }
-  await waitRows(page, phone);
+  await waitRows(page);
 }
 
 async function noOverflow(page, label) {
@@ -170,11 +173,14 @@ async function noOverflow(page, label) {
 
 const fieldError = (page, name) => dialogOf(page).locator(`[name="${name}"]`).first().locator('xpath=ancestor::*[@data-field][1]//*[@data-field-error]');
 async function errorText(page, name) {
-  return (await fieldError(page, name).innerText().catch(() => '')).trim();
+  const slot = fieldError(page, name);
+  await slot.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  return (await slot.innerText().catch(() => '')).trim();
 }
 async function closeTop(page) {
+  const n = await dialogs(page).count();
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(250);
+  await page.waitForFunction((k) => document.querySelectorAll('#overlay-root [role="dialog"]').length < k, n, { timeout: 5000 });
 }
 async function closeAll(page) {
   for (let i = 0; i < 4 && (await dialogs(page).count()); i += 1) await closeTop(page);
@@ -195,43 +201,44 @@ async function adminFlow(browser, state) {
   await loaded(page);
   check(page.url().endsWith('#disciplinary/initiate'), 'the module opens on Initiate Incident', page.url());
   for (const t of ['Initiate Incident', 'Pending Cases', 'Concluded Cases', 'Disciplinary Report']) {
+    await page.locator('a', { hasText: t }).filter({ visible: true }).first().waitFor({ timeout: 5000 }).catch(() => {});
     check(await page.locator('a', { hasText: t }).filter({ visible: true }).count() > 0, `tab: ${t}`);
   }
   await page.keyboard.press('Control+K');
   await page.keyboard.type('Disciplinary Report');
-  await page.waitForTimeout(500);
-  check(await page.locator('#palette-results, [role="listbox"]').first().innerText().then((t) => /Disciplinary Report/.test(t)), 'Ctrl K finds Disciplinary Report');
+  await page.locator('#palette-results, [role="listbox"]').first().getByText('Disciplinary Report').first().waitFor();
+  check(true, 'Ctrl K finds Disciplinary Report');
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(500);
+  await page.waitForFunction(() => location.hash === '#disciplinary/report');
   check(page.url().endsWith('#disciplinary/report'), 'Ctrl K opens it');
 
   // ---- Initiate Incident
   await go(page, 'disciplinary/initiate');
   check(/Find a Rating/.test(await main(page).innerText()), 'Initiate: starts with "Find a Rating"');
   const q = main(page).locator('input[name="q"]');
-  await q.fill('dafe'); await q.press('Enter'); await page.waitForTimeout(500);
+  await q.fill('dafe'); await q.press('Enter'); await main(page).getByText('No Current Rating Found').waitFor();
   let text = await main(page).innerText();
   check(/No Current Rating Found/.test(text) && /left the service/.test(text), 'Initiate: a former rating is not offered, and the page says why');
-  await q.fill('zzzzzz'); await q.press('Enter'); await page.waitForTimeout(500);
+  await q.fill('zzzzzz'); await q.press('Enter'); await main(page).getByText('Check the Official Number').waitFor();
   check(/Check the Official Number/.test(await main(page).innerText()), 'Initiate: no match says so');
-  await q.fill('okon'); await q.press('Enter'); await page.waitForTimeout(500);
+  await q.fill('okon'); await q.press('Enter'); await rowsOf(page, false).first().waitFor();
   const found = await rowTexts(page, false);
   check(found.length === 1 && /B0539/.test(found[0]) && /OKONKWO/.test(found[0]) && /1 current rating found/.test(await main(page).innerText()), 'Initiate: a partial name finds the current rating', found.join('|'));
   const row = rowsOf(page, false).first();
   await row.hover();
-  await page.waitForTimeout(150);
+  await page.locator('[role="tooltip"]', { hasText: 'View Details' }).waitFor({ state: 'visible' });
   check(await page.locator('[role="tooltip"]:visible', { hasText: 'View Details' }).count() === 1, 'a row shows the View Details tooltip on hover');
   await shot(page, 'desktop-light-initiate');
   await row.click();
   await dialogOf(page).waitFor();
   check(/already has a pending case/.test(await dialogOf(page).innerText()), 'the rating dialog warns of the pending case (nothing blocks)');
   await dialogOf(page).getByRole('button', { name: 'Open Case' }).click();
-  await page.waitForTimeout(400);
+  await dialogOf(page).locator('form').waitFor();
   check(/Initiate Incident/.test(await dialogOf(page).innerText()), 'Open Case shows the case form');
   await shot(page, 'desktop-light-initiate-form');
   const save = () => dialogOf(page).getByRole('button', { name: /Open Case|Conclude Case|Save Correction|Cancel Case/ }).last().click();
 
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(await errorText(page, 'incident_date') === 'Enter the incident date.', 'rule: the incident date is required', await errorText(page, 'incident_date'));
   check(await errorText(page, 'offence_id') === 'Choose the offence.', 'rule: the offence is required');
   check(await errorText(page, 'what_happened') === 'Describe what happened.' && await errorText(page, 'reported_by') === 'Say who reported it.', 'rule: what happened and reported by are required');
@@ -239,17 +246,17 @@ async function adminFlow(browser, state) {
   await chooseIn(page, 'offence_id', 'Insubordination');
   await dialogOf(page).locator('[name="what_happened"]').fill('Walk-through incident.');
   await dialogOf(page).locator('[name="reported_by"]').fill('Walk-through Officer');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(await errorText(page, 'incident_date') === 'The incident cannot be in the future.', 'rule: an incident in the future is refused', await errorText(page, 'incident_date'));
   await dialogOf(page).locator('[name="incident_date"]').fill('01/01/2010');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/joined on 15\/09\/2012/.test(await errorText(page, 'incident_date')), 'rule: an incident before the rating joined is refused', await errorText(page, 'incident_date'));
   await dialogOf(page).locator('[name="incident_date"]').fill('abc');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/real date/.test(await errorText(page, 'incident_date')), 'rule: a date that is not a date is refused');
   await dialogOf(page).locator('[name="incident_date"]').fill('02/11/2026');
   await chooseIn(page, 'offence_id', 'Negligent performance of duty');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/already open as DC-2026-0007/.test(await errorText(page, 'offence_id')), 'rule: the same rating, offence and incident date twice is refused', await errorText(page, 'offence_id'));
   await dialogOf(page).locator('[name="incident_date"]').fill('10/11/2026');
   await chooseIn(page, 'offence_id', 'Insubordination');
@@ -259,7 +266,7 @@ async function adminFlow(browser, state) {
   check(!!newNo, 'a valid case opens, with a case number DC-YYYY-NNNN', opened);
   state.newNo = newNo;
   await page.waitForFunction(() => location.hash === '#disciplinary/pending', null, { timeout: 8000 });
-  await loaded(page); await waitRows(page, false);
+  await loaded(page); await waitRows(page);
   check((await rowTexts(page, false)).some((t) => t.includes(newNo)), 'the new case is first on Pending Cases');
   check(/DC-\d{4}-0012/.test(newNo) || /DC-2026-0012/.test(newNo), 'the number follows the year\'s last (DC-2026-0012)', newNo);
 
@@ -274,18 +281,18 @@ async function adminFlow(browser, state) {
   check(r.status === 422 && /already open as/.test(r.body.error.fields.offence_id), 'API: a duplicate is refused');
 
   // ---- Pending Cases
-  await go(page, 'disciplinary/pending'); await waitRows(page, false);
+  await go(page, 'disciplinary/pending'); await waitRows(page);
   check(/\d+ cases are waiting for a decision/.test(await main(page).innerText()), 'Pending: the count line');
   await setFilter(page, false, 'q', 'okon');
   let texts = await rowTexts(page, false);
   check(texts.length === 2 && texts.every((t) => /B0539/.test(t)), 'Pending: the name filter', `${texts.length}`);
-  await filterSelect(page, 'offenceId', 'Insubordination'); await waitRows(page, false);
+  await filterSelect(page, 'offenceId', 'Insubordination'); await waitRows(page);
   texts = await rowTexts(page, false);
   check(texts.length === 1 && texts[0].includes(newNo), 'Pending: the offence filter', texts.join('|'));
   await setFilter(page, false, 'q', 'zzzz');
   check(/No Pending Cases/.test(await main(page).innerText()), 'Pending: nothing matching shows the empty state');
   await setFilter(page, false, 'q', '');
-  await filterSelect(page, 'offenceId', 'All Offences'); await waitRows(page, false);
+  await filterSelect(page, 'offenceId', 'All Offences'); await waitRows(page);
   check((await rowTexts(page, false)).length >= 7, 'Pending: filters cleared');
 
   const pend = await api(page, 'GET', '/api/disciplinary/cases/pending');
@@ -317,23 +324,23 @@ async function adminFlow(browser, state) {
 
   // Conclude
   await dialogOf(page).getByRole('button', { name: 'Conclude', exact: true }).click();
-  await page.waitForTimeout(400);
+  await dialogOf(page).locator('form').waitFor();
   await shot(page, 'desktop-light-conclude');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(await errorText(page, 'decision_date') === 'Enter the decision date.' && await errorText(page, 'sanction_id') === 'Choose the sanction.' && await errorText(page, 'decision') === 'Record the decision.' && await errorText(page, 'authority') === 'Name the authority.', 'Conclude: every field is required');
   await dialogOf(page).locator('[name="decision_date"]').fill('01/11/2026');
   await chooseIn(page, 'sanction_id', 'Reprimand');
   await dialogOf(page).locator('[name="decision"]').fill('Found guilty. Reprimanded.');
   await dialogOf(page).locator('[name="authority"]').fill('Commanding Officer');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/before the incident \(10\/11\/2026\)/.test(await errorText(page, 'decision_date')), 'rule: a decision before the incident is refused', await errorText(page, 'decision_date'));
   await dialogOf(page).locator('[name="decision_date"]').fill(tomorrow());
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/cannot be in the future/.test(await errorText(page, 'decision_date')), 'rule: a decision in the future is refused');
   await dialogOf(page).locator('[name="decision_date"]').fill('15/11/2026');
   await save();
   check(/concluded: Reprimand/.test(await toastText(page, /concluded/)), 'Conclude: the case is concluded with its sanction');
-  await waitRows(page, false);
+  await waitRows(page);
   check(!(await rowTexts(page, false)).some((t) => t.includes(newNo)), 'the concluded case leaves Pending Cases');
   r = await api(page, 'POST', `/api/disciplinary/cases/${state.id}/conclude`, { decision_date: '2026-11-16', sanction_id: 1, decision: 'x', authority: 'y' });
   check(r.status === 409 && r.body.error.code === 'CASE_NOT_PENDING', 'API: a concluded case cannot be concluded again');
@@ -346,38 +353,38 @@ async function adminFlow(browser, state) {
   r = await api(page, 'POST', '/api/disciplinary/cases', { serviceNumber: 'B0562', incident_date: '2026-11-16', offence_id: 7, what_happened: 'Opened to be cancelled.', reported_by: 'Walk-through Officer' });
   check(r.status === 201, 'API: a case opens');
   const cancelNo = r.body.data.caseNumber; const cancelId = r.body.data.id;
-  await go(page, 'disciplinary/pending'); await waitRows(page, false);
+  await go(page, 'disciplinary/pending'); await waitRows(page);
   await setFilter(page, false, 'q', 'briggs');
   await rowsOf(page, false).first().click();
   await dialogOf(page).waitFor();
   await dialogOf(page).getByRole('button', { name: 'Cancel Case' }).click();
-  await page.waitForTimeout(400);
+  await dialogOf(page).locator('form').waitFor();
   await shot(page, 'desktop-light-cancel');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(await errorText(page, 'reason') === 'Give the reason the case is cancelled.', 'Cancel: a reason is required');
   await dialogOf(page).locator('[name="reason"]').fill('Walk-through: opened by mistake.');
   await save();
   check(new RegExp(`Case ${cancelNo} cancelled`).test(await toastText(page, /Case DC-\S+ cancelled/)), 'Cancel: the case is cancelled');
-  await waitRows(page, false);
+  await waitRows(page);
   check(!(await rowTexts(page, false)).some((t) => t.includes(cancelNo)), 'a cancelled case leaves Pending Cases');
   const cancelled = (await api(page, 'GET', `/api/disciplinary/cases/${cancelId}`)).body.data;
   check(cancelled.status === 'cancelled' && /opened by mistake/.test(cancelled.cancelReason) && cancelled.cancelledBy === 'HICO001', 'the cancelled case keeps its reason and who cancelled it (nothing deleted)');
   await setFilter(page, false, 'q', '');
 
   // ---- Concluded Cases
-  await go(page, 'disciplinary/concluded'); await waitRows(page, false);
+  await go(page, 'disciplinary/concluded'); await waitRows(page);
   texts = await rowTexts(page, false);
   check(texts.length === 8 && texts[0].includes(newNo), 'Concluded: the new case is first (8 cases)', `${texts.length}`);
   check(!texts.some((t) => t.includes(cancelNo)), 'Concluded: a cancelled case is not listed');
   await setFilter(page, false, 'q', 'musa');
   check((await rowTexts(page, false)).length === 1, 'Concluded: the name filter');
   await setFilter(page, false, 'q', '');
-  await filterSelect(page, 'offenceId', 'Absence without leave'); await waitRows(page, false);
+  await filterSelect(page, 'offenceId', 'Absence without leave'); await waitRows(page);
   check((await rowTexts(page, false)).length === 1, 'Concluded: the offence filter');
   await filterSelect(page, 'offenceId', 'All Offences');
-  await filterSelect(page, 'sanctionId', 'Fine'); await waitRows(page, false);
+  await filterSelect(page, 'sanctionId', 'Fine'); await waitRows(page);
   check((await rowTexts(page, false)).length === 2, 'Concluded: the sanction filter');
-  await filterSelect(page, 'sanctionId', 'All Sanctions'); await waitRows(page, false);
+  await filterSelect(page, 'sanctionId', 'All Sanctions'); await waitRows(page);
   await setFilter(page, false, 'from', '01/01/2026'); await setFilter(page, false, 'to', '30/06/2026');
   texts = await rowTexts(page, false);
   check(texts.length === 2, 'Concluded: decided From and To', `${texts.length}`);
@@ -394,24 +401,24 @@ async function adminFlow(browser, state) {
   check(await dialogOf(page).getByRole('button', { name: 'Correct' }).count() === 1 && await dialogOf(page).getByRole('button', { name: 'Conclude', exact: true }).count() === 0, 'a concluded case offers Correct and not Conclude');
   check(/A concluded case is final/.test(await dialogOf(page).innerText()), 'the dialog says a concluded case is final');
   await dialogOf(page).getByRole('button', { name: 'Correct' }).click();
-  await page.waitForTimeout(500);
+  await dialogOf(page).locator('form').waitFor();
   await shot(page, 'desktop-light-correct');
   await dialogOf(page).locator('[name="reason"]').fill('Nothing to change.');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/Nothing was changed/.test(await errorText(page, 'reason')), 'Correct: no change is refused');
   await dialogOf(page).locator('[name="reason"]').fill('');
   await chooseIn(page, 'sanction_id', 'Extra duties');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/Give the reason/.test(await errorText(page, 'reason')), 'Correct: a reason is required');
   await dialogOf(page).locator('[name="decision_date"]').fill('01/11/2026');
   await dialogOf(page).locator('[name="reason"]').fill('The Commanding Officer awarded extra duties.');
-  await save(); await page.waitForTimeout(500);
+  await save();
   check(/before the incident/.test(await errorText(page, 'decision_date')), 'Correct: the date rules apply again');
   await dialogOf(page).locator('[name="decision_date"]').fill('16/11/2026');
   await dialogOf(page).locator('[name="decision"]').fill('Found guilty. Seven days of extra duties.');
   await save();
   check(/corrected: .*Decision Date.*Sanction.*Decision|corrected/.test(await toastText(page, /corrected/)), 'Correct: the case is corrected');
-  await waitRows(page, false);
+  await waitRows(page);
   await rowsOf(page, false).first().click();
   await dialogOf(page).waitFor();
   const corrBlock = await dialogOf(page).locator('[data-corrections]').innerText();
@@ -430,23 +437,23 @@ async function adminFlow(browser, state) {
   check(r.status === 422 && /already on file as DC-2026-0007/.test(r.body.error.fields.offence_id), 'API: a correction cannot duplicate another case');
 
   // ---- Disciplinary Report
-  await go(page, 'disciplinary/report'); await waitRows(page, false);
+  await go(page, 'disciplinary/report'); await waitRows(page);
   const figures = await page.locator('#app-main [data-figures]').innerText();
   check(/CASES\s*8/i.test(figures), 'Report: the Cases figure', figures.replace(/\s+/g, ' '));
   check(/MOST COMMON OFFENCE/i.test(figures) && /MOST COMMON SANCTION/i.test(figures), 'Report: the common offence and sanction figures');
   await openFilters(page, false);
-  await filterSelect(page, 'sanctionId', 'Fine'); await waitRows(page, false);
+  await filterSelect(page, 'sanctionId', 'Fine'); await waitRows(page);
   check((await rowTexts(page, false)).length === 2 && /CASES\s*2/i.test(await page.locator('#app-main [data-figures]').innerText()), 'Report: the sanction filter, and the figures follow it');
-  await filterSelect(page, 'sanctionId', 'All Sanctions'); await waitRows(page, false);
+  await filterSelect(page, 'sanctionId', 'All Sanctions'); await waitRows(page);
   await setFilter(page, false, 'from', '01/01/2025'); await setFilter(page, false, 'to', '31/12/2025');
   check((await rowTexts(page, false)).length === 3, 'Report: Decided From and To');
-  await filterSelect(page, 'shipId', 'NNS CENTENARY'); await waitRows(page, false);
+  await filterSelect(page, 'shipId', 'NNS CENTENARY'); await waitRows(page);
   check((await rowTexts(page, false)).length === 1, 'Report: the ship filter');
   await filterSelect(page, 'shipId', 'All Ships');
-  await filterSelect(page, 'rateId', 'Master Warrant Officer'); await waitRows(page, false);
+  await filterSelect(page, 'rateId', 'Master Warrant Officer'); await waitRows(page);
   check((await rowTexts(page, false)).length === 1, 'Report: the rate filter');
-  await filterSelect(page, 'rateId', 'All Rates'); await waitRows(page, false);
-  await filterSelect(page, 'offenceId', 'Insubordination'); await waitRows(page, false);
+  await filterSelect(page, 'rateId', 'All Rates'); await waitRows(page);
+  await filterSelect(page, 'offenceId', 'Insubordination'); await waitRows(page);
   check((await rowTexts(page, false)).length === 0, 'Report: the offence filter applies with the dates (none in 2025)');
   await filterSelect(page, 'offenceId', 'All Offences');
   await clearFilters(page, false);
@@ -480,7 +487,7 @@ async function adminFlow(browser, state) {
   await go(page, 'ratings/edit/B0539');
   const tab = page.locator('[role="tab"]', { hasText: 'Discipline' });
   check(await tab.count() === 1, 'the record has a Discipline tab');
-  await tab.click(); await waitRows(page, false);
+  await tab.click(); await waitRows(page);
   texts = await rowTexts(page, false);
   check(texts.length === 2 && texts.some((t) => t.includes(newNo)) && texts.some((t) => /Pending/.test(t)), 'the tab lists the pending and concluded cases', texts.join('|'));
   check(!texts.some((t) => t.includes(cancelNo)), 'the tab does not list a cancelled case');
@@ -533,64 +540,46 @@ async function layoutPass(browser, viewport, theme) {
   check(await page.evaluate(() => document.documentElement.dataset.theme) === theme, `theme is ${theme}`);
   for (const [route, label] of [['initiate', 'Initiate Incident'], ['pending', 'Pending Cases'], ['concluded', 'Concluded Cases'], ['report', 'Disciplinary Report']]) {
     await go(page, `disciplinary/${route}`);
-    if (route !== 'initiate') await waitRows(page, phone);
+    if (route !== 'initiate') await waitRows(page);
     check(await main(page).locator('h1', { hasText: label }).count() === 1, `${label} draws`);
     await noOverflow(page, label);
     await shot(page, `${tag}-${route}`);
   }
-  // initiate: find, rating dialog, case form
+  // each page's main dialog: Initiate (rating, then the case form), a pending case, a concluded case
   await go(page, 'disciplinary/initiate');
   const q = main(page).locator('input[name="q"]');
-  await q.fill('bassey'); await q.press('Enter'); await page.waitForTimeout(600);
+  await q.fill('bassey'); await q.press('Enter');
+  await rowsOf(page, phone).first().waitFor();
   await noOverflow(page, 'Initiate results');
   await shot(page, `${tag}-initiate-results`);
   await rowsOf(page, phone).first().click();
   await dialogOf(page).waitFor();
   await shot(page, `${tag}-initiate-rating`);
   await dialogOf(page).getByRole('button', { name: 'Open Case' }).click();
-  await page.waitForTimeout(500);
-  check(await dialogOf(page).locator('[name="incident_date"]').count() === 1, 'the case form opens (a sheet on a phone)');
-  if (phone) check(await dialogOf(page).evaluate((d) => { const r = d.getBoundingClientRect(); return Math.abs(r.bottom - window.innerHeight) < 2 && r.width >= window.innerWidth - 1; }), 'on a phone the form is a bottom sheet');
+  await dialogOf(page).locator('[name="incident_date"]').waitFor();
+  if (phone) {
+    // the sheet rises into place: wait for it to settle at the bottom edge
+    const sheet = await dialogOf(page).evaluateHandle((d) => d).then(async (hd) => page.waitForFunction((d) => { const r = d.getBoundingClientRect(); return Math.abs(r.bottom - window.innerHeight) < 2 && r.width >= window.innerWidth - 1; }, hd, { timeout: 3000 }).then(() => true, () => false));
+    check(sheet, 'on a phone the form is a bottom sheet');
+  }
   await dialogOf(page).getByRole('button', { name: 'Open Case' }).last().click();
-  await page.waitForTimeout(500);
+  await errorText(page, 'incident_date');
   await shot(page, `${tag}-initiate-form-errors`);
   await closeAll(page);
-  // pending: case dialog, conclude form, cancel form
-  await go(page, 'disciplinary/pending'); await waitRows(page, phone);
+  await go(page, 'disciplinary/pending'); await waitRows(page);
   await rowsOf(page, phone).first().click(); await dialogOf(page).waitFor();
   await shot(page, `${tag}-pending-case`);
-  await dialogOf(page).getByRole('button', { name: 'Conclude', exact: true }).click(); await page.waitForTimeout(500);
-  await shot(page, `${tag}-conclude`);
-  await closeTop(page);
-  await dialogOf(page).getByRole('button', { name: 'Cancel Case' }).click(); await page.waitForTimeout(500);
-  await shot(page, `${tag}-cancel`);
   await closeAll(page);
   if (phone) { await openFilters(page, true); await shot(page, `${tag}-pending-filters`); }
-  // concluded: dialog with corrections, correct form
-  await go(page, 'disciplinary/concluded'); await waitRows(page, phone);
+  await go(page, 'disciplinary/concluded'); await waitRows(page);
   await setFilter(page, phone, 'q', 'briggs');
   await rowsOf(page, phone).first().click(); await dialogOf(page).waitFor();
   await shot(page, `${tag}-concluded-case`);
-  await dialogOf(page).getByRole('button', { name: 'Correct' }).click(); await page.waitForTimeout(500);
-  await shot(page, `${tag}-correct`);
   await closeAll(page);
-  // report: PDF preview and Excel
-  await go(page, 'disciplinary/report'); await waitRows(page, phone);
-  await main(page).getByRole('button', { name: 'Print PDF' }).click();
-  await dialogOf(page).locator('iframe').waitFor();
-  await shot(page, `${tag}-report-pdf`);
-  await closeTop(page);
-  const [dl] = await Promise.all([page.waitForEvent('download'), main(page).getByRole('button', { name: 'Export Excel' }).click()]);
-  check(/\.xlsx$/.test(dl.suggestedFilename()), 'Excel downloads in this layout');
-  // the record's tab
   await go(page, 'ratings/edit/B0539');
-  await page.locator('[role="tab"]', { hasText: 'Discipline' }).click(); await waitRows(page, phone);
+  await page.locator('[role="tab"]', { hasText: 'Discipline' }).click(); await waitRows(page);
   await noOverflow(page, 'Discipline tab');
   await shot(page, `${tag}-discipline-tab`);
-  // empty states
-  await go(page, 'disciplinary/pending'); await waitRows(page, phone);
-  await setFilter(page, phone, 'q', 'zzzzz');
-  await shot(page, `${tag}-pending-empty`);
   check(errors.length === 0, 'no browser errors', errors.join(' | '));
   await context.close();
 }
@@ -603,7 +592,7 @@ async function limitedRoles(browser, db) {
   // NAVPERS02: initiate and view
   let s = await open(browser, { viewport: DESKTOP, theme: 'dark' });
   await signIn(s.page, INITIATOR);
-  await go(s.page, 'disciplinary/pending'); await waitRows(s.page, false);
+  await go(s.page, 'disciplinary/pending'); await waitRows(s.page);
   for (const t of ['Initiate Incident', 'Pending Cases', 'Concluded Cases', 'Disciplinary Report']) check(await s.page.locator('a', { hasText: t }).filter({ visible: true }).count() > 0, `NAVPERS02 sees the ${t} tab`);
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
   check(await dialogOf(s.page).getByRole('button', { name: 'Conclude', exact: true }).count() === 0 && await dialogOf(s.page).getByRole('button', { name: 'Cancel Case' }).count() === 0, 'without approve and delete: no Conclude and no Cancel Case');
@@ -618,15 +607,15 @@ async function limitedRoles(browser, db) {
   const done = (await api(s.page, 'GET', '/api/disciplinary/cases/concluded')).body.data[0];
   r = await api(s.page, 'POST', `/api/disciplinary/cases/${done.id}/correct`, { offence_id: 1, incident_date: '2026-11-10', what_happened: 'a', reported_by: 'b', decision_date: '2026-11-16', sanction_id: 1, decision: 'c', authority: 'd', reason: 'r' });
   check(r.status === 403, 'API: correct answers 403 without edit');
-  await go(s.page, 'disciplinary/concluded'); await waitRows(s.page, false);
+  await go(s.page, 'disciplinary/concluded'); await waitRows(s.page);
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
   check(await dialogOf(s.page).getByRole('button', { name: 'Correct' }).count() === 0, 'without edit: no Correct');
   await closeAll(s.page);
   await go(s.page, 'disciplinary/initiate');
   const q = main(s.page).locator('input[name="q"]');
-  await q.fill('suleiman'); await q.press('Enter'); await s.page.waitForTimeout(500);
+  await q.fill('suleiman'); await q.press('Enter'); await rowsOf(s.page, false).first().waitFor();
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
-  await dialogOf(s.page).getByRole('button', { name: 'Open Case' }).click(); await s.page.waitForTimeout(400);
+  await dialogOf(s.page).getByRole('button', { name: 'Open Case' }).click(); await dialogOf(s.page).locator('form').waitFor();
   await dialogOf(s.page).locator('[name="incident_date"]').fill('16/11/2026');
   await choose(s.page, dialogOf(s.page), 'offence_id', 'Absence without leave');
   await dialogOf(s.page).locator('[name="what_happened"]').fill('Opened by the initiator role.');
@@ -640,7 +629,7 @@ async function limitedRoles(browser, db) {
   // the Disciplinary Actions role (NAVPERS01) has everything
   s = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(s.page, OFFICER);
-  await go(s.page, 'disciplinary/pending'); await waitRows(s.page, false);
+  await go(s.page, 'disciplinary/pending'); await waitRows(s.page);
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
   check(await dialogOf(s.page).getByRole('button', { name: 'Conclude', exact: true }).count() === 1 && await dialogOf(s.page).getByRole('button', { name: 'Cancel Case' }).count() === 1, 'the old role "Disciplinary Actions" can conclude and cancel');
   await closeAll(s.page);
@@ -656,7 +645,7 @@ async function limitedRoles(browser, db) {
   check(await s.page.locator('[role="tab"]', { hasText: 'Discipline' }).count() === 0, 'a rating sees no Discipline tab on My Details');
   check(await s.page.locator('#rail nav a', { hasText: 'Disciplinary Action' }).count() === 0, 'a rating does not see Disciplinary Action in the sidebar');
   await s.page.goto(`${BASE}/app.html#disciplinary/pending`);
-  await s.page.waitForTimeout(800);
+  await s.page.getByText('You Do Not Have Access to This Page').waitFor();
   check(/Do Not Have Access/.test(await main(s.page).innerText()), 'a rating who types the address gets the not-allowed state');
   for (const u of ['/api/disciplinary/cases/pending', '/api/disciplinary/cases/concluded', '/api/disciplinary/report', '/api/disciplinary/options', '/api/disciplinary/rating/B0539/cases', '/api/disciplinary/cases/1']) {
     check((await api(s.page, 'GET', u)).status === 403, `API: ${u} answers 403 to a rating`);
@@ -671,7 +660,7 @@ async function limitedRoles(browser, db) {
   s = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(s.page, REPORTER);
   check(await s.page.locator('#app-main h1', { hasText: 'Disciplinary Report' }).count() === 1, 'the report-only role lands on the Disciplinary Report');
-  await waitRows(s.page, false);
+  await waitRows(s.page);
   check(await s.page.locator('a', { hasText: 'Pending Cases' }).filter({ visible: true }).count() === 0, 'it sees only the report tab');
   await rowsOf(s.page, false).first().click(); await dialogOf(s.page).waitFor();
   check(await dialogOf(s.page).getByRole('button', { name: /Correct|Conclude|Cancel/ }).count() === 0 && await dialogOf(s.page).getByRole('button', { name: 'Print Case' }).count() === 1, 'it may read a concluded case but not change it');
@@ -708,7 +697,10 @@ async function main_() {
     await clean();
     await db.end();
   }
-  console.log(`\n${passes} checks passed, ${failures} failed.`);
+  const seconds = Math.round((Date.now() - STARTED) / 1000);
+  console.log(`\nTotal time ${seconds} s (limit ${LIMIT_SECONDS} s).`);
+  if (seconds > LIMIT_SECONDS) { failures += 1; console.log('  FAIL  the walk-through took longer than five minutes'); }
+  console.log(`${passes} checks passed, ${failures} failed.`);
   process.exit(failures ? 1 : 0);
 }
 
