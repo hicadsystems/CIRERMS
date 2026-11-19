@@ -16,6 +16,7 @@ import { formatDisplayDate } from '../core/dates.js';
 import { formatBytes } from '../core/dom.js';
 import { h, cx, fill } from '../ui/html.js';
 import { CARD } from '../ui/classes.js';
+import { openPdfPreview } from '../ui/pdf-preview.js';
 import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
 import { emptyState } from '../ui/empty-state.js';
@@ -144,8 +145,13 @@ export function documentsBlock({ serviceNumber, readOnly = false, onCount, canUp
       else previewUrl = url;
       const type = res.mimeType || '';
       if (type.includes('pdf')) {
-        fill(stage, h('iframe', { src: url, title: d.original_name, className: 'block h-[60vh] w-full rounded-md border-0 bg-background shadow-pop' }));
-        stage.className = 'bg-muted p-3';
+        // a PDF opens in the app's own preview (ui/pdf-preview.js), never in the browser's viewer
+        fill(stage, emptyState({
+          icon: 'file-text',
+          title: d.original_name,
+          text: 'PDF document',
+          action: button({ label: 'Preview PDF', icon: 'eye', variant: 'primary', onClick: () => openPdfPreview({ blob, title: d.original_name, filename: d.original_name }) }),
+        }));
       } else if (type.startsWith('image/')) {
         fill(stage, h('img', { src: url, alt: d.original_name, className: 'max-h-[60vh] max-w-full rounded-md object-contain shadow-pop' }));
       } else {

@@ -6,7 +6,8 @@
  *
  *   mountStaticTable(outlet, { slug, info })      (the page's `view` in core/nav.js)
  *
- * Add, Edit and Delete show only with the table's own grant (`tables.<slug>` add, edit, delete);
+ * Print List (the list as a PDF in the app's own preview, following the search) shows for anyone who may view
+ * the table. Add, Edit and Delete show only with the table's own grant (`tables.<slug>` add, edit, delete);
  * without Edit a row opens read-only. A row in use is refused on Delete with where it is used;
  * the dialog's Status makes it Inactive instead (it leaves the dropdowns, records that hold it
  * still show it).
@@ -25,6 +26,7 @@ import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from 
 import { openDialog } from '../ui/dialog.js';
 import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
+import { openPdfPreview } from '../ui/pdf-preview.js';
 
 const STATUS = [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }];
 
@@ -91,7 +93,18 @@ export async function mountStaticTable(outlet, { slug, info } = {}) {
   const lower = meta.title.toLowerCase();
 
   const addButton = allow.add ? button({ label: `Add ${meta.item}`, icon: 'plus', variant: 'primary', onClick: () => openForm(null) }) : null;
-  const header = pageHeader({ title: info ? info.title : meta.title, subtitle: info ? info.subtitle : '', actions: addButton ? [addButton] : null });
+  // Print List: the list as a PDF in the app's own preview, following the search on screen (anyone who may view the table)
+  const printButton = button({
+    label: 'Print List',
+    icon: 'printer',
+    variant: 'blue',
+    onClick: () => openPdfPreview({
+      url: `${base}/print?q=${encodeURIComponent(tb.values().q || '')}`,
+      title: `${meta.title}: List`,
+      filename: `CIRERMS_${slug}_list.pdf`,
+    }),
+  });
+  const header = pageHeader({ title: info ? info.title : meta.title, subtitle: info ? info.subtitle : '', actions: addButton ? [printButton, addButton] : [printButton] });
 
   const tb = toolbar({
     search: { placeholder: `Search ${lower}`, name: 'q' },

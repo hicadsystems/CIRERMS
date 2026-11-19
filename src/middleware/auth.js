@@ -8,10 +8,13 @@
  *
  *   requireAuth               refuses a locked session with 423 SESSION_LOCKED
  *   requireAuth.allowLocked   lets a locked session through (unlock, sign out, me, lock)
+ *   requireAuth.allowPasswordChange   lets a session through that must still change its password
+ *                             (Change Password itself); every other route answers 403
+ *                             PASSWORD_CHANGE_REQUIRED until it has
  */
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { unauthorized } = require('../shared/errors');
+const { unauthorized, forbidden } = require('../shared/errors');
 const { actorFrom } = require('../shared/audit');
 const authService = require('../modules/auth/auth.service');
 
@@ -88,7 +91,7 @@ function extractToken(req) {
   return null;
 }
 
-function authenticate({ allowLocked }) {
+function authenticate({ allowLocked, allowPasswordChange = allowLocked }) {
   return async function authMiddleware(req, _res, next) {
     const token = extractToken(req);
     if (!token) {
@@ -111,6 +114,10 @@ function authenticate({ allowLocked }) {
       if (req.user.locked && !allowLocked) {
         return next(authService.lockedError(req.user.lockReason));
       }
+      // a new or reset account must choose its own password before anything else opens
+      if (req.user.mustChangePassword && !allowPasswordChange) {
+        return next(forbidden('You must choose a new password before you continue.', 'PASSWORD_CHANGE_REQUIRED'));
+      }
       return next();
     } catch (err) {
       return next(err);
@@ -120,6 +127,8 @@ function authenticate({ allowLocked }) {
 
 const requireAuth = authenticate({ allowLocked: false });
 requireAuth.allowLocked = authenticate({ allowLocked: true });
+// not locked, but may be a session that has still to change its password
+requireAuth.allowPasswordChange = authenticate({ allowLocked: false, allowPasswordChange: true });
 
 module.exports = {
   COOKIE_NAME,

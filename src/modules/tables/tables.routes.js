@@ -6,6 +6,7 @@
  *
  *   GET    /api/tables/<slug>/meta   the columns and dropdown rows the dialog needs      (view)
  *   GET    /api/tables/<slug>        ?q=&status=&page=   25 rows a page                  (view)
+ *   GET    /api/tables/<slug>/print  ?q=&status=   the list as a PDF (Print List)           (view)
  *   GET    /api/tables/<slug>/:id    one row, and where it is used                       (view)
  *   POST   /api/tables/<slug>                                                            (add)
  *   PUT    /api/tables/<slug>/:id                                                        (edit)
@@ -27,6 +28,15 @@ for (const t of TABLES) {
 
   router.get(`${base}/meta`, requirePrivilege(screen, 'view'), asyncHandler(async (_req, res) => {
     res.json({ data: await service.getMeta(t.slug) });
+  }));
+
+  // the list as a PDF (Print List), following the search and status filter; before `/:id`
+  router.get(`${base}/print`, requirePrivilege(screen, 'view'), asyncHandler(async (req, res) => {
+    const out = await service.printList(t.slug, req.query, req.user.username);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${out.fileName}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.send(out.buffer);
   }));
 
   router.get(base, requirePrivilege(screen, 'view'), asyncHandler(async (req, res) => {

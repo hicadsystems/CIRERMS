@@ -11,6 +11,7 @@
 import { h } from '../ui/html.js';
 import { openDialog } from '../ui/dialog.js';
 import { button } from '../ui/button.js';
+import { openPdfPreview } from '../ui/pdf-preview.js';
 
 export const el = h;
 
@@ -42,6 +43,8 @@ export function populateSelect(
 }
 
 export function previewBlobModal({ title = 'Document Preview', blob, mimeType = '', fileName = 'document' }) {
+  // a PDF opens in the app's own preview, never in the browser's PDF viewer
+  if (String(mimeType).includes('pdf')) return openPdfPreview({ blob, title, filename: fileName });
   const objectUrl = URL.createObjectURL(blob);
 
   const triggerDownload = () => {
@@ -54,9 +57,7 @@ export function previewBlobModal({ title = 'Document Preview', blob, mimeType = 
   };
 
   let viewer;
-  if (mimeType.includes('pdf')) {
-    viewer = h('iframe', { src: objectUrl, title, className: 'block h-[70vh] w-full border-0 bg-muted' });
-  } else if (mimeType.startsWith('image/')) {
+  if (mimeType.startsWith('image/')) {
     viewer = h('div', { className: 'flex h-[70vh] w-full items-center justify-center overflow-auto bg-muted p-4' }, [
       h('img', { src: objectUrl, alt: title, className: 'max-h-full max-w-full rounded-md object-contain shadow-card' }),
     ]);

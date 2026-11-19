@@ -19,12 +19,45 @@ router.get(
   })
 );
 
-// The roles, with their user counts and privileges.
+// The roles, 25 a page (q matches name or description), with their user counts and privileges.
 router.get(
   '/roles',
   requirePrivilege('admin.roles', 'view'),
-  asyncHandler(async (_req, res) => {
-    res.json({ data: await accessService.getRoles() });
+  asyncHandler(async (req, res) => {
+    const r = await accessService.listRoles(req.query);
+    res.json({ data: r.items, meta: { page: r.page, pageSize: r.pageSize, total: r.total, totalPages: r.totalPages } });
+  })
+);
+
+router.get(
+  '/roles/:id',
+  requirePrivilege('admin.roles', 'view'),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await accessService.getRole(req.params.id) });
+  })
+);
+
+router.post(
+  '/roles',
+  requirePrivilege('admin.roles', 'add'),
+  asyncHandler(async (req, res) => {
+    res.status(201).json({ data: await accessService.createRole(req.body || {}, req.actor) });
+  })
+);
+
+router.put(
+  '/roles/:id',
+  requirePrivilege('admin.roles', 'edit'),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await accessService.updateRole(req.params.id, req.body || {}, req.actor) });
+  })
+);
+
+router.delete(
+  '/roles/:id',
+  requirePrivilege('admin.roles', 'delete'),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await accessService.deleteRole(req.params.id, req.actor) });
   })
 );
 

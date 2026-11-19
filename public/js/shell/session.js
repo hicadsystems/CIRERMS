@@ -5,13 +5,14 @@
  *   getUser()   { username, fullName, role, roleId, fullAccess, serviceNumber } or null
  *   roleLabel(user)   the role's name ('Administrator', 'Rating', ...)
  *   signOut()   ends the session on the server, signs out the other tabs and returns to the sign-in page
- *   accountItems()   the account menu: View My Details (when allowed), Lock Screen,
+ *   accountItems()   the account menu: View My Details (when allowed), Change Password, Lock Screen,
  *                    Dark Mode / Light Mode, Sign Out
  */
 import { api, setFallbackToken } from '../core/api.js';
 import { can } from '../core/access.js';
 import { currentTheme, toggleTheme } from '../core/theme.js';
 import { lockScreen, announceSignOut } from './lock.js';
+import { openChangePassword } from './password.js';
 
 let user = null;
 
@@ -36,6 +37,7 @@ export async function signOut() {
 export function accountItems() {
   return [
     can('ratings.my-details') ? { label: 'View My Details', icon: 'user-round', href: '#ratings/my-details' } : null,
+    { label: 'Change Password', icon: 'key-round', onSelect: () => openChangePassword() },
     { label: 'Lock Screen', icon: 'lock-keyhole', onSelect: () => lockScreen('manual') },
     currentTheme() === 'dark'
       ? { label: 'Light Mode', icon: 'sun', onSelect: toggleTheme }

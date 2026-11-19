@@ -26,6 +26,7 @@
     --background: 250 249 240;            /* #faf9f0: cards, bars, fields (sampled card) */
     --foreground: 29 41 57;               /* #1d2939: text. 13.91:1 on background, 12.14:1 on muted, 12.19:1 on canvas-to */
     --card: 250 249 240;                  /* #faf9f0 */
+    --paper: 250 249 240;                 /* the page of a printout (PDF preview): paper in light and dark */
     --card-foreground: 29 41 57;          /* #1d2939: 13.91:1 */
     --popover: 250 249 240;               /* #faf9f0: menus, dropdown lists, dialogs */
     --popover-foreground: 29 41 57;       /* #1d2939: 13.91:1 */
@@ -130,6 +131,7 @@
     --background: 20 29 48;               /* #141d30: cards, bars, fields */
     --foreground: 236 233 221;            /* #ece9dd: dimmed ivory. 13.83:1 on background, 12.59:1 on popover, 11.67:1 on muted */
     --card: 20 29 48;                     /* #141d30 */
+    --paper: 250 249 240;                 /* a printout stays paper-coloured in dark mode */
     --card-foreground: 236 233 221;       /* 13.83:1 */
     --popover: 26 37 59;                  /* #1a253b: menus, dropdown lists, dialogs, one step up */
     --popover-foreground: 236 233 221;    /* 12.59:1 */

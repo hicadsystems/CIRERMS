@@ -300,8 +300,14 @@ async function adminFlow(browser, state) {
   const pdf = await fileHead(page, '/api/disciplinary/cases/pending/pdf');
   check(pdf.status === 200 && pdf.head === '%PDF' && pdf.size > 1500, 'Pending: the printout is a PDF', JSON.stringify(pdf));
   await main(page).getByRole('button', { name: 'Print List' }).click();
-  await dialogOf(page).locator('iframe').waitFor();
+  await dialogOf(page).locator('[data-pdf-stage][data-ready="1"]').waitFor({ timeout: 20000 });
   check(/Pending Disciplinary Cases/.test(await dialogOf(page).innerText()), 'Print List opens the PDF preview');
+  const pvPages = await dialogOf(page).locator('canvas[data-pdf-page]').count();
+  check(pvPages >= 1 && new RegExp(`${pvPages} pages?`).test(await dialogOf(page).locator('[data-pdf-count]').innerText()), 'the preview draws the pages itself (canvases) and shows the page count', `${pvPages}`);
+  check((await dialogOf(page).locator('iframe, embed, object').count()) === 0, 'the preview has no browser PDF viewer in it');
+  const pvDownload = page.waitForEvent('download');
+  await dialogOf(page).getByRole('button', { name: 'Download PDF' }).click();
+  check(/\.pdf$/.test((await pvDownload).suggestedFilename()), 'Download PDF saves the file under its name');
   await shot(page, 'desktop-light-pending-pdf');
   await closeTop(page);
 
@@ -318,7 +324,7 @@ async function adminFlow(browser, state) {
   const sheet = await fileHead(page, `/api/disciplinary/cases/${mine.id}/pdf`);
   check(sheet.head === '%PDF' && sheet.status === 200, 'Case Sheet is a PDF');
   await dialogOf(page).getByRole('button', { name: 'Print Case' }).click();
-  await dialogs(page).last().locator('iframe').waitFor();
+  await dialogs(page).last().locator('[data-pdf-stage][data-ready="1"]').waitFor({ timeout: 20000 });
   check(/Case DC-/.test(await dialogs(page).last().innerText()), 'Print Case opens the Case Sheet preview');
   await closeTop(page);
 
@@ -463,7 +469,7 @@ async function adminFlow(browser, state) {
   const rpdf = await fileHead(page, `/api/disciplinary/report/pdf?${reportQuery}`);
   check(rpdf.head === '%PDF' && rpdf.status === 200, 'Report: the PDF is a PDF');
   await main(page).getByRole('button', { name: 'Print PDF' }).click();
-  await dialogOf(page).locator('iframe').waitFor();
+  await dialogOf(page).locator('[data-pdf-stage][data-ready="1"]').waitFor({ timeout: 20000 });
   check(/Disciplinary Report/.test(await dialogOf(page).innerText()), 'Print PDF opens the preview');
   await shot(page, 'desktop-light-report-pdf');
   await closeTop(page);
