@@ -362,7 +362,11 @@ async function setup(db) {
     return r.insertId;
   };
   const grant = (roleId, where, params = []) => db.query(`INSERT IGNORE INTO role_privileges (role_id, privilege_id) SELECT ?, id FROM privileges WHERE ${where}`, [roleId, ...params]);
-  const user = (who, roleId) => db.query('INSERT INTO users (username, password_hash, full_name, role_id, is_active) VALUES (?, ?, ?, ?, 1)', [who.username, hash(who.password), `WT ${who.username}`, roleId]);
+  // every account belongs to a rating: a throw-away one, removed with the account
+  const user = async (who, roleId) => {
+    await db.query("INSERT IGNORE INTO ratings (service_number, status, surname, first_name) VALUES (?, 'current', 'WALKTHROUGH', ?)", [who.username, who.username]);
+    await db.query('INSERT INTO users (username, password_hash, full_name, role_id, service_number, is_active) VALUES (?, ?, ?, ?, ?, 1)', [who.username, hash(who.password), `WT ${who.username}`, roleId, who.username]);
+  };
 
   const viewer = await role('WT Viewer', 'walk-through: View on every table');
   await grant(viewer, "screen LIKE 'tables.%' AND action = 'view'");
@@ -378,6 +382,7 @@ async function setup(db) {
 async function cleanup(db) {
   await db.query("DELETE FROM users WHERE username IN ('WTVIEW', 'WTTABLES', 'WTPART')");
   await db.query("DELETE FROM roles WHERE name IN ('WT Viewer', 'WT Tables', 'WT Partial')");
+  await db.query("DELETE FROM ratings WHERE service_number IN ('WTVIEW', 'WTTABLES', 'WTPART')");
   await db.query("UPDATE ref_appraisal_rating SET score_high = 44 WHERE code = 'E'").catch(() => {});
   await db.query("DELETE FROM rating_training WHERE classification = 'WT'").catch(() => {});
   await db.query("DELETE FROM rating_education WHERE qualification LIKE 'WT %'").catch(() => {});
