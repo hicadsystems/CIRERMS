@@ -85,7 +85,19 @@ export const AREAS = [
     modules: [
       { key: 'advancement', label: 'Advancement Processing', short: 'Advance', icon: 'trending-up', soon: true },
       { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
-      { key: 'disciplinary', label: 'Disciplinary Action', short: 'Discipline', icon: 'gavel', soon: true },
+      {
+        key: 'disciplinary',
+        label: 'Disciplinary Action',
+        short: 'Discipline',
+        icon: 'gavel',
+        href: 'disciplinary/initiate',
+        tabs: [
+          { route: 'disciplinary/initiate', label: 'Initiate Incident', icon: 'gavel', screen: 'disciplinary.initiate' },
+          { route: 'disciplinary/pending', label: 'Pending Cases', icon: 'list', screen: 'disciplinary.pending' },
+          { route: 'disciplinary/concluded', label: 'Concluded Cases', icon: 'circle-check', screen: 'disciplinary.concluded' },
+          { route: 'disciplinary/report', label: 'Disciplinary Report', icon: 'file-text', screen: 'disciplinary.report' },
+        ],
+      },
       { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', soon: true },
     ],
   },
@@ -156,6 +168,11 @@ export const PAGES = [
     view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' },
   },
   { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details', view: { file: 'rating-record.js', mount: 'mountMyDetails' } },
+  // Disciplinary Action (WP4): Initiate Incident needs add; the others need view
+  { pattern: 'disciplinary/initiate', module: 'disciplinary', tab: 'disciplinary/initiate', title: 'Initiate Incident', subtitle: 'Open a disciplinary case against a current rating', short: 'Initiate Incident', screen: 'disciplinary.initiate', action: 'add', view: { file: 'disciplinary.js', mount: 'mountInitiate' } },
+  { pattern: 'disciplinary/pending', module: 'disciplinary', tab: 'disciplinary/pending', title: 'Pending Cases', subtitle: 'Incidents waiting for a decision', short: 'Pending Cases', screen: 'disciplinary.pending', view: { file: 'disciplinary.js', mount: 'mountPending' } },
+  { pattern: 'disciplinary/concluded', module: 'disciplinary', tab: 'disciplinary/concluded', title: 'Concluded Cases', subtitle: 'Cases with a decision; a mistake is changed with Correct', short: 'Concluded Cases', screen: 'disciplinary.concluded', view: { file: 'disciplinary.js', mount: 'mountConcluded' } },
+  { pattern: 'disciplinary/report', module: 'disciplinary', tab: 'disciplinary/report', title: 'Disciplinary Report', subtitle: 'Concluded cases by period, offence, sanction, ship and rate', short: 'Disciplinary Report', screen: 'disciplinary.report', view: { file: 'disciplinary.js', mount: 'mountReport' } },
  ...TABLES.map((t) => ({
     pattern: `tables/${t.slug}`,
     module: 'tables',

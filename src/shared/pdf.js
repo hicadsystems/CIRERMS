@@ -519,6 +519,7 @@ async function buildRatingDossierPdf({ rating, children, generatedBy = '' }) {
 }
 
 module.exports = {
+  COLOURS,
   buildRatingsListPdf,
   buildRatingTabPdf,
   buildRatingDossierPdf,
