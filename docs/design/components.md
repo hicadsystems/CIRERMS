@@ -54,6 +54,22 @@ pageHeader({ title: 'Current Ratings', subtitle: 'Serving ratings on the nominal
 The subtitle is hidden on phones. Each screen draws its own page header (the titles and subtitles are in
 `core/nav.js` `PAGES`).
 
+## Rating search select
+
+`ui/rating-search.js`
+
+```js
+ratingSearch({ name, status, account, value, onChange, placeholder, ariaLabel, disabled, className })
+// status: 'current' | 'former' | 'all' (default); account: 'with' | 'without'
+// the element has .value (official number), .rating, .set(), .clear(), .input and fires `change`
+
+field({ label: 'Rating', control: ratingSearch({ name: 'serviceNumber', status: 'current' }) });
+```
+
+The one way to pick a rating. From 2 characters it suggests ratings by official number or name (10 at a time, the
+next 10 on scroll) in a list drawn over the page, so it works inside dialogs and bottom sheets. Up, Down, Enter and
+Escape work; each suggestion is a 44 px touch row on a phone.
+
 ## Card
 
 `ui/card.js`

@@ -16,6 +16,7 @@ import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
 import { facts } from '../ui/facts.js';
 import { field, textInput, selectInput, setFieldError, clearFieldErrors } from '../ui/field.js';
+import { ratingSearch } from '../ui/rating-search.js';
 import { openDialog } from '../ui/dialog.js';
 import { emptyState } from '../ui/empty-state.js';
 import { toast } from '../ui/toast.js';
@@ -28,12 +29,13 @@ export async function mountAdminAudit(outlet, { info } = {}) {
   const options = (await api.get('/api/audit/filters')).data;
   let applied = {};
 
+  const recordPick = ratingSearch({ name: 'record', placeholder: 'Official number or name', ariaLabel: 'Official No' });
   const date = (name, label) => field({ label, control: wireDateField(textInput({ name, placeholder: 'dd/mm/yyyy', maxlength: 10, inputmode: 'numeric', autocomplete: 'off' })) });
   const filters = h('form', { id: 'audit-filters', className: 'grid grid-cols-6 gap-3 phone:grid-cols-2 [&>*]:min-w-0', novalidate: true, autocomplete: 'off' }, [
     field({ label: 'Action', control: selectInput({ name: 'action', options: options.actions, placeholder: 'All Actions' }) }),
     field({ label: 'Table', control: selectInput({ name: 'table', options: options.tables, placeholder: 'All Tables' }) }),
     field({ label: 'Performed By', control: textInput({ name: 'user', placeholder: 'User name', maxlength: 50 }) }),
-    field({ label: 'Official No', control: textInput({ name: 'record', placeholder: 'e.g. B0539', maxlength: 50 }) }),
+    field({ label: 'Official No', control: recordPick }),
     date('from', 'From'),
     date('to', 'To'),
   ]);
@@ -99,6 +101,7 @@ export async function mountAdminAudit(outlet, { info } = {}) {
   function reset() {
     clearFieldErrors(filters);
     filters.querySelectorAll('input').forEach((i) => { i.value = ''; });
+    recordPick.clear();
     filters.querySelectorAll('select').forEach((s) => { s.value = ''; });
     applied = {};
     lv.reload({ resetPage: true });

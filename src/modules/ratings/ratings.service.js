@@ -264,6 +264,30 @@ function parseListFilters(queryParams = {}) {
   };
 }
 
+/**
+ * The rating search select: one page of suggestions (never more than 10). Fewer than 2 characters
+ * is an empty answer without a query. See ratings.repo.js searchForSelect.
+ */
+const SEARCH_PAGE = 10;
+async function searchRatings(query = {}) {
+  const q = String(query.q ?? '').trim().slice(0, 80);
+  const limit = Math.min(SEARCH_PAGE, Math.max(1, Number.parseInt(query.limit, 10) || SEARCH_PAGE));
+  const offset = Math.min(100000, Math.max(0, Number.parseInt(query.offset, 10) || 0));
+  if (q.length < 2) return { items: [], offset, limit, hasMore: false };
+  const status = ['current', 'former'].includes(query.status) ? query.status : 'all';
+  const account = ['with', 'without'].includes(query.account) ? query.account : null;
+  const rows = await ratingsRepo.searchForSelect({ q, status, account, offset, limit });
+  const abbreviation = (rate) => { const m = /\(([^)]+)\)/.exec(rate || ''); return m ? m[1] : rate || ''; };
+  const items = rows.slice(0, limit).map((r) => ({
+    serviceNumber: r.service_number,
+    title: r.title_name || abbreviation(r.rate_name) || null,
+    names: [r.surname, r.first_name, r.middle_name, r.maiden_name].filter(Boolean).join(' '),
+    status: r.status,
+    ...(account ? { account: r.account || null } : {}),
+  }));
+  return { items, offset, limit, hasMore: rows.length > limit };
+}
+
 async function listRatings(queryParams = {}) {
   const filters = parseListFilters(queryParams);
 
@@ -1360,6 +1384,7 @@ async function processBatchUpload(buffer, actor) {
 
 module.exports = {
   listRatings,
+  searchRatings,
   getFullDossier,
   getMyDetails,
   createRating,

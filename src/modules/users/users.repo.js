@@ -70,22 +70,6 @@ async function findRating(serviceNumber, conn = null) {
   return rows[0] || null;
 }
 
-/** Ratings matching an official number or name, with the account each already has (Add Account's first step). */
-async function searchRatings(q, limit, conn = null) {
-  const like = escapeLike(q);
-  return db.query(
-    `SELECT r.service_number, r.surname, r.first_name, r.middle_name, r.status, rt.name AS rate_name, u.username AS account
-       FROM ratings r
-       LEFT JOIN ref_rate rt ON rt.id = r.rate_id
-       LEFT JOIN users u ON u.service_number = r.service_number
-      WHERE r.service_number LIKE CONCAT(?, '%') OR r.surname LIKE CONCAT('%', ?, '%') OR r.first_name LIKE CONCAT('%', ?, '%')
-      ORDER BY (r.service_number = ?) DESC, r.surname, r.first_name
-      LIMIT ?`,
-    [like, like, like, q, limit],
-    conn
-  );
-}
-
 async function findRole(id, conn = null) {
   const rows = await db.query('SELECT id, name, full_access FROM roles WHERE id = ? LIMIT 1', [id], conn);
   return rows[0] || null;
@@ -162,7 +146,6 @@ module.exports = {
   findByUsername,
   findByServiceNumber,
   findRating,
-  searchRatings,
   findRole,
   findSpecialisation,
   listRoles,

@@ -105,6 +105,10 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 - A training entry picked from the Training table takes the course's name as its Course text, and the course's institution when none is picked.
 - The seed adds the old system's `StaticTables` role ("Static Tables": view, add, edit and delete on all 16). Manage Roles (WP3) will group `tables.*` under Static Tables.
 
+### Rating search select
+
+A rating is always picked with `ratingSearch` (`public/js/ui/rating-search.js`), never a typed official number. `GET /api/ratings/search?q=&offset=0&limit=10&status=current|former|all&account=with|without` (`ratings.routes.js`, guarded by the view or add privilege of every screen that picks a rating) answers `{ data: [{ serviceNumber, title, names, status, account? }], meta: { offset, limit, hasMore } }`. `q` under 2 characters answers an empty list without a query; `limit` is capped at 10 and the table is never loaded whole. Every word of `q` must start the official number (first word only) or one of the names (surname, first, middle, maiden), so more words narrow the list. `title` is the rating's title, or the rate's abbreviation when it has none. `account` is given only when asked for and carries the user name of the rating's account. Indexes: the primary key and `20261120_310000_ratings_name_search_indexes.sql`.
+
 ### System Administration
 
 `src/modules/users/` (Manage Users and Manage Password), `src/modules/access/` (Manage Roles) and `src/modules/audit/` (Audit Trail) serve the four screens, drawn by `public/js/sections/admin-users.js`, `admin-roles.js`, `admin-password.js` and `admin-audit.js` (shared parts in `admin-common.js`). Privileges: `admin.users` (view, add, edit), `admin.roles` (view, add, edit, delete), `admin.password` (view, edit), `admin.audit` (view). Every route checks its own; the buttons show only with the grant.
@@ -113,7 +117,7 @@ Rates (`ref_rate`, no screen, seeded) gained a Code (OS, AB, LS, PO, CPO, WO, MW
 |---|---|---|
 | `GET /api/users?q=&roleId=&active=&page=` | the accounts, 25 a page (`q` searches user name, name, official number and e-mail); never a hash | `admin.users` view |
 | `GET /api/users/meta`, `GET /api/users/:id` | the roles and Specialisations for the dialogs; one account | view |
-| `GET /api/users/ratings?q=` | Add Account's first step: ratings matching an official number or name, with the account each has | add |
+| `GET /api/ratings/search?q=&offset=&limit=10&status=&account=` | the rating search select (see *Rating search select* below) | any screen that picks a rating |
 | `POST /api/users` | add an account for a rating (`serviceNumber`, required: it becomes the user name): a random one-time password comes back once, in the response only | add |
 | `PUT /api/users/:id` | edit (the user name is fixed) | edit |
 | `POST /api/users/:id/deactivate` / `reactivate` | an account is never deleted; deactivating ends its sessions | edit |

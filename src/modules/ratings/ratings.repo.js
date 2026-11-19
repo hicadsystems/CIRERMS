@@ -16,6 +16,46 @@ const CURRENT_SHIP_JOIN = `
   LEFT JOIN ref_ship cur_ship ON cur_ship.id = cur_draft.ship_id
 `;
 
+const escapeLike = (s) => String(s).replace(/[\\%_]/g, (c) => `\\${c}`);
+
+/**
+ * The rating search select (GET /api/ratings/search): one page of suggestions. Every word typed must
+ * start the official number or one of the names (surname, first, middle, maiden), so more words
+ * narrow the list; the first word drives the index lookups. Fetches one row more than `limit` so the
+ * caller knows whether another page exists. `account` is 'with' | 'without' | null; when it is given
+ * the row carries the user name of the rating's account.
+ */
+async function searchForSelect({ q, status = 'all', account = null, offset = 0, limit = 10 }, conn = null) {
+  const words = String(q).trim().split(/\s+/).filter(Boolean).slice(0, 5);
+  const where = [];
+  const params = [];
+  words.forEach((w, i) => {
+    const like = `${escapeLike(w)}%`;
+    const cols = ['r.surname', 'r.first_name', 'r.middle_name', 'r.maiden_name'];
+    if (words.length === 1 || i === 0) cols.unshift('r.service_number');
+    where.push(`(${cols.map((c) => `${c} LIKE ?`).join(' OR ')})`);
+    params.push(...cols.map(() => like));
+  });
+  if (status === 'current' || status === 'former') { where.push('r.status = ?'); params.push(status); }
+  if (account === 'with') where.push('EXISTS (SELECT 1 FROM users u WHERE u.service_number = r.service_number)');
+  if (account === 'without') where.push('NOT EXISTS (SELECT 1 FROM users u WHERE u.service_number = r.service_number)');
+  const accountCol = account
+    ? ', (SELECT u.username FROM users u WHERE u.service_number = r.service_number LIMIT 1) AS account'
+    : '';
+  return db.query(
+    `SELECT r.service_number, r.status, r.surname, r.first_name, r.middle_name, r.maiden_name,
+            t.name AS title_name, rt.name AS rate_name${accountCol}
+       FROM ratings r
+       LEFT JOIN ref_title t ON t.id = r.title_id
+       LEFT JOIN ref_rate rt ON rt.id = r.rate_id
+      WHERE ${where.join(' AND ')}
+      ORDER BY (r.service_number = ?) DESC, r.surname, r.first_name, r.service_number
+      LIMIT ? OFFSET ?`,
+    [...params, words[0] || '', limit + 1, offset],
+    conn
+  );
+}
+
 const SORT_COLUMNS = Object.freeze({
   service_number: 'r.service_number',
   first_name: 'r.first_name',
@@ -531,6 +571,7 @@ async function findAccountUsername(serviceNumber, conn = null) {
 module.exports = {
   findAccountUsername,
   listRatings,
+  searchForSelect,
   findByServiceNumber,
   existsByServiceNumber,
   getAllServiceNumbersSet,

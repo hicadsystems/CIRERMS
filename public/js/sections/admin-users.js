@@ -22,6 +22,7 @@ import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
 import { facts } from '../ui/facts.js';
 import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
+import { ratingSearch } from '../ui/rating-search.js';
 import { openDialog } from '../ui/dialog.js';
 import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
@@ -169,58 +170,14 @@ export async function mountAdminUsers(outlet, { info } = {}) {
       .filter((s) => s.active || (u && u.specialisationId === s.id))
       .map((s) => ({ value: s.id, label: s.active ? s.name : `${s.name} (Inactive)` }));
     // Add Account starts by finding the rating the account is for; its official number is the user name
-    const pickedInput = h('input', { type: 'hidden', name: 'serviceNumber', value: u ? u.serviceNumber : '' });
-    const results = h('div', { className: 'mt-2 space-y-1', dataset: { ratingResults: '' } });
-    const chosen = h('div', { className: 'mt-2 hidden', dataset: { ratingChosen: '' } });
-    const searchInput = textInput({ name: 'ratingSearch', placeholder: 'Official number or name', autocomplete: 'off', maxlength: 50 });
-    let timer = null;
-    let seq = 0;
-    function choose(r) {
-      pickedInput.value = r.serviceNumber;
-      results.replaceChildren();
-      searchInput.closest('[data-search-wrap]').classList.add('hidden');
-      chosen.classList.remove('hidden');
-      chosen.replaceChildren(h('div', { className: 'flex items-center gap-3 rounded-card border border-border bg-subtle px-3 py-2' }, [
-        h('span', { className: 'min-w-0 flex-1 text-sm' }, [h('b', { text: r.serviceNumber }), h('span', { className: 'block truncate text-muted-foreground', text: [r.name, r.rate].filter(Boolean).join(' · ') })]),
-        button({ label: 'Change', variant: 'ghost', onClick: () => {
-          pickedInput.value = '';
-          chosen.classList.add('hidden');
-          searchInput.closest('[data-search-wrap]').classList.remove('hidden');
-          searchInput.focus();
-        } }),
-      ]));
-    }
-    searchInput.addEventListener('input', () => {
-      clearTimeout(timer);
-      const term = searchInput.value.trim();
-      if (term.length < 2) { results.replaceChildren(); return; }
-      timer = setTimeout(async () => {
-        const mine = ++seq;
-        try {
-          const rows = (await api.get(`/api/users/ratings?q=${encodeURIComponent(term)}`)).data;
-          if (mine !== seq) return;
-          results.replaceChildren(...(rows.length ? rows.map((r) => h('button', {
-            type: 'button',
-            disabled: !!r.account,
-            className: cx('flex w-full items-center gap-3 rounded-ctl border border-border px-3 py-2 text-left text-sm', r.account ? 'cursor-not-allowed opacity-60' : 'hover:bg-subtle'),
-            dataset: { rating: r.serviceNumber },
-            onClick: () => choose(r),
-          }, [
-            h('span', { className: 'min-w-0 flex-1' }, [h('b', { text: r.serviceNumber }), h('span', { className: 'block truncate text-muted-foreground', text: [r.name, r.rate].filter(Boolean).join(' · ') })]),
-            r.account ? pill(`Has account ${r.account}`, 'neutral') : null,
-          ])) : [h('p', { className: 'px-1 text-sm text-muted-foreground', text: 'No rating matches.' })]));
-        } catch (_) {
-          results.replaceChildren();
-        }
-      }, 250);
-    });
+    const rating = ratingSearch({ name: 'serviceNumber', account: 'without', ariaLabel: 'Rating', placeholder: 'Official number or name' });
     const ratingField = u
       ? field({ label: 'Official Number (User Name)', control: h('div', { className: 'rounded-ctl border border-border bg-subtle px-3 py-2 text-sm font-semibold', text: u.serviceNumber }), hint: `The account belongs to this rating (${u.fullName}); it cannot be changed.`, className: 'col-span-2 phone:col-span-1' })
       : field({
         label: 'Rating *',
         className: 'col-span-2 phone:col-span-1',
-        control: h('div', {}, [h('div', { dataset: { searchWrap: '' } }, [searchInput, results]), chosen, pickedInput]),
-        hint: 'Every account belongs to a rating, and its name is the rating’s. Find it by official number or name; its official number becomes the user name.',
+        control: rating,
+        hint: 'Every account belongs to a rating, and its name is the rating’s. Find it by official number or name (ratings that already have an account are not listed); its official number becomes the user name.',
       });
     const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, [
       ratingField,
@@ -249,7 +206,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
       clearFieldErrors(form);
       const body = {
         roleId: isSelf ? u.roleId : val('roleId'),
-        serviceNumber: u ? u.serviceNumber : pickedInput.value,
+        serviceNumber: u ? u.serviceNumber : rating.value,
         specialisationId: val('specialisationId'),
         phone: val('phone'),
         email: val('email'),

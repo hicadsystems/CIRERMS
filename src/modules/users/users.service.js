@@ -136,19 +136,6 @@ async function parseFields(body, { current = null } = {}, conn = null) {
 }
 
 /** Ratings to start an account from (official number or name), each with the account it already has. */
-async function findRatings(term) {
-  const q = text(term, 50);
-  if (!q || q.length < 2) return [];
-  const rows = await usersRepo.searchRatings(q, 8);
-  return rows.map((r) => ({
-    serviceNumber: r.service_number,
-    name: [r.surname, r.first_name, r.middle_name].filter(Boolean).join(' '),
-    rate: r.rate_name || null,
-    status: r.status,
-    account: r.account || null,
-  }));
-}
-
 /** Adds an account with a random one-time password, returned once and kept nowhere in clear. */
 async function create(body, actor) {
   const oneTime = password.generateOneTime();
@@ -243,4 +230,4 @@ async function resetPassword(idRaw, actor) {
   return { user: await get(id), username, oneTimePassword: oneTime };
 }
 
-module.exports = { list, get, meta, lookup, findRatings, create, update, setActive, resetPassword };
+module.exports = { list, get, meta, lookup, create, update, setActive, resetPassword };

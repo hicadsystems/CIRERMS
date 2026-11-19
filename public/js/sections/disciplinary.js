@@ -21,6 +21,7 @@ import { pageHeader } from '../ui/page-header.js';
 import { listView } from '../ui/list-view.js';
 import { statTile } from '../ui/stat-tile.js';
 import { openDialog } from '../ui/dialog.js';
+import { ratingSearch } from '../ui/rating-search.js';
 import { facts } from '../ui/facts.js';
 import { emptyState } from '../ui/empty-state.js';
 import { icon } from '../core/icons.js';
@@ -73,11 +74,11 @@ function caseList({ url, fields, columns, card, empty, onPick, bar: barOpts = {}
 export async function mountInitiate(outlet, { info } = {}) {
   const o = await loadOptions(true);
   void o;
-  const input = h('input', { type: 'search', name: 'q', placeholder: 'e.g. B0539 or Okonkwo', autocomplete: 'off', className: cx(INPUT, 'desk:w-80'), 'aria-label': 'Official No or Name' });
-  const search = button({ label: 'Search', icon: 'search', variant: 'primary', onClick: () => run() });
+  // Only a current rating can have a case opened, so only current ratings are listed
+  const pick = ratingSearch({ name: 'serviceNumber', status: 'current', ariaLabel: 'Official No or Name', placeholder: 'Official number or name', className: 'desk:w-96' });
   const result = h('div');
   const bar = h('div', { className: 'mb-4 flex flex-wrap items-end gap-3 phone:flex-col phone:items-stretch' }, [
-    h('label', { className: 'min-w-0' }, [h('span', { className: 'mb-1 block text-xs font-semibold text-muted-foreground', text: 'Official No or Name' }), input]), search,
+    h('div', { className: 'min-w-0' }, [h('span', { className: 'mb-1 block text-xs font-semibold text-muted-foreground', text: 'Official No or Name' }), pick]),
   ]);
   const empty = (iconName, title, text) => h('div', { className: CARD }, emptyState({ icon: iconName, title, text }));
   result.replaceChildren(empty('gavel', 'Find a Rating', 'Enter an Official Number or a name above. A case can only be opened for a current rating.'));
@@ -96,36 +97,21 @@ export async function mountInitiate(outlet, { info } = {}) {
     dlg.setFooter(acts);
   }
 
-  async function run() {
-    const q = input.value.trim();
-    if (!q) { result.replaceChildren(empty('gavel', 'Find a Rating', 'Enter an Official Number or a name above. A case can only be opened for a current rating.')); return; }
-    const first = await api.get(`${BASE}/ratings?${queryString({ q, page: 1 })}`).catch((err) => { toast(err.message, 'error'); return null; });
-    if (!first) return;
-    if (!first.data.length) {
-      const left = first.meta.former;
-      result.replaceChildren(empty('circle-alert', 'No Current Rating Found', left ? `${left} matching ${left === 1 ? 'rating has' : 'ratings have'} left the service. A case can only be opened for a current rating.` : 'Check the Official Number or the spelling, then search again.'));
-      return;
-    }
-    const lv = listView({
-      columns: [
-        { key: 'serviceNumber', label: 'Official No' },
-        { key: 'name', label: 'Name', render: (r) => two(r.name, short(r.rate)) },
-        { key: 'ship', label: 'Current Ship' },
-        { key: 'pendingCases', label: 'Cases', render: (r) => (r.pendingCases ? pill('Pending case', 'warning') : '-') },
-      ],
-      load: ({ page }) => (page === 1 ? Promise.resolve(first) : api.get(`${BASE}/ratings?${queryString({ q, page })}`)),
-      onPick: ratingDialog,
-      card: { title: (r) => r.name, subtitle: (r) => `${r.serviceNumber} · ${r.ship || ''}`, aside: (r) => (r.pendingCases ? pill('Pending case', 'warning') : null) },
-    });
-    rowTips(lv.el);
-    result.replaceChildren(
-      h('div', { className: 'mb-3 text-sm text-muted-foreground', dataset: { found: '' } }, [h('b', { className: 'text-foreground', text: String(first.meta.total) }), ` current ${first.meta.total === 1 ? 'rating' : 'ratings'} found. Choose one to open a case.`]),
-      lv.el,
-    );
+  function run() {
+    return pick.value ? open(pick.value) : null;
   }
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+
+  async function open(serviceNumber) {
+    const res = await api.get(`${BASE}/ratings?${queryString({ q: serviceNumber, page: 1 })}`).catch((err) => { toast(err.message, 'error'); return null; });
+    if (!res) return;
+    const r = (res.data || []).find((x) => x.serviceNumber === serviceNumber);
+    if (!r) { toast('That rating is not a current rating.', 'error'); pick.clear(); return; }
+    ratingDialog(r);
+    pick.clear();
+  }
+  pick.addEventListener('change', () => { if (pick.value) open(pick.value); });
   outlet.replaceChildren(pageHeader({ title: info ? info.title : 'Initiate Incident', subtitle: 'Open a disciplinary case against a current rating' }), bar, result);
-  input.focus();
+  pick.input.focus();
 }
 
 // ---- 2. Pending Cases ----------------------------------------------------------
@@ -135,7 +121,7 @@ export async function mountPending(outlet, { info } = {}) {
   const list = caseList({
     url: `${BASE}/cases/pending`,
     fields: [
-      { name: 'q', label: 'Official No or Name', type: 'text', placeholder: 'e.g. B0539 or Okonkwo', span: 'col-span-2 phone:col-span-1' },
+      { name: 'serviceNumber', label: 'Official No or Name', type: 'rating', span: 'col-span-2 phone:col-span-1' },
       { name: 'offenceId', label: 'Offence', type: 'select', options: choices(o.offences), placeholder: 'All Offences', span: 'col-span-2 phone:col-span-1' },
     ],
     columns: [
@@ -170,7 +156,7 @@ export async function mountConcluded(outlet, { info } = {}) {
   const list = caseList({
     url: `${BASE}/cases/concluded`,
     fields: [
-      { name: 'q', label: 'Official No or Name', type: 'text', placeholder: 'e.g. B0539 or Okonkwo', span: 'col-span-2 phone:col-span-1' },
+      { name: 'serviceNumber', label: 'Official No or Name', type: 'rating', span: 'col-span-2 phone:col-span-1' },
       { name: 'offenceId', label: 'Offence', type: 'select', options: choices(o.offences), placeholder: 'All Offences' },
       { name: 'sanctionId', label: 'Sanction', type: 'select', options: choices(o.sanctions), placeholder: 'All Sanctions' },
       ...dateFields,

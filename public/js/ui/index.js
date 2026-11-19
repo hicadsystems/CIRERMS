@@ -26,5 +26,6 @@ export { pager, PAGE_SIZE } from './pager.js';
 export { listRecordView } from './list-record.js';
 export { inPageTabs } from './tabs.js';
 export { scrollRow } from './scroll-row.js';
+export { ratingSearch, ratingLabel } from './rating-search.js';
 export { stepper } from './stepper.js';
 export { completeness, levelFor } from './progress.js';

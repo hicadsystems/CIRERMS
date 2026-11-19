@@ -75,6 +75,7 @@ function filtersFrom(q = {}, allowed) {
   const f = {};
   const errors = {};
   if (allowed.includes('q') && text(q.q)) f.q = text(q.q).slice(0, 100);
+  if (allowed.includes('serviceNumber') && text(q.serviceNumber)) f.serviceNumber = text(q.serviceNumber).slice(0, 20);
   for (const [key, name] of [['offenceId', 'offenceId'], ['sanctionId', 'sanctionId'], ['shipId', 'shipId'], ['rateId', 'rateId']]) {
     if (allowed.includes(key) && text(q[name])) {
       const n = intOrNull(q[name]);
@@ -124,14 +125,14 @@ async function findRatings(q = {}) {
 }
 
 async function listPending(q = {}) {
-  const f = { ...filtersFrom(q, ['q', 'offenceId']), status: 'pending' };
+  const f = { ...filtersFrom(q, ['serviceNumber', 'offenceId']), status: 'pending' };
   const { page, pageSize } = paging(q);
   const { items, total } = await repo.listCases(f, { order: 'pending', page, pageSize });
   return { items: items.map(shape), meta: meta(total, page, pageSize) };
 }
 
 async function listConcluded(q = {}) {
-  const f = { ...filtersFrom(q, ['q', 'offenceId', 'sanctionId', 'from', 'to']), status: 'concluded' };
+  const f = { ...filtersFrom(q, ['serviceNumber', 'offenceId', 'sanctionId', 'from', 'to']), status: 'concluded' };
   const { page, pageSize } = paging(q);
   const { items, total } = await repo.listCases(f, { order: 'decided', page, pageSize });
   return { items: items.map(shape), meta: meta(total, page, pageSize) };
@@ -351,11 +352,11 @@ async function correct(id, body, actor) {
 const who = (actor) => (actor && actor.username) || '';
 
 async function pendingPdf(q, actor) {
-  const f = { ...filtersFrom(q, ['q', 'offenceId']), status: 'pending' };
+  const f = { ...filtersFrom(q, ['serviceNumber', 'offenceId']), status: 'pending' };
   const rows = (await repo.allCases(f, { order: 'pending' })).map(shape);
   const o = await repo.options();
   const offence = f.offenceId ? (o.offences.find((x) => x.id === f.offenceId) || {}).name || 'All' : 'All';
-  const buffer = await docs.pendingListPdf({ rows, offence, search: f.q || '', generatedBy: who(actor) });
+  const buffer = await docs.pendingListPdf({ rows, offence, search: f.serviceNumber || '', generatedBy: who(actor) });
   return { buffer, fileName: 'Pending Disciplinary Cases.pdf', mimeType: 'application/pdf' };
 }
 

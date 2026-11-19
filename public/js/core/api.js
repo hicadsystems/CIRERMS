@@ -48,7 +48,7 @@ export class ApiClientError extends Error {
   }
 }
 
-async function request(url, { method = 'GET', body = undefined, isFormData = false, skipAuthRedirect = false } = {}) {
+async function request(url, { method = 'GET', body = undefined, isFormData = false, skipAuthRedirect = false, signal = undefined } = {}) {
   const headers = buildAuthHeaders(
     body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}
   );
@@ -57,6 +57,7 @@ async function request(url, { method = 'GET', body = undefined, isFormData = fal
     method,
     credentials: 'include',
     headers,
+    signal,
     body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
   });
 

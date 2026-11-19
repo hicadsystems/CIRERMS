@@ -212,6 +212,11 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   - screen parts shared by the record, My Details and New Rating: `js/sections/rating-*.js` (fields catalogue,
     list tabs, documents block, names; see `docs/design/components.md`)
   - small DOM helpers in `js/core/dom.js` (`el`, `clear`, `populateSelect`, `previewBlobModal`, `formatBytes`)
+- **A rating is always picked with the rating search select** (`ratingSearch`, `js/ui/rating-search.js`), never a
+  typed official number or a hand-made list: from 2 characters it suggests ratings by official number or any name,
+  10 at a time from `GET /api/ratings/search` (the next 10 on scroll), each as `B0539 — PO OKONKWO CHUKWUEMEKA
+  IFEANYI`. Options `status` (`current`, `former`) and `account` (`with`, `without`); read `.value`, `.rating` or a
+  `change` event. A general list search box that matches many fields stays a plain search input.
 - **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
   `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
   canvas) and `text-muted-foreground`, `border-border` and `border-input`, `ring-ring`, `bg-primary` (teal,
