@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | WP13b `preview-sharp` (session `session_01G8RfvjBLDsKM2HoNu5ubxX`) done at a78b424 and checked by a side-by-side with the PDF; owner to merge, then archive. No other session running |
+| Sessions | WP13b `preview-sharp` (session `session_01G8RfvjBLDsKM2HoNu5ubxX`) done at 81f6cd5 (the browser's own viewer, toolbar hidden, as NAVY-PAYROLL) and checked on the real Print Dossier; owner to merge, then archive. No other session running |
 | Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
