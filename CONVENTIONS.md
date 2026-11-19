@@ -229,6 +229,13 @@ DROP TABLE ratings;
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
   keep theirs.
+- **Wide tables never scroll sideways** (owner's decision, 19/11/2026). A list whose columns would
+  overflow the screen shows only its most informative columns, the ones a person scans to find a
+  row; the rest go in the record. Every row is clickable and opens the full record in a dialog (a
+  bottom sheet on a phone). On desktop, hovering a row shows a tooltip just below the pointer, as the
+  folded sidebar's do, reading "View Details"; the row also gets the pointer cursor and the hover
+  tint, and it opens with Enter from the keyboard. On a phone the list is cards and a tap opens the
+  sheet. Where the list already shows the picked record beside it (the ratings lists), that stays.
 - **Completeness bars** (`.cirerms-progress-track` / `.cirerms-progress-bar`) are thin and plain; set
   `data-level` with the width: `low` (red, 0 to 49%), `mid` (amber, 50 to 79%), `high` (green, 80 to 100%).
 - **Two layouts.** `phone:` is 760 px and below (and wins over `sm:` there); `desk:` is 761 px and up.

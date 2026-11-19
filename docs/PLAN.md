@@ -60,6 +60,10 @@ are settled. Both modules keep their **Soon** label until then.
    server, every add opens in a dialog (a sheet on a phone), the component kit in `public/js/ui/`,
    Lucide icons from the sprite, no inline scripts or handlers in the app (the CSP forbids them),
    dates shown dd/mm/yyyy, accents in `brand` and a fill's text in its `*-foreground` token.
+   **Wide tables never scroll sideways** (owner, 19/11/2026; CONVENTIONS, Frontend): only the most
+   informative columns show, a row opens the full record in a dialog, and hovering a row shows a
+   "View Details" tooltip. For build packages this wins over the design demo where a demo table is
+   wider.
 7. Every screen is checked on desktop (1440 px) and phone (390 px), in light and dark mode.
 8. Read the old system for the module before designing or building: its menu items, controller
    actions, views, the tables and procedures they use (`docs/legacy/` from WP0 says where).
