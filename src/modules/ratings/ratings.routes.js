@@ -41,6 +41,21 @@ router.get(
   })
 );
 
+// The rating search select (public/js/ui/rating-search.js): 10 suggestions a request, for every screen
+// that picks a rating by official number or name, so each of those screens' privileges opens it.
+router.get(
+  '/search',
+  requireAnyPrivilege([
+    ['ratings.list', 'view'], ['ratings.edit', 'view'], ['ratings.documents', 'view'],
+    ['admin.users', 'add'], ['admin.users', 'view'], ['admin.password', 'view'], ['admin.audit', 'view'],
+    ['disciplinary.initiate', 'add'], ['disciplinary.pending', 'view'], ['disciplinary.concluded', 'view'], ['disciplinary.report', 'view'],
+  ]),
+  asyncHandler(async (req, res) => {
+    const r = await ratingsService.searchRatings(req.query);
+    res.json({ data: r.items, meta: { offset: r.offset, limit: r.limit, hasMore: r.hasMore } });
+  })
+);
+
 router.get(
   '/me',
   requirePrivilege('ratings.my-details', 'view'),

@@ -22,6 +22,7 @@ import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
 import { facts } from '../ui/facts.js';
 import { icon } from '../core/icons.js';
+import { ratingSearch } from '../ui/rating-search.js';
 import { openDialog, closeAllDialogs } from '../ui/dialog.js';
 import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { toast } from '../ui/toast.js';
@@ -135,6 +136,7 @@ export function filterBar({ fields, onChange }) {
     let control;
     if (f.type === 'select') control = selectInput({ name: f.name, options: f.options || [], value: '', placeholder: f.placeholder || `All ${f.label}s`, 'aria-label': f.label });
     else if (f.type === 'date') control = wireDateField(textInput({ name: f.name, placeholder: 'dd/mm/yyyy', inputmode: 'numeric', maxlength: '10', 'aria-label': f.label }));
+    else if (f.type === 'rating') control = ratingSearch({ name: f.name, status: 'all', ariaLabel: f.label, placeholder: 'Official number or name' });
     else control = textInput({ name: f.name, type: 'search', placeholder: f.placeholder || '', autocomplete: 'off', 'aria-label': f.label });
     return field({ label: f.label, control, className: f.span || '' });
   });
@@ -161,13 +163,13 @@ export function filterBar({ fields, onChange }) {
     timer = setTimeout(() => { sync(); emit(); }, 300);
   });
   el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target.matches && e.target.matches('input')) { e.preventDefault(); clearTimeout(timer); values[e.target.name] = e.target.value.trim(); sync(); emit(); }
+    if (e.key === 'Enter' && e.target.matches && e.target.matches('input') && !e.target.closest('[data-rating-search]')) { e.preventDefault(); clearTimeout(timer); values[e.target.name] = e.target.value.trim(); sync(); emit(); }
   });
   el.addEventListener('change', (e) => {
-    const name = e.target.getAttribute && e.target.getAttribute('name');
+    const name = e.target.getAttribute && (e.target.getAttribute('name') || (e.target.dataset && e.target.dataset.ratingSearch !== undefined ? e.target.dataset.name : null));
     const f = fields.find((x) => x.name === name);
     if (syncing || !f || f.type === 'text') return;
-    values[name] = e.target.value.trim();
+    values[name] = String(e.target.value || '').trim();
     sync();
     emit();
   });
@@ -179,6 +181,7 @@ export function filterBar({ fields, onChange }) {
     reset() {
       syncing = true;
       fields.forEach((f) => { values[f.name] = ''; const c = el.querySelector(`[name="${CSS.escape(f.name)}"]`); if (c) c.value = ''; });
+      el.querySelectorAll('[data-rating-search]').forEach((r) => r.clear());
       syncing = false;
       sync();
       emit();

@@ -18,7 +18,8 @@ import { pageHeader } from '../ui/page-header.js';
 import { card } from '../ui/card.js';
 import { button } from '../ui/button.js';
 import { facts } from '../ui/facts.js';
-import { field, textInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
+import { field, setFieldErrors, clearFieldErrors } from '../ui/field.js';
+import { ratingSearch } from '../ui/rating-search.js';
 import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { accountHead, showOneTimePassword, stamp } from './admin-common.js';
@@ -27,11 +28,10 @@ export function mountAdminPassword(outlet, { info } = {}) {
   const canReset = can('admin.password', 'edit');
   const me = getUser() || {};
 
-  const input = textInput({ name: 'q', placeholder: 'Official number or user name', maxlength: 50, autocomplete: 'off', autocapitalize: 'characters' });
-  const find = button({ label: 'Find Account', icon: 'search', variant: 'primary', type: 'submit' });
+  // Every account belongs to a rating and its user name is the rating's official number: pick a rating that has an account
+  const input = ratingSearch({ name: 'q', account: 'with', ariaLabel: 'Official Number or Name', placeholder: 'Official number or name' });
   const form = h('form', { className: 'grid gap-4', novalidate: true, autocomplete: 'off' }, [
-    field({ label: 'Official Number or User Name', control: input }),
-    h('div', { className: 'flex justify-end' }, find),
+    field({ label: 'Rating', control: input, hint: 'Only ratings that have an account are listed.' }),
   ]);
   const result = h('div', { className: 'mt-5 border-t border-border/70 pt-5', dataset: { result: '' }, 'aria-live': 'polite' });
   result.hidden = true;
@@ -56,19 +56,19 @@ export function mountAdminPassword(outlet, { info } = {}) {
     ])
   );
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  form.addEventListener('submit', (e) => e.preventDefault());
+  input.addEventListener('change', async () => {
     clearFieldErrors(form);
     result.hidden = true;
-    find.disabled = true;
+    if (!input.value) return;
+    const wanted = input.value;
     try {
-      const res = await api.get(`/api/users/lookup?q=${encodeURIComponent(input.value.trim())}`);
-      showAccount(res.data);
+      const res = await api.get(`/api/users/lookup?q=${encodeURIComponent(wanted)}`);
+      if (input.value === wanted) showAccount(res.data);
     } catch (err) {
+      if (input.value !== wanted) return;
       if (err.fields) setFieldErrors(form, err.fields);
       else setFieldErrors(form, { q: err.message || 'Could not find the account.' });
-    } finally {
-      find.disabled = false;
     }
   });
 
