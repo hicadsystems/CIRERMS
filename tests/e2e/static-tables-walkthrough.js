@@ -666,8 +666,12 @@ async function auditAndRatings(browser, db) {
   check(off.status === 200, 'Branch made Inactive while a rating holds it');
   const lookupsAfter = (await api(page, 'GET', '/api/lookups')).body.data;
   check(!lookupsAfter.branches.some((b) => b.id === heldId) && lookupsAfter.inactive.branches.some((b) => b.id === heldId), 'the Inactive branch is out of the dropdown list');
-  await page.goto(`${BASE}/app.html#ratings/edit/B0539`);
+  // leave the record and come back WITHOUT a page reload: the record reads the lists afresh each time it opens
+  await page.evaluate(() => { window.location.hash = '#ratings/current'; });
+  await page.waitForSelector('#app-main table tbody tr');
+  await page.evaluate(() => { window.location.hash = '#ratings/edit/B0539'; });
   await page.waitForSelector('text=Edit Details');
+  await page.waitForSelector(`text=${row.name}`);
   check(await page.getByText(row.name).first().isVisible(), 'the record still shows the Inactive branch');
   await page.getByRole('button', { name: /Edit Official/ }).first().click();
   const dlg = dialogOf(page);
