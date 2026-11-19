@@ -126,8 +126,8 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, the plan, `docs/waves/` |
-| Sessions | WP13 `printouts` (session `session_01G8RfvmWbA9sZ5DSVdu7bcx`) done at a337a18 and checked; owner to merge, then archive. Next: wave E (WP6, WP7a), or WP5 or WP12, one at a time while the weekly limit is at its warning level. A test container needs `PDF_CHROMIUM_PATH` set to Playwright's Chromium (`/opt/pw-browsers/chromium-*/chrome-linux64/chrome`) |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, the plan, `docs/waves/` |
+| Sessions | WP7a `drafting-cycle`: session `session_01G8RfvhqhVge4sdaGzfKLGa` (Opus 5.5, high), started 19/11/2026 after WP13 merged. WP6 `training-drafting` is with a developer on another device (their report note comes as `docs/reports/WP6.md` on that branch; check it as section 4). On WP7a's report: run its walkthrough and the four others, owner merges, archive |
 | Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
