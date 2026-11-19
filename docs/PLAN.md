@@ -194,7 +194,7 @@ the next wave once the owner has merged.
 | WP0 | Merged 19/11/2026 (Sonnet 5.5 · medium) | `legacy-map` | 19/11/2026: 2a17517, only `docs/legacy/` and two tree lines; backup restored for definitions only, then deleted; no procedure SQL kept |
 | D1 | Designed; follow-up running (wide tables, section 9a decisions) | `design-drafting` | 19/11/2026: e2b5234, 21 pages, only `docs/design/`; checked by the administrator |
 | WP1 | Merged 19/11/2026 (Opus 5.5 · high) | `foundation-access` | 19/11/2026: 31ad257; its walkthrough re-run by the administrator, 166 passed; sign-in and theme suites pass |
-| T1 | Running since 19/11/2026, Sonnet 5.5 · medium | `fluid-type` | |
+| T1 | Done, checked; ready to merge (Sonnet 5.5 · medium) | `fluid-type` | 19/11/2026: c0ed596; type scale 11 to 30 px, desktop sizes unchanged; walkthrough re-run by the administrator, 166 passed; My Details' name two lines at 18 px semibold on a phone; no overflow or browser errors at 360, 390 and 1440 px in both themes. Left as before: the record's tab chips are 36 px tall on a phone, not 44 |
 | D2 | Not started | `design-casework` | |
 | WP2 | Not started | `static-tables` | |
 | WP3 | Not started | `system-admin` | |

@@ -119,8 +119,8 @@ WP0, WP1, D1 and T1:
 |---|---|
 | master | WP0 (`docs/legacy/`), WP1 (access, audit, lock, module registration), the plan, the demo with light and dark mode |
 | `project-plan` | Commits ahead of master: section 9a decisions, status updates, this handbook. Owner to merge |
-| D1 `design-drafting` | Session `session_01G8RfvhowaPjDAhdbMMevYk` (Sonnet 5.5, high). Designed 21 pages (e2b5234), applied the wide-table rule (ae3af45, checked). Now applying the section 9a decisions; its report comes to the administrator. Then: check it, send the owner `demo.html` to review, owner merges, archive the session |
-| T1 `fluid-type` | Session `session_01G8Rfvn3mdwH2Gn2PpotpHL` (Sonnet 5.5, medium), started 19/11/2026. On report: check, run the access walkthrough, look at phone screens (the owner's complaint: My Details' name in three heavy lines), owner merges, archive |
+| D1 `design-drafting` | Session `session_01G8RfvhowaPjDAhdbMMevYk` (Sonnet 5.5, high). Designed 21 pages (e2b5234), applied the wide-table rule (ae3af45, checked). Now applying the section 9a decisions. Its brief names the previous administrator's id, so its report may go there: read it from D1's transcript (`list_events`, kinds assistant) if no notification comes. Then: check it, send the owner `demo.html` to review, owner merges, archive the session |
+| T1 `fluid-type` | Session `session_01G8Rfvn3mdwH2Gn2PpotpHL`. Done at c0ed596 and checked by the administrator (166 passed, phone screens looked at). Owner to merge, then archive the session |
 | Next, wave C | D2 `design-casework` (Sonnet 5.5, medium) once D1 is merged: Disciplinary, Discharge, the in-scope printouts, dashboard tiles; add after D1's blocks in `demo-src.html` (D1 marked them "D1 BEGIN / D1 END"; D2 goes before the "Session lock" section). WP2 `static-tables` (Sonnet 5.5, medium) once T1 is merged |
 | Later waves | D: WP3, WP4. E: WP6, WP7a (need the due rules or placeholders). F: WP5, WP8. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
