@@ -150,6 +150,11 @@ Notes for coming briefs:
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
+- **Accounts:** every account belongs to a rating (owner, 19/11/2026; WP3). A walkthrough or seed that creates an
+  account must link it to a rating. Test packages together before telling the owner a later one is ready: merge
+  the branches in a scratch tree and run every walkthrough on a fresh database.
+- **Open:** if a rating's official number changes, the account's user name keeps the old number (WP3 noted it);
+  settle it before the import.
 - **Security, told to the owner:** the old repository's `hpproject/Web.config` holds database
   passwords in plain text; they should be changed if still in use. Never copy them.
 
