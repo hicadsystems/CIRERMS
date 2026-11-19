@@ -9,6 +9,7 @@
  *                                button, Ctrl K and #ratings/new all call this)
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { getLookups } from '../core/lookups.js';
 import { navigate } from '../core/router.js';
 import { icon } from '../core/icons.js';
@@ -167,5 +168,7 @@ export async function openNewRating({ onClose } = {}) {
 
 /** The "New Rating" button: opens the dialog. */
 export function newRatingButton({ className = '' } = {}) {
+  // only for a role that may add ratings (core/access.js)
+  if (!can('ratings.new', 'add')) return null;
   return button({ label: 'New Rating', icon: 'user-plus', variant: 'primary', className, onClick: () => openNewRating() });
 }

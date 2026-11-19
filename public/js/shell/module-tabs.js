@@ -8,12 +8,14 @@
  */
 import { cx, h } from '../ui/html.js';
 import { scrollRow } from '../ui/scroll-row.js';
+import { visibleTabs } from '../core/access.js';
 
 export function renderModuleTabs(info) {
   const nav = document.getElementById('module-tabs');
   if (!nav) return;
-  const tabs = (info && info.tabs) || [];
-  if (!tabs.length) {
+  // only the pages the person may open (core/access.js); a lone tab for the page itself is left out
+  const tabs = info && info.module ? visibleTabs(info.module) : [];
+  if (!tabs.length || (tabs.length === 1 && tabs[0].route === info.tab)) {
     nav.replaceChildren();
     nav.className = 'hidden';
     return;

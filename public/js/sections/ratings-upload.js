@@ -5,6 +5,7 @@
  * the rest in one transaction; the counts and the rows not added show after.
  */
 import { api } from '../core/api.js';
+import { can } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { h, cx, fill } from '../ui/html.js';
 import { CARD, TH } from '../ui/classes.js';
@@ -100,6 +101,9 @@ export function mountRatingsUpload(outlet) {
       input,
     ]);
 
+    // without the add privilege the page offers the template only
+    s2.classList.toggle('hidden', !can('ratings.upload', 'add'));
+    s3.classList.toggle('hidden', !can('ratings.upload', 'add'));
     const committed = stage === 3 && result;
     fill(s3, [
       stepHead(3, 'Review and Commit', committed ? 'done' : stage === 2 ? 'on' : 'off'),

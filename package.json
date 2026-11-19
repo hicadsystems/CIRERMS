@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "migrate": "node migrate.js up",
     "migrate:make": "node migrate.js make",
     "migrate:up": "node migrate.js up",
     "migrate:down": "node migrate.js down",

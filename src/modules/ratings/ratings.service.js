@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../config');
 const db = require('../../db');
+const audit = require('../../shared/audit');
 const ratingsRepo = require('./ratings.repo');
 const lookupsRepo = require('../lookups/lookups.repo');
 const { parseIsoDate, formatDisplayDate } = require('../../shared/dates');
@@ -325,9 +326,9 @@ async function getMyDetails(user) {
   };
 }
 
-async function createRating(payload, userId) {
+async function createRating(payload, actor) {
   const fields = sanitiseRatingPayload(payload, { isCreate: true });
-  fields.created_by = userId || null;
+  fields.created_by = actor.userId || null;
 
   const exists = await ratingsRepo.existsByServiceNumber(fields.service_number);
   if (exists) {
@@ -338,11 +339,15 @@ async function createRating(payload, userId) {
     );
   }
 
-  await ratingsRepo.insertRating(fields);
+  await db.transaction(async (tx) => {
+    await ratingsRepo.insertRating(fields, tx.connection);
+    const after = await ratingsRepo.findRawRating(fields.service_number, tx.connection);
+    await audit.record(tx, actor, { action: 'INSERT', table: 'ratings', recordId: fields.service_number, after });
+  });
   return getFullDossier(fields.service_number);
 }
 
-async function updateRating(serviceNumberRaw, payload) {
+async function updateRating(serviceNumberRaw, payload, actor) {
   const currentSn = normaliseServiceNumber(serviceNumberRaw);
   const existing = await ratingsRepo.findByServiceNumber(currentSn);
   if (!existing) {
@@ -361,12 +366,17 @@ async function updateRating(serviceNumberRaw, payload) {
     }
   }
 
-  await ratingsRepo.updateRatingByServiceNumber(currentSn, fields);
   const effectiveSn = fields.service_number || currentSn;
+  await db.transaction(async (tx) => {
+    const before = await ratingsRepo.findRawRating(currentSn, tx.connection);
+    await ratingsRepo.updateRatingByServiceNumber(currentSn, fields, tx.connection);
+    const after = await ratingsRepo.findRawRating(effectiveSn, tx.connection);
+    await audit.record(tx, actor, { action: 'UPDATE', table: 'ratings', recordId: effectiveSn, before, after });
+  });
   return getFullDossier(effectiveSn);
 }
 
-async function deleteRating(serviceNumberRaw) {
+async function deleteRating(serviceNumberRaw, actor) {
   const sn = normaliseServiceNumber(serviceNumberRaw);
   const existing = await ratingsRepo.findByServiceNumber(sn);
   if (!existing) {
@@ -374,7 +384,11 @@ async function deleteRating(serviceNumberRaw) {
   }
 
   const docs = await ratingsRepo.listDocuments(sn);
-  await ratingsRepo.deleteRating(sn);
+  await db.transaction(async (tx) => {
+    const before = await ratingsRepo.findRawRating(sn, tx.connection);
+    await ratingsRepo.deleteRating(sn, tx.connection);
+    await audit.record(tx, actor, { action: 'DELETE', table: 'ratings', recordId: sn, before });
+  });
 
   // Clean up stored files best-effort after DB delete succeeds
   const photoFiles = [existing.passport_photo_path, existing.next_of_kin_photo_path].filter(Boolean);
@@ -404,7 +418,7 @@ function safeUnlink(filePath) {
 // Photos (passport & next-of-kin)
 // ============================================================================
 
-async function saveRatingPhoto(serviceNumberRaw, kind, savedPhoto) {
+async function saveRatingPhoto(serviceNumberRaw, kind, savedPhoto, actor) {
   const sn = normaliseServiceNumber(serviceNumberRaw);
   const col = kind === 'next-of-kin' ? 'next_of_kin_photo_path' : kind === 'passport' ? 'passport_photo_path' : null;
   if (!col) {
@@ -419,7 +433,17 @@ async function saveRatingPhoto(serviceNumberRaw, kind, savedPhoto) {
   }
 
   const oldPath = existing[col];
-  await ratingsRepo.updateRatingByServiceNumber(sn, { [col]: savedPhoto.storedName });
+  try {
+    await db.transaction(async (tx) => {
+      const before = await ratingsRepo.findRawRating(sn, tx.connection);
+      await ratingsRepo.updateRatingByServiceNumber(sn, { [col]: savedPhoto.storedName }, tx.connection);
+      const after = await ratingsRepo.findRawRating(sn, tx.connection);
+      await audit.record(tx, actor, { action: 'UPDATE', table: 'ratings', recordId: sn, before, after });
+    });
+  } catch (err) {
+    safeUnlink(savedPhoto.diskPath);
+    throw err;
+  }
 
   if (oldPath && oldPath !== savedPhoto.storedName) {
     safeUnlink(path.join(config.uploads.photosDir, path.basename(oldPath)));
@@ -654,16 +678,20 @@ async function listChildRecords(serviceNumberRaw, tabKey) {
   return { items, currentShipName: rating.current_ship_name || null };
 }
 
-async function createChildRecord(serviceNumberRaw, tabKey, body, userId) {
+async function createChildRecord(serviceNumberRaw, tabKey, body, actor) {
   const cfg = getChildConfig(tabKey);
   const rating = await ensureRatingExists(serviceNumberRaw);
   const fields = cfg.sanitise(body || {});
 
   try {
-    await ratingsRepo.insertChildRow(cfg.table, {
-      service_number: rating.service_number,
-      ...fields,
-      created_by: userId || null,
+    await db.transaction(async (tx) => {
+      const id = await ratingsRepo.insertChildRow(cfg.table, {
+        service_number: rating.service_number,
+        ...fields,
+        created_by: actor.userId || null,
+      }, tx.connection);
+      const after = await ratingsRepo.findChildRow(cfg.table, id, rating.service_number, tx.connection);
+      await audit.record(tx, actor, { action: 'INSERT', table: cfg.table, recordId: `${rating.service_number}:${id}`, after });
     });
   } catch (err) {
     if (err && err.code === 'ER_DUP_ENTRY' && tabKey === 'language') {
@@ -681,7 +709,7 @@ async function createChildRecord(serviceNumberRaw, tabKey, body, userId) {
   return { items, currentShipName: updatedRating.current_ship_name || null };
 }
 
-async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body) {
+async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body, actor) {
   const cfg = getChildConfig(tabKey);
   const rating = await ensureRatingExists(serviceNumberRaw);
   const rowId = Number.parseInt(rowIdRaw, 10);
@@ -696,7 +724,12 @@ async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body) {
 
   const fields = cfg.sanitise(body || {});
   try {
-    await ratingsRepo.updateChildRow(cfg.table, rowId, rating.service_number, fields);
+    await db.transaction(async (tx) => {
+      const before = await ratingsRepo.findChildRow(cfg.table, rowId, rating.service_number, tx.connection);
+      await ratingsRepo.updateChildRow(cfg.table, rowId, rating.service_number, fields, tx.connection);
+      const after = await ratingsRepo.findChildRow(cfg.table, rowId, rating.service_number, tx.connection);
+      await audit.record(tx, actor, { action: 'UPDATE', table: cfg.table, recordId: `${rating.service_number}:${rowId}`, before, after });
+    });
   } catch (err) {
     if (err && err.code === 'ER_DUP_ENTRY' && tabKey === 'language') {
       throw conflict(
@@ -713,7 +746,7 @@ async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body) {
   return { items, currentShipName: updatedRating.current_ship_name || null };
 }
 
-async function deleteChildRecord(serviceNumberRaw, tabKey, rowIdRaw) {
+async function deleteChildRecord(serviceNumberRaw, tabKey, rowIdRaw, actor) {
   const cfg = getChildConfig(tabKey);
   const rating = await ensureRatingExists(serviceNumberRaw);
   const rowId = Number.parseInt(rowIdRaw, 10);
@@ -721,10 +754,14 @@ async function deleteChildRecord(serviceNumberRaw, tabKey, rowIdRaw) {
     throw badRequest('Invalid record ID.');
   }
 
-  const removed = await ratingsRepo.deleteChildRow(cfg.table, rowId, rating.service_number);
-  if (!removed) {
-    throw notFound('Record not found.');
-  }
+  await db.transaction(async (tx) => {
+    const before = await ratingsRepo.findChildRow(cfg.table, rowId, rating.service_number, tx.connection);
+    const removed = before && await ratingsRepo.deleteChildRow(cfg.table, rowId, rating.service_number, tx.connection);
+    if (!removed) {
+      throw notFound('Record not found.');
+    }
+    await audit.record(tx, actor, { action: 'DELETE', table: cfg.table, recordId: `${rating.service_number}:${rowId}`, before });
+  });
 
   const updatedRating = tabKey === 'drafting' ? await ratingsRepo.findByServiceNumber(rating.service_number) : rating;
   const items = await cfg.listFn(rating.service_number);
@@ -781,7 +818,7 @@ async function getDocumentsBundle(serviceNumberRaw, queryParams = {}) {
   };
 }
 
-async function uploadRatingDocument(serviceNumberRaw, body, savedDocument, userId) {
+async function uploadRatingDocument(serviceNumberRaw, body, savedDocument, actor) {
   const sn = normaliseServiceNumber(serviceNumberRaw);
   const rating = await ratingsRepo.findByServiceNumber(sn);
   if (!rating) {
@@ -807,15 +844,24 @@ async function uploadRatingDocument(serviceNumberRaw, body, savedDocument, userI
     });
   }
 
-  await ratingsRepo.insertChildRow('rating_documents', {
-    service_number: rating.service_number,
-    category_id: matchedCat.id,
-    original_name: savedDocument.originalName,
-    stored_name: savedDocument.storedName,
-    mime_type: savedDocument.mimeType,
-    size_bytes: savedDocument.sizeBytes,
-    created_by: userId || null,
-  });
+  try {
+    await db.transaction(async (tx) => {
+      const id = await ratingsRepo.insertChildRow('rating_documents', {
+        service_number: rating.service_number,
+        category_id: matchedCat.id,
+        original_name: savedDocument.originalName,
+        stored_name: savedDocument.storedName,
+        mime_type: savedDocument.mimeType,
+        size_bytes: savedDocument.sizeBytes,
+        created_by: actor.userId || null,
+      }, tx.connection);
+      const after = await ratingsRepo.findChildRow('rating_documents', id, rating.service_number, tx.connection);
+      await audit.record(tx, actor, { action: 'INSERT', table: 'rating_documents', recordId: `${rating.service_number}:${id}`, after });
+    });
+  } catch (err) {
+    safeUnlink(savedDocument.diskPath);
+    throw err;
+  }
 
   return getDocumentsBundle(rating.service_number);
 }
@@ -845,7 +891,7 @@ async function resolveRatingDocumentFile(serviceNumberRaw, docIdRaw) {
   };
 }
 
-async function deleteRatingDocument(serviceNumberRaw, docIdRaw) {
+async function deleteRatingDocument(serviceNumberRaw, docIdRaw, actor) {
   const sn = normaliseServiceNumber(serviceNumberRaw);
   const docId = Number.parseInt(docIdRaw, 10);
   if (!Number.isFinite(docId) || docId <= 0) {
@@ -857,7 +903,11 @@ async function deleteRatingDocument(serviceNumberRaw, docIdRaw) {
     throw notFound('Document not found.');
   }
 
-  await ratingsRepo.deleteChildRow('rating_documents', docId, sn);
+  await db.transaction(async (tx) => {
+    const before = await ratingsRepo.findChildRow('rating_documents', docId, sn, tx.connection);
+    await ratingsRepo.deleteChildRow('rating_documents', docId, sn, tx.connection);
+    await audit.record(tx, actor, { action: 'DELETE', table: 'rating_documents', recordId: `${sn}:${docId}`, before });
+  });
   safeUnlink(path.join(config.uploads.documentsDir, path.basename(doc.stored_name)));
 
   return getDocumentsBundle(sn);
@@ -1036,7 +1086,8 @@ function buildLookupResolver(items = [], { allowParenCode = false } = {}) {
   };
 }
 
-async function processBatchUpload(buffer, userId) {
+async function processBatchUpload(buffer, actor) {
+  const userId = actor.userId;
   const parsed = await parseBatchUploadBuffer(buffer);
   if (parsed.headerErrors.length > 0) {
     throw badRequest(parsed.headerErrors.join(' '), 'INVALID_TEMPLATE_HEADERS');
@@ -1219,8 +1270,10 @@ async function processBatchUpload(buffer, userId) {
       const todayIso = new Date().toISOString().slice(0, 10);
       for (const item of validToInsert) {
         await ratingsRepo.insertRating(item.ratingRecord, tx.connection);
+        const after = await ratingsRepo.findRawRating(item.ratingRecord.service_number, tx.connection);
+        await audit.record(tx, actor, { action: 'INSERT', table: 'ratings', recordId: item.ratingRecord.service_number, after });
         if (item.shipId) {
-          await ratingsRepo.insertChildRow(
+          const postingId = await ratingsRepo.insertChildRow(
             'rating_drafting',
             {
               service_number: item.ratingRecord.service_number,
@@ -1236,6 +1289,13 @@ async function processBatchUpload(buffer, userId) {
             },
             tx.connection
           );
+          const posting = await ratingsRepo.findChildRow('rating_drafting', postingId, item.ratingRecord.service_number, tx.connection);
+          await audit.record(tx, actor, {
+            action: 'INSERT',
+            table: 'rating_drafting',
+            recordId: `${item.ratingRecord.service_number}:${postingId}`,
+            after: posting,
+          });
         }
       }
     });

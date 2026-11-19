@@ -359,7 +359,17 @@ async function runUpOnConn(conn) {
   return { batch: nextBatch, applied: completedFiles };
 }
 
+async function syncPrivilegeCatalogue() {
+  // the catalogue comes from the module manifests; seed files grant from it
+  // eslint-disable-next-line global-require
+  const { privilegeCatalogue } = require('../modules');
+  // eslint-disable-next-line global-require
+  const accessService = require('../modules/access/access.service');
+  return accessService.syncCatalogue(privilegeCatalogue());
+}
+
 async function runSeedsOnConn(conn) {
+  await syncPrivilegeCatalogue();
   const seedFiles = readDiskSqlFiles(SEEDS_DIR);
   const completedFiles = [];
   const results = [];

@@ -295,9 +295,15 @@ async function updateRatingByServiceNumber(currentServiceNumber, fieldsObj, conn
   );
 }
 
-async function deleteRating(serviceNumber) {
-  const res = await db.query('DELETE FROM ratings WHERE service_number = ?', [serviceNumber]);
+async function deleteRating(serviceNumber, conn = null) {
+  const res = await db.query('DELETE FROM ratings WHERE service_number = ?', [serviceNumber], conn);
   return res.affectedRows > 0;
+}
+
+/** The ratings row alone (no joined names), for the audit trail's before and after. */
+async function findRawRating(serviceNumber, conn = null) {
+  const rows = await db.query('SELECT * FROM ratings WHERE service_number = ? LIMIT 1', [serviceNumber], conn);
+  return rows[0] || null;
 }
 
 // ============================================================================
@@ -472,42 +478,46 @@ async function insertChildRow(tableName, fieldsObj, conn = null) {
   return res.insertId;
 }
 
-async function findChildRow(tableName, id, serviceNumber) {
+async function findChildRow(tableName, id, serviceNumber, conn = null) {
   const rows = await db.query(
     `SELECT * FROM ${tableName} WHERE id = ? AND service_number = ? LIMIT 1`,
-    [id, serviceNumber]
+    [id, serviceNumber],
+    conn
   );
   return rows[0] || null;
 }
 
-async function updateChildRow(tableName, id, serviceNumber, fieldsObj) {
+async function updateChildRow(tableName, id, serviceNumber, fieldsObj, conn = null) {
   const cols = Object.keys(fieldsObj);
   if (cols.length === 0) return false;
   const assignments = cols.map((k) => `${k} = ?`).join(', ');
   const values = cols.map((k) => fieldsObj[k]);
   const res = await db.query(
     `UPDATE ${tableName} SET ${assignments} WHERE id = ? AND service_number = ?`,
-    [...values, id, serviceNumber]
+    [...values, id, serviceNumber],
+    conn
   );
   return res.affectedRows > 0;
 }
 
-async function deleteChildRow(tableName, id, serviceNumber) {
+async function deleteChildRow(tableName, id, serviceNumber, conn = null) {
   const res = await db.query(
     `DELETE FROM ${tableName} WHERE id = ? AND service_number = ?`,
-    [id, serviceNumber]
+    [id, serviceNumber],
+    conn
   );
   return res.affectedRows > 0;
 }
 
-async function findDocumentById(docId, serviceNumber) {
+async function findDocumentById(docId, serviceNumber, conn = null) {
   const rows = await db.query(
     `SELECT doc.*, cat.code AS category_code, cat.name AS category_name
        FROM rating_documents doc
        INNER JOIN ref_document_category cat ON cat.id = doc.category_id
       WHERE doc.id = ? AND doc.service_number = ?
       LIMIT 1`,
-    [docId, serviceNumber]
+    [docId, serviceNumber],
+    conn
   );
   return rows[0] || null;
 }
@@ -520,6 +530,7 @@ module.exports = {
   insertRating,
   updateRatingByServiceNumber,
   deleteRating,
+  findRawRating,
   listNextOfKin,
   listSpouse,
   listChildren,

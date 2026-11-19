@@ -3,6 +3,8 @@
 const app = require('./app');
 const config = require('./config');
 const db = require('./db');
+const { privilegeCatalogue } = require('./modules');
+const accessService = require('./modules/access/access.service');
 
 async function start() {
   try {
@@ -11,6 +13,14 @@ async function start() {
     console.error(
       `[CIRERMS] Database connection failed (${config.db.host}:${config.db.port}/${config.db.database}): ${err.message}`
     );
+    process.exit(1);
+  }
+
+  // the privilege catalogue from the module manifests; the Administrator gets new privileges
+  try {
+    await accessService.syncCatalogue(privilegeCatalogue());
+  } catch (err) {
+    console.error(`[CIRERMS] Could not sync the privilege catalogue (run npm run migrate): ${err.message}`);
     process.exit(1);
   }
 

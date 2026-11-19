@@ -11,6 +11,10 @@
  *
  * A module marked `soon` has no screens yet: it opens #soon/<key>, the
  * "Coming in a Later Release" page.
+ *
+ * Adding a module's screens: its pages here (with `screen` and `view`), its tabs in AREAS,
+ * and its section files in js/sections/. The shell loads each page's `view` itself and checks
+ * the person's privileges (core/access.js) for `screen` and `action`; nothing else is edited.
  */
 
 export const AREAS = [
@@ -88,14 +92,18 @@ export function findModule(key) {
  *   subtitle  one line under the title (hidden on phones)
  *   short     the phone header's title (defaults to the module's short name)
  *   back      a route: the phone header shows a back arrow to it instead of the crest
- *   screen    the screen id (module.screen), later the permission key
+ *   screen    the screen id (module.screen): the privilege key, with `action`
+ *   action    the privilege needed to open the page (default 'view')
+ *   view      { file, mount, props }: the section file in js/sections/, the function it
+ *             exports to draw the page (mount(outlet, { params, query, info, ...props })),
+ *             and extra options for it. The shell imports it when the page opens.
  */
 export const PAGES = [
-  { pattern: 'dashboard', module: 'dashboard', title: 'Dashboard', subtitle: 'Ratings at a glance', short: 'Home', screen: 'dashboard.home' },
-  { pattern: 'ratings/current', module: 'ratings', tab: 'ratings/current', title: 'Current Ratings', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.list' },
-  { pattern: 'ratings/former', module: 'ratings', tab: 'ratings/former', title: 'Former Ratings', subtitle: 'Retired and discharged ratings', screen: 'ratings.list' },
-  // the New Rating dialog over the current list
-  { pattern: 'ratings/new', module: 'ratings', tab: 'ratings/current', title: 'New Rating', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.new' },
+  { pattern: 'dashboard', module: 'dashboard', title: 'Dashboard', subtitle: 'Ratings at a glance', short: 'Home', screen: 'dashboard.home', view: { file: 'dashboard.js', mount: 'mountDashboard' } },
+  { pattern: 'ratings/current', module: 'ratings', tab: 'ratings/current', title: 'Current Ratings', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.list', view: { file: 'ratings-list.js', mount: 'mountRatingsList', props: { status: 'current' } } },
+  { pattern: 'ratings/former', module: 'ratings', tab: 'ratings/former', title: 'Former Ratings', subtitle: 'Retired and discharged ratings', screen: 'ratings.list', view: { file: 'ratings-list.js', mount: 'mountRatingsList', props: { status: 'former' } } },
+  // the New Rating dialog over the current list (the list's header: infoFrom)
+  { pattern: 'ratings/new', module: 'ratings', tab: 'ratings/current', title: 'New Rating', subtitle: 'Serving ratings on the nominal roll', screen: 'ratings.new', action: 'add', view: { file: 'ratings-list.js', mount: 'mountRatingsList', props: { status: 'current', openNew: true, infoFrom: 'ratings/current' } } },
   {
     pattern: 'ratings/edit/:serviceNumber',
     module: 'ratings',
@@ -105,9 +113,10 @@ export const PAGES = [
     subtitle: 'The rating’s service record',
     back: 'ratings/current',
     screen: 'ratings.edit',
+    view: { file: 'rating-record.js', mount: 'mountRatingRecord' },
   },
-  { pattern: 'ratings/upload', module: 'ratings', tab: 'ratings/upload', title: 'Batch Upload', subtitle: 'Add many ratings from one workbook', screen: 'ratings.upload' },
-  { pattern: 'ratings/documents', module: 'ratings', tab: 'ratings/documents', title: 'Documents', subtitle: 'Navpers files by service number', short: 'Documents', screen: 'ratings.documents' },
+  { pattern: 'ratings/upload', module: 'ratings', tab: 'ratings/upload', title: 'Batch Upload', subtitle: 'Add many ratings from one workbook', screen: 'ratings.upload', view: { file: 'ratings-upload.js', mount: 'mountRatingsUpload' } },
+  { pattern: 'ratings/documents', module: 'ratings', tab: 'ratings/documents', title: 'Documents', subtitle: 'Navpers files by service number', short: 'Documents', screen: 'ratings.documents', view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' } },
   {
     pattern: 'ratings/documents/:serviceNumber',
     module: 'ratings',
@@ -116,9 +125,11 @@ export const PAGES = [
     subtitle: 'Navpers files by service number',
     short: 'Documents',
     screen: 'ratings.documents',
+    view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' },
   },
-  { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details' },
+  { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details', view: { file: 'rating-record.js', mount: 'mountMyDetails' } },
   {
+    // "Coming in a Later Release" (drawn by the shell; shown to full-access roles only)
     pattern: 'soon/:key',
     module: (p) => p.key,
     title: (p) => (findModule(p.key) || { label: 'Module' }).label,
@@ -126,6 +137,7 @@ export const PAGES = [
   },
 ];
 
+// the phone's bottom bar; an item shows when its page may be opened (More always shows)
 export const BOTTOM = [
   { key: 'dashboard', label: 'Home', icon: 'house', href: 'dashboard' },
   { key: 'ratings', label: 'Ratings', icon: 'users', href: 'ratings/current' },

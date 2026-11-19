@@ -5,10 +5,7 @@ const express = require('express');
 const helmet = require('helmet');
 const config = require('./config');
 const db = require('./db');
-const authRoutes = require('./modules/auth/auth.routes');
-const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
-const lookupsRoutes = require('./modules/lookups/lookups.routes');
-const ratingsRoutes = require('./modules/ratings/ratings.routes');
+const { mountModules } = require('./modules');
 const { notFoundHandler, errorHandler } = require('./middleware/error');
 
 const app = express();
@@ -54,11 +51,8 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-// Feature API routers
-app.use('/api/auth', authRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/lookups', lookupsRoutes);
-app.use('/api/ratings', ratingsRoutes);
+// Every module's router, from its manifest (src/modules/<module>/<module>.module.js)
+mountModules(app);
 
 // Catch unknown /api/* routes with JSON 404
 app.use('/api', notFoundHandler);
