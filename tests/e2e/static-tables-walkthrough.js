@@ -763,6 +763,8 @@ async function specification(browser) {
   let lookups = (await api(page, 'GET', '/api/lookups')).body.data;
   check(lookups.exitTypes.find((x) => x.code === 'A').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'M').keepsCurrent === true && lookups.exitTypes.find((x) => x.code === 'C').keepsCurrent === true, 'the old codes A, M and C keep a rating current (seed, in /api/lookups)');
   check(lookups.exitTypes.filter((x) => x.isDeath).map((x) => x.code).join() === 'DE' && lookups.exitTypes.every((x) => typeof x.isDeath === 'boolean'), 'only the deceased exit type is marked Death (both flags are in /api/lookups)');
+  check(lookups.inactive.entryModes.some((x) => x.name === 'Sportsmen Enlistment'), 'after a fresh seed the demo\'s switched-off entry mode is Inactive');
+  check(lookups.exitTypes.find((x) => x.name === 'DECEASED').isDeath === true, 'after a fresh seed the deceased exit type has Death = yes');
   check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 4 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not');
 
   // Appraisal Ratings: low not above high, no overlap
