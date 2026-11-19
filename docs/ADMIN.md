@@ -121,13 +121,13 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2 (merged early at 540100d, see below), the plan |
+| master | WP0, WP1, T1, D1, D2, WP2, WP4, D3, the plan |
 | `project-plan` | Even with master after the owner's merge of PR 16 |
-| D1, T1, D2 | Merged 19/11/2026; sessions archived |
-| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`, ON HOLD by the owner. a7c85e2 good; 1f8a75f unfinished (PDF preview with PDF.js, install refused in its session; Print List). Waiting for the owner's choice: PDF.js preview over our pdfkit files (recommended), or printouts as HTML made into PDFs by headless Chromium (Puppeteer), or the browser viewer with its toolbar hidden. The app makes PDFs with pdfkit; Chromium is only in our test containers |
+| D1, T1, D2, WP2, WP4, D3 | Merged 19/11/2026; sessions archived |
+| WP3 `system-admin` | Session `session_01G8RfvnSc5mdVeps4sjzbKj`, resumed: the owner chose pdfkit plus PDF.js; installing pdfjs-dist@4.10.38 is the owner's decision (if its permission check refuses again, ask the owner to approve it in WP3's session). It merges master (WP4, D3), finishes the PDF preview and Print List, switches WP4's `previewPdf`. On report: check the four walkthroughs, owner merges, archive |
 | WP2 | Merged 19/11/2026 (two merges); session archived |
-| WP4 `disciplinary` | Session `session_01G8RfvkhEqoo5KPx5QPdkE2`. Done at fdd2698 and checked (with WP3's a7c85e2 too). Owner to merge, then archive. When WP3 resumes it merges master (README, CONVENTIONS and output.css will conflict: rebuild the CSS) and switches WP4's `previewPdf` helper to the shared preview |
-| D3 `design-special` | Session `session_01G8Rfvj9QeAuEJNKNHHRpuq` (Sonnet 5.5, medium), started 19/11/2026 at the owner's word ("the most important"), alongside WP3's last fixes and WP4. On report: check, send the owner `demo.html`, owner merges, archive. Then WP12 (needs WP2, D3) and WP11 (needs WP7a, D3) |
+| (no new session) | The owner (19/11/2026): open no other session until WP3 is done |
+| Then | Wave E: WP6 Training Drafting and WP7a Drafting Cycle (placeholder due rules, kept as settings, unless Hicad sends the real ones); then WP12 (appraisal; needs WP2, D3). Ask Hicad for the due rules and for TY and DW |
 | Next | Wave E: WP6, WP7a once WP3 and WP4 are merged (the due rules: placeholders unless Hicad sends them). Then F: WP5, WP8; F2: WP12, WP11. G: WP7b, WP9. H: WP10. See PLAN sections 5 and 6 |
 
 Notes for coming briefs:
