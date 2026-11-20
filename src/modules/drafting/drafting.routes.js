@@ -25,12 +25,21 @@
  *   POST   /approvals/:specialisationId           Approve Department                       approval approve
  *   POST   /batches/:id/close                      Close                                    close edit
  *   POST   /batches/:id/rows/:rowId/wef   POST /batches/:id/wef (Set WEF for Department)    wef edit
+ *   GET    /report/batches?branchId&rateId&signal&batchNo&page   Batch/Signal Content list     batches view
+ *   GET    /report/batches/pdf  /report/batches/excel   (same filters)  Print Summary, workbook   batches view
+ *   GET    /report/batches/:id   /report/batches/:id/rows?serviceNumber&name&page                batches view
+ *   GET    /report/batches/:id/pdf   /report/batches/:id/excel    Print Draft Report, workbook   batches view
+ *   GET    /report/history?serviceNumber    /report/history/pdf   Rate DOD History              history view
+ *   GET    /report/postings?specialisationId&authority&from&to&page   Draft Report             report view
+ *   GET    /report/postings/pdf  /report/postings/excel   (same filters)                         report view
  *   GET    /rating/:serviceNumber/scheduled        the moves still to come (the record's Drafting tab)
  *                                                  ratings.edit view, or the rating's own record
  */
 const express = require('express');
 const service = require('./drafting.service');
 const docs = require('./drafting.documents');
+const reports = require('./reports.service');
+const reportDocs = require('./reports.documents');
 const { requireAuth } = require('../../middleware/auth');
 const { requirePrivilege, requireAnyPrivilege } = require('../../middleware/access');
 const { asyncHandler } = require('../../shared/errors');
@@ -41,6 +50,7 @@ router.use(requireAuth);
 const ANY = requireAnyPrivilege([
   ['drafting.manning', 'view'], ['drafting.proposal', 'view'], ['drafting.review', 'view'],
   ['drafting.approval', 'view'], ['drafting.close', 'view'], ['drafting.wef', 'view'],
+  ['drafting.batches', 'view'], ['drafting.history', 'view'], ['drafting.report', 'view'],
 ]);
 const BATCH_VIEW = requireAnyPrivilege([['drafting.review', 'view'], ['drafting.close', 'view'], ['drafting.wef', 'view']]);
 const ownRecord = (req) => req.can('ratings.my-details', 'view')
@@ -157,6 +167,54 @@ router.post('/batches/:id/rows/:rowId/wef', requirePrivilege('drafting.wef', 'ed
 }));
 router.post('/batches/:id/wef', requirePrivilege('drafting.wef', 'edit'), asyncHandler(async (req, res) => {
   res.json({ data: await service.setDepartmentWef(id(req.params.id), req.body || {}, req.user, req.actor) });
+}));
+
+// ---- the reports (WP7b): reads only ----
+router.get('/report/batches', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const r = await reports.listBatches(req.query, req.user);
+  res.json({ data: r.items, summary: r.summary, meta: r.meta });
+}));
+router.get('/report/batches/pdf', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.batchesForPrint(req.query, req.user);
+  send(res, { buffer: await reportDocs.summaryPdf({ ...p, generatedBy: who(req) }), fileName: 'Draft Batch Summary.pdf', mimeType: PDF });
+}));
+router.get('/report/batches/excel', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.batchesForPrint(req.query, req.user);
+  send(res, { buffer: await reportDocs.summaryWorkbook({ ...p, generatedBy: who(req) }), fileName: 'Draft Batch Summary.xlsx', mimeType: XLSX, attachment: true });
+}));
+router.get('/report/batches/:id', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  res.json({ data: await reports.getBatch(id(req.params.id), req.user) });
+}));
+router.get('/report/batches/:id/rows', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const r = await reports.batchRows(id(req.params.id), req.query, req.user);
+  res.json({ data: r.items, meta: r.meta });
+}));
+router.get('/report/batches/:id/pdf', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.batchForPrint(id(req.params.id), req.query, req.user);
+  send(res, { buffer: await reportDocs.batchPdf({ ...p, generatedBy: who(req) }), fileName: `Draft Report ${p.b.batchNumber}.pdf`, mimeType: PDF });
+}));
+router.get('/report/batches/:id/excel', requirePrivilege('drafting.batches', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.batchForPrint(id(req.params.id), req.query, req.user);
+  send(res, { buffer: await reportDocs.batchWorkbook({ ...p, generatedBy: who(req) }), fileName: `Draft Report ${p.b.batchNumber}.xlsx`, mimeType: XLSX, attachment: true });
+}));
+router.get('/report/history', requirePrivilege('drafting.history', 'view'), asyncHandler(async (req, res) => {
+  res.json({ data: await reports.history(req.query, req.user) });
+}));
+router.get('/report/history/pdf', requirePrivilege('drafting.history', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.history(req.query, req.user);
+  send(res, { buffer: await reportDocs.historyPdf({ ...p, generatedBy: who(req) }), fileName: `Draft History ${p.rating.serviceNumber}.pdf`, mimeType: PDF });
+}));
+router.get('/report/postings', requirePrivilege('drafting.report', 'view'), asyncHandler(async (req, res) => {
+  const r = await reports.postings(req.query, req.user);
+  res.json({ data: r.items, summary: r.summary, meta: r.meta });
+}));
+router.get('/report/postings/pdf', requirePrivilege('drafting.report', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.postingsForPrint(req.query, req.user);
+  send(res, { buffer: await reportDocs.postingsPdf({ ...p, generatedBy: who(req) }), fileName: 'Draft Report.pdf', mimeType: PDF });
+}));
+router.get('/report/postings/excel', requirePrivilege('drafting.report', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.postingsForPrint(req.query, req.user);
+  send(res, { buffer: await reportDocs.postingsWorkbook({ ...p, generatedBy: who(req) }), fileName: 'Draft Report.xlsx', mimeType: XLSX, attachment: true });
 }));
 
 // ---- the record's Drafting tab ----

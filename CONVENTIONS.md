@@ -439,7 +439,10 @@ module.exports = {
   Filters button on a phone.
 - **Drafting** (`src/modules/drafting/`, WP7a): screens `drafting.manning` (view, add, edit, delete),
   `drafting.proposal` (view; **add** makes a batch), `drafting.review` (view, add, edit, delete), `drafting.approval`
-  (view, **approve**), `drafting.close` (view; **edit** closes), `drafting.wef` (view; **edit** sets the WEF). A user
+  (view, **approve**), `drafting.close` (view; **edit** closes), `drafting.wef` (view; **edit** sets the WEF), and the
+  read-only reports of WP7b: `drafting.batches` (Batch/Signal Content), `drafting.history` (Rate DOD History) and
+  `drafting.report` (Draft Report), all view (`reports.service.js`, `reports.repo.js`, `reports.documents.js`; the pages
+  in `js/sections/drafting-reports.js`). One filtered query feeds a report's screen, its PDF and its workbook. A user
   with a Specialisation (`req.user.specialisationId`, from `users.specialisation_id`) is held to that department by
   the service. Three parts are written to be reused:
   - **The batch cycle** (`cycle.service.js`, its SQL in `cycle.repo.js`): `batches` (a `flow`: DOD for drafting, DOA
@@ -538,7 +541,7 @@ Special Drafting (Operations); Naval Character
 Assessment (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
-Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
+Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`; WP7b: 3 report tabs, `drafting/batches` (and `drafting/batches/:id`), `history`, `report`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
 
