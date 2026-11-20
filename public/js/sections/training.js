@@ -18,7 +18,7 @@ import { h, cx, fill } from '../ui/html.js';
 import { CARD, TH } from '../ui/classes.js';
 import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
-import { facts } from '../ui/facts.js';
+import { facts, factPanels } from '../ui/facts.js';
 import { pageHeader } from '../ui/page-header.js';
 import { listView } from '../ui/list-view.js';
 import { emptyState } from '../ui/empty-state.js';
@@ -35,6 +35,17 @@ import {
 const PAGE = 25;
 const two = (a, b) => h('span', {}, [a, b ? h('span', { className: 'block text-xs font-normal text-muted-foreground', text: b }) : null]);
 const short = (rate) => String(rate || '').replace(/^.*\(([^)]+)\)$/, '$1') || rate || '';
+/** A rating as the rest of the app writes it: rate, then the name. */
+const who = (m) => [short(m.rate), m.name].filter(Boolean).join(' ');
+const stats = (items) => h('div', { className: 'mb-4 grid grid-cols-3 gap-3 phone:gap-2', dataset: { stats: '' } }, items.map(([label, value, tone]) => h('div', { className: cx(CARD, 'min-w-0 px-4 py-3 phone:px-3') }, [
+  h('div', { className: 'text-2xs font-semibold uppercase leading-4 tracking-wider text-muted-foreground', text: label }),
+  h('div', { className: cx('mt-0.5 text-2xl font-semibold', tone === 'primary' ? 'text-primary-hover' : ''), text: String(value) }),
+])));
+/** The batch the page works on, as two panels of label and value rows. */
+const batchPanels = (b, rightTitle, rightRows) => h('section', { className: cx(CARD, 'mb-4 p-4'), dataset: { batchFacts: '' } }, factPanels([
+  { title: 'Batch', rows: [['Training', h('b', { text: b.course })], ['Period', b.period], ['Institution', b.institution]] },
+  { title: rightTitle, rows: rightRows },
+]));
 const empty = (iconName, title, text, action) => h('div', { className: CARD }, emptyState({ icon: iconName, title, text, action }));
 const loading = () => h('div', { className: cx(CARD, 'p-6 text-center text-sm text-muted-foreground'), role: 'status', text: 'Loading...' });
 
@@ -44,119 +55,125 @@ const pageOf = (rows, page) => ({
   meta: { total: rows.length, page, pageSize: PAGE, totalPages: Math.max(1, Math.ceil(rows.length / PAGE)) },
 });
 
-const batchColumns = (withStatus) => [
+const batchColumns = () => [
   { key: 'batchNumber', label: 'Batch No' },
   { key: 'course', label: 'Training', render: (b) => two(b.course, b.period), className: 'whitespace-normal' },
-  withStatus ? { key: 'status', label: 'Status', render: (b) => statusPill(b) } : { key: 'institution', label: 'Institution', className: 'whitespace-normal' },
   { key: 'ratings', label: 'Ratings', render: (b) => String(b.ratings) },
+  { key: 'status', label: 'Status', render: (b) => statusPill(b) },
 ];
 const batchCard = { title: (b) => b.course, subtitle: (b) => `${b.batchNumber} · ${b.period}`, aside: (b) => statusPill(b) };
 
 // ---- 1. Process Training Draft -------------------------------------------------
 export async function mountProcess(outlet, { info } = {}) {
   const lv = listView({
-    columns: batchColumns(false),
+    columns: batchColumns(),
     load: ({ page }) => api.get(`${BASE}/batches?${queryString({ status: 'open', page })}`),
     card: batchCard,
     empty: { icon: 'graduation-cap', title: 'No Open Batches', text: can('training.process', 'add') ? 'Make one with New Training Batch.' : 'Every batch has had its history confirmed.' },
     onPick: (b) => batchDialog(b),
-    onLoaded: ({ meta }) => { count.textContent = `${meta.total.toLocaleString()} open ${meta.total === 1 ? 'batch' : 'batches'}`; },
+    onLoaded: () => figures(),
   });
   rowTips(lv.el);
-  const count = h('div', { className: 'mb-3 text-sm text-muted-foreground' });
+  const strip = h('div');
+  /** Open batches, the ratings proposed in them and the courses (every open batch, not just this page). */
+  async function figures() {
+    try {
+      const all = await allOpenBatches();
+      strip.replaceChildren(all.length ? stats([['Open Batches', all.length], ['Ratings Proposed', all.reduce((n, b) => n + b.ratings, 0), 'primary'], ['Courses', new Set(all.map((b) => b.courseId)).size]]) : '');
+    } catch (_) { strip.replaceChildren(); }
+  }
 
   function batchDialog(b) {
     const dlg = openDialog({ title: b.batchNumber, size: 'md', body: facts(batchRows(b)) });
     const acts = [button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() })];
     if (can('training.review', 'view')) acts.push(button({ label: 'Open in Review', icon: 'list', variant: 'outline', onClick: () => { dlg.close(); navigate(`#training/review/${b.id}`); } }));
-    if (can('training.process', 'add')) acts.push(button({ label: 'Add Ratings', icon: 'plus', variant: 'primary', onClick: () => { dlg.close(); addByFilterDialog(b, { onDone: () => lv.reload() }); } }));
+    if (can('training.process', 'add')) acts.push(button({ label: 'Add Ratings', icon: 'user-plus', variant: 'primary', onClick: () => { dlg.close(); addByFilterDialog(b, { onDone: () => lv.reload() }); } }));
     dlg.setFooter(acts);
   }
 
   const actions = can('training.process', 'add')
     ? [button({ label: 'New Training Batch', icon: 'plus', variant: 'primary', onClick: () => newBatchDialog({ onDone: (b) => { if (can('training.review', 'view')) navigate(`#training/review/${b.id}`); else lv.reload(); } }) })]
     : null;
-  outlet.replaceChildren(pageHeader({ title: info ? info.title : 'Process Training Draft', subtitle: 'The open training batches', actions }), count, lv.el);
+  outlet.replaceChildren(pageHeader({ title: info ? info.title : 'Process Training Draft', subtitle: 'Open a training batch for a course and month, then choose who joins it', actions }), strip, lv.el);
 }
 
 // ---- 2 and 3: a page that works on one open batch -------------------------------
-/** Review and History share the batch picker and a batch held in memory. */
+/** Review and History share the batch picker and a batch held in memory. build gets setActions(buttons) for the page header. */
 async function batchScreen(outlet, { info, params, title, subtitle, build }) {
-  outlet.replaceChildren(pageHeader({ title: info ? info.title : title, subtitle }), loading());
+  const heading = info ? info.title : title;
+  const header = (actions) => pageHeader({ title: heading, subtitle, actions });
+  outlet.replaceChildren(header(null), loading());
   let batches;
-  try { batches = await allOpenBatches(); } catch (err) { outlet.replaceChildren(empty('circle-alert', 'Could Not Load', err.message || 'Try again.')); return; }
+  try { batches = await allOpenBatches(); } catch (err) { outlet.replaceChildren(header(null), empty('circle-alert', 'Could Not Load', err.message || 'Try again.')); return; }
   const body = h('div');
   const startId = params && params.batchId ? Number(params.batchId) : null;
   const picker = batchPicker(batches, {
     value: startId && batches.some((b) => b.id === startId) ? startId : '',
     onPick: (id) => { navigate(id ? `#${info.tab}/${id}` : `#${info.tab}`); },
   });
-  const bar = h('div', { className: 'mb-4 desk:w-96' }, field({ label: 'Open Batch', control: picker }));
-  outlet.replaceChildren(pageHeader({ title: info ? info.title : title, subtitle }), bar, body);
+  const bar = h('section', { className: cx(CARD, 'mb-4 p-4') }, field({ label: 'Batch Number', control: picker }));
+  const top = h('div', {}, header(null));
+  const setActions = (actions) => top.replaceChildren(header(actions));
+  outlet.replaceChildren(top, bar, body);
   if (!batches.length) { body.replaceChildren(empty('graduation-cap', 'No Open Batches', 'Make one on Process Training Draft, or every batch has had its history confirmed.')); return; }
-  const id = picker.value ? Number(picker.value) : null;
+  const id = picker.startValue ? Number(picker.startValue) : null;
   if (!id) { body.replaceChildren(empty('list', 'Choose a Batch', 'Pick an open batch above to see its ratings.')); return; }
-  await build(body, id, () => mountAgain());
+  await build(body, id, () => mountAgain(), setActions);
   function mountAgain() { return batchScreen(outlet, { info, params: { batchId: id }, title, subtitle, build }); }
 }
 
 // ---- 2. Training Review -------------------------------------------------------------
 export function mountReview(outlet, ctx = {}) {
   return batchScreen(outlet, {
-    ...ctx, title: 'Training Review', subtitle: 'The ratings of an open batch',
-    async build(body, id, again) {
+    ...ctx, title: 'Training Review', subtitle: 'Check who goes on the course; add or remove ratings',
+    async build(body, id, again, setActions) {
       let batch;
       const load = async () => { batch = (await api.get(`${BASE}/batches/${id}`)).data; };
       try { await load(); } catch (err) { body.replaceChildren(empty('circle-alert', 'Could Not Open the Batch', err.message)); return; }
       const mayEdit = can('training.review', 'edit') && batch.status === 'open';
       const lv = listView({
         columns: [
-          { key: 'name', label: 'Name', render: (m) => two(m.name, m.serviceNumber) },
-          { key: 'rate', label: 'Rate', render: (m) => short(m.rate) },
-          { key: 'lengthOfService', label: 'Length of Service' },
-          { key: 'lastCourse', label: 'Last Course', className: 'whitespace-normal' },
+          { key: 'serviceNumber', label: 'Official No' },
+          { key: 'name', label: 'Name', render: (m) => two(who(m), `LOS ${m.lengthOfService}`) },
+          { key: 'lastCourse', label: 'Last Course', render: (m) => (m.lastCourseStart ? m.lastCourse : pill('First course', 'neutral')), className: 'whitespace-normal' },
         ],
         load: async ({ page }) => pageOf(batch.members, page),
         rowKey: (m) => m.serviceNumber,
-        card: { title: (m) => m.name, subtitle: (m) => `${m.serviceNumber} · ${short(m.rate)}`, aside: (m) => h('span', { className: 'text-xs text-muted-foreground', text: m.lastCourse }) },
-        empty: { icon: 'users', title: 'No Ratings Yet', text: 'Add a rating, or add by branch.' },
+        card: { title: (m) => who(m), subtitle: (m) => `${m.serviceNumber} · LOS ${m.lengthOfService}`, aside: (m) => (m.lastCourseStart ? h('span', { className: 'text-xs text-muted-foreground', text: m.lastCourse }) : pill('First course', 'neutral')) },
+        empty: { icon: 'users', title: 'This Batch Is Empty', text: 'Add ratings by Official Number or by branch.' },
         onPick: (m) => memberDialog(m),
       });
       rowTips(lv.el);
-      const refresh = async () => { await load(); head(); lv.reload(); };
-      const head = () => fill(strip, [
-        h('div', { className: 'min-w-0' }, [h('b', { className: 'block truncate', text: `${batch.course} · ${batch.period}` }), h('span', { className: 'text-xs text-muted-foreground', text: `${batch.batchNumber} · ${batch.ratings} ${batch.ratings === 1 ? 'rating' : 'ratings'}` })]),
-        h('div', { className: 'flex flex-wrap gap-2 desk:ml-auto' }, mayEdit ? [
+      const strip = h('div');
+      const head = () => {
+        strip.replaceChildren(batchPanels(batch, 'Progress', [['Batch Number', h('b', { text: batch.batchNumber })], ['Initiated', `${fmt(batch.openedAt)}${batch.openedBy ? ` by ${batch.openedBy}` : ''}`], ['Ratings', String(batch.ratings)]]));
+        setActions(mayEdit ? [
           button({ label: 'Add Rating', icon: 'user-plus', variant: 'primary', onClick: () => addRatingDialog() }),
-          button({ label: 'Add by Branch', icon: 'plus', variant: 'blue', onClick: () => addByFilterDialog(batch, { onDone: refresh }) }),
-        ] : []),
-      ]);
-      const strip = h('div', { className: cx(CARD, 'mb-3 flex flex-wrap items-center gap-3 p-3 phone:flex-col phone:items-stretch') });
+          button({ label: 'Add by Branch', icon: 'users', variant: 'outline', onClick: () => addByFilterDialog(batch, { onDone: refresh }) }),
+        ] : null);
+      };
+      const refresh = async () => { await load(); head(); lv.reload(); };
       head();
 
       function addRatingDialog() {
         const pick = ratingSearch({ name: 'serviceNumber', status: 'current', ariaLabel: 'Rating', placeholder: 'Official number or name' });
-        const msg = h('div');
-        const { form } = formDialog({
+        formDialog({
           title: `Add Rating to ${batch.batchNumber}`, size: 'md', submitLabel: 'Add Rating', submitIcon: 'plus',
           children: [
             h('div', { className: span }, field({ label: 'Rating', control: pick, hint: `Only a current rating that ${batch.course} is open to, and who is not already in an open batch for it.` })),
-            h('div', { className: span }, msg),
           ],
           save: () => {
-            msg.replaceChildren();
-            if (!pick.value) { const e = new Error('Choose the rating.'); e.fields = {}; msg.replaceChildren(notice('error', 'circle-alert', 'Choose the rating.')); throw e; }
-            return api.post(`${BASE}/batches/${id}/ratings`, { serviceNumber: pick.value }).catch((err) => { msg.replaceChildren(notice('error', 'circle-alert', err.message)); throw err; });
+            if (!pick.value) { const e = new Error('Choose the rating.'); e.fields = { serviceNumber: 'Choose the rating.' }; throw e; }
+            return api.post(`${BASE}/batches/${id}/ratings`, { serviceNumber: pick.value });
           },
           done: (m) => { toast(`${m.name} added.`); refresh(); },
         });
-        void form;
       }
 
       function memberDialog(m) {
         const dlg = openDialog({
-          title: m.name, size: 'md',
-          body: facts([['Official No', m.serviceNumber], ['Rate', m.rate], ['Length of Service', m.lengthOfService], ['Last Course', m.lastCourse], ['Last Course Dates', m.lastCourseStart ? `${fmt(m.lastCourseStart)} to ${fmt(m.lastCourseEnd)}` : '']]),
+          title: who(m), size: 'md',
+          body: facts([['Official No', m.serviceNumber], ['Name', m.name], ['Rate', m.rate], ['Length of Service', m.lengthOfService], ['Last Course', m.lastCourse], ['Last Course Dates', m.lastCourseStart ? `${fmt(m.lastCourseStart)} to ${fmt(m.lastCourseEnd)}` : '']]),
         });
         const acts = [button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() })];
         if (can('ratings.edit', 'view')) acts.push(button({ label: 'Open Record', icon: 'id-card', variant: 'outline', onClick: () => { dlg.close(); openRecord(m.serviceNumber); } }));
@@ -181,15 +198,15 @@ export function mountReview(outlet, ctx = {}) {
 // ---- 3. Update Training History -----------------------------------------------------
 export function mountHistory(outlet, ctx = {}) {
   return batchScreen(outlet, {
-    ...ctx, title: 'Update Training History', subtitle: 'Who attended, and confirm the history',
-    async build(body, id, again) {
+    ...ctx, title: 'Update Training History', subtitle: 'Confirm attendance and dates; each rating gets a Training record',
+    async build(body, id, again, setActions) {
       let batch;
       const load = async () => { batch = (await api.get(`${BASE}/batches/${id}`)).data; };
       try { await load(); } catch (err) { body.replaceChildren(empty('circle-alert', 'Could Not Open the Batch', err.message)); return; }
       const mayEdit = can('training.history', 'edit');
 
       const attend = (m) => {
-        const box = h('input', { type: 'checkbox', className: 'h-5 w-5 cursor-pointer', 'aria-label': `${m.name} attended` });
+        const box = h('input', { type: 'checkbox', className: 'h-5 w-5 cursor-pointer accent-primary', 'aria-label': `${m.name} attended` });
         box.checked = m.attended;
         box.disabled = !mayEdit;
         box.addEventListener('click', (e) => e.stopPropagation());
@@ -197,33 +214,44 @@ export function mountHistory(outlet, ctx = {}) {
         box.addEventListener('change', async () => {
           const want = box.checked;
           box.disabled = true;
-          try { await api.put(`${BASE}/batches/${id}/ratings/${encodeURIComponent(m.serviceNumber)}`, { attended: want }); m.attended = want; summary(); } catch (err) { box.checked = !want; toast(err.message || 'Could not save.', 'error'); } finally { box.disabled = !mayEdit; }
+          try { await api.put(`${BASE}/batches/${id}/ratings/${encodeURIComponent(m.serviceNumber)}`, { attended: want }); m.attended = want; head(); lv.reload(); } catch (err) { box.checked = !want; toast(err.message || 'Could not save.', 'error'); } finally { box.disabled = !mayEdit; }
         });
         return box;
       };
       const datesOf = (m) => (m.startDate ? `${fmt(m.startDate)} to ${fmt(m.endDate)}` : 'Batch dates');
+      const datesPill = (m) => (m.attended ? pill(datesOf(m), 'info') : pill('Not attending', 'neutral'));
       const lv = listView({
         columns: [
-          { key: 'name', label: 'Name', render: (m) => two(m.name, m.serviceNumber) },
-          { key: 'rate', label: 'Rate', render: (m) => short(m.rate) },
+          { key: 'serviceNumber', label: 'Official No' },
+          { key: 'name', label: 'Name', render: (m) => who(m) },
           { key: 'attended', label: 'Attended', render: attend },
-          { key: 'dates', label: 'Dates', render: (m) => datesOf(m), className: 'whitespace-normal' },
+          { key: 'dates', label: 'This Course', render: datesPill, className: 'whitespace-normal' },
         ],
         load: async ({ page }) => pageOf(batch.members, page),
         rowKey: (m) => m.serviceNumber,
-        card: { title: (m) => m.name, subtitle: (m) => `${m.serviceNumber} · ${datesOf(m)}`, aside: (m) => attend(m) },
-        empty: { icon: 'users', title: 'No Ratings', text: 'Add ratings in Training Review first.' },
-        onPick: (m) => datesDialog(m),
+        card: { title: (m) => who(m), subtitle: (m) => `${m.serviceNumber} · ${m.attended ? datesOf(m) : 'Not attending'}`, aside: (m) => attend(m) },
+        empty: { icon: 'users', title: 'This Batch Is Empty', text: 'Add ratings in Training Review first.' },
+        onPick: (m) => memberDialog(m),
       });
       rowTips(lv.el);
-      const note = h('p', { className: 'mb-3 text-sm text-muted-foreground' });
-      const summary = () => { const n = batch.members.filter((m) => m.attended).length; note.textContent = `${n} of ${batch.members.length} ${batch.members.length === 1 ? 'rating' : 'ratings'} attended. A rating that did not attend gets no entry and no result.`; };
-      summary();
-      const confirmBtn = button({ label: 'Confirm Training History', icon: 'circle-check', variant: 'primary', onClick: () => confirmForm() });
-      const strip = h('div', { className: cx(CARD, 'mb-3 flex flex-wrap items-center gap-3 p-3 phone:flex-col phone:items-stretch') }, [
-        h('div', { className: 'min-w-0' }, [h('b', { className: 'block truncate', text: `${batch.course} · ${batch.period}` }), h('span', { className: 'text-xs text-muted-foreground', text: `${batch.batchNumber} · ${batch.institution || 'No institution'}` })]),
-        mayEdit ? h('div', { className: 'desk:ml-auto' }, confirmBtn) : null,
-      ]);
+      const strip = h('div');
+      const head = () => {
+        const n = batch.members.filter((m) => m.attended).length;
+        strip.replaceChildren(batchPanels(batch, 'Progress', [['Batch Number', h('b', { text: batch.batchNumber })], ['Ratings', String(batch.members.length)], ['Attending', `${n} of ${batch.members.length}`]]));
+        setActions(mayEdit ? [button({ label: 'Confirm Training History', icon: 'check', variant: 'primary', disabled: !n, onClick: () => confirmForm() })] : null);
+      };
+      head();
+
+      function memberDialog(m) {
+        const dlg = openDialog({
+          title: who(m), size: 'md',
+          body: facts([['Official No', m.serviceNumber], ['Name', m.name], ['Rate', m.rate], ['Last Course', m.lastCourse], ['Attended', m.attended ? 'Yes' : 'No'], ['Dates', m.attended ? (m.startDate ? `${fmt(m.startDate)} to ${fmt(m.endDate)} (own dates)` : 'The batch dates') : '']]),
+        });
+        const acts = [button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() })];
+        if (can('ratings.edit', 'view')) acts.push(button({ label: 'Open Record', icon: 'id-card', variant: 'outline', onClick: () => { dlg.close(); openRecord(m.serviceNumber); } }));
+        if (mayEdit && m.attended) acts.push(button({ label: 'Change Dates', icon: 'calendar', variant: 'primary', onClick: () => { dlg.close(); datesDialog(m); } }));
+        dlg.setFooter(acts);
+      }
 
       function datesDialog(m) {
         const { form } = formDialog({
@@ -243,7 +271,7 @@ export function mountHistory(outlet, ctx = {}) {
         const o = await loadOptions(true);
         const attending = batch.members.filter((m) => m.attended);
         const results = attending.map((m) => field({
-          label: `${m.name} (${m.serviceNumber})`, className: span,
+          label: `${who(m)} (${m.serviceNumber})`, className: span,
           control: selectInput({ name: `results.${m.serviceNumber}`, options: RESULTS.map((r) => ({ value: r, label: r })), placeholder: '-- Result --' }),
         }));
         formDialog({
@@ -264,7 +292,7 @@ export function mountHistory(outlet, ctx = {}) {
         });
       }
 
-      body.replaceChildren(strip, note, lv.el);
+      body.replaceChildren(strip, lv.el);
     },
   });
 }
@@ -283,7 +311,7 @@ export async function mountReports(outlet, { info } = {}) {
     onChange: () => lv.reload({ resetPage: true }),
   });
   const lv = listView({
-    columns: batchColumns(true),
+    columns: batchColumns(),
     load: ({ page }) => api.get(`${BASE}/batches?${queryString({ ...bar.query(), page })}`),
     card: batchCard,
     empty: { icon: 'file-text', title: 'No Batches', text: 'No batch matches these filters.' },
@@ -297,11 +325,11 @@ export async function mountReports(outlet, { info } = {}) {
     try { b = (await api.get(`${BASE}/batches/${row.id}`)).data; } catch (err) { toast(err.message || 'Could not open the batch.', 'error'); return; }
     const ratings = b.members.length
       ? h('div', { className: 'mt-4 overflow-x-auto' }, h('table', { className: 'w-full text-sm' }, [
-        h('thead', { className: 'bg-subtle' }, h('tr', {}, ['Official No', 'Name', b.status === 'closed' ? 'Result' : 'Rate'].map((t) => h('th', { className: TH, scope: 'col', text: t })))),
+        h('thead', { className: 'bg-subtle' }, h('tr', {}, ['Official No', 'Name', b.status === 'closed' ? 'Result' : 'This Course'].map((t) => h('th', { className: TH, scope: 'col', text: t })))),
         h('tbody', {}, b.members.map((m) => h('tr', { className: 'border-t border-border' }, [
           h('td', { className: 'whitespace-nowrap px-4 py-2', text: m.serviceNumber }),
-          h('td', { className: 'px-4 py-2', text: m.name }),
-          h('td', { className: 'px-4 py-2', text: b.status === 'closed' ? (m.attended ? m.result : 'Did not attend') : short(m.rate) }),
+          h('td', { className: 'px-4 py-2', text: who(m) }),
+          h('td', { className: 'px-4 py-2' }, b.status === 'closed' ? (m.attended ? pill(m.result || 'Attended', 'success') : pill('Did not attend', 'neutral')) : pill('Proposed', 'info')),
         ]))),
       ]))
       : h('p', { className: 'mt-4 text-sm text-muted-foreground', text: 'No ratings in this batch.' });

@@ -94,7 +94,7 @@ The map of the old system (how it is built, one file per module, definitions fro
 - **Routes** `/api/training-drafting`: `options`, `eligible`, `batches` (list, one batch, POST), `batches/:id/ratings` (POST, and DELETE `/:serviceNumber`), `batches/:id/ratings/filter`, `batches/:id/ratings/:serviceNumber` (PUT: Attended, own dates), `batches/:id/confirm`, `batches/:id/pdf`, `upload/template`, `upload/review`, `upload/import`. Screens: `training.process` (view, add), `training.review` (view, edit), `training.history` (view, edit), `training.reports` (view), `training.upload` (view, add). Training Review's rating search is allowed by `training.review` edit.
 - **Excel Upload** columns: Official No, Course, Institution, Qualification, Start Date, End Date, Authority. Course and Institution are matched by name or code; a blank Institution is the course's; a blank Qualification is the course name. Every row is read first: a problem is listed with its row, field and problem as an *Error* (the row is wrong) or *Skipped* (it repeats an earlier row, or is already on the rating's record); Import adds the rest in one transaction. Authority has no column on the record, so it is kept in the audit row of each Training entry.
 - **Printout:** the Training Draft Report (`training-draft-report`) lists a batch's ratings with their previous course and its dates; a closed batch lists those who attended.
-- **Demo data (seed 007):** four batches (two open, two closed with their history confirmed and the Training entries on the records); the old role **Training** with every privilege of the module (account `B0562`, password `Admin@123`) and **Training Viewer** (account `B0541`), which may only view the batches and the reports.
+- **Demo data (seed 007):** four batches (two open, two closed with their history confirmed and the Training entries on the records); the old role **Training** with every privilege of the module (account `B0901`, password `Admin@123`) and **Training Viewer** (account `B0902`), which may only view the batches and the reports.
 
 ### Advancement Processing
 
@@ -214,6 +214,8 @@ Choices made where the design and decisions were silent (also in the report):
 | `B0801` | `Admin@123` | Advancement | `B0801` | The old Advancement role: who is due, makes advancement batches and reviews them; reads the other advancement pages. |
 | `B0802` | `Admin@123` | Advancement Approver | `B0802` | Approves departments, closes advancement batches, enters board dates and uploads advanced rates. |
 | `B0803` | `Admin@123` | Advancement | `B0803` | As `B0801`, tied to the **Gunnery** department: sees only its due list, batches and approval. |
+| `B0901` | `Admin@123` | Training | `B0901` | The old Training role: makes training batches, reviews them, updates the history, reads the reports and uses the Excel upload. |
+| `B0902` | `Admin@123` | Training Viewer | `B0902` | May only view the open batches and the reports. |
 
 An account made in Manage Users or reset in Manage Password has a **one-time password** that the person must replace at first sign-in; the seeded accounts above do not (so the demo opens straight in).
 

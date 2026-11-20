@@ -26,6 +26,8 @@ const intOrNull = (v) => {
   const n = Number.parseInt(v, 10);
   return Number.isFinite(n) && n > 0 ? n : null;
 };
+/** "Able Seaman (AB)" as "AB", as the rest of the app writes a rate. */
+const shortRate = (rate) => { const m = /\(([^)]+)\)/.exec(rate || ''); return m ? m[1] : rate || ''; };
 const nameOf = (r) => [r.surname, r.first_name, r.middle_name].filter(Boolean).join(' ');
 
 // ---- shapes ----------------------------------------------------------------------
@@ -417,12 +419,12 @@ async function batchPdf(id, printedBy) {
   const rows = listed.map((m) => ({
     sn: m.serviceNumber,
     name: `${String(m.surname || '').toUpperCase()} ${m.otherNames}`.trim(),
-    rate: m.rate,
+    rate: shortRate(m.rate),
     prev: m.lastCourse,
     from: m.lastCourseStart || '',
     to: m.lastCourseEnd || '',
   }));
-  const buffer = await docs.batchReportPdf({ batch, rows, notListed: batch.members.length - listed.length, generatedBy: printedBy });
+  const buffer = await docs.batchReportPdf({ batch, rows, notListed: batch.members.length - listed.length, generatedBy: (printedBy && (printedBy.fullName || printedBy.username)) || '' });
   return { buffer, mimeType: 'application/pdf', fileName: `Training Draft Report ${batch.batchNumber}.pdf` };
 }
 

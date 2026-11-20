@@ -56,9 +56,20 @@ const span = 'col-span-2 phone:col-span-1';
 export const wide = (label, control, hint) => field({ label, control, hint, className: span });
 export { span };
 
+/** A field's message goes as soon as the person changes the field. */
+export function clearOnChange(form) {
+  const clear = (e) => {
+    const wrap = e.target && e.target.closest ? e.target.closest('[data-field]') : null;
+    if (wrap) clearFieldErrors(wrap);
+  };
+  form.addEventListener('change', clear);
+  form.addEventListener('input', clear);
+}
+
 /** A dialog with a form; save(form) makes the API call, errors land under their fields. */
 export function formDialog({ title, size = 'lg', children, submitLabel, submitIcon = 'check', tone = 'primary', backLabel = 'Cancel', save, done }) {
   const form = h('form', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', novalidate: true, autocomplete: 'off' }, children);
+  clearOnChange(form);
   const dlg = openDialog({ title, size, body: form });
   const go = button({ label: submitLabel, icon: submitIcon, variant: tone, onClick: () => submit() });
   dlg.setFooter([button({ label: backLabel, variant: 'outline', onClick: () => dlg.close() }), go]);
@@ -143,26 +154,32 @@ export async function newBatchDialog({ onDone } = {}) {
   const steps = stepper({ steps: ['Course and Period', 'Select Ratings'], current: 1, onStep: (n) => go(n) });
   const courseSel = selectInput({ name: 'course_id', options: courseOpts(o.courses), placeholder: '-- Select Course --' });
   const rule = h('div', { className: 'hidden' });
-  courseSel.addEventListener('change', () => {
-    const c = o.courses.find((x) => String(x.id) === courseSel.value);
-    rule.classList.toggle('hidden', !c);
-    rule.replaceChildren(...(c ? [notice('info', 'info', openTo(c, o))] : []));
-  });
   const one = h('div', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1', dataset: { step: '1' } }, [
     h('div', { className: span }, field({ label: 'Course', control: courseSel })),
     field({ label: 'Month', control: selectInput({ name: 'month', options: monthOptions(), value: now.getMonth() + 1, placeholder: '-- Select Month --' }) }),
     field({ label: 'Year', control: textInput({ name: 'year', value: String(now.getFullYear()), inputmode: 'numeric', maxlength: '4' }) }),
     h('div', { className: span }, rule),
   ]);
-  const filters = filterPanel(o, () => Number(courseSel.value));
+  const courseId = () => val(form, 'course_id');
+  const filters = filterPanel(o, () => Number(courseId()));
   const two = h('div', { className: 'hidden', dataset: { step: '2' } }, [
     h('p', { className: 'mb-3 text-sm text-muted-foreground', text: 'Every eligible rating that matches is put in the batch. More can be added or removed in Training Review.' }),
     filters.panel,
   ]);
   const form = h('form', { novalidate: true, autocomplete: 'off' }, [steps.el, one, two]);
+  clearOnChange(form);
+  // the select is replaced by the dropdown component when the dialog opens: read it through the form
+  form.addEventListener('change', (e) => {
+    const t = e.target;
+    if (!t || !t.getAttribute || t.getAttribute('name') !== 'course_id') return;
+    const c = o.courses.find((x) => String(x.id) === courseId());
+    rule.classList.toggle('hidden', !c);
+    rule.replaceChildren(...(c ? [notice('info', 'info', openTo(c, o))] : []));
+  });
   const dlg = openDialog({ title: 'New Training Batch', size: 'lg', body: form });
   const back = button({ label: 'Cancel', variant: 'outline', onClick: () => (step === 2 ? go(1) : dlg.close()) });
-  const next = button({ label: 'Next', iconAfter: 'chevron-right', variant: 'blue', onClick: () => (step === 1 ? go(2) : create()) });
+  const next = button({ label: 'Next', iconAfter: 'chevron-right', variant: 'blue', onClick: () => go(2) });
+  const make = button({ label: 'Create Batch', icon: 'check', variant: 'primary', onClick: () => create() });
   dlg.setFooter([back, next]);
   let step = 1;
 
@@ -170,7 +187,7 @@ export async function newBatchDialog({ onDone } = {}) {
     if (n === 2) {
       clearFieldErrors(form);
       const errs = {};
-      if (!courseSel.value) errs.course_id = 'Choose the course.';
+      if (!courseId()) errs.course_id = 'Choose the course.';
       if (!val(form, 'month')) errs.month = 'Choose the month.';
       if (!/^\d{4}$/.test(val(form, 'year'))) errs.year = 'Enter the four-digit year.';
       if (Object.keys(errs).length) { setFieldErrors(form, errs); return; }
@@ -180,28 +197,28 @@ export async function newBatchDialog({ onDone } = {}) {
     one.classList.toggle('hidden', n !== 1);
     two.classList.toggle('hidden', n !== 2);
     setLabel(back, n === 2 ? 'Back' : 'Cancel');
+    dlg.setFooter([back, n === 2 ? make : next]);
     setNext();
     if (n === 2) { await filters.refresh(); setNext(); }
   }
   function setNext() {
-    setLabel(next, step === 1 ? 'Next' : 'Create Batch');
-    next.disabled = step === 2 && !filters.matching();
+    make.disabled = step === 2 && !filters.matching();
   }
   filters.panel.addEventListener('change', () => setTimeout(setNext, 400));
 
   async function create() {
     clearFieldErrors(form);
-    next.disabled = true;
+    make.disabled = true;
     dlg.setDismissible(false);
     try {
-      const res = await api.post(`${BASE}/batches`, { course_id: courseSel.value, month: val(form, 'month'), year: val(form, 'year'), ...filters.values(form) });
+      const res = await api.post(`${BASE}/batches`, { course_id: courseId(), month: val(form, 'month'), year: val(form, 'year'), ...filters.values(form) });
       dlg.setDismissible(true);
       dlg.close('saved');
       toast(`Batch ${res.data.batchNumber} made with ${res.data.ratings} ${res.data.ratings === 1 ? 'rating' : 'ratings'}.`);
       onDone(res.data);
     } catch (err) {
       dlg.setDismissible(true);
-      next.disabled = false;
+      make.disabled = false;
       if (err.fields && (err.fields.month || err.fields.year || err.fields.course_id)) {
         await go(1);
         setFieldErrors(form, err.fields);
@@ -241,14 +258,19 @@ export async function allOpenBatches() {
   return out;
 }
 
-/** The select of open batches; calls onPick(batchId | null). */
+/** The select of open batches; calls onPick(batchId | null). The dropdown component replaces the select, so the change is read from the wrapper. */
 export function batchPicker(batches, { value = '', onPick }) {
   const sel = selectInput({
     name: 'batch', ariaLabel: 'Open Batch', placeholder: batches.length ? '-- Select an Open Batch --' : 'No open batches',
-    options: batches.map((b) => ({ value: b.id, label: `${b.batchNumber} · ${b.course} · ${b.period}` })), value,
+    options: batches.map((b) => ({ value: b.id, label: `${b.batchNumber} · ${b.course}` })), value,
   });
-  sel.addEventListener('change', () => onPick(sel.value ? Number(sel.value) : null));
-  return sel;
+  const wrap = h('div', {}, sel);
+  wrap.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t && t.getAttribute && t.getAttribute('name') === 'batch') onPick(Number(t.value) || null);
+  });
+  wrap.startValue = value;
+  return wrap;
 }
 
 export const batchRows = (b) => [

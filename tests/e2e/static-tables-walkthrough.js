@@ -55,7 +55,7 @@ const TABLES = [
   { slug: 'ships', item: 'Ship', table: 'ref_ship', lookup: 'ships', holder: ['rating_drafting', 'ship_id'] },
   { slug: 'states', item: 'State', table: 'ref_state', lookup: 'states', holder: ['ratings', 'state_id'] },
   { slug: 'title', item: 'Title', table: 'ref_title', lookup: 'titles', holder: ['ratings', 'title_id'] },
-  { slug: 'training', item: 'Course', table: 'ref_training' },
+  { slug: 'training', item: 'Course', table: 'ref_training', holder: ['rating_training', 'training_course_id'] },
 ];
 
 let failures = 0;
