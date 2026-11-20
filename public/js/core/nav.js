@@ -138,7 +138,7 @@ export const AREAS = [
         tabs: [
           { route: 'discharge/process', label: 'Process Discharge', icon: 'door-open', screen: 'discharge.process' },
           { route: 'discharge/service', label: 'Print Service Details', icon: 'printer', screen: 'discharge.service' },
-          { route: 'discharge/forms', label: 'Verification Forms', icon: 'file-check', screen: 'discharge.forms' },
+          { route: 'discharge/forms', label: 'Verification Forms', icon: 'clipboard-check', screen: 'discharge.forms' },
           { route: 'discharge/report', label: 'Discharge Report', icon: 'chart-column', screen: 'discharge.report' },
           { route: 'discharge/upload', label: 'Upload Discharge', icon: 'upload', screen: 'discharge.upload' },
         ],

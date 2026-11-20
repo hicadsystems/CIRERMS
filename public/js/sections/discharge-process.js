@@ -15,10 +15,19 @@ import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from 
 import { pill } from '../ui/pill.js';
 import { toast } from '../ui/toast.js';
 import { inPageTabs } from '../ui/tabs.js';
+import { filterBar, rowTips } from './disciplinary-parts.js';
 
 const BASE = '/api/discharge';
-const fmt = (v) => formatDisplayDate(v) || '—';
-const nameOf = (r) => r.name || [r.surname, r.first_name, r.middle_name].filter(Boolean).join(' ');
+const fmt = (v) => formatDisplayDate(v) || '';
+const cell = (v) => fmt(v) || '—';
+const years = (n) => (n === null || n === undefined ? '' : `${n} ${n === 1 ? 'year' : 'years'}`);
+const nameOf = (r) => String(r.name || [r.surname, r.first_name, r.middle_name].filter(Boolean).join(' ')).toUpperCase();
+/** A name cell: the name, then the rate and what else helps tell two ratings apart, then the pending-case warning. */
+const nameCell = (r, more) => h('div', { className: 'grid justify-items-start gap-1' }, [
+  h('span', { text: nameOf(r) }),
+  h('span', { className: 'text-xs text-muted-foreground', text: [r.rate, more].filter(Boolean).join(' · ') }),
+  r.pendingCases ? pill('Pending case', 'warning') : null,
+]);
 const dateField = (name, value = '', label = 'dd/mm/yyyy', hint = '') => field({
   label, hint, control: wireDateField(textInput({ name, value: formatDisplayDate(value), placeholder: 'dd/mm/yyyy', inputmode: 'numeric', maxlength: '10' })),
 });
@@ -37,7 +46,7 @@ export async function mountProcess(outlet) {
   try {
     proposalItems = (await loadProposals()).filter((p) => Number(p.pending) > 0);
   } catch (error) {
-    toast.error(error.message || 'Could not load discharge proposals.');
+    toast(error.message || 'Could not load discharge proposals.', 'error');
   }
 
   function pendingCaseWarning(count, openPending) {
@@ -60,10 +69,7 @@ export async function mountProcess(outlet) {
   const dueList = listView({
     columns: [
       { label: 'Official No', key: 'serviceNumber' },
-      { label: 'Name', render: (r) => h('div', { className: 'grid gap-1' }, [
-        h('span', { text: nameOf(r) }),
-        r.pendingCases ? pill('Pending case', 'warning') : null,
-      ]) },
+      { label: 'Name', render: (r) => nameCell(r, r.branch) },
       { label: 'Age', render: (r) => pill(`${r.age ?? '—'} years`, r.ageBand) },
       { label: 'Service', render: (r) => pill(`${r.yearsService ?? '—'} years`, r.serviceBand) },
     ],
@@ -89,6 +95,7 @@ export async function mountProcess(outlet) {
     empty: { icon: 'users', title: 'Nobody Is Due', text: 'No rating matches these filters. Widen your search or change the filters.' },
     autoLoad: false,
   });
+  rowTips(dueList.el);
   const progressBar = h('div', { className: 'cirerms-progress-bar', dataset: { level: 'low' } });
   const progressText = h('p', { className: 'shrink-0 text-xs text-muted-foreground' }, [h('b', { className: 'text-foreground', text: '0' }), ' of 0 have an exit type']);
   const proposalProgress = h('section', { className: `${CARD} mb-3 flex items-center gap-3 p-3` }, [
@@ -99,10 +106,7 @@ export async function mountProcess(outlet) {
   const proposalRows = listView({
     columns: [
       { label: 'Official No', key: 'serviceNumber' },
-      { label: 'Name', render: (r) => h('div', { className: 'grid gap-1' }, [
-        h('span', { text: nameOf(r) }),
-        r.pendingCases ? pill('Pending case', 'warning') : null,
-      ]) },
+      { label: 'Name', render: (r) => nameCell(r, r.currentShip) },
       { label: 'Exit Type', render: (r) => h('div', { className: 'grid gap-1' }, [
         exitTypePill(r),
         r.exitDate ? h('span', { className: 'text-xs text-muted-foreground', text: fmt(r.exitDate) }) : null,
@@ -129,38 +133,23 @@ export async function mountProcess(outlet) {
     autoLoad: false,
   });
 
+  rowTips(proposalRows.el);
+
   function exitTypePill(row) {
     const type = o.exitTypes.find((x) => Number(x.id) === Number(row.exitTypeId));
     return pill(row.exitType || 'Not processed', type ? (type.isDeath ? 'error' : 'info') : 'neutral');
   }
 
-  const dueSearch = textInput({ name: 'q', type: 'search', placeholder: 'e.g. B0539 or Okafor', 'aria-label': 'Official No or Name' });
-  const branch = selectInput({ name: 'branchId', options: lookupOptions(o.branches), placeholder: 'All Branches', 'aria-label': 'Branch' });
-  const rate = selectInput({ name: 'rateId', options: lookupOptions(o.rates), placeholder: 'All Rates', 'aria-label': 'Rate' });
-  const entryMode = selectInput({ name: 'entryModeId', options: lookupOptions(o.entryModes), placeholder: 'All Entry Modes', 'aria-label': 'Entry Mode' });
-  const searchDue = button({ label: 'Search', icon: 'search', variant: 'primary', onClick: applyFilters });
-  const resetDue = button({ label: 'Reset', icon: 'rotate-ccw', variant: 'outline', onClick: resetFilters });
-  const dueFiltersPanel = h('section', { className: `${CARD} mb-3 grid grid-cols-4 gap-3 p-3 phone:grid-cols-1` }, [
-    field({ label: 'Official No or Name', control: dueSearch }),
-    field({ label: 'Branch', control: branch }),
-    field({ label: 'Rate', control: rate }),
-    field({ label: 'Entry Mode', control: entryMode }),
-    actionGroup([searchDue, resetDue], { className: 'col-span-4 phone:col-span-1' }),
-  ]);
-  function applyFilters() {
-    dueFilters = { q: dueSearch.value.trim(), branchId: branch.value, rateId: rate.value, entryModeId: entryMode.value };
-    dueList.reload({ resetPage: true });
-  }
-  function resetFilters() {
-    dueSearch.value = '';
-    branch.value = '';
-    rate.value = '';
-    entryMode.value = '';
-    applyFilters();
-  }
-  dueSearch.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') { event.preventDefault(); applyFilters(); }
+  const dueBar = filterBar({
+    fields: [
+      { name: 'q', label: 'Official No or Name', type: 'text', placeholder: 'e.g. B0539 or Okafor', span: 'col-span-2 phone:col-span-1' },
+      { name: 'branchId', label: 'Branch', type: 'select', options: lookupOptions(o.branches), placeholder: 'All Branches' },
+      { name: 'rateId', label: 'Rate', type: 'select', options: lookupOptions(o.rates), placeholder: 'All Rates' },
+      { name: 'entryModeId', label: 'Entry Mode', type: 'select', options: lookupOptions(o.entryModes), placeholder: 'All Entry Modes' },
+    ],
+    onChange: (values) => { dueFilters = { ...values }; dueList.reload({ resetPage: true }); },
   });
+  const dueFiltersPanel = dueBar.el;
 
   const create = can('discharge.process', 'add')
     ? button({ label: 'Create Proposal', icon: 'plus', variant: 'primary', onClick: createProposal })
@@ -191,7 +180,7 @@ export async function mountProcess(outlet) {
     if (!can('discharge.process', 'add')) return;
     try {
       const due = await getAllDue();
-      if (!due.length) { toast.error('There are no ratings matching these filters.'); return; }
+      if (!due.length) { toast('There are no ratings matching these filters.', 'error'); return; }
       const fresh = due.filter((r) => !r.proposalNumber);
       const flagged = fresh.filter((r) => r.pendingCases > 0);
       const dlg = openDialog({
@@ -221,17 +210,17 @@ export async function mountProcess(outlet) {
         fresh.length ? button({ label: 'Create Proposal', variant: 'primary', onClick: async () => {
           try {
             const result = await api.post(`${BASE}/proposals`, { serviceNumbers: fresh.map((r) => r.serviceNumber) });
-            toast.success(`Proposal ${result.data.proposalNumber} created.`);
+            toast(`Proposal ${result.data.proposalNumber} created.`);
             dlg.close();
             await refreshProposals();
             selectedProposalId = String(result.data.id);
             activeTab = 'proposals';
             draw();
-          } catch (error) { toast.error(error.message || 'Could not create proposal.'); }
+          } catch (error) { toast(error.message || 'Could not create proposal.', 'error'); }
         } }) : button({ label: 'Go to Proposals', variant: 'primary', onClick: () => { dlg.close(); activeTab = 'proposals'; draw(); } }),
       ]);
     } catch (error) {
-      toast.error(error.message || 'Could not load due ratings.');
+      toast(error.message || 'Could not load due ratings.', 'error');
     }
   }
 
@@ -260,10 +249,10 @@ export async function mountProcess(outlet) {
           navigate('#disciplinary/pending');
         }) : null,
         facts([
-          ['Official No', r.serviceNumber], ['Rate', r.rate || '—'], ['Branch', r.branch || '—'],
-          ['Entry Mode', r.entryMode || '—'], ['Date of Birth', fmt(r.dateOfBirth)], ['Age', `${r.age ?? '—'} years`],
-          ['Date Enlisted', fmt(r.dateEmployed)], ['Length of Service', `${r.yearsService ?? '—'} years`],
-          ['Current Ship', r.currentShip || '—'], ['Proposal', r.proposalNumber || '—'],
+          ['Official No', r.serviceNumber], ['Rate', r.rate || ''], ['Branch', r.branch || ''],
+          ['Entry Mode', r.entryMode || ''], ['Date of Birth', fmt(r.dateOfBirth)], ['Age', years(r.age)],
+          ['Date Enlisted', fmt(r.dateEmployed)], ['Length of Service', years(r.yearsService)],
+          ['Current Ship', r.currentShip || ''], ['Proposal', r.proposalNumber || ''],
           ['Last Re-engagement', r.lastReengagement ? `${fmt(r.lastReengagement.date)} for ${r.lastReengagement.periodMonths} months (ended ${fmt(r.lastReengagement.untilDate)})` : 'None'],
         ]),
       ]),
@@ -291,20 +280,20 @@ export async function mountProcess(outlet) {
           navigate('#disciplinary/pending');
         }) : null,
         facts([
-          ['Proposal', row.proposalNumber], ['Proposed By', row.proposedBy || '—'],
-          ['Official No', row.serviceNumber], ['Rate', row.rate || '—'],
-          ['Age', `${row.age ?? '—'} years`], ['Length of Service', `${row.yearsService ?? '—'} years`],
-          ['Date Enlisted', fmt(row.dateEmployed)], ['Current Ship', row.currentShip || '—'],
+          ['Proposal', row.proposalNumber], ['Proposed By', row.proposedBy || ''],
+          ['Official No', row.serviceNumber], ['Rate', row.rate || ''],
+          ['Age', years(row.age)], ['Length of Service', years(row.yearsService)],
+          ['Date Enlisted', fmt(row.dateEmployed)], ['Current Ship', row.currentShip || ''],
           ['Last Re-engagement', row.lastReengagement ? `${fmt(row.lastReengagement.date)} for ${row.lastReengagement.periodMonths} months (ended ${fmt(row.lastReengagement.untilDate)})` : 'None'],
           ['Exit Type', row.exitType || 'Not processed'], ['Exit Date', fmt(row.exitDate)],
-          ['Exit Reason', row.exitReason || '—'], ['Comment', row.comment || '—'],
+          ['Exit Reason', row.exitReason || ''], ['Comment', row.comment || ''],
         ]),
       ]),
     });
     const actions = [
       can('ratings.edit', 'view') ? button({ label: 'Open Record', icon: 'id-card', variant: 'outline', onClick: () => { dlg.close(); navigate(`#ratings/edit/${encodeURIComponent(row.serviceNumber)}`); } }) : null,
       can('discharge.process', 'delete') ? button({ label: 'Remove', icon: 'trash-2', variant: 'danger', onClick: () => removeFromProposal(row, dlg) }) : null,
-      can('discharge.process', 'edit') ? button({ label: 'Re-engage', icon: 'rotate-cw', variant: 'outline', onClick: () => reengageRow(row, dlg) }) : null,
+      can('discharge.process', 'edit') ? button({ label: 'Re-engage', icon: 'refresh-cw', variant: 'outline', onClick: () => reengageRow(row, dlg) }) : null,
       can('discharge.process', 'edit') ? button({ label: 'Process', icon: 'pencil', variant: 'primary', onClick: () => { dlg.close(); processForm(row); } }) : null,
       button({ label: 'Close', variant: 'outline', onClick: () => dlg.close() }),
     ].filter(Boolean);
@@ -315,10 +304,10 @@ export async function mountProcess(outlet) {
     if (!await confirmDialog({ title: 'Remove from Proposal', message: `${nameOf(row)} will remain current and can be proposed again later.`, confirmLabel: 'Remove Rating', danger: true })) return;
     try {
       await api.del(`${BASE}/proposals/${row.proposalId}/ratings/${encodeURIComponent(row.serviceNumber)}`);
-      toast.success('Removed from proposal.');
+      toast('Removed from proposal.');
       dlg.close();
       await refreshProposals();
-    } catch (error) { toast.error(error.message || 'Could not remove rating.'); }
+    } catch (error) { toast(error.message || 'Could not remove rating.', 'error'); }
   }
 
   function processForm(row) {
@@ -336,10 +325,10 @@ export async function mountProcess(outlet) {
           navigate('#disciplinary/pending');
         }) : null,
         facts([
-          ['Proposal', row.proposalNumber], ['Proposed By', row.proposedBy || '—'],
-          ['Official No', row.serviceNumber], ['Rate', row.rate || '—'],
-          ['Age', `${row.age ?? '—'} years`], ['Length of Service', `${row.yearsService ?? '—'} years`],
-          ['Date Enlisted', fmt(row.dateEmployed)], ['Current Ship', row.currentShip || '—'],
+          ['Proposal', row.proposalNumber], ['Proposed By', row.proposedBy || ''],
+          ['Official No', row.serviceNumber], ['Rate', row.rate || ''],
+          ['Age', years(row.age)], ['Length of Service', years(row.yearsService)],
+          ['Date Enlisted', fmt(row.dateEmployed)], ['Current Ship', row.currentShip || ''],
           ['Last Re-engagement', row.lastReengagement ? `${fmt(row.lastReengagement.date)} for ${row.lastReengagement.periodMonths} months (ended ${fmt(row.lastReengagement.untilDate)})` : 'None'],
         ]),
       ]),
@@ -362,10 +351,10 @@ export async function mountProcess(outlet) {
       h('p', { className: 'mt-1 text-xs text-muted-foreground', text: 'These are recorded only; a missing document does not stop discharge.' }),
     ]);
     const updateDeathFields = () => {
-      const selected = selectableTypes.find((x) => String(x.id) === exitSelect.value);
+      const selected = selectableTypes.find((x) => String(x.id) === fieldValue(body, 'exitTypeId'));
       deathFields.classList.toggle('hidden', !(selected && selected.isDeath));
     };
-    exitSelect.addEventListener('change', updateDeathFields);
+    body.addEventListener('change', (event) => { if (event.target.getAttribute && event.target.getAttribute('name') === 'exitTypeId') updateDeathFields(); });
     updateDeathFields();
     body.append(deathFields);
 
@@ -382,7 +371,7 @@ export async function mountProcess(outlet) {
       clearFieldErrors(body);
       const exitDate = dateValue(body, 'exitDate');
       const data = {
-        exitTypeId: Number(exitSelect.value) || null,
+        exitTypeId: Number(fieldValue(body, 'exitTypeId')) || null,
         exitDate: exitDate || '',
         exitReason: fieldValue(body, 'exitReason'),
         approvedBy: fieldValue(body, 'approvedBy'),
@@ -403,19 +392,19 @@ export async function mountProcess(outlet) {
         const future = data.exitDate > o.today;
         const message = h('div', { className: 'grid gap-3' }, [
           bodyText('Closing a discharge is final and cannot be reopened here.'),
-          facts([['Rating', nameOf(row)], ['Exit Type', selectableTypes.find((x) => Number(x.id) === data.exitTypeId)?.name || '—'], ['Exit Date', fmt(data.exitDate)]]),
+          facts([['Rating', nameOf(row)], ['Exit Type', selectableTypes.find((x) => Number(x.id) === data.exitTypeId)?.name || ''], ['Exit Date', fmt(data.exitDate)]]),
           bodyText(future ? `The rating stays current until ${fmt(data.exitDate)}; this discharge will be scheduled.` : `The rating moves to Former Ratings now, with ${fmt(data.exitDate)} as the exit date.`),
         ]);
         if (!await confirmDialog({ title: 'Close Discharge', message, confirmLabel: 'Close Discharge', danger: true, icon: 'lock' })) return;
       }
       try {
         await api.put(`${BASE}/proposals/${row.proposalId}/ratings/${encodeURIComponent(row.serviceNumber)}`, data);
-        toast.success(data.status === 'closed' ? 'Discharge closed.' : 'Discharge saved as pending.');
+        toast(data.status === 'closed' ? 'Discharge closed.' : 'Discharge saved as pending.');
         dlg.close();
         await refreshProposals();
       } catch (error) {
         if (error.fields) setFieldErrors(body, error.fields);
-        else toast.error(error.message || 'Could not save discharge.');
+        else toast(error.message || 'Could not save discharge.', 'error');
       }
     }
 
@@ -483,26 +472,27 @@ export async function mountProcess(outlet) {
       } catch (error) {
         if (request !== candidateRequest) return;
         candidateInfo.replaceChildren(h('p', { className: 'text-sm text-error', text: error.message || 'Could not check this rating.' }));
-        toast.error(error.message || 'Could not check this rating.');
+        toast(error.message || 'Could not check this rating.', 'error');
       }
     });
 
     async function addSelectedRating() {
       if (!rating.value || !candidateCanAdd) return;
-      if (!proposal.value) { toast.error('Choose a proposal.'); return; }
+      const chosen = fieldValue(dlg.body, 'proposalId');
+      if (!chosen) { toast('Choose a proposal.', 'error'); return; }
       try {
-        if (proposal.value === '__new') {
+        if (chosen === '__new') {
           const result = await api.post(`${BASE}/proposals`, { serviceNumbers: [rating.value] });
           selectedProposalId = String(result.data.id);
-          toast.success(`${rating.value} added to ${result.data.proposalNumber}.`);
+          toast(`${rating.value} added to ${result.data.proposalNumber}.`);
         } else {
-          await api.post(`${BASE}/proposals/${proposal.value}/ratings`, { serviceNumber: rating.value });
-          selectedProposalId = String(proposal.value);
-          toast.success('Rating added to proposal.');
+          await api.post(`${BASE}/proposals/${chosen}/ratings`, { serviceNumber: rating.value });
+          selectedProposalId = String(chosen);
+          toast('Rating added to proposal.');
         }
         dlg.close();
         await refreshProposals();
-      } catch (error) { toast.error(error.message || 'Could not add rating.'); }
+      } catch (error) { toast(error.message || 'Could not add rating.', 'error'); }
     }
   }
 
@@ -517,7 +507,7 @@ export async function mountProcess(outlet) {
     const dlg = openDialog({ title: 'Re-engage', size: 'md', body: form });
     dlg.setFooter([
       button({ label: 'Cancel', variant: 'outline', onClick: () => dlg.close() }),
-      button({ label: 'Re-engage', icon: 'rotate-cw', variant: 'primary', onClick: async () => {
+      button({ label: 'Re-engage', icon: 'refresh-cw', variant: 'primary', onClick: async () => {
         clearFieldErrors(form);
         const reengageDate = dateValue(form, 'reengageDate');
         const periodMonths = Number(fieldValue(form, 'periodMonths'));
@@ -530,13 +520,13 @@ export async function mountProcess(outlet) {
         if (Object.keys(errors).length) { setFieldErrors(form, errors); return; }
         try {
           await api.post(`${BASE}/proposals/${row.proposalId}/ratings/${encodeURIComponent(row.serviceNumber)}/reengage`, { reengageDate, periodMonths, approvedBy });
-          toast.success(`${nameOf(row)} re-engaged for ${periodMonths} months.`);
+          toast(`${nameOf(row)} re-engaged for ${periodMonths} months.`);
           dlg.close();
           parent.close();
           await refreshProposals();
         } catch (error) {
           if (error.fields) setFieldErrors(form, error.fields);
-          else toast.error(error.message || 'Could not re-engage rating.');
+          else toast(error.message || 'Could not re-engage rating.', 'error');
         }
       } }),
     ]);
@@ -550,10 +540,12 @@ export async function mountProcess(outlet) {
       placeholder: 'All Proposals',
       'aria-label': 'Proposal',
     });
-    select.addEventListener('change', () => {
-      selectedProposalId = select.value;
-      proposalRows.reload({ resetPage: true });
-    });
+    proposalSelector.onchange = (event) => {
+      if (event.target.getAttribute && event.target.getAttribute('name') === 'proposalId') {
+        selectedProposalId = String(event.target.value || '');
+        proposalRows.reload({ resetPage: true });
+      }
+    };
     proposalSelector.replaceChildren(field({ label: 'Proposal', control: select, className: 'w-full max-w-xl' }));
   }
 
@@ -582,7 +574,7 @@ export async function mountProcess(outlet) {
         proposalRows.reload({ resetPage: true });
       }
     } catch (error) {
-      toast.error(error.message || 'Could not refresh proposals.');
+      toast(error.message || 'Could not refresh proposals.', 'error');
     }
   }
 }
