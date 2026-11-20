@@ -213,6 +213,10 @@ async function workbook(rows, headers = ['Official No', 'Exit Type', 'Exit Date'
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
+/** A change still to come for a rating, as Drafting or Advancement would have scheduled it. */
+const scheduleLater = (db, sn, kind, date) => db.query("INSERT INTO scheduled_changes (kind, service_number, effective_date, payload, status) VALUES (?, ?, ?, '{}', 'scheduled')", [kind, sn, date]);
+const stateOf = async (db, sn, kind, date) => (await db.query('SELECT status, outcome FROM scheduled_changes WHERE service_number = ? AND kind = ? AND effective_date = ?', [sn, kind, date]))[0][0];
+
 const one = async (db, sql, params = []) => (await db.query(sql, params))[0][0];
 const all = async (db, sql, params = []) => (await db.query(sql, params))[0];
 
@@ -331,6 +335,16 @@ async function adminFlow(browser, db, state) {
   check(!!sched && sched.status === 'scheduled' && sched.row_status === 'scheduled' && sched.effective_date === isoOf(dayFrom(10)), 'Scheduled: through src/shared/scheduled, for the exit date', JSON.stringify(sched));
   check((await one(db, "SELECT status FROM ratings WHERE service_number = 'B1006'")).status === 'current', 'Scheduled: the rating stays current until the date');
   await settle(page);
+  await go(page, 'ratings/edit/B1006');
+  await main(page).locator('[data-discharge-pills]').getByText(`Leaves ${ddmmyyyy(dayFrom(10))}`).waitFor();
+  check(true, 'Record: a scheduled discharge shows Leaves dd/mm/yyyy in the header');
+  await shot(page, 'desktop-light-record-leaves');
+  await go(page, 'ratings/edit/B1041');
+  await main(page).locator('[data-discharge-pills]').getByText(/^Re-engaged to \d\d\/\d\d\/\d{4}$/).waitFor();
+  check(true, 'Record: a re-engaged rating shows Re-engaged to dd/mm/yyyy in the header');
+  await shot(page, 'desktop-light-record-reengaged');
+  await go(page, 'ratings/edit/B1021');
+  check(await main(page).locator('[data-discharge-pills]').count() === 0, 'Record: a former rating shows neither');
 
   // ---- 4. Add Rating, then close today: Former, posting ended, account deactivated, session ended
   await go(page, 'discharge/process');
@@ -451,6 +465,9 @@ async function adminFlow(browser, db, state) {
   await toastText(page, /closed/i);
   const s2 = await one(db, "SELECT effective_date FROM scheduled_changes WHERE service_number = 'B1002' AND kind = 'discharge' AND status = 'scheduled'");
   check(!!s2, 'Scheduled: a seeded pending discharge is scheduled for its exit date');
+  const exitB1031 = (await one(db, "SELECT exit_date AS d FROM discharge_rows WHERE service_number = 'B1031'")).d;
+  await scheduleLater(db, 'B1031', 'posting', isoOf(dayFrom(5)));
+  await scheduleLater(db, 'B1031', 'advancement', isoOf(dayFrom(35)));
   require('../../src/modules/discharge/discharge.service');
   const scheduledWorker = require('../../src/shared/scheduled');
   const before = await scheduledWorker.applyDue({ today: isoOf(dayFrom(1)) });
@@ -562,6 +579,8 @@ async function adminFlow(browser, db, state) {
   await dialogOf(page).waitFor();
   check(/Problem/.test(await dialogOf(page).innerText()), 'Upload: a problem row opens in a dialog');
   await closeAll(page);
+  await scheduleLater(db, 'B0728', 'posting', dateOf(15));
+  await scheduleLater(db, 'B0728', 'advancement', dateOf(-60));
   await main(page).getByRole('button', { name: /Import 23 Discharges/ }).click();
   check(/final/.test(await dialogOf(page).innerText()) && /scheduled/.test(await dialogOf(page).innerText()), 'Upload: Import asks first and says closed is final');
   await shot(page, 'desktop-light-upload-confirm');
@@ -574,6 +593,9 @@ async function adminFlow(browser, db, state) {
   const former = await all(db, "SELECT service_number, status FROM ratings WHERE service_number IN ('B0711', 'B0728', 'B0729', 'B0730')");
   check(former.filter((r) => r.status === 'former').length === 2 && former.filter((r) => r.status === 'current').length === 2, 'Upload: a past date makes the rating Former, a later date leaves it current', JSON.stringify(former));
   check((await one(db, "SELECT COUNT(*) AS n FROM scheduled_changes WHERE kind = 'discharge' AND service_number IN ('B0729', 'B0730') AND status = 'scheduled'")).n === 2, 'Upload: the later dates are scheduled');
+  const upLate = await stateOf(db, 'B0728', 'posting', dateOf(15));
+  const upEarly = await stateOf(db, 'B0728', 'advancement', dateOf(-60));
+  check(upLate.status === 'cancelled' && upEarly.status === 'scheduled', 'Upload: a leaver\'s later scheduled change is cancelled, an earlier one stays', JSON.stringify({ upLate, upEarly }));
   check((await one(db, "SELECT COUNT(*) AS n FROM discharge_rows WHERE service_number = 'B0712'")).n === 0, 'Upload: a rating with only problem rows is left alone');
   await send('again.xlsx', good);
   await page.waitForFunction(() => /0\s*Ready/.test(document.querySelector('[data-upload-counts]')?.innerText || ''));
@@ -721,6 +743,18 @@ async function rulesAndRules(browser, db) {
   check(months.body.data.untilDate === '2026-02-28', 'Re-engage: 31 January and one month ends on 28 February', months.body.data.untilDate);
   check((await one(db, "SELECT status FROM ratings WHERE service_number = 'B1008'")).status === 'current', 'Re-engage: the rating stays current');
 
+  // a leaver's scheduled moves are cancelled, in the same transaction, from the exit date on
+  const leaver = await audited('Proposal for a leaver', () => api(page, 'POST', '/api/discharge/proposals', { serviceNumbers: ['B1012'] }));
+  const today = isoOf(new Date());
+  await scheduleLater(db, 'B1012', 'posting', isoOf(dayFrom(20)));
+  await scheduleLater(db, 'B1012', 'advancement', isoOf(dayFrom(30)));
+  await scheduleLater(db, 'B1012', 'posting', isoOf(dayFrom(-2)));
+  await scheduleLater(db, 'B1012', 'advancement', today);
+  await audited('Closing a leaver', () => api(page, 'PUT', `/api/discharge/proposals/${leaver.body.data.id}/ratings/B1012`, { exitTypeId: retired, exitReason: 'Retired', exitDate: today, status: 'closed' }));
+  const cancelled = await all(db, "SELECT kind, effective_date, status, outcome FROM scheduled_changes WHERE service_number = 'B1012' ORDER BY effective_date");
+  check(cancelled.length === 4 && cancelled[0].status === 'scheduled' && cancelled.slice(1).every((c) => c.status === 'cancelled' && /left the service/.test(c.outcome)), 'Leaver: every scheduled change dated on or after the exit date is cancelled (postings and advancements); an earlier one still applies', JSON.stringify(cancelled));
+  check((await one(db, "SELECT COUNT(*) AS n FROM audit_trail WHERE table_name = 'scheduled_changes' AND action = 'UPDATE' AND record_id LIKE 'B1012:%'")).n === 3, 'Leaver: each cancellation is in the audit trail');
+
   // the printouts and their sources
   check((await api(page, 'GET', '/api/discharge/verification/B0701/reengagement/pdf')).status === 409, 'Verification: no re-engagement, no Re-engagement Verification (409)');
   check((await api(page, 'GET', '/api/discharge/verification/B0705/retirement/pdf')).status === 409, 'Verification: no discharge, no Retirement Routine (409)');
@@ -845,6 +879,13 @@ async function layoutPass(browser, viewport, theme, upload) {
     await shot(page, `${viewport.width}-${theme}-${route.replace(/[/#]/g, '-')}-dialog`);
     await closeAll(page);
   }
+  for (const [sn, pillText] of [['B0729', /^Leaves \d\d\/\d\d\/\d{4}$/], ['B1041', /^Re-engaged to \d\d\/\d\d\/\d{4}$/]]) {
+    await go(page, `ratings/edit/${sn}`);
+    await main(page).locator('[data-discharge-pills]').getByText(pillText).waitFor();
+    await noOverflow(page, `${label} record ${sn}`);
+    await shot(page, `${viewport.width}-${theme}-record-${sn}`);
+  }
+  check(true, `${label}: the record header shows Leaves and Re-engaged to`);
   if (phone) {
     await go(page, 'discharge/process');
     check(await page.locator('#app-main [data-filters] button', { hasText: 'Filters' }).isVisible(), `${label}: the filters fold into a Filters button`);

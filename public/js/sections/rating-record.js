@@ -36,6 +36,7 @@ import { setPhoneTitle } from '../shell/phone.js';
 import { sectionByKey, sectionFields, wireCascades, readForm, displayRows } from './rating-fields.js';
 import { CHILD_TABS, childPanel } from './rating-children.js';
 import { documentsBlock } from './rating-documents-block.js';
+import { dischargePills } from './discharge-record.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
 import { ratingName, personName } from './rating-names.js';
 import { disciplinePanel } from './disciplinary-parts.js';
@@ -100,6 +101,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
             pill(r.status === 'former' ? 'Former' : 'Current', r.status === 'former' ? 'neutral' : 'success'),
             r.branch_name ? pill(r.branch_name, 'info') : null,
             r.command_name ? pill(r.command_name, 'neutral') : null,
+            r.status === 'current' ? dischargePills(r.service_number) : null,
           ]),
         ]),
         h('div', { className: 'flex flex-wrap gap-2 phone:w-full phone:[&>*]:flex-1' }, actions),

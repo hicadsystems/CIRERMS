@@ -63,6 +63,14 @@ router.delete('/proposals/:id/ratings/:serviceNumber', requirePrivilege('dischar
   res.json({ data: await service.removeRow(Number.parseInt(req.params.id, 10) || 0, req.params.serviceNumber, req.actor) });
 }));
 
+// the record's header: Leaves dd/mm/yyyy and Re-engaged to dd/mm/yyyy (the rating's own record too)
+const ownRecord = (req) => req.can('ratings.my-details', 'view')
+  && !!req.user.serviceNumber
+  && String(req.params.serviceNumber || '').trim().toUpperCase() === String(req.user.serviceNumber).toUpperCase();
+router.get('/rating/:serviceNumber/status', requirePrivilege('ratings.edit', 'view', { own: ownRecord }), asyncHandler(async (req, res) => {
+  res.json({ data: await service.recordStatus(req.params.serviceNumber) });
+}));
+
 router.get('/service-details/:serviceNumber', requirePrivilege('discharge.service', 'view'), asyncHandler(async (req, res) => {
   res.json({ data: await service.serviceDetails(req.params.serviceNumber) });
 }));

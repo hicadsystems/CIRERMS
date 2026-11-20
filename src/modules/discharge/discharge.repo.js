@@ -296,6 +296,12 @@ async function deactivateAccount(userId, conn) {
   return res.affectedRows || 0;
 }
 
+/** The end date of the latest re-engagement that has not ended, or null. */
+async function runningReengagement(serviceNumber, today, conn = null) {
+  const r = await db.query('SELECT MAX(until_date) AS until FROM discharge_reengagements WHERE service_number = ? AND until_date >= ?', [serviceNumber, today], conn);
+  return r[0] && r[0].until ? String(r[0].until).slice(0, 10) : null;
+}
+
 async function reengagementRow(serviceNumber, conn = null) {
   const r = await db.query(
     'SELECT x.*, p.proposal_number FROM discharge_reengagements x JOIN discharge_proposals p ON p.id=x.proposal_id WHERE x.service_number=? ORDER BY x.reengage_date DESC, x.id DESC LIMIT 1',
@@ -443,6 +449,6 @@ async function uploadRaw(id, conn = null) {
 module.exports = {
   options, exitType, listDue, ratingBasic, proposalCandidate, nextProposalNumber, insertProposal, proposalRaw, proposals,
   insertRow, rowRaw, rowByProposal, hasExistingProposalRow, listRows, pendingProposalRows, updateRow, setScheduled, rowByScheduledChange, reopenRow, removeRow,
-  insertReengagement, reengagementRaw, ratingExitRaw, setFormer, openPostings, postingRaw, endPosting, accountOf, deactivateAccount, reengagementRow, reengagementHistory, verificationDischarge, report, serviceDetails,
+  insertReengagement, reengagementRaw, runningReengagement, ratingExitRaw, setFormer, openPostings, postingRaw, endPosting, accountOf, deactivateAccount, reengagementRow, reengagementHistory, verificationDischarge, report, serviceDetails,
   insertUpload, uploadRaw,
 };

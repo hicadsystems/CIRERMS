@@ -7,6 +7,7 @@ const scheduled = require('../../shared/scheduled');
 const { parseIsoDate } = require('../../shared/dates');
 const { validationError, conflict, notFound } = require('../../shared/errors');
 const repo = require('./discharge.repo');
+const { dmy } = require('../drafting/drafting.format');
 
 const text = (v) => (v === undefined || v === null ? '' : String(v).trim());
 const intOrNull = (v) => { const n = Number.parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : null; };
@@ -238,6 +239,11 @@ async function applyExit(tx, actor, serviceNumber, x) {
     await repo.endPosting(posting.id, x.exitDate, conn);
     await audit.record(tx, actor, { action: 'UPDATE', table: 'rating_drafting', recordId: `${serviceNumber}:${posting.id}`, before: posting, after: await repo.postingRaw(posting.id, conn) });
   }
+  // what was still to come for the rating, from the exit date on, will not happen (earlier ones still apply)
+  for (const change of await scheduled.forRating(serviceNumber)) {
+    if (change.kind === 'discharge' || String(change.effective_date).slice(0, 10) < x.exitDate) continue;
+    await scheduled.cancel(tx, actor, change.id, `The rating left the service on ${dmy(x.exitDate)}.`);
+  }
   const account = await repo.accountOf(serviceNumber, conn);
   if (account && account.is_active) {
     await repo.deactivateAccount(account.id, conn);
@@ -387,6 +393,15 @@ async function serviceDetails(sn) {
   return r;
 }
 
+/** What the record's header shows: a discharge scheduled for a later date, and a re-engagement still running. */
+async function recordStatus(sn) {
+  const serviceNumber = text(sn).toUpperCase();
+  if (!await repo.ratingBasic(serviceNumber)) throw notFound('That rating was not found.', 'RATING_NOT_FOUND');
+  const [change] = await scheduled.forRating(serviceNumber, 'discharge');
+  const until = await repo.runningReengagement(serviceNumber, todayIso());
+  return { leavesOn: change ? String(change.effective_date).slice(0, 10) : null, reengagedUntil: until };
+}
+
 async function verification(sn) {
   const rating = await repo.ratingBasic(text(sn).toUpperCase());
   if (!rating) throw notFound('That rating was not found.', 'RATING_NOT_FOUND');
@@ -428,4 +443,4 @@ scheduled.register('discharge', {
   },
 });
 
-module.exports = { applyExit, documentsOf, options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification };
+module.exports = { applyExit, documentsOf, options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification, recordStatus };
