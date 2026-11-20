@@ -173,9 +173,9 @@ DROP TABLE ratings;
 11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
 13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
-16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
 14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
 15. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
+16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -535,7 +535,7 @@ Every screen has both layouts (desktop 761 px and up, phone 760 px and below) an
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
 Special Drafting (Operations); Naval Character
-Assessment and Discharge Administration (Records); Reports
+Assessment (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
