@@ -12,7 +12,7 @@ import { button } from '../ui/button.js';
 import { pageHeader } from '../ui/page-header.js';
 import { statTile } from '../ui/stat-tile.js';
 import { card } from '../ui/card.js';
-import { avatar } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { emptyState } from '../ui/empty-state.js';
 import { toast } from '../ui/toast.js';
 import { newRatingButton } from './rating-new.js';
@@ -62,7 +62,7 @@ export async function mountDashboard(outlet) {
           href: `#ratings/edit/${encodeURIComponent(r.service_number)}`,
           className: 'flex items-center gap-3 border-b border-border/70 px-4 py-2.5 transition-colors hover:bg-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-ring/15',
         }, [
-          avatar({ name: personName(r), size: 'sm' }),
+          photoAvatar(personName(r), r.passport_photo_url, 'sm'),
           h('span', { className: 'min-w-0 flex-1' }, [
             h('b', { className: 'block truncate text-sm font-medium', text: ratingName(r) }),
             h('span', { className: 'block truncate text-xs text-muted-foreground', text: `${r.service_number} · ${r.status === 'former' ? 'Former' : r.current_ship_name || 'No current posting'}` }),

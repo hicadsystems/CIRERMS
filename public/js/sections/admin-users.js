@@ -18,6 +18,7 @@ import { h, cx } from '../ui/html.js';
 import { pageHeader } from '../ui/page-header.js';
 import { toolbar } from '../ui/toolbar.js';
 import { listView } from '../ui/list-view.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { button } from '../ui/button.js';
 import { pill } from '../ui/pill.js';
 import { facts } from '../ui/facts.js';
@@ -63,7 +64,7 @@ export async function mountAdminUsers(outlet, { info } = {}) {
     },
     onPick: (u) => openAccount(u),
     card: {
-      avatar: (u) => (u.initials ? u.initials.split('').join(' ') : u.fullName),
+      avatarNode: (u) => photoAvatar(u.fullName, u.passportPhotoUrl, 'md', u.initials || undefined),
       title: (u) => u.fullName,
       subtitle: (u) => `${u.username} · ${u.role}`,
       aside: (u) => statusPill(u.isActive),

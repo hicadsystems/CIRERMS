@@ -15,7 +15,7 @@ import { cx, h } from '../ui/html.js';
 import { openDialog } from '../ui/dialog.js';
 import { attachMenu } from '../ui/menu.js';
 import { pillClass } from '../ui/pill.js';
-import { initialsOf } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { accountItems, getUser, roleLabel } from './session.js';
 
 const COLS = { 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' };
@@ -49,7 +49,7 @@ function renderHeader(info) {
     : h('span', { className: 'ml-1.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-background p-0.5 ring-2 ring-sidebar-foreground/30' }, h('img', { src: '/assets/navy-logo.png', alt: '', className: 'h-8 w-8 object-contain' }));
   const search = h('button', { type: 'button', className: ROUND, 'aria-label': 'Search', onClick: () => openSearch() }, icon('search', 'icon h-5 w-5'));
   const account = h('button', { type: 'button', className: ROUND, 'aria-label': 'Account' },
-    h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-2xs font-bold text-sidebar-accent-foreground', text: user.initials || initialsOf(user.fullName || user.username || '') }));
+    photoAvatar(user.fullName || user.username || '', user.passportPhotoUrl, 'xs', user.initials || undefined, 'bg-sidebar-accent text-sidebar-accent-foreground shadow-none ring-0'));
   attachMenu(account, accountItems, { title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
   header.replaceChildren(
     lead,

@@ -13,7 +13,7 @@ import { moduleVisible, moduleHref, homeHref } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { cx, h } from '../ui/html.js';
 import { attachMenu } from '../ui/menu.js';
-import { initialsOf } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { accountItems, getUser, roleLabel } from './session.js';
 
 const KEY = 'cirerms.rail.folded';
@@ -125,7 +125,7 @@ export function renderRail(info) {
     'aria-label': c ? `Account: ${user.username || ''}` : 'Account',
     dataset: { tip: user.fullName || user.username || 'Account' },
   }, [
-    h('span', { className: 'flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground', text: user.initials || initialsOf(user.fullName || user.username || '') }),
+    photoAvatar(user.fullName || user.username || '', user.passportPhotoUrl, 'sm', user.initials || undefined, 'bg-sidebar-accent text-sidebar-accent-foreground shadow-none ring-0'),
     c ? null : h('span', { className: 'min-w-0 flex-1 leading-tight' }, [
       h('b', { className: 'block truncate text-sm font-semibold', text: user.username || '' }),
       h('span', { className: 'block truncate text-2xs text-sidebar-muted', text: roleLabel(user) }),

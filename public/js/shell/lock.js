@@ -18,7 +18,7 @@ import { icon } from '../core/icons.js';
 import { navigate } from '../core/router.js';
 import { h } from '../ui/html.js';
 import { closeMenus } from '../ui/menu.js';
-import { initialsOf } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { getUser, roleLabel, signOut } from './session.js';
 import { closePalette } from './search-palette.js';
 
@@ -62,7 +62,7 @@ function build() {
   const cardEl = h('div', { id: 'lock-card', className: 'animate-rise rounded-dialog border border-border/60 bg-card p-6 text-card-foreground shadow-pop' }, [
     h('div', { className: 'flex flex-col items-center text-center' }, [
       h('span', { className: 'relative' }, [
-        h('span', { className: 'flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-brand-fill to-brand-deep text-2xl font-bold phone:font-semibold text-on-fill shadow-md ring-4 ring-background', text: user.initials || initialsOf(user.fullName || user.username || '') }),
+        photoAvatar(user.fullName || user.username || '', user.passportPhotoUrl, '2xl', user.initials || undefined, 'font-bold phone:font-semibold text-on-fill shadow-md ring-4 ring-background'),
         h('span', { className: 'absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-md ring-4 ring-card' }, icon('lock-keyhole')),
       ]),
       h('h2', { id: 'lock-title', className: 'mt-4 text-2xl font-bold tracking-tight phone:font-semibold', text: 'Session Locked' }),
