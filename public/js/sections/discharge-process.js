@@ -62,6 +62,7 @@ export async function mountProcess(outlet) {
   const tabs = inPageTabs({
     tabs: [{ key: 'due', label: 'Due for Discharge' }, { key: 'proposals', label: 'Proposals' }],
     active: activeTab,
+    pills: true,
     onChange: (key) => { activeTab = key; draw(); },
   });
   let allDueCount = null;
