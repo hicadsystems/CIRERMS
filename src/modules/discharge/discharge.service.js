@@ -14,6 +14,15 @@ const fullName = (r) => [r.surname, r.first_name, r.middle_name].filter(Boolean)
 const paging = (q) => ({ page: Math.max(1, Number.parseInt(q.page, 10) || 1), pageSize: 25 });
 const meta = (total, page, pageSize) => ({ total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
 const todayIso = () => scheduled.todayIso();
+/** `iso` plus whole months; the last day of the month when the day does not exist (31 January + 1 month = 28 or 29 February). */
+function addMonths(iso, months) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const total = (y * 12 + (m - 1)) + months;
+  const year = Math.floor(total / 12);
+  const month = (total % 12) + 1;
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return `${year}-${String(month).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+}
 
 async function rule() {
   const s = await settings.numbers([
@@ -113,9 +122,12 @@ async function createProposal(body, actor) {
     }
     const number = await repo.nextProposalNumber(new Date().getFullYear(), conn);
     const proposalId = await repo.insertProposal(number, actor.userId, conn);
-    for (const sn of candidates) await repo.insertRow(proposalId, sn, actor.userId, conn);
     const after = await repo.proposalRaw(proposalId, conn);
     await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_proposals', recordId: number, after });
+    for (const sn of candidates) {
+      const rowId = await repo.insertRow(proposalId, sn, actor.userId, conn);
+      await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_rows', recordId: `${proposalId}:${sn}`, after: await repo.rowRaw(rowId, conn) });
+    }
     return { id: proposalId, proposalNumber: number, added: candidates.length };
   });
 }
@@ -206,6 +218,33 @@ async function addRating(proposalId, body, actor) {
   });
 }
 
+const DOCS = ['deathCertificate', 'condolenceLetter', 'dependentFundEvidence', 'swornAffidavit'];
+/** The four death documents: recorded only for an exit type marked Death, never enforced. */
+const documentsOf = (body, type) => Object.fromEntries(DOCS.map((k) => [k, !!body[k] && !!type.isDeath]));
+
+/**
+ * The rating leaves: Former (status, exit type, date, reason), its open posting ends on the exit date, and its
+ * user account, if it has one, is deactivated and its sessions end. In the caller's transaction; every change is
+ * audited. Throws a conflict when the rating is no longer current.
+ */
+async function applyExit(tx, actor, serviceNumber, x) {
+  const conn = tx.connection;
+  const before = await repo.ratingExitRaw(serviceNumber, conn);
+  if (!before) throw notFound('That rating was not found.', 'RATING_NOT_FOUND');
+  if (before.status !== 'current') throw conflict('This rating has already left the service.', 'RATING_NOT_CURRENT');
+  await repo.setFormer(serviceNumber, x, conn);
+  await audit.record(tx, actor, { action: 'UPDATE', table: 'ratings', recordId: serviceNumber, before, after: await repo.ratingExitRaw(serviceNumber, conn) });
+  for (const posting of await repo.openPostings(serviceNumber, conn)) {
+    await repo.endPosting(posting.id, x.exitDate, conn);
+    await audit.record(tx, actor, { action: 'UPDATE', table: 'rating_drafting', recordId: `${serviceNumber}:${posting.id}`, before: posting, after: await repo.postingRaw(posting.id, conn) });
+  }
+  const account = await repo.accountOf(serviceNumber, conn);
+  if (account && account.is_active) {
+    await repo.deactivateAccount(account.id, conn);
+    await audit.record(tx, actor, { action: 'UPDATE', table: 'users', recordId: account.username, before: account, after: await repo.accountOf(serviceNumber, conn) });
+  }
+}
+
 async function processRow(proposalId, sn, body, actor) {
   return db.transaction(async (tx) => {
     const conn = tx.connection;
@@ -214,79 +253,58 @@ async function processRow(proposalId, sn, body, actor) {
     if (row.status !== 'pending') throw conflict('A scheduled or closed discharge cannot be changed.');
 
     const exitTypeId = intOrNull(body.exitTypeId);
-    const exitReason = text(body.exitReason).slice(0, 100);
+    const exitReason = text(body.exitReason);
     const approvedBy = text(body.approvedBy).slice(0, 150);
     const comment = text(body.comment).slice(0, 500);
     const status = text(body.status).toLowerCase();
     const errors = {};
     if (!exitTypeId) errors.exitTypeId = 'Choose the exit type.';
     if (!exitReason) errors.exitReason = 'Give the reason the rating is leaving.';
-    if (exitReason.length > 100) errors.exitReason = 'Use at most 100 characters.';
+    else if (exitReason.length > 100) errors.exitReason = 'Use at most 100 characters.';
     if (!['pending', 'closed'].includes(status)) errors.status = 'Choose Pending or Closed.';
     let exitDate = null;
     if (text(body.exitDate)) {
       const p = parseIsoDate(text(body.exitDate));
       if (!p.valid) errors.exitDate = 'Use a real date.';
       else exitDate = p.value;
-    }
+    } else if (status === 'closed') errors.exitDate = 'Enter the exit date to close the discharge.';
     const rating = await repo.ratingBasic(sn, conn);
     if (exitDate && rating && rating.date_employed && exitDate < String(rating.date_employed).slice(0, 10)) {
       errors.exitDate = 'Exit date cannot be before the date enlisted.';
     }
+    const type = exitTypeId ? await repo.exitType(exitTypeId, conn) : null;
+    if (exitTypeId && (!type || !type.is_active || type.keepsCurrent)) {
+      errors.exitTypeId = 'Choose an exit type that takes the rating out of the service.';
+    }
     if (Object.keys(errors).length) throw validationError('Check the highlighted fields.', errors);
 
-    const type = await repo.exitType(exitTypeId, conn);
-    if (!type || !type.is_active) throw validationError('Choose an exit type from the list.', { exitTypeId: 'Choose an exit type from the list.' });
-    if (!type.keepsCurrent && !exitDate) errors.exitDate = 'Enter the exit date.';
-    if (Object.keys(errors).length) throw validationError('Check the highlighted fields.', errors);
+    const details = {
+      exitTypeId, exitDate, exitReason, approvedBy, comment, ...documentsOf(body, type),
+    };
+    const recordId = `${proposalId}:${sn}`;
+    const save = async (fields) => {
+      await repo.updateRow(row.id, { ...details, ...fields }, conn);
+      await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId, before: row, after: await repo.rowRaw(row.id, conn) });
+    };
 
-    if (status === 'closed' && exitDate > todayIso()) {
-      const id = row.id;
-      await repo.updateRow(id, {
-        exitTypeId, exitDate, exitReason, approvedBy, comment,
-        deathCertificate: !!body.deathCertificate && !!type.isDeath,
-        condolenceLetter: !!body.condolenceLetter && !!type.isDeath,
-        dependentFundEvidence: !!body.dependentFundEvidence && !!type.isDeath,
-        swornAffidavit: !!body.swornAffidavit && !!type.isDeath,
-        status: 'scheduled', closedBy: null, closedAt: null,
-      }, conn);
+    if (status === 'pending') {
+      await save({ status: 'pending', closedBy: null, closedAt: null });
+      return { status: 'pending' };
+    }
+    if (exitDate > todayIso()) {
+      // a later exit date: Scheduled now, Former on that date
+      await save({ status: 'scheduled', closedBy: null, closedAt: null });
       const scheduledId = await scheduled.schedule(tx, actor, {
-        kind: 'discharge', serviceNumber: sn, effectiveDate: exitDate,
-        payload: { exitTypeId, exitReason, approvedBy, comment,
-          deathCertificate: !!body.deathCertificate && !!type.isDeath,
-          condolenceLetter: !!body.condolenceLetter && !!type.isDeath,
-          dependentFundEvidence: !!body.dependentFundEvidence && !!type.isDeath,
-          swornAffidavit: !!body.swornAffidavit && !!type.isDeath,
-        },
-        source: { table: 'discharge_rows', id },
+        kind: 'discharge', serviceNumber: sn, effectiveDate: exitDate, payload: details, source: { table: 'discharge_rows', id: row.id },
       });
-      await repo.setScheduled(id, scheduledId, conn);
-      await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId: `${proposalId}:${sn}`, before: row, after: await repo.rowRaw(id, conn) });
+      const before = await repo.rowRaw(row.id, conn);
+      await repo.setScheduled(row.id, scheduledId, conn);
+      await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId, before, after: await repo.rowRaw(row.id, conn) });
       return { status: 'scheduled', exitDate };
     }
-
-    if (status === 'closed') {
-      await repo.updateRow(row.id, {
-        exitTypeId, exitDate: exitDate || todayIso(), exitReason, approvedBy, comment,
-        deathCertificate: !!body.deathCertificate && !!type.isDeath,
-        condolenceLetter: !!body.condolenceLetter && !!type.isDeath,
-        dependentFundEvidence: !!body.dependentFundEvidence && !!type.isDeath,
-        swornAffidavit: !!body.swornAffidavit && !!type.isDeath,
-        status: 'closed', closedBy: actor.userId, closedAt: new Date(),
-      }, conn);
-      await repo.applyExit(sn, { exitTypeId, exitDate: exitDate || todayIso(), exitReason }, conn);
-    } else {
-      await repo.updateRow(row.id, {
-        exitTypeId, exitDate, exitReason, approvedBy, comment,
-        deathCertificate: !!body.deathCertificate && !!type.isDeath,
-        condolenceLetter: !!body.condolenceLetter && !!type.isDeath,
-        dependentFundEvidence: !!body.dependentFundEvidence && !!type.isDeath,
-        swornAffidavit: !!body.swornAffidavit && !!type.isDeath,
-        status: 'pending', closedBy: null, closedAt: null,
-      }, conn);
-    }
-    await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId: `${proposalId}:${sn}`, before: row, after: await repo.rowRaw(row.id, conn) });
-    return status === 'closed' ? { status: 'closed' } : { status: 'pending' };
+    await save({ status: 'closed', closedBy: actor.userId, closedAt: new Date() });
+    await applyExit(tx, actor, sn, details);
+    return { status: 'closed', exitDate };
   });
 }
 
@@ -310,9 +328,7 @@ async function reengage(proposalId, sn, body, actor) {
       errors.reengageDate = 'Re-engagement date cannot be before the date enlisted.';
     }
     if (Object.keys(errors).length) throw validationError('Check the highlighted fields.', errors);
-    const d = new Date(`${p.value}T00:00:00`);
-    d.setMonth(d.getMonth() + period);
-    const until = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const until = addMonths(p.value, period);
     const id = await repo.insertReengagement({
       proposalId, serviceNumber: sn, reengageDate: p.value, periodMonths: period, untilDate: until,
       approvedBy, userId: actor.userId,
@@ -383,24 +399,33 @@ async function verification(sn) {
   };
 }
 
-// Scheduled discharge: apply the rating exit and close/open posting in the scheduled transaction.
+// A discharge with a later exit date takes effect on that date, through the shared scheduled changes.
 scheduled.register('discharge', {
   async apply(tx, change, actor) {
+    const conn = tx.connection;
     const p = change.payload || {};
-    await repo.applyExit(change.service_number, {
-      exitTypeId: p.exitTypeId, exitDate: typeof change.effective_date === 'string' ? change.effective_date : todayIso(), exitReason: p.exitReason,
-    }, tx.connection);
-    await db.query(
-      `UPDATE discharge_rows SET status='closed', closed_by=?, closed_at=NOW(),
-       exit_type_id=?, exit_date=?, exit_reason=?, approved_by=?, comment=?,
-       death_certificate=?, condolence_letter=?, dependent_fund_evidence=?, sworn_affidavit=?
-       WHERE scheduled_change_id=?`,
-      [actor.userId || null, p.exitTypeId, typeof change.effective_date === 'string' ? change.effective_date : todayIso(),
-       p.exitReason || null, p.approvedBy || null, p.comment || null,
-       p.deathCertificate ? 1 : 0, p.condolenceLetter ? 1 : 0, p.dependentFundEvidence ? 1 : 0, p.swornAffidavit ? 1 : 0,
-       change.id], tx.connection);
-    return `Discharged ${change.service_number} on ${typeof change.effective_date === 'string' ? change.effective_date : todayIso()}`;
+    const exitDate = String(change.effective_date).slice(0, 10);
+    const row = await repo.rowByScheduledChange(change.id, conn);
+    await applyExit(tx, actor, change.service_number, { exitTypeId: p.exitTypeId, exitDate, exitReason: p.exitReason });
+    if (row) {
+      await repo.updateRow(row.id, {
+        exitTypeId: row.exit_type_id, exitDate, exitReason: row.exit_reason, approvedBy: row.approved_by, comment: row.comment,
+        deathCertificate: row.death_certificate, condolenceLetter: row.condolence_letter,
+        dependentFundEvidence: row.dependent_fund_evidence, swornAffidavit: row.sworn_affidavit,
+        status: 'closed', closedBy: change.scheduled_by || null, closedAt: new Date(),
+      }, conn);
+      await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId: `${row.proposal_id}:${row.service_number}`, before: row, after: await repo.rowRaw(row.id, conn) });
+    }
+    return `Discharged ${change.service_number} on ${exitDate}`;
+  },
+  // the discharge can no longer be made (the rating left some other way): it goes back to Pending
+  async cancelled(tx, change, reason, actor) {
+    const conn = tx.connection;
+    const row = await repo.rowByScheduledChange(change.id, conn);
+    if (!row || row.status !== 'scheduled') return;
+    await repo.reopenRow(row.id, conn);
+    await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId: `${row.proposal_id}:${row.service_number}`, before: row, after: await repo.rowRaw(row.id, conn) });
   },
 });
 
-module.exports = { options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification };
+module.exports = { applyExit, documentsOf, options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification };

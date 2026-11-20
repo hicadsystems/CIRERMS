@@ -83,8 +83,8 @@ async function ratingBasic(serviceNumber, conn = null) {
             br.name AS branch_name, em.name AS entry_mode_name, e.name AS exit_type_name,
             (SELECT sh.name FROM rating_drafting d JOIN ref_ship sh ON sh.id=d.ship_id
               WHERE d.service_number=r.service_number AND d.end_date IS NULL ORDER BY d.id DESC LIMIT 1) AS current_ship_name,
-            TIMESTAMPDIFF(YEAR, r.date_of_birth, CURDATE()) AS age,
-            TIMESTAMPDIFF(YEAR, r.date_employed, CURDATE()) AS years_service,
+            TIMESTAMPDIFF(YEAR, r.date_of_birth, IF(r.status = 'former', COALESCE(r.exit_date, CURDATE()), CURDATE())) AS age,
+            TIMESTAMPDIFF(YEAR, r.date_employed, IF(r.status = 'former', COALESCE(r.exit_date, CURDATE()), CURDATE())) AS years_service,
             (SELECT COUNT(*) FROM discipline_cases c WHERE c.service_number = r.service_number AND c.status = 'pending') AS pending_cases
        FROM ratings r LEFT JOIN ref_rate rt ON rt.id = r.rate_id LEFT JOIN ref_branch br ON br.id = r.branch_id
        LEFT JOIN ref_entry_mode em ON em.id = r.entry_mode_id LEFT JOIN ref_exit_type e ON e.id = r.exit_type_id
@@ -190,7 +190,7 @@ async function pendingProposalRows(proposalId, { page = 1, pageSize = 25 } = {},
     `SELECT d.*, r.surname, r.first_name, r.middle_name, r.status AS rating_status,
             r.date_of_birth, r.date_employed,
             rt.name AS rate_name, rt.code AS rate_code, br.name AS branch_name,
-            em.name AS entry_mode_name, p.proposal_number, p.proposed_at,
+            em.name AS entry_mode_name, e.name AS exit_type_name, p.proposal_number, p.proposed_at,
             u.username AS proposed_by_name,
             (SELECT sh.name FROM rating_drafting rd JOIN ref_ship sh ON sh.id = rd.ship_id
               WHERE rd.service_number = r.service_number AND rd.end_date IS NULL ORDER BY rd.id DESC LIMIT 1) AS current_ship_name,
@@ -207,6 +207,7 @@ async function pendingProposalRows(proposalId, { page = 1, pageSize = 25 } = {},
        LEFT JOIN ref_rate rt ON rt.id = r.rate_id
        LEFT JOIN ref_branch br ON br.id = r.branch_id
        LEFT JOIN ref_entry_mode em ON em.id = r.entry_mode_id
+       LEFT JOIN ref_exit_type e ON e.id = d.exit_type_id
        ${where}
        ORDER BY p.proposed_at DESC, p.id DESC, r.surname, r.first_name, d.id
        LIMIT ? OFFSET ?`,
@@ -228,6 +229,16 @@ async function setScheduled(id, scheduledId, conn) {
   await db.query("UPDATE discharge_rows SET status='scheduled', scheduled_change_id=? WHERE id=?", [scheduledId, id], conn);
 }
 
+async function rowByScheduledChange(scheduledChangeId, conn = null) {
+  const r = await db.query('SELECT * FROM discharge_rows WHERE scheduled_change_id = ? FOR UPDATE', [scheduledChangeId], conn);
+  return r[0] || null;
+}
+
+/** A scheduled row that cannot be closed goes back to Pending. */
+async function reopenRow(id, conn) {
+  await db.query("UPDATE discharge_rows SET status='pending', scheduled_change_id=NULL, closed_by=NULL, closed_at=NULL WHERE id=?", [id], conn);
+}
+
 async function removeRow(id, conn) {
   await db.query('DELETE FROM discharge_rows WHERE id = ?', [id], conn);
 }
@@ -244,13 +255,45 @@ async function reengagementRaw(id, conn = null) {
   return r[0] || null;
 }
 
-async function applyExit(serviceNumber, x, conn) {
+/** The rating's exit fields, locked: what closing a discharge changes (and what the audit trail keeps). */
+async function ratingExitRaw(serviceNumber, conn) {
+  const r = await db.query(
+    'SELECT service_number, status, exit_type_id, exit_date, exit_reason FROM ratings WHERE service_number = ? FOR UPDATE',
+    [serviceNumber], conn);
+  return r[0] || null;
+}
+
+async function setFormer(serviceNumber, x, conn) {
   await db.query(
     "UPDATE ratings SET status='former', exit_type_id=?, exit_date=?, exit_reason=? WHERE service_number=?",
     [x.exitTypeId, x.exitDate, x.exitReason || null, serviceNumber], conn);
-  await db.query("UPDATE rating_drafting SET end_date=? WHERE service_number=? AND end_date IS NULL", [x.exitDate, serviceNumber], conn);
-  await db.query('UPDATE users SET is_active=0 WHERE service_number=?', [serviceNumber], conn);
-  await db.query('UPDATE user_sessions SET ended_at=NOW() WHERE user_id=(SELECT id FROM users WHERE service_number=? LIMIT 1) AND ended_at IS NULL', [serviceNumber], conn);
+}
+
+async function openPostings(serviceNumber, conn) {
+  return db.query('SELECT * FROM rating_drafting WHERE service_number = ? AND end_date IS NULL FOR UPDATE', [serviceNumber], conn);
+}
+
+async function postingRaw(id, conn) {
+  const r = await db.query('SELECT * FROM rating_drafting WHERE id = ?', [id], conn);
+  return r[0] || null;
+}
+
+/** A posting ends on the exit date, and never before it began. */
+async function endPosting(id, exitDate, conn) {
+  await db.query('UPDATE rating_drafting SET end_date = GREATEST(?, COALESCE(start_date, ?)) WHERE id = ?', [exitDate, exitDate, id], conn);
+}
+
+async function accountOf(serviceNumber, conn) {
+  const r = await db.query(
+    'SELECT id, username, service_number, role_id, is_active FROM users WHERE service_number = ? FOR UPDATE',
+    [serviceNumber], conn);
+  return r[0] || null;
+}
+
+async function deactivateAccount(userId, conn) {
+  await db.query('UPDATE users SET is_active = 0 WHERE id = ?', [userId], conn);
+  const res = await db.query('UPDATE user_sessions SET ended_at = NOW() WHERE user_id = ? AND ended_at IS NULL', [userId], conn);
+  return res.affectedRows || 0;
 }
 
 async function reengagementRow(serviceNumber, conn = null) {
@@ -367,7 +410,9 @@ async function report(filters, { page = 1, pageSize = 25, all = false } = {}, co
 
 async function serviceDetails(serviceNumber, conn = null) {
   const r = await db.query(
-    `SELECT r.*, rt.name AS rate_name, rt.code AS rate_code, br.name AS branch_name, e.name AS exit_type_name,
+    `SELECT r.service_number, r.status, r.surname, r.first_name, r.middle_name, r.date_of_birth, r.phone,
+            r.date_employed, r.exit_date, r.exit_reason,
+            rt.name AS rate_name, rt.code AS rate_code, br.name AS branch_name, e.name AS exit_type_name,
             (SELECT sh.name FROM rating_drafting d JOIN ref_ship sh ON sh.id=d.ship_id
               WHERE d.service_number=r.service_number AND d.end_date IS NULL ORDER BY d.id DESC LIMIT 1) AS current_ship_name
        FROM ratings r LEFT JOIN ref_rate rt ON rt.id=r.rate_id LEFT JOIN ref_branch br ON br.id=r.branch_id
@@ -376,7 +421,7 @@ async function serviceDetails(serviceNumber, conn = null) {
   if (!r[0]) return null;
   const rateHistory = await db.query(
     `SELECT rt.name AS rate, a.start_date AS start, a.end_date AS end,
-            a.decoration AS dec, a.authority AS auth, a.gcbno AS gcb
+            a.decoration, a.authority, a.gcbno
        FROM rating_advancement a LEFT JOIN ref_rate rt ON rt.id = a.rate_id
        WHERE a.service_number = ? ORDER BY a.start_date, a.id`,
     [serviceNumber], conn);
@@ -397,7 +442,7 @@ async function uploadRaw(id, conn = null) {
 
 module.exports = {
   options, exitType, listDue, ratingBasic, proposalCandidate, nextProposalNumber, insertProposal, proposalRaw, proposals,
-  insertRow, rowRaw, rowByProposal, hasExistingProposalRow, listRows, pendingProposalRows, updateRow, setScheduled, removeRow,
-  insertReengagement, reengagementRaw, applyExit, reengagementRow, reengagementHistory, verificationDischarge, report, serviceDetails,
+  insertRow, rowRaw, rowByProposal, hasExistingProposalRow, listRows, pendingProposalRows, updateRow, setScheduled, rowByScheduledChange, reopenRow, removeRow,
+  insertReengagement, reengagementRaw, ratingExitRaw, setFormer, openPostings, postingRaw, endPosting, accountOf, deactivateAccount, reengagementRow, reengagementHistory, verificationDischarge, report, serviceDetails,
   insertUpload, uploadRaw,
 };

@@ -3,6 +3,7 @@
 const ExcelJS = require('exceljs');
 const { renderPdf } = require('../../shared/printouts');
 const { dmy } = require('../drafting/drafting.format');
+const { notFound, conflict } = require('../../shared/errors');
 
 const f = (label, value, kind) => (kind ? { label, value, kind } : { label, value });
 
@@ -29,12 +30,15 @@ async function servicePdf(r, generatedBy) {
         rows: r.rateHistory || [],
         empty: 'No rate history is recorded.',
       },
-      signatures: ['Records Officer', 'Director of Personnel (Navy)'],
+      signatures: [{ role: 'Records Officer' }, { role: 'Director of Personnel (Navy)' }],
     }),
   };
 }
 
 async function verificationPdf(kind, v, generatedBy) {
+  if (!['reengagement', 'retirement', 'engagement'].includes(kind)) throw notFound('That form does not exist.', 'FORM_NOT_FOUND');
+  if (kind === 'reengagement' && !v.reengagement) throw conflict('No re-engagement is recorded for this rating.', 'NO_REENGAGEMENT');
+  if (kind === 'retirement' && !v.discharge) throw conflict('This rating has no discharge on file.', 'NO_DISCHARGE');
   const label = kind === 'reengagement' ? 'RE-ENGAGEMENT VERIFICATION' : kind === 'retirement' ? 'RETIREMENT ROUTINE' : 'ENGAGEMENT FORM';
   const rating = v.rating;
   const source = kind === 'reengagement' ? v.reengagement : kind === 'retirement' ? v.discharge : null;
@@ -73,7 +77,7 @@ async function verificationPdf(kind, v, generatedBy) {
       })),
       empty: 'No re-engagement is recorded.',
     };
-    signatures = ['Rating', 'Verifying Officer', 'Director of Personnel (Navy)'];
+    signatures = [{ role: 'Rating' }, { role: 'Verifying Officer' }, { role: 'Director of Personnel (Navy)' }];
   } else if (kind === 'retirement') {
     template = 'retirement-routine';
     facts = baseFacts.concat(source ? [
@@ -95,7 +99,7 @@ async function verificationPdf(kind, v, generatedBy) {
       empty: 'No clearance sections are defined.',
     };
     note = source && source.comment ? `Comment: ${source.comment}` : '';
-    signatures = ['Rating', 'Commanding Officer', 'Director of Personnel (Navy)'];
+    signatures = [{ role: 'Rating' }, { role: 'Commanding Officer' }, { role: 'Director of Personnel (Navy)' }];
   } else {
     template = 'engagement-form';
     facts = baseFacts.concat([
@@ -120,7 +124,7 @@ async function verificationPdf(kind, v, generatedBy) {
           approvedBy: x.approved_by || '',
         }))),
     };
-    signatures = ['Rating', 'Divisional Officer', 'Commanding Officer'];
+    signatures = [{ role: 'Rating' }, { role: 'Divisional Officer' }, { role: 'Commanding Officer' }];
   }
 
   return {
@@ -179,7 +183,12 @@ async function reportPdf(r, filters, generatedBy) {
         ],
         rows,
       },
-      signatures: ['Prepared By', 'Director of Personnel (Navy)'],
+      signatures: [{ role: 'Prepared By' }, { role: 'Director of Personnel (Navy)' }],
+      summary: [
+        { label: 'Discharges', value: String(r.summary.discharges) },
+        { label: 'Scheduled', value: String(r.summary.scheduled) },
+        { label: 'Re-engagements', value: String(r.summary.reengagements) },
+      ],
     }),
   };
 }

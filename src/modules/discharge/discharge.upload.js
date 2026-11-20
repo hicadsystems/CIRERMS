@@ -7,6 +7,9 @@ const { badRequest, validationError } = require('../../shared/errors');
 const { parseIsoDate } = require('../../shared/dates');
 const scheduled = require('../../shared/scheduled');
 const repo = require('./discharge.repo');
+const { applyExit } = require('./discharge.service');
+
+const MAX_ROWS = 2000;
 
 const COLUMNS = [
   { key: 'sn', header: 'Official No' },
@@ -47,6 +50,7 @@ async function read(buffer) {
   ws.getRow(1).eachCell({ includeEmpty: false }, (c, col) => { head[norm(cellText(c.value))] = col; });
   for (const c of COLUMNS) if (!head[norm(c.header)]) throw badRequest(`Column "${c.header}" was not found in row 1.`, 'WORKBOOK_HEADINGS');
   const rows = [];
+  if (ws.rowCount - 1 > MAX_ROWS) throw badRequest(`The workbook has more than ${MAX_ROWS} rows. Split it and upload each part.`, 'WORKBOOK_TOO_LONG');
   for (let i = 2; i <= ws.rowCount; i += 1) {
     const x = { row: i };
     for (const c of COLUMNS) x[c.key] = cellText(ws.getRow(i).getCell(head[norm(c.header)]).value);
@@ -57,13 +61,15 @@ async function read(buffer) {
 }
 
 async function review(rows, conn) {
-  const types = (await repo.options()).exitTypes;
+  const types = (await repo.options()).exitTypes.filter((t) => !t.keepsCurrent);
   const ready = [];
   const issues = [];
+  const seen = new Set();
   for (const x of rows) {
     const issue = (field, problem, result = 'error') => issues.push({ row: x.row, serviceNumber: x.sn, field, problem, result });
     const sn = x.sn.toUpperCase();
     if (!sn) { issue('Official No', 'The official number is empty'); continue; }
+    if (seen.has(sn)) { issue('Official No', `${sn} is in the workbook more than once; only its first ready row is used`, 'skipped'); continue; }
     const rating = await repo.ratingBasic(sn, conn);
     if (!rating) { issue('Official No', `${sn} is not on the roll`); continue; }
     if (rating.status !== 'current') { issue('Official No', `${sn} has already left the service`, 'skipped'); continue; }
@@ -80,6 +86,7 @@ async function review(rows, conn) {
     if (!p.valid) { issue('Exit Date', 'Enter a real exit date'); continue; }
     if (rating.date_employed && p.value < String(rating.date_employed).slice(0, 10)) { issue('Exit Date', 'The exit date is before the date the rating joined'); continue; }
     if (x.comment.length > 500) { issue('Comment', 'Use at most 500 characters'); continue; }
+    seen.add(sn);
     ready.push({ row: x.row, serviceNumber: sn, exitTypeId: type.id, exitDate: p.value, exitReason: type.name, authority: x.authority, approvedBy: x.approvedBy, comment: x.comment });
   }
   return { ready, issues };
@@ -94,42 +101,46 @@ async function check(buffer) {
 async function importFile(buffer, fileName, actor) {
   const rows = await read(buffer);
   return db.transaction(async (tx) => {
-    const r = await review(rows, tx.connection);
+    const conn = tx.connection;
+    const r = await review(rows, conn);
     let imported = 0;
     let closed = 0;
     let scheduledCount = 0;
-    for (const x of r.ready) {
-      const number = await repo.nextProposalNumber(new Date().getFullYear(), tx.connection);
-      const proposalId = await repo.insertProposal(number, actor.userId, tx.connection);
-      const rowId = await repo.insertRow(proposalId, x.serviceNumber, actor.userId, tx.connection);
-      const before = await repo.rowRaw(rowId, tx.connection);
-      const details = {
-        exitTypeId: x.exitTypeId, exitDate: x.exitDate, exitReason: x.exitReason, approvedBy: x.approvedBy, comment: x.comment,
-        deathCertificate: false, condolenceLetter: false, dependentFundEvidence: false, swornAffidavit: false,
-      };
-      if (x.exitDate > scheduled.todayIso()) {
-        await repo.updateRow(rowId, { ...details, status: 'scheduled', closedBy: null, closedAt: null }, tx.connection);
-        const scheduledId = await scheduled.schedule(tx, actor, {
-          kind: 'discharge', serviceNumber: x.serviceNumber, effectiveDate: x.exitDate,
-          payload: details, source: { table: 'discharge_rows', id: rowId },
-        });
-        await repo.setScheduled(rowId, scheduledId, tx.connection);
-        scheduledCount += 1;
-      } else {
-        await repo.updateRow(rowId, { ...details, status: 'closed', closedBy: actor.userId, closedAt: new Date() }, tx.connection);
-        await repo.applyExit(x.serviceNumber, details, tx.connection);
-        closed += 1;
+    let proposalNumber = null;
+    if (r.ready.length) {
+      // every row of one file goes into one proposal
+      proposalNumber = await repo.nextProposalNumber(new Date().getFullYear(), conn);
+      const proposalId = await repo.insertProposal(proposalNumber, actor.userId, conn);
+      await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_proposals', recordId: proposalNumber, after: await repo.proposalRaw(proposalId, conn) });
+      for (const x of r.ready) {
+        const rowId = await repo.insertRow(proposalId, x.serviceNumber, actor.userId, conn);
+        await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_rows', recordId: `${proposalId}:${x.serviceNumber}`, after: await repo.rowRaw(rowId, conn) });
+        const before = await repo.rowRaw(rowId, conn);
+        const details = {
+          exitTypeId: x.exitTypeId, exitDate: x.exitDate, exitReason: x.exitReason, approvedBy: x.approvedBy, comment: x.comment,
+          deathCertificate: false, condolenceLetter: false, dependentFundEvidence: false, swornAffidavit: false,
+        };
+        if (x.exitDate > scheduled.todayIso()) {
+          await repo.updateRow(rowId, { ...details, status: 'scheduled', closedBy: null, closedAt: null }, conn);
+          const scheduledId = await scheduled.schedule(tx, actor, {
+            kind: 'discharge', serviceNumber: x.serviceNumber, effectiveDate: x.exitDate,
+            payload: details, source: { table: 'discharge_rows', id: rowId },
+          });
+          await repo.setScheduled(rowId, scheduledId, conn);
+          scheduledCount += 1;
+        } else {
+          await repo.updateRow(rowId, { ...details, status: 'closed', closedBy: actor.userId, closedAt: new Date() }, conn);
+          await applyExit(tx, actor, x.serviceNumber, details);
+          closed += 1;
+        }
+        await audit.record(tx, actor, { action: 'UPDATE', table: 'discharge_rows', recordId: `${proposalId}:${x.serviceNumber}`, before, after: await repo.rowRaw(rowId, conn) });
+        const uploadId = await repo.insertUpload({ fileName, row: x.row, serviceNumber: x.serviceNumber, exitTypeId: x.exitTypeId, exitDate: x.exitDate, authority: x.authority, approvedBy: x.approvedBy, comment: x.comment, proposalId, rowId, userId: actor.userId }, conn);
+        await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_uploads', recordId: `${x.serviceNumber}:${uploadId}`, after: await repo.uploadRaw(uploadId, conn) });
+        imported += 1;
       }
-      await audit.record(tx, actor, {
-        action: 'UPDATE', table: 'discharge_rows', recordId: `${proposalId}:${x.serviceNumber}`,
-        before, after: await repo.rowRaw(rowId, tx.connection),
-      });
-      const uploadId = await repo.insertUpload({ fileName, row: x.row, serviceNumber: x.serviceNumber, exitTypeId: x.exitTypeId, exitDate: x.exitDate, authority: x.authority, approvedBy: x.approvedBy, comment: x.comment, proposalId, rowId, userId: actor.userId }, tx.connection);
-      await audit.record(tx, actor, { action: 'INSERT', table: 'discharge_uploads', recordId: `${x.serviceNumber}:${uploadId}`, after: await repo.uploadRaw(uploadId, tx.connection) });
-      imported += 1;
     }
     return {
-      totalRows: rows.length, imported, closed, scheduled: scheduledCount,
+      totalRows: rows.length, imported, closed, scheduled: scheduledCount, proposalNumber,
       skipped: r.issues.filter((x) => x.result === 'skipped').length,
       errors: r.issues.filter((x) => x.result === 'error').length, issues: r.issues,
     };
