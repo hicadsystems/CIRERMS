@@ -14,7 +14,7 @@
  * Exits non-zero when a check fails. Browser errors fail the run.
  *
  * Through the API as the Administrator: the batch list (DOD only, every filter, the counts), a batch's ratings
- * (the Official No and name filters), the history (a blank number asks for a rating, an unknown one is a 404), the
+ * (the Official No and name filters), the history (every draft with no number, paged 25, narrowed by a number, an unknown one a 404, the 2,000 cap on the PDF), the
  * Draft Report (only postings that have reported, the filters, a From after To refused, a bad date refused), the PDFs
  * and workbooks; the privileges (the Drafting role reads, a rating gets 403, a department-tied officer sees only
  * their department). Through the screens at 1440 px, light: each page, its filters, its dialog, its printout in the
@@ -241,14 +241,9 @@ async function adminFlow(browser, db) {
   const [[doa]] = await db.query("SELECT id FROM batches WHERE flow = 'DOA' LIMIT 1");
   if (doa) check((await api(page, 'GET', `${A}/batches/${doa.id}`)).status === 404, 'Batch: an advancement batch is not a drafting batch (404)');
 
-  // ---- Rate DOD History
-  const blank = await api(page, 'GET', `${A}/history`);
-  check(blank.status === 422 && !!blank.body.error.fields.serviceNumber, 'History: a blank pick asks for a rating and lists nothing');
+  // ---- Rate DOD History: the quick checks here; the long ones are in historyFlow
   check((await api(page, 'GET', `${A}/history?serviceNumber=ZZ9999`)).status === 404, 'History: an unknown number is a 404');
-  const [[hist]] = await db.query("SELECT d.service_number AS sn, COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' GROUP BY d.service_number ORDER BY n DESC, sn LIMIT 1");
-  const h1 = await api(page, 'GET', `${A}/history?serviceNumber=${hist.sn.toLowerCase()}`);
-  check(h1.status === 200 && h1.body.data.items.length === hist.n && h1.body.data.rating.serviceNumber === hist.sn, 'History: a rating (any case) and all its drafts', `${h1.body.data && h1.body.data.items.length} vs ${hist.n}`);
-  check(h1.body.data.items.every((x) => ['proposed', 'not_recommended', 'awaiting_wef', 'scheduled', 'reported'].includes(x.status)), 'History: each draft has a status');
+  const [[hist]] = await db.query("SELECT d.service_number AS sn FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' GROUP BY d.service_number ORDER BY COUNT(*) DESC, sn LIMIT 1");
 
   // ---- Draft Report
   const [[rep]] = await db.query("SELECT COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' AND d.status = 'reported'");
@@ -275,14 +270,12 @@ async function adminFlow(browser, db) {
     ['batch summary workbook', `${A}/batches/excel`, 'spreadsheetml', 'PK'],
     ['draft report (batch) PDF', `${A}/batches/${withAuthority.id}/pdf`, 'application/pdf', '%PDF'],
     ['draft report (batch) workbook', `${A}/batches/${withAuthority.id}/excel`, 'spreadsheetml', 'PK'],
-    ['draft history PDF', `${A}/history/pdf?serviceNumber=${hist.sn}`, 'application/pdf', '%PDF'],
     ['draft report PDF', `${A}/postings/pdf`, 'application/pdf', '%PDF'],
     ['draft report workbook', `${A}/postings/excel`, 'spreadsheetml', 'PK'],
   ]) {
     const f = await fileHead(page, url);
     check(f.status === 200 && f.type.includes(type) && f.head.startsWith(head) && f.size > 500, `Printout: ${label}`, JSON.stringify(f));
   }
-  check((await fileHead(page, `${A}/history/pdf`)).status === 422, 'Printout: the history PDF for a blank pick is refused');
   const xl = await page.evaluate(async (u) => { const r = await fetch(u, { credentials: 'include' }); return Array.from(new Uint8Array(await r.arrayBuffer())); }, `${A}/batches/${withAuthority.id}/excel`);
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(Buffer.from(xl));
@@ -346,22 +339,7 @@ async function adminFlow(browser, db) {
   await page.waitForFunction(() => location.hash === '#drafting/batches');
   check(true, 'Batch: All Batches goes back to the list');
 
-  // Rate DOD History
-  await go(page, 'drafting/history');
-  check(/Pick a Rating/.test(await main(page).innerText()) && (await rowsOf(page, false).count()) === 0, 'History: a blank page asks for a rating and lists nothing');
-  check(await main(page).getByRole('button', { name: 'Print PDF' }).count() === 0, 'History: no Print PDF before a rating is picked');
-  await pickRating(page, main(page), 'Rating', hist.sn, hist.sn);
-  await settle(page);
-  check((await rowTexts(page, false)).length === hist.n, 'History: the rating\'s drafts', `${(await rowTexts(page, false)).length} vs ${hist.n}`);
-  check(/Proposed|Awaiting WEF|Reported|Scheduled|Not Recommended/.test((await rowTexts(page, false)).join(' ')), 'History: each draft shows its status');
-  await main(page).getByRole('button', { name: 'Print PDF' }).click();
-  await dialogOf(page).waitFor();
-  await previewOpens(page, 'Draft History');
-  await closeAll(page);
-  await rowsOf(page, false).first().click();
-  await dialogOf(page).waitFor();
-  check(/Batch Number/.test(await dialogOf(page).innerText()) && /Authority/.test(await dialogOf(page).innerText()), 'History: a row opens its draft');
-  await closeAll(page);
+  await historyFlow(page, db, A);
 
   // Draft Report
   await go(page, 'drafting/report');
@@ -431,7 +409,152 @@ async function privileges(browser, db, shared) {
   const pst = await api(s.page, 'GET', `${A}/postings?specialisationId=${otherSpec.id}`);
   const [[ownReported]] = await db.query("SELECT COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' AND d.status = 'reported' AND d.specialisation_id = ?", [dept.id]);
   check(pst.status === 200 && pst.body.summary.postings === ownReported.n, 'Department officer: the Draft Report holds to their department whatever is asked', `${pst.body.summary.postings} vs ${ownReported.n}`);
+  // ... and the same in the history, its PDF and its workbook
+  const [[ownDrafts]] = await db.query("SELECT COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' AND d.specialisation_id = ?", [dept.id]);
+  const [[foreign]] = await db.query("SELECT d.service_number AS sn FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' AND (d.specialisation_id IS NULL OR d.specialisation_id <> ?) LIMIT 1", [dept.id]);
+  const hs = await api(s.page, 'GET', `${A}/history`);
+  check(hs.status === 200 && hs.body.meta.total === ownDrafts.n && ownDrafts.n > 0, 'Department officer: the history lists only their department\'s drafts', `${hs.body.meta && hs.body.meta.total} vs ${ownDrafts.n}`);
+  const hf = await api(s.page, 'GET', `${A}/history?serviceNumber=${foreign.sn}`);
+  check(hf.status === 200 && hf.body.meta.total === 0 && hf.body.data.items.length === 0, 'Department officer: another department\'s rating shows no drafts');
+  const hp = await fileHead(s.page, `${A}/history/pdf`);
+  check(hp.status === 200 && hp.head.startsWith('%PDF'), 'Department officer: the history PDF');
+  const xb = await s.page.evaluate(async (u) => { const r = await fetch(u, { credentials: 'include' }); return Array.from(new Uint8Array(await r.arrayBuffer())); }, `${A}/history/excel`);
+  const xw = new ExcelJS.Workbook();
+  await xw.xlsx.load(Buffer.from(xb));
+  check(xw.worksheets[0].rowCount - 4 === ownDrafts.n, 'Department officer: the history workbook holds only their department\'s drafts', `${xw.worksheets[0].rowCount - 4} vs ${ownDrafts.n}`);
+  await s.page.goto(`${BASE}/app.html#drafting/history`);
+  await settle(s.page);
+  check(new RegExp(`${ownDrafts.n} drafts for all ratings`).test(await main(s.page).innerText()), 'Department officer: the history page counts only their department\'s drafts');
   await s.context.close();
+}
+
+// ---------------------------------------------------------------------------
+// Rate DOD History: every draft of every rating, paged by the server; the search narrows it; print and Excel.
+// The seed holds few drafts, so the flow adds a test batch per 87 ratings (24 of them: more than 2,000 drafts)
+// straight in the database and takes them away again, whatever happens.
+// ---------------------------------------------------------------------------
+async function historyFlow(page, db, A) {
+  console.log('\nRate DOD History');
+  const [[real]] = await db.query("SELECT COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD'");
+  const [[hist]] = await db.query("SELECT d.service_number AS sn, COUNT(*) AS n FROM draft_rows d JOIN batches b ON b.id = d.batch_id WHERE b.flow = 'DOD' GROUP BY d.service_number ORDER BY n DESC, sn LIMIT 1");
+  const [[{ nr }]] = await db.query('SELECT COUNT(*) AS nr FROM ratings');
+  const temp = [];
+  const mkBatch = async (i) => {
+    const [r] = await db.query("INSERT INTO batches (flow, batch_number, batch_code, sequence, status, initiated_at) VALUES ('DOD', ?, 'ZZTEST', ?, 'open', NOW())", [`DOD-ZZTEST-${i}`, 9000 + i]);
+    await db.query("INSERT INTO draft_rows (batch_id, service_number, rate_id, specialisation_id, status, added_at) SELECT ?, service_number, rate_id, specialisation_id, 'proposed', NOW() FROM ratings", [r.insertId]);
+    temp.push(r.insertId);
+  };
+  try {
+    // the seed alone: everyone's drafts, no number needed
+    const h0 = await api(page, 'GET', `${A}/history`);
+    check(h0.status === 200 && h0.body.meta.total === real.n && h0.body.data.rating === null, 'History: no number lists every draft of every rating', `${h0.body.meta && h0.body.meta.total} vs ${real.n}`);
+    check(h0.body.data.items.every((x) => x.serviceNumber && x.name && !/null|undefined/i.test(`${x.name} ${x.rateCode} ${x.oldShip} ${x.newShip}`)), 'History: every row names its rating (no "null null")');
+    const h1 = await api(page, 'GET', `${A}/history?serviceNumber=${hist.sn.toLowerCase()}`);
+    check(h1.status === 200 && h1.body.meta.total === hist.n && h1.body.data.rating.serviceNumber === hist.sn && h1.body.data.items.every((x) => x.serviceNumber === hist.sn), 'History: a number (any case) narrows to that rating and all its drafts', `${h1.body.meta && h1.body.meta.total} vs ${hist.n}`);
+    check(h1.body.data.items.every((x) => ['proposed', 'not_recommended', 'awaiting_wef', 'scheduled', 'reported'].includes(x.status)), 'History: each draft has a status');
+
+    const rounds = Math.ceil(2001 / nr);
+    for (let i = 1; i <= rounds; i += 1) await mkBatch(i);
+    const T = real.n + rounds * nr;
+    const p1 = await api(page, 'GET', `${A}/history?page=1`);
+    check(p1.body.meta.total === T && p1.body.meta.pageSize === 25 && p1.body.data.items.length === 25 && p1.body.meta.totalPages === Math.ceil(T / 25), `History: 25 a page from the server (${T.toLocaleString()} drafts, ${p1.body.meta.totalPages} pages)`);
+    const p2 = await api(page, 'GET', `${A}/history?page=2`);
+    const ids1 = new Set(p1.body.data.items.map((x) => x.id));
+    check(p2.body.data.items.length === 25 && p2.body.data.items.every((x) => !ids1.has(x.id)), 'History: page 2 holds other drafts');
+    const last = await api(page, 'GET', `${A}/history?page=${p1.body.meta.totalPages}`);
+    check(last.body.data.items.length === ((T - 1) % 25) + 1, 'History: the last page holds the rest');
+    const today = new Date().toISOString().slice(0, 10);
+    const keys = p1.body.data.items.concat(p2.body.data.items).map((x) => (x.wef ? String(x.wef).slice(0, 10) : today));
+    check(keys.every((k, i) => i === 0 || keys[i - 1] >= k), 'History: newest first');
+    const one = await api(page, 'GET', `${A}/history?serviceNumber=${hist.sn}`);
+    check(one.body.meta.total === hist.n + rounds, 'History: the narrowed list is that rating\'s drafts only', `${one.body.meta.total} vs ${hist.n + rounds}`);
+
+    // print and Excel: for everyone the PDF holds 2,000 drafts at most
+    const tooMany = await fileHead(page, `${A}/history/pdf`);
+    check(tooMany.status === 422, 'Printout: the PDF for everyone above 2,000 drafts is refused', JSON.stringify(tooMany));
+    const msg = await api(page, 'GET', `${A}/history/pdf`);
+    check(/narrow/i.test((msg.body.error && msg.body.error.message) || ''), 'Printout: the refusal asks the person to narrow it with the search');
+    const f1 = await fileHead(page, `${A}/history/pdf?serviceNumber=${hist.sn}`);
+    check(f1.status === 200 && f1.type.includes('application/pdf') && f1.head.startsWith('%PDF'), 'Printout: one rating\'s PDF');
+    const xAll = await fileHead(page, `${A}/history/excel`);
+    check(xAll.status === 200 && xAll.type.includes('spreadsheetml') && xAll.head.startsWith('PK'), 'Workbook: everyone\'s drafts (no 2,000 cap)');
+    const rowsIn = async (url) => {
+      const bytes = await page.evaluate(async (u) => { const r = await fetch(u, { credentials: 'include' }); return Array.from(new Uint8Array(await r.arrayBuffer())); }, url);
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(Buffer.from(bytes));
+      const ws = wb.worksheets[0];
+      return { header: ws.getRow(4).values.slice(1), n: ws.rowCount - 4, first: ws.getRow(5).values.slice(1) };
+    };
+    const wAll = await rowsIn(`${A}/history/excel`);
+    check(wAll.n === T && wAll.header.includes('Official Number') && wAll.header.includes('Old Ship') && wAll.header.includes('Date Reported'), 'Workbook: one row per draft, the same query as the list', `${wAll.n} vs ${T}`);
+    const wOne = await rowsIn(`${A}/history/excel?serviceNumber=${hist.sn}`);
+    check(wOne.n === hist.n + rounds && wOne.first[0] === hist.sn, 'Workbook: narrowed to the rating');
+
+    // the screen, for everyone
+    await go(page, 'drafting/history');
+    const text = await main(page).innerText();
+    check(!/Pick a Rating/.test(text) && (await rowTexts(page, false)).length === 25, 'History: the list loads at once, 25 rows');
+    check(new RegExp(`${T.toLocaleString()} drafts for all ratings`).test(await main(page).locator('[data-row-count]').innerText()), 'History: the count says every draft', await main(page).locator('[data-row-count]').innerText());
+    check(await main(page).getByRole('combobox', { name: 'Rating' }).isVisible(), 'History: the rating search select stays above the list');
+    check(await main(page).getByRole('button', { name: 'Print PDF' }).isEnabled() && await main(page).getByRole('button', { name: 'Export Excel' }).isEnabled(), 'History: Print PDF and Export Excel are in the page header');
+    const firstPage = await rowTexts(page, false);
+    check(firstPage.every((t) => !/\bnull\b/.test(t)) && firstPage.every((t) => /^[A-Z0-9]{3,}\s/.test(t)), 'History: each row shows its official number and no "null"', firstPage[0]);
+    await page.getByRole('button', { name: 'Next Page' }).click();
+    await settle(page);
+    check(/Page 2 of/.test(await main(page).innerText()) && (await rowTexts(page, false))[0] !== firstPage[0], 'History: paging asks the server for the next 25');
+    await page.getByRole('button', { name: 'Previous Page' }).click();
+    await settle(page);
+    // above 2,000: Print PDF stays usable and says why nothing opens
+    await main(page).getByRole('button', { name: 'Print PDF' }).click();
+    await page.waitForTimeout(300);
+    check((await dialogs(page).count()) === 0 && /too many for one PDF/.test(await main(page).innerText()), 'History: above 2,000 drafts Print PDF asks the person to narrow it with the search');
+    // a row's dialog
+    await rowsOf(page, false).first().click();
+    await dialogOf(page).waitFor();
+    const dt = await dialogOf(page).innerText();
+    check(/Official No/.test(dt) && /Batch Number/.test(dt) && /Authority/.test(dt) && /Old Ship/.test(dt) && await dialogOf(page).getByRole('button', { name: 'Open Record' }).isVisible(), 'History: a row opens its full draft with Open Record');
+    await closeAll(page);
+    // narrow with the search, clear it
+    await pickRating(page, main(page), 'Rating', hist.sn, hist.sn);
+    await settle(page);
+    const narrowed = await rowTexts(page, false);
+    check(narrowed.length === Math.min(25, hist.n + rounds) && narrowed.every((t) => t.includes(hist.sn)), 'History: the search narrows the list to that rating', `${narrowed.length}`);
+    check(await main(page).getByRole('button', { name: 'Open Record' }).count() > 0 && new RegExp(`${hist.sn} ·`).test(await main(page).innerText()), 'History: the rating\'s strip (name, number, rate, ship, Open Record) shows');
+    check(!/too many for one PDF/.test(await main(page).innerText()), 'History: the narrowed list clears the message');
+    await main(page).getByRole('button', { name: 'Print PDF' }).click();
+    await dialogOf(page).waitFor();
+    await previewOpens(page, 'History (one rating): the PDF');
+    await closeAll(page);
+    const [dl1] = await Promise.all([page.waitForEvent('download'), main(page).getByRole('button', { name: 'Export Excel' }).click()]);
+    check(/Draft History .*\.xlsx$/.test(dl1.suggestedFilename()), 'History: Export Excel downloads the rating\'s workbook', dl1.suggestedFilename());
+    await main(page).getByRole('button', { name: 'Clear rating' }).click();
+    await settle(page);
+    const back = await rowTexts(page, false);
+    check(back.length === 25 && new Set(back.map((t) => t.split(' ')[0])).size > 1, 'History: clearing the search brings everyone back');
+
+    // the link from a record pre-fills the search
+    await go(page, `drafting/history?serviceNumber=${hist.sn}`);
+    check((await rowTexts(page, false)).every((t) => t.includes(hist.sn)) && (await rowTexts(page, false)).length > 0, 'History: ?serviceNumber= pre-fills the search and narrows the list');
+
+    // under the cap: the PDF for everyone prints
+    for (const id of temp.splice(0, 3)) {
+      await db.query('DELETE FROM draft_rows WHERE batch_id = ?', [id]);
+      await db.query('DELETE FROM batches WHERE id = ?', [id]);
+    }
+    const T2 = real.n + (rounds - 3) * nr;
+    const okAll = await fileHead(page, `${A}/history/pdf`);
+    check(T2 <= 2000 && okAll.status === 200 && okAll.head.startsWith('%PDF') && okAll.size > 5000, `Printout: the PDF for everyone prints at ${T2.toLocaleString()} drafts (2,000 at most)`, JSON.stringify(okAll));
+    await go(page, 'drafting/history');
+    await main(page).getByRole('button', { name: 'Print PDF' }).click();
+    await dialogOf(page).waitFor();
+    await previewOpens(page, 'History (everyone): the PDF');
+    await closeAll(page);
+  } finally {
+    for (const id of temp) {
+      await db.query('DELETE FROM draft_rows WHERE batch_id = ?', [id]);
+      await db.query('DELETE FROM batches WHERE id = ?', [id]);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -445,7 +568,7 @@ async function layoutPass(browser, viewport, theme, shared) {
   const plan = [
     ['drafting/batches', async () => { await rowsOf(page, phone).first().click(); }],
     [`drafting/batches/${shared.batch.id}`, async () => { await rowsOf(page, phone).first().click(); }],
-    ['drafting/history', async () => { await pickRating(page, main(page), 'Rating', shared.sn, shared.sn); await settle(page); await rowsOf(page, phone).first().click(); }],
+    ['drafting/history', async () => { await rowsOf(page, phone).first().click(); }],
     ['drafting/report', async () => { await rowsOf(page, phone).first().click(); }],
   ];
   for (const [route, openMain] of plan) {

@@ -5,7 +5,8 @@
  *                      reported and not reported, Print Summary and Export Excel; a row opens its record, then the batch
  *   mountBatchContent  one batch (drafting/batches/:id): its facts, a filter (Official No with the rating search select,
  *                      Name), its ratings with old and new ship and the date reported, Print Draft Report, Export Excel
- *   mountHistory       Rate DOD History: pick a rating; its drafts; Print PDF. A blank pick asks for a rating
+ *   mountHistory       Rate DOD History: every draft of every rating, newest first, 25 a page; the rating search select
+ *                      narrows it to one rating (clear it for everyone); Print PDF (everyone: 2,000 drafts at most) and Export Excel
  *   mountDraftReport   Draft Report: filters (Specialisation, Authority, From, To); every posting that has reported;
  *                      Print Report and Export Excel (Deployment/Vice shows the vice)
  *
@@ -170,67 +171,87 @@ export async function mountBatchContent(outlet, { info, params = {} } = {}) {
 // 3. Rate DOD History
 // =====================================================================================================
 export async function mountHistory(outlet, { info, query = {} } = {}) {
-  const headSlot = h('div');
-  const body = h('div');
+  const PDF_MAX = 2000; // the everyone printout holds this many drafts at most (the server holds the same line)
   const picker = ratingSearch({ name: 'serviceNumber', status: 'all', value: query.serviceNumber || null, ariaLabel: 'Rating', placeholder: 'Official number or name' });
   const pickCard = h('div', { className: 'mb-4 min-w-0 desk:w-96 phone:w-full' }, h('label', { className: 'block' }, [
     h('span', { className: 'mb-1 block text-xs font-semibold text-muted-foreground', text: 'Rating' }), picker,
-    h('span', { className: 'mt-1 block text-xs text-muted-foreground', text: 'Type at least 2 characters of the official number or name.' }),
+    h('span', { className: 'mt-1 block text-xs text-muted-foreground', text: 'Type at least 2 characters of the official number or name. Clear it to see everyone.' }),
   ]));
-  let token = 0;
+  const stripSlot = h('div');
+  const noteSlot = h('div');
+  const count = h('div', { className: 'mb-3 text-sm text-muted-foreground', dataset: { rowCount: '' } });
+  const dept = (await loadOptions(true).catch(() => null) || {}).department;
+  let total = 0;
 
-  async function draw() {
-    const sn = picker.value || '';
-    const mine = ++token;
-    if (!sn) {
-      headSlot.replaceChildren(header(info, 'Rate DOD History', '', []));
-      body.replaceChildren(emptyCard(emptyState({ icon: 'history', title: 'Pick a Rating', text: 'The drafts of one rating are listed here. Search by official number or name.' })));
-      return;
-    }
-    body.replaceChildren(loading());
-    let res;
-    try { res = (await api.get(`${BASE}/report/history?${qs({ serviceNumber: sn })}`)).data; } catch (err) {
-      if (mine !== token) return;
-      headSlot.replaceChildren(header(info, 'Rate DOD History', '', []));
-      body.replaceChildren(failed(err, err.status === 404 ? 'No Rating Found' : 'Could Not Load the Drafts'));
-      return;
-    }
-    if (mine !== token) return;
-    const r = res.rating;
-    const print = button({ label: 'Print PDF', icon: 'printer', variant: 'blue', onClick: () => previewPdf(`${BASE}/report/history/pdf?${qs({ serviceNumber: r.serviceNumber })}`, `Draft History ${r.serviceNumber}`, `Draft History ${r.serviceNumber}.pdf`) });
-    headSlot.replaceChildren(header(info, 'Rate DOD History', '', [print]));
-    const strip = ratingStrip(fullName(r), `${r.serviceNumber} · ${r.rate} · ${r.status === 'current' ? (r.ship || 'No ship') : 'Former'}`, openRecordButton(r.serviceNumber));
-    const items = res.items;
-    const lv = list({
-      columns: [
-        { key: 'batchNumber', label: 'Batch Number', render: (x) => two(x.batchNumber, x.authority || 'No authority yet'), className: 'font-normal' },
-        { key: 'newShip', label: 'New Ship', render: (x) => two(shipText(x), x.oldShip ? `from ${x.oldShip}` : ''), className: 'font-normal' },
-        { key: 'wef', label: 'Date Reported', render: (x) => (x.status === 'reported' ? fmt(x.wef) : x.status === 'scheduled' ? fmt(x.wef) : '-') },
-        { key: 'status', label: 'Status', render: statePill },
-      ],
-      load: async () => ({ data: items, meta: { page: 1, pageSize: Math.max(25, items.length), total: items.length, totalPages: 1 } }),
-      rowKey: (x) => x.id,
-      onPick: (x) => draftRecord(x),
-      card: { title: (x) => `${x.oldShip || '-'} to ${x.newShip || 'not set'}`, subtitle: (x) => `${x.batchNumber} · ${x.authority || 'No authority yet'}`, aside: statePill },
-      empty: { icon: 'history', title: 'No Drafts Yet', text: 'This rating has not been through a draft batch.' },
-    });
-    body.replaceChildren(strip, h('div', { className: 'mt-4' }), lv.el);
-  }
+  const query1 = () => (picker.value ? { serviceNumber: picker.value } : {});
+  const name = () => (picker.value ? `Draft History ${picker.value}` : 'Draft History');
+  const canPrint = can('drafting.history', 'view');
+  const sync = () => { if (printBtn) printBtn.disabled = total === 0; if (excelBtn) excelBtn.disabled = total === 0; };
+  const tooMany = () => !picker.value && total > PDF_MAX;
+  const say = (node) => noteSlot.replaceChildren(...(node ? [h('div', { className: 'mb-3' }, node)] : []));
+  const printBtn = canPrint ? button({
+    label: 'Print PDF', icon: 'printer', variant: 'blue', disabled: true,
+    onClick: () => {
+      if (tooMany()) { say(notice('warning', 'triangle-alert', `There are ${total.toLocaleString()} drafts: too many for one PDF (the limit is ${PDF_MAX.toLocaleString()}). Pick a rating with the search to narrow it.`)); return; }
+      say(null);
+      previewPdf(withQuery(`${BASE}/report/history/pdf`, query1()), name(), `${name()}.pdf`);
+    },
+  }) : null;
+  const excelBtn = canPrint ? button({ label: 'Export Excel', icon: 'file-spreadsheet', variant: 'outline', disabled: true, onClick: () => download(withQuery(`${BASE}/report/history/excel`, query1()), `${name()}.xlsx`) }) : null;
+
+  const lv = list({
+    columns: [
+      { key: 'serviceNumber', label: 'Official No', render: (x) => two(x.serviceNumber, fullName(x) || '-'), className: 'font-normal' },
+      { key: 'newShip', label: 'Old Ship to New Ship', render: (x) => two(shipText(x), x.oldShip ? `from ${x.oldShip}` : ''), className: 'font-normal' },
+      { key: 'wef', label: 'Date Reported', render: reportedCell },
+      { key: 'batchNumber', label: 'Batch Number', render: (x) => two(x.batchNumber, x.authority || 'No authority yet'), className: 'font-normal' },
+    ],
+    load: async ({ page }) => {
+      say(null);
+      try {
+        const res = await api.get(`${BASE}/report/history?${qs({ ...query1(), page })}`);
+        const r = res.data.rating;
+        stripSlot.replaceChildren(...(r ? [h('div', { className: 'mb-4' }, ratingStrip(r.name || r.serviceNumber, `${r.serviceNumber} · ${r.rate || '-'} · ${r.status === 'current' ? (r.ship || 'No ship') : 'Former'}`, openRecordButton(r.serviceNumber)))] : []));
+        return { data: res.data.items, meta: res.meta };
+      } catch (err) {
+        if (err.status !== 404) throw err;
+        stripSlot.replaceChildren();
+        say(notice('error', 'circle-alert', err.message || 'No rating found.'));
+        return { data: [], meta: { page: 1, pageSize: 25, total: 0, totalPages: 1 } };
+      }
+    },
+    rowKey: (x) => x.id,
+    onPick: (x) => draftRecord(x),
+    onLoaded: ({ meta }) => {
+      total = meta ? meta.total : 0;
+      count.textContent = `${total.toLocaleString()} ${total === 1 ? 'draft' : 'drafts'}${picker.value ? '' : ' for all ratings'}`;
+      sync();
+    },
+    card: { title: (x) => fullName(x) || x.serviceNumber, subtitle: (x) => `${x.oldShip || '-'} to ${x.newShip || 'not set'} · ${x.batchNumber}`, aside: statePill },
+    empty: { icon: 'history', title: 'No Drafts Yet', text: 'No draft has been made for this selection. Clear the rating to see everyone.' },
+  });
 
   function draftRecord(x) {
     const dlg = detailsDialog({
-      title: x.batchNumber,
+      title: fullName(x) || x.serviceNumber,
       panels: [
+        { title: 'Rating', rows: [['Official No', x.serviceNumber], ['Name', x.name], ['Rate', x.rateCode]] },
         { title: 'Batch', rows: [['Batch Number', h('b', { text: x.batchNumber })], ['Authority', x.authority || 'No authority yet'], ['Batch Status', batchStatusPill({ status: x.batchStatus })]] },
         { title: 'Posting', rows: [['Old Ship', x.oldShip], ['New Ship', x.newShip], ['Vice/Deployment', x.vice], ['Date Reported', reportedText(x)], ['Status', statePill(x)], ['Not Recommended', x.notRecommendedReason]] },
       ],
-      actions: [can('drafting.batches', 'view') ? button({ label: 'Open Batch', icon: 'list', variant: 'outline', onClick: () => { dlg.close(); navigate(`#drafting/batches/${x.batchId}`); } }) : null],
+      actions: [
+        can('drafting.batches', 'view') ? button({ label: 'Open Batch', icon: 'list', variant: 'outline', onClick: () => { dlg.close(); navigate(`#drafting/batches/${x.batchId}`); } }) : null,
+        openRecordButton(x.serviceNumber),
+      ],
     });
   }
 
-  picker.addEventListener('change', () => draw());
-  outlet.replaceChildren(headSlot, pickCard, body);
-  draw();
+  picker.addEventListener('change', () => lv.reload({ resetPage: true }));
+  outlet.replaceChildren(...[
+    header(info, 'Rate DOD History', '', [printBtn, excelBtn].filter(Boolean)),
+    dept ? h('div', { className: 'mb-3' }, notice('info', 'info', ['You see the drafts of your department: ', h('b', { text: dept.name }), '.'])) : null,
+    pickCard, stripSlot, noteSlot, count, lv.el,
+  ].filter(Boolean));
 }
 
 // =====================================================================================================

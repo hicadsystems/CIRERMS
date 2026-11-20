@@ -133,6 +133,9 @@ async function batchForPrint(id, q = {}, user) {
 function shapeHistory(x) {
   return {
     id: x.id,
+    serviceNumber: x.service_number,
+    name: nameOf(x),
+    rateCode: x.rate_code || x.rate_name || '',
     batchId: x.batch_id,
     batchNumber: x.batch_number,
     batchStatus: x.batch_status,
@@ -147,20 +150,46 @@ function shapeHistory(x) {
   };
 }
 
-/** A rating's drafts. A blank number asks for a rating and never lists every draft; an unknown number says so. */
-async function history(q = {}, user) {
-  const sn = text(q.serviceNumber).toUpperCase();
-  if (!sn) throw validationError('Pick a rating to see its drafts.', { serviceNumber: 'Pick a rating.' });
-  const r = await repo.findRating(sn);
-  if (!r) throw notFound(`No rating has Official Number ${sn}.`);
-  const rows = await repo.history({ serviceNumber: sn, specialisationId: scopeOf(user).specialisationId, today: todayIso() });
+const HISTORY_PDF_MAX = 2000; // the printout for everyone: above this the person narrows it with the search
+const HISTORY_XLSX_MAX = 50000;
+
+function ratingOf(r) {
   return {
-    rating: {
-      serviceNumber: r.service_number, name: nameOf(r), rate: r.rate_name || '', rateCode: r.rate_code || r.rate_name || '',
-      sex: r.gender || '', specialisation: r.specialisation_name || '', status: r.status, ship: r.ship_name || '',
-    },
-    items: rows.map(shapeHistory),
+    serviceNumber: r.service_number, name: nameOf(r), rate: r.rate_name || '', rateCode: r.rate_code || r.rate_name || '',
+    sex: r.gender || '', specialisation: r.specialisation_name || '', status: r.status, ship: r.ship_name || '',
   };
+}
+
+/** The filters: one rating (an unknown number is a 404), or everyone; a department-tied user sees only theirs. */
+async function historyFilters(q, user) {
+  const sn = text(q.serviceNumber).toUpperCase();
+  let rating = null;
+  if (sn) {
+    const r = await repo.findRating(sn);
+    if (!r) throw notFound(`No rating has Official Number ${sn}.`);
+    rating = ratingOf(r);
+  }
+  return { rating, f: { serviceNumber: sn, specialisationId: scopeOf(user).specialisationId, today: todayIso() } };
+}
+
+/** The drafts, newest first, 25 a page: a rating's, or everyone's when no number is given. */
+async function history(q = {}, user) {
+  const { rating, f } = await historyFilters(q, user);
+  const p = page(q);
+  const r = await repo.history(f, { page: p, pageSize: PAGE_SIZE });
+  return { rating, items: r.items.map(shapeHistory), meta: meta(r.total, p, PAGE_SIZE) };
+}
+
+/** What Print PDF and Export Excel take: every draft of the selection. The PDF refuses a selection it cannot hold. */
+async function historyForPrint(q = {}, user, kind = 'pdf') {
+  const { rating, f } = await historyFilters(q, user);
+  const max = kind === 'pdf' ? HISTORY_PDF_MAX : HISTORY_XLSX_MAX;
+  const r = await repo.history(f, { pageSize: 0, limit: max + 1 });
+  if (r.total > max) {
+    throw validationError(`There are ${r.total.toLocaleString()} drafts: too many to ${kind === 'pdf' ? 'print in one PDF' : 'export in one file'} (the limit is ${max.toLocaleString()}). Pick a rating with the search to narrow it.`,
+      { serviceNumber: 'Pick a rating to narrow the list.' });
+  }
+  return { rating, items: r.items.map(shapeHistory), total: r.total };
 }
 
 // ---- Draft Report ----------------------------------------------------------------------------------------------
@@ -219,5 +248,5 @@ async function postingsForPrint(q = {}, user) {
 
 module.exports = {
   STATUS_TEXT, ROW_STATE, sexOf,
-  listBatches, getBatch, batchRows, batchesForPrint, batchForPrint, history, postings, postingsForPrint,
+  listBatches, getBatch, batchRows, batchesForPrint, batchForPrint, history, historyForPrint, postings, postingsForPrint,
 };

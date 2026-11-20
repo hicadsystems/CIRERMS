@@ -10,7 +10,7 @@
  *   drafting.close      Close Draft: view, edit (Close)
  *   drafting.wef        Update WEF: view, edit (Set WEF, Set WEF for Department)
  *   drafting.batches    Batch/Signal Content: view (list, a batch's ratings, Print Summary, Print Draft Report, Excel)
- *   drafting.history    Rate DOD History: view (a rating's drafts, Print PDF)
+ *   drafting.history    Rate DOD History: view (every draft or a rating's, Print PDF, Export Excel)
  *   drafting.report     Draft Report: view (every posting that has reported, Print Report, Excel)
  */
 module.exports = {

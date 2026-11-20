@@ -29,7 +29,10 @@
  *   GET    /report/batches/pdf  /report/batches/excel   (same filters)  Print Summary, workbook   batches view
  *   GET    /report/batches/:id   /report/batches/:id/rows?serviceNumber&name&page                batches view
  *   GET    /report/batches/:id/pdf   /report/batches/:id/excel    Print Draft Report, workbook   batches view
- *   GET    /report/history?serviceNumber    /report/history/pdf   Rate DOD History              history view
+ *   GET    /report/history?serviceNumber&page      Rate DOD History: every draft, newest first, 25 a page;
+ *                                                  a number narrows it to that rating                 history view
+ *   GET    /report/history/pdf  /report/history/excel   (same number)  Print PDF, workbook; for everyone
+ *                                                  the PDF holds 2,000 drafts at most (422 above)      history view
  *   GET    /report/postings?specialisationId&authority&from&to&page   Draft Report             report view
  *   GET    /report/postings/pdf  /report/postings/excel   (same filters)                         report view
  *   GET    /rating/:serviceNumber/scheduled        the moves still to come (the record's Drafting tab)
@@ -198,11 +201,16 @@ router.get('/report/batches/:id/excel', requirePrivilege('drafting.batches', 'vi
   send(res, { buffer: await reportDocs.batchWorkbook({ ...p, generatedBy: who(req) }), fileName: `Draft Report ${p.b.batchNumber}.xlsx`, mimeType: XLSX, attachment: true });
 }));
 router.get('/report/history', requirePrivilege('drafting.history', 'view'), asyncHandler(async (req, res) => {
-  res.json({ data: await reports.history(req.query, req.user) });
+  const r = await reports.history(req.query, req.user);
+  res.json({ data: { rating: r.rating, items: r.items }, meta: r.meta });
 }));
 router.get('/report/history/pdf', requirePrivilege('drafting.history', 'view'), asyncHandler(async (req, res) => {
-  const p = await reports.history(req.query, req.user);
-  send(res, { buffer: await reportDocs.historyPdf({ ...p, generatedBy: who(req) }), fileName: `Draft History ${p.rating.serviceNumber}.pdf`, mimeType: PDF });
+  const p = await reports.historyForPrint(req.query, req.user, 'pdf');
+  send(res, { buffer: await reportDocs.historyPdf({ ...p, generatedBy: who(req) }), fileName: p.rating ? `Draft History ${p.rating.serviceNumber}.pdf` : 'Draft History.pdf', mimeType: PDF });
+}));
+router.get('/report/history/excel', requirePrivilege('drafting.history', 'view'), asyncHandler(async (req, res) => {
+  const p = await reports.historyForPrint(req.query, req.user, 'excel');
+  send(res, { buffer: await reportDocs.historyWorkbook({ ...p, generatedBy: who(req) }), fileName: p.rating ? `Draft History ${p.rating.serviceNumber}.xlsx` : 'Draft History.xlsx', mimeType: XLSX, attachment: true });
 }));
 router.get('/report/postings', requirePrivilege('drafting.report', 'view'), asyncHandler(async (req, res) => {
   const r = await reports.postings(req.query, req.user);
