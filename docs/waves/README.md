@@ -69,6 +69,9 @@ The project's rules (`docs/PLAN.md` section 3 and `CONVENTIONS.md` hold them in 
   10 on scroll, each shown as `B0539 — PO OKONKWO CHUKWUEMEKA IFEANYI`. Never a typed official number.
 - **Details** read as label and value on one row with a divider (`facts` and `factPanels` in `public/js/ui/`),
   "N/A" when empty; never small capital labels stacked above values.
+- **A page's picker** (a batch, proposal or period select at the top of a page) sits directly on the page, with no
+  card around it, its label above, `desk:w-96` wide on desktop and full width on a phone; buttons on its row sit next
+  to it. Never a select stretched across the page.
 - **Wide tables never scroll sideways**: only the key columns show (about four), a row opens the full record in a
   dialog (a bottom sheet on a phone) holding the row's actions, a "View Details" tooltip on desktop, cards on a
   phone. 25 rows a page, paged by the server.

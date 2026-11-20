@@ -33,7 +33,7 @@ import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { setPhoneTitle } from '../shell/phone.js';
-import { SECTIONS, sectionByKey, sectionFields, wireCascades, readForm, displayRows } from './rating-fields.js';
+import { sectionByKey, sectionFields, wireCascades, readForm, displayRows } from './rating-fields.js';
 import { CHILD_TABS, childPanel } from './rating-children.js';
 import { documentsBlock } from './rating-documents-block.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
@@ -153,7 +153,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
   function detailsTab() {
     const r = state.rating;
     const posting = (state.children.drafting || []).find((p) => !p.end_date);
-    return card({ body: factPanels(SECTIONS.map((s) => {
+    return card({ body: factPanels(['basic', 'official', 'contact', 'health'].map(sectionByKey).filter(Boolean).map((s) => {
       const rows = displayRows(s, r);
       if (s.key === 'official') {
         rows.splice(5, 0, ['Current Ship', r.current_ship_name ? `${r.current_ship_name}${posting && posting.start_date ? ` (${durationSince(posting.start_date)})` : ''}` : '']);
