@@ -43,7 +43,7 @@ async function searchForSelect({ q, status = 'all', account = null, offset = 0, 
     ? ', (SELECT u.username FROM users u WHERE u.service_number = r.service_number LIMIT 1) AS account'
     : '';
   return db.query(
-    `SELECT r.service_number, r.status, r.surname, r.first_name, r.middle_name, r.maiden_name,
+    `SELECT r.service_number, r.status, r.surname, r.first_name, r.middle_name, r.maiden_name, r.passport_photo_path,
             t.name AS title_name, rt.name AS rate_name${accountCol}
        FROM ratings r
        LEFT JOIN ref_title t ON t.id = r.title_id
@@ -197,6 +197,7 @@ async function listRatings({
       r.phone,
       r.email_address,
       r.date_employed
+      ${exportAll ? '' : ', r.passport_photo_path'}
   `;
 
   if (exportAll) {

@@ -5,7 +5,7 @@ const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 
 const USER_COLUMNS = `u.id, u.username, u.password_hash, u.service_number, u.is_active, u.last_login_at,
        u.role_id, u.must_change_password, u.specialisation_id, r.name AS role_name, r.full_access,
-       ${NAME_COLUMNS}`;
+       rg.passport_photo_path AS passport_photo_path, ${NAME_COLUMNS}`;
 
 async function findByUsername(username, conn = null) {
   const rows = await db.query(

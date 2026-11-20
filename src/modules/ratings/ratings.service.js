@@ -15,6 +15,7 @@ const {
   buildRatingsCsvString,
 } = require('../../shared/excel');
 const printouts = require('./ratings.printouts');
+const { passportPhotoUrl } = require('../../shared/rating-photo');
 const {
   badRequest,
   validationError,
@@ -229,9 +230,7 @@ function decoratePhotoUrls(rating) {
   const sn = encodeURIComponent(rating.service_number);
   return {
     ...rating,
-    passport_photo_url: rating.passport_photo_path
-      ? `/api/ratings/${sn}/photo/passport?v=${encodeURIComponent(rating.passport_photo_path)}`
-      : null,
+    passport_photo_url: passportPhotoUrl(rating.service_number, rating.passport_photo_path),
     next_of_kin_photo_url: rating.next_of_kin_photo_path
       ? `/api/ratings/${sn}/photo/next-of-kin?v=${encodeURIComponent(rating.next_of_kin_photo_path)}`
       : null,
@@ -279,6 +278,7 @@ async function searchRatings(query = {}) {
     title: r.title_name || abbreviation(r.rate_name) || null,
     names: [r.surname, r.first_name, r.middle_name, r.maiden_name].filter(Boolean).join(' '),
     status: r.status,
+    passportPhotoUrl: passportPhotoUrl(r.service_number, r.passport_photo_path),
     ...(account ? { account: r.account || null } : {}),
   }));
   return { items, offset, limit, hasMore: rows.length > limit };
@@ -293,7 +293,17 @@ async function listRatings(queryParams = {}) {
   const rawSize = Number.parseInt(queryParams.pageSize, 10);
   const pageSize = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(rawSize, 200) : 25;
 
-  return ratingsRepo.listRatings({ ...filters, page, pageSize });
+  const result = await ratingsRepo.listRatings({ ...filters, page, pageSize });
+  return {
+    ...result,
+    items: result.items.map((rating) => {
+      const { passport_photo_path: photoPath, ...safeRating } = rating;
+      return {
+        ...safeRating,
+        passport_photo_url: passportPhotoUrl(rating.service_number, photoPath),
+      };
+    }),
+  };
 }
 
 async function getFullDossier(serviceNumberRaw) {
@@ -873,6 +883,7 @@ async function getDocumentsBundle(serviceNumberRaw, queryParams = {}) {
       current_ship_name: rating.current_ship_name,
       branch_name: rating.branch_name,
       status: rating.status,
+      passport_photo_url: passportPhotoUrl(rating.service_number, rating.passport_photo_path),
     },
     documents: decoratedDocs,
   };

@@ -8,6 +8,7 @@ const db = require('../../db');
 const audit = require('../../shared/audit');
 const passwords = require('../../shared/password');
 const { accountName, accountInitials } = require('../../shared/rating-name');
+const { passportPhotoUrl } = require('../../shared/rating-photo');
 const authRepo = require('./auth.repo');
 const { validationError, unauthorized, forbidden, AppError } = require('../../shared/errors');
 
@@ -23,6 +24,7 @@ function formatUserDto(row) {
     username: row.username,
     fullName: accountName(row), // from the account's rating
     initials: accountInitials(row),
+    passportPhotoUrl: passportPhotoUrl(row.service_number, row.passport_photo_path),
     role: row.role_name,
     roleId: row.role_id,
     fullAccess: !!row.full_access,

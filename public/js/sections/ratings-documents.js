@@ -12,7 +12,7 @@ import { CARD, LABEL } from '../ui/classes.js';
 import { button } from '../ui/button.js';
 import { pageHeader } from '../ui/page-header.js';
 import { ratingSearch } from '../ui/rating-search.js';
-import { avatar } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { pill } from '../ui/pill.js';
 import { emptyState } from '../ui/empty-state.js';
 import { documentsBlock } from './rating-documents-block.js';
@@ -42,7 +42,7 @@ export async function mountRatingsDocuments(outlet, { params = {} } = {}) {
     const r = res.data.rating;
     fill(chosen, h('div', { className: 'flex flex-wrap items-center gap-3' }, [
       h('div', { className: cx(CARD, 'flex min-w-0 items-center gap-3 px-3 py-2 phone:w-full') }, [
-        avatar({ name: r.full_name, size: 'sm' }),
+        photoAvatar(r.full_name, r.passport_photo_url, 'sm'),
         h('span', { className: 'min-w-0' }, [
           h('b', { className: 'block truncate text-sm', text: ratingName(r) }),
           h('span', { className: 'block truncate text-xs text-muted-foreground', text: `${r.service_number} · ${r.status === 'former' ? 'Former' : r.current_ship_name || 'Current'}` }),
