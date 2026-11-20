@@ -5,21 +5,21 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 
 ## Decisions
 
-| Topic | Decision |
-|---|---|
-| Stack | HTML / Tailwind CSS v3 / vanilla JS (SPA) + Node.js 20 (CommonJS) / Express 4 |
-| Libraries | `mysql2` (parameterised SQL, no ORM), `bcryptjs` + `jsonwebtoken` (auth), `helmet` (headers), `multer` (uploads), `exceljs` (Excel/CSV export & batch upload), `handlebars` + `puppeteer-core` + `@sparticuz/chromium` (printouts: HTML templates turned into PDFs by Chromium), `dotenv` (config) |
-| Frontend | `public/` (with pre-compiled `public/css/output.css` so no build step is needed to run) |
-| Backend | `src/` — everything server-side lives here, nothing at the project root except entry/config files |
-| Uploads | `storage/uploads/` (outside `public/`, configurable via `UPLOAD_DIR`), served only through authenticated API routes |
-| Serving | Express serves `public/` + `/api` from one process (Docker, cPanel Node app, VPS) |
-| Database | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap. No stored procedures, functions, triggers or views: logic is code in `*.service.js` with plain parameterised SQL in `*.repo.js`, and the old system's procedures are rewritten that way |
-| Data | Own database. No data shared with payroll |
-| Organisation | Module-first: one folder per sidebar menu |
-| Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
-| Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Every account belongs to a rating (owner's rule, 19/11/2026): `users.service_number` is required, unique, and is the account's user name, the Hicad administrator `HICO001` included (a rating of that official number is in the demo data); it also decides *View My Details*, which so works for every account. **An account's name is its rating's** (`src/shared/rating-name.js`: rate abbreviation, surname, first name, as the rest of the app writes a rating's name); `users.full_name` is not read. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
-| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports (its look is agreed in `docs/design/demo.html`). The other modules not yet built. System Administration is built (WP3) |
-| Current focus | Ratings Management only — migration show-and-tell demo |
+| Topic                  | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack                  | HTML / Tailwind CSS v3 / vanilla JS (SPA) + Node.js 20 (CommonJS) / Express 4                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Libraries              | `mysql2` (parameterised SQL, no ORM), `bcryptjs` + `jsonwebtoken` (auth), `helmet` (headers), `multer` (uploads), `exceljs` (Excel/CSV export & batch upload), `handlebars` + `puppeteer-core` + `@sparticuz/chromium` (printouts: HTML templates turned into PDFs by Chromium), `dotenv` (config)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Frontend               | `public/` (with pre-compiled `public/css/output.css` so no build step is needed to run)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Backend                | `src/` — everything server-side lives here, nothing at the project root except entry/config files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Uploads                | `storage/uploads/` (outside `public/`, configurable via `UPLOAD_DIR`), served only through authenticated API routes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Serving                | Express serves `public/` + `/api` from one process (Docker, cPanel Node app, VPS)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Database               | MySQL 8+ (compatible with MariaDB 11; Postgres under discussion). All SQL stays in `*.repo.js` so a DB switch stays cheap. No stored procedures, functions, triggers or views: logic is code in `*.service.js` with plain parameterised SQL in `*.repo.js`, and the old system's procedures are rewritten that way                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Data                   | Own database. No data shared with payroll                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Organisation           | Module-first: one folder per sidebar menu                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Look & feel            | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour                                                                                                                                                                                                                                                                                                                                            |
+| Auth                   | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Every account belongs to a rating (owner's rule, 19/11/2026): `users.service_number` is required, unique, and is the account's user name, the Hicad administrator `HICO001` included (a rating of that official number is in the demo data); it also decides _View My Details_, which so works for every account. **An account's name is its rating's** (`src/shared/rating-name.js`: rate abbreviation, surname, first name, as the rest of the app writes a rating's name); `users.full_name` is not read. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see _Access, audit and modules_) |
+| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports (its look is agreed in `docs/design/demo.html`). The other modules not yet built. System Administration is built (WP3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Current focus          | Ratings Management only — migration show-and-tell demo                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Folder layout
 
@@ -35,8 +35,7 @@ CIRERMS/
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
 │  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
-│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js,
-│  │                            # settings/ (values the business may change: the due rules), scheduled/ (changes that take effect on a later date)
+│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js
 │  ├─ templates/printouts/      # the printout templates (.hbs), partials, printout.css, helpers.js, fonts: D4's approved design
 │  └─ modules/
 │     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
@@ -82,18 +81,18 @@ CIRERMS/
 New modules (drafting, advancement, discipline, ...) are added as a folder under `src/modules/` with a
 manifest (`<module>.module.js`: its routes and privileges), their screens as files in `public/js/sections/`,
 and their pages (with `screen`, `action` and `view`) and tabs in `public/js/core/nav.js`; nothing else moves
-(see *Access, audit and modules*).
+(see _Access, audit and modules_).
 Tests: `tests/e2e/` holds Playwright walk-throughs (run with the machine's Playwright, see each file's header).
 
 ## Backend layering
 
 Every module has three files, each with one job:
 
-| File | Does | Never does |
-|---|---|---|
-| `<module>.routes.js` | Read request, call service, send response | SQL, business rules |
+| File                  | Does                                                                      | Never does                   |
+| --------------------- | ------------------------------------------------------------------------- | ---------------------------- |
+| `<module>.routes.js`  | Read request, call service, send response                                 | SQL, business rules          |
 | `<module>.service.js` | Business rules (duplicates, current vs former, date/FK/upload validation) | Touch `req`/`res`, write SQL |
-| `<module>.repo.js` | All SQL for the module, parameterised | Business decisions |
+| `<module>.repo.js`    | All SQL for the module, parameterised                                     | Business decisions           |
 
 - Always use placeholders (`?`), never string-built SQL (identifiers like validated sort columns come strictly from allowlists).
 - Any save touching more than one table (or multi-row batch import) uses `transaction()`.
@@ -109,13 +108,13 @@ Every module has three files, each with one job:
 
 ## Naming
 
-| Thing | Style | Example |
-|---|---|---|
-| Files & folders | kebab-case | `my-details.js`, `filter-bar.js` |
-| JS variables/functions | camelCase | `findByServiceNumber` |
-| DB tables & columns | snake_case | `rating_next_of_kin.service_number` |
-| Lookup tables | `ref_` prefix | `ref_rate`, `ref_title`, `ref_branch` |
-| Screen ID | `module.screen` | `ratings.list`, `ratings.new` |
+| Thing                  | Style           | Example                               |
+| ---------------------- | --------------- | ------------------------------------- |
+| Files & folders        | kebab-case      | `my-details.js`, `filter-bar.js`      |
+| JS variables/functions | camelCase       | `findByServiceNumber`                 |
+| DB tables & columns    | snake_case      | `rating_next_of_kin.service_number`   |
+| Lookup tables          | `ref_` prefix   | `ref_rate`, `ref_title`, `ref_branch` |
+| Screen ID              | `module.screen` | `ratings.list`, `ratings.new`         |
 
 The **screen ID** is the single name for a screen: its page in `js/core/nav.js` (`screen`), the menu item, and
 the privilege key (with an action: view, add, edit, delete, approve). UI labels preserve familiar
@@ -135,7 +134,7 @@ naval wording ("Official Number" / "Service No") while the DB and API standardis
   `religion_id` on `ref_religion_denomination`, and `state_id` on `ref_local_government`). Dropdown queries filter
   `is_active = 1` and sort by `sort_order, name`; a record that holds a value since made inactive still shows it,
   and its edit form still offers it (`/api/lookups` keeps the inactive rows apart, `optionsWithHeld` in
-  `js/core/lookups.js`). The 16 Static Tables are maintained through one engine (see *Access, audit and modules*).
+  `js/core/lookups.js`). The 16 Static Tables are maintained through one engine (see _Access, audit and modules_).
 - **`ratings.status`** is `ENUM('current','former')` paired with optional `exit_type_id`, `exit_date`, `exit_reason`.
 - Real `DATE` / `DATETIME` columns. Missing date = `NULL` — never `0001-01-01`.
 - Derived values (**current ship** from the open `rating_drafting` row where `end_date IS NULL`,
@@ -172,20 +171,20 @@ DROP TABLE ratings;
 10. `20261120_030000_users_admin.sql` — `users`: e-mail, phone, Specialisation, `must_change_password`, `password_changed_at` (WP3)
 11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
-13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
+13. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
 **Commands**
 
-| Command | Does |
-|---|---|
-| `npm run migrate:make <name>` | Create a timestamped file with UP/DOWN sections |
-| `npm run migrate:up` | Run pending migrations as one batch |
-| `npm run migrate:down [steps]` | Roll back the last batch (or N batches) |
-| `npm run migrate:status` | Show applied, pending, changed and missing files |
-| `npm run migrate:fresh` | Drop all, migrate, seed — refuses when `NODE_ENV=production` |
-| `npm run seed` | Run seeds (safe to rerun) |
+| Command                        | Does                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| `npm run migrate:make <name>`  | Create a timestamped file with UP/DOWN sections              |
+| `npm run migrate:up`           | Run pending migrations as one batch                          |
+| `npm run migrate:down [steps]` | Roll back the last batch (or N batches)                      |
+| `npm run migrate:status`       | Show applied, pending, changed and missing files             |
+| `npm run migrate:fresh`        | Drop all, migrate, seed — refuses when `NODE_ENV=production` |
+| `npm run seed`                 | Run seeds (safe to rerun)                                    |
 
 **Rules**
 
@@ -221,7 +220,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 - **A rating is always picked with the rating search select** (`ratingSearch`, `js/ui/rating-search.js`), never a
   typed official number or a hand-made list: from 2 characters it suggests ratings by official number or any name,
   10 at a time from `GET /api/ratings/search` (the next 10 on scroll), each as `B0539 — PO OKONKWO CHUKWUEMEKA
-  IFEANYI`. Options `status` (`current`, `former`) and `account` (`with`, `without`); read `.value`, `.rating` or a
+IFEANYI`. Options `status` (`current`, `former`) and `account` (`with`, `without`); read `.value`, `.rating` or a
   `change` event. A general list search box that matches many fields stays a plain search input.
 - **Colours are tokens.** `public/css/input.css` (`:root`) is the only place a colour value lives;
   `tailwind.config.js` names each by its role: `bg-background`, `text-foreground`, `bg-muted` (the page
@@ -248,7 +247,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   choice, else the device's), so nothing flashes. `js/core/theme.js` switches it (`currentTheme`,
   `setTheme`, `toggleTheme`, `onThemeChange`, `bindThemeButton`), keeps the choice in `localStorage`
   (`cirerms-theme`), follows the device until a choice is made, and carries a choice to the other tabs.
-  The switches: the top bar's button (desktop), *Dark Mode* / *Light Mode* in the account menu (sidebar and
+  The switches: the top bar's button (desktop), _Dark Mode_ / _Light Mode_ in the account menu (sidebar and
   phone), and the button at the top right of the sign-in page; all share the one setting. A fill's text
   is its `*-foreground` token (`bg-primary text-primary-foreground`): in dark mode the bright fills carry
   dark text, so never put `text-on-fill` on `primary`, `secondary`, `destructive` or `brand`.
@@ -256,7 +255,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   dropdown lists), `rounded-dialog` (16 px: dialogs); shadows `shadow-card`, `shadow-card-hover`,
   `shadow-pop` (menus, dialogs) and `shadow-btn`, each a token (`--shadow-*`: tinted with the text colour
   in light mode, plain black in dark); actions are gentle gradients (`bg-gradient-to-b
-  from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-ring/15`.
+from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-ring/15`.
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
@@ -270,19 +269,20 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   their own. Each step is `clamp()`ed, held at its phone size up to 360 px and at its desktop size from
   1440 px, with a line height that scales the same way:
 
-  | Step | Phone | Desktop | Line height (phone, desktop) | Used for |
-  | --- | --- | --- | --- | --- |
-  | `text-2xs` | 11 px | 11 px | 16, 16 | group labels, counts |
-  | `text-xs` | 12 px | 12 px | 16, 16 | captions, hints |
-  | `text-sm` | 13 px | 14 px | 20, 20 | body text, fields, tables (never below 13 px on a phone) |
-  | `text-base` | 15 px | 16 px | 22, 24 | dialog and sheet titles, the phone header title |
-  | `text-lg` | 16 px | 18 px | 24, 28 | small values |
-  | `text-xl` | 18 px | 20 px | 26, 28 | a record's name |
-  | `text-2xl` | 20 px | 24 px | 28, 32 | a page title, the lock heading |
-  | `text-3xl` | 22 px | 30 px | 28, 36 | a stat value, the sign-in heading |
+  | Step        | Phone | Desktop | Line height (phone, desktop) | Used for                                                 |
+  | ----------- | ----- | ------- | ---------------------------- | -------------------------------------------------------- |
+  | `text-2xs`  | 11 px | 11 px   | 16, 16                       | group labels, counts                                     |
+  | `text-xs`   | 12 px | 12 px   | 16, 16                       | captions, hints                                          |
+  | `text-sm`   | 13 px | 14 px   | 20, 20                       | body text, fields, tables (never below 13 px on a phone) |
+  | `text-base` | 15 px | 16 px   | 22, 24                       | dialog and sheet titles, the phone header title          |
+  | `text-lg`   | 16 px | 18 px   | 24, 28                       | small values                                             |
+  | `text-xl`   | 18 px | 20 px   | 26, 28                       | a record's name                                          |
+  | `text-2xl`  | 20 px | 24 px   | 28, 32                       | a page title, the lock heading                           |
+  | `text-3xl`  | 22 px | 30 px   | 28, 36                       | a stat value, the sign-in heading                        |
 
   Headings stay `font-semibold` on a phone (`phone:font-semibold` where desktop is bold); long names use
   `break-words`.
+
 - **Wide tables never scroll sideways** (owner's decision, 19/11/2026). A list whose columns would
   overflow the screen shows only its most informative columns, the ones a person scans to find a
   row; the rest go in the record. Every row is clickable and opens the full record in a dialog (a
@@ -345,13 +345,22 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 
 ```js
 module.exports = {
-  key: 'drafting',                       // the folder name
-  label: 'Drafting',                     // the module's name in the privilege catalogue
-  basePath: '/api/drafting',             // where its router is mounted
-  routes: './drafting.routes',           // its router
-  privileges: [                          // screen ids from public/js/core/nav.js, and their actions
-    { screen: 'drafting.proposal', label: 'Print Draft Proposal', actions: ['view', 'add'] },
-    { screen: 'drafting.approval', label: 'Draft Approval', actions: ['view', 'approve'] },
+  key: "drafting", // the folder name
+  label: "Drafting", // the module's name in the privilege catalogue
+  basePath: "/api/drafting", // where its router is mounted
+  routes: "./drafting.routes", // its router
+  privileges: [
+    // screen ids from public/js/core/nav.js, and their actions
+    {
+      screen: "drafting.proposal",
+      label: "Print Draft Proposal",
+      actions: ["view", "add"],
+    },
+    {
+      screen: "drafting.approval",
+      label: "Draft Approval",
+      actions: ["view", "approve"],
+    },
   ],
 };
 ```
@@ -367,7 +376,7 @@ module.exports = {
   `{ own: (req) => ... }` also lets a request through for the person's own record (My Details).
 - **Who is signed in.** `requireAuth` loads the session, the user, their role and privileges on every
   request: `req.user` (`id`, `username`, `role`, `fullAccess`, `serviceNumber`, `privileges`), `req.can(screen,
-  action)`, and `req.actor`, the actor for the audit trail. `/api/auth/me` returns the user, their privileges
+action)`, and `req.actor`, the actor for the audit trail. `/api/auth/me` returns the user, their privileges
   as `{ screen: [actions] }` and the session (`locked`, `lockReason`, `idleMinutes`).
 - **Every write is audited, inside its transaction.** A service write runs in `db.transaction()` and calls
   `audit.record(tx, actor, { action, table, recordId, before, after })` from `src/shared/audit.js`: `INSERT`
@@ -378,7 +387,7 @@ module.exports = {
 - **Reading the trail.** `GET /api/audit?from=&to=&user=&userId=&action=&table=&record=&page=` (25 a page,
   newest first, dates `YYYY-MM-DD`), `GET /api/audit/:id` (with its changes), `GET /api/audit/filters`;
   `GET /api/access/privileges` and `GET /api/access/roles` for Manage Roles. Screen ids `admin.audit` (view)
-  and `admin.roles` (view, add, edit, delete); see *System Administration* below.
+  and `admin.roles` (view, add, edit, delete); see _System Administration_ below.
 - **The screens hide what a person may not do.** `js/core/access.js` holds the privileges from
   `/api/auth/me`: `can(screen, action)` (action defaults to `view`) decides every button, menu item and tab;
   the rail, the module tabs, the bottom bar, More and Ctrl K show only what may be opened. Each page in
@@ -429,34 +438,15 @@ module.exports = {
   in the completeness). Lists are 25 a page with four key columns, a row opens the case in a dialog (View Details
   tooltip on desktop; `rowTips` in `js/sections/disciplinary-parts.js`), and filters are in a bar that folds into a
   Filters button on a phone.
-- **Drafting** (`src/modules/drafting/`, WP7a): screens `drafting.manning` (view, add, edit, delete),
-  `drafting.proposal` (view; **add** makes a batch), `drafting.review` (view, add, edit, delete), `drafting.approval`
-  (view, **approve**), `drafting.close` (view; **edit** closes), `drafting.wef` (view; **edit** sets the WEF). A user
-  with a Specialisation (`req.user.specialisationId`, from `users.specialisation_id`) is held to that department by
-  the service. Three parts are written to be reused:
-  - **The batch cycle** (`cycle.service.js`, its SQL in `cycle.repo.js`): `batches` (a `flow`: DOD for drafting, DOA
-    for advancement), `batch_approvals` and a flow's own rows table. A package registers its flow
-    (`cycle.registerFlow('DOA', { rowsTable, target, targetLabel, closedStatus, noun })`; the rows table has `id`,
-    `batch_id`, `service_number`, `rate_id`, `specialisation_id`, `approval_id`, `status` with `proposed`,
-    `not_recommended` and its closed status) and calls `batchCode`, `previewBatch`, `openOrCreateBatch` (numbering:
-    the code and a six-digit counter per code), `refreshStatus` (open or approved, after any change to rows),
-    `clearApproval`, `departments` (the approval list with the rate groups in the Rates table's order),
-    `approveDepartment`, `readiness` and `closeBatch` (final; the authority unique across every batch) inside its own
-    transaction. Each audits what it writes.
-  - **The posting move** (`postings.service.js`): `move(tx, actor, { serviceNumber, shipId, wef, authority, remarks,
-    source: { table, id } })` ends the open posting the day before the WEF and opens the new one on it, or, for a WEF
-    after today, schedules it; `onSource(table, { applied, cancelled })` tells the caller's record when a scheduled
-    move is made (or cannot be); `scheduledFor(serviceNumber)` is what is still to come (the record's Drafting tab
-    shows it, `js/sections/drafting-record.js`). Never write `rating_drafting` for a move any other way.
-  - **Scheduled changes** (`src/shared/scheduled`): `register(kind, { apply, cancelled })` at load, `schedule(tx,
-    actor, { kind, serviceNumber, effectiveDate, payload, source })`, `cancel`, `forRating`, `applyDue({ today })`. The
-    server (`src/server.js`) applies the changes due at start and then every hour, each in its own transaction (actor
-    `SYSTEM` in the audit trail); a handler's AppError cancels the change with its message, any other error leaves it
-    for the next run.
-  - **Settings** (`src/shared/settings`, table `settings`: `setting_key`, `value`, `description`): `number(key)`,
-    `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
-    `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
-    rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
+- **Training Drafting** (`src/modules/training-drafting/`, WP6): screens `training.process` (view; add makes a
+  batch and adds ratings), `training.review` (view; edit adds and removes a batch's ratings), `training.history`
+  (view; edit sets Attended, a rating's own dates and confirms the history), `training.reports` (view) and
+  `training.upload` (view; add imports). A batch is `open` or `closed` (a `status` column); closing is confirming
+  its history, which adds a Training entry to each attending rating's record in one transaction, and a closed batch
+  is final. Eligibility is one SQL fragment (`eligibleWhere` in the repo) used by the count, the bulk add and the
+  checks, so the dialog's count and what is added cannot differ. The batch number is made from the course's id,
+  never its optional code. The screens take their dropdowns from `GET /api/training-drafting/options`, and the
+  Excel upload reads every row before writing any (`upload/review`, then `upload/import`, which reads the file again).
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -473,24 +463,23 @@ module.exports = {
 
 ## Demo scope — Ratings Management
 
-| Screen ID | Screen |
-|---|---|
-| `auth.login` | Login (`public/index.html`) |
-| `dashboard.home` | Dashboard: Members tile live (`total`, `current`, `former`), the others `0`; Recently Enlisted; Current Ratings by Rate |
-| `ratings.list` | Current / Former Ratings (one screen, `status`): search, Rate and Ship filters, 25 a page, the picked rating beside the list (1280 px and up) or in a dialog or sheet; Export (Copy Rows, Excel, PDF, CSV) and New Rating |
-| `ratings.new` | New Rating: a dialog with the four steps (Basic Details, Contact, Health, Official); `#ratings/new` opens it over the current list |
-| `ratings.edit` | The rating's record: head row, completeness bar, ten tabs (Details as four cards with Edit dialogs; Next of Kin, Spouse, Children, Advancement, Drafting, Training, Education, Language with Add / Edit / Delete; Documents) |
-| `ratings.upload` | Batch Upload: Download Template, Upload Workbook, Review and Commit (duplicates and rows with errors skipped, the rest added in one transaction) |
-| `ratings.my-details` | My Details: the record read-only for the signed-in user's `service_number`, or a notice for an account with none |
-| `ratings.documents` | Documents: find a rating by Official No or name, then its files by category, preview, download and upload |
+| Screen ID            | Screen                                                                                                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auth.login`         | Login (`public/index.html`)                                                                                                                                                                                                  |
+| `dashboard.home`     | Dashboard: Members tile live (`total`, `current`, `former`), the others `0`; Recently Enlisted; Current Ratings by Rate                                                                                                      |
+| `ratings.list`       | Current / Former Ratings (one screen, `status`): search, Rate and Ship filters, 25 a page, the picked rating beside the list (1280 px and up) or in a dialog or sheet; Export (Copy Rows, Excel, PDF, CSV) and New Rating    |
+| `ratings.new`        | New Rating: a dialog with the four steps (Basic Details, Contact, Health, Official); `#ratings/new` opens it over the current list                                                                                           |
+| `ratings.edit`       | The rating's record: head row, completeness bar, ten tabs (Details as four cards with Edit dialogs; Next of Kin, Spouse, Children, Advancement, Drafting, Training, Education, Language with Add / Edit / Delete; Documents) |
+| `ratings.upload`     | Batch Upload: Download Template, Upload Workbook, Review and Commit (duplicates and rows with errors skipped, the rest added in one transaction)                                                                             |
+| `ratings.my-details` | My Details: the record read-only for the signed-in user's `service_number`, or a notice for an account with none                                                                                                             |
+| `ratings.documents`  | Documents: find a rating by Official No or name, then its files by category, preview, download and upload                                                                                                                    |
 
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Special Drafting and Training Drafting (Operations); Advancement Processing, Naval Character
+Drafting and Special Drafting (Operations); Advancement Processing, Naval Character
 Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
-Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
 
 ## Open items
 

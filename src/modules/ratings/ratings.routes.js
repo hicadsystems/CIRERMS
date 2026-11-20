@@ -49,6 +49,7 @@ router.get(
     ['ratings.list', 'view'], ['ratings.edit', 'view'], ['ratings.documents', 'view'],
     ['admin.users', 'add'], ['admin.users', 'view'], ['admin.password', 'view'], ['admin.audit', 'view'],
     ['disciplinary.initiate', 'add'], ['disciplinary.pending', 'view'], ['disciplinary.concluded', 'view'], ['disciplinary.report', 'view'],
+    ['training.review', 'edit'],
   ]),
   asyncHandler(async (req, res) => {
     const r = await ratingsService.searchRatings(req.query);
