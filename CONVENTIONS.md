@@ -172,6 +172,7 @@ DROP TABLE ratings;
 11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
 13. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
+14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -304,10 +305,14 @@ from-primary to-primary-hover`). Focus is a soft glow: `focus:ring-4 focus:ring-
   to keep one native). Look a select up with `querySelector('[name="…"]')` or its id, never
   `form.elements[…]` (that reaches only its hidden input), and look up again a select you built in JS once
   it is on the page. Its look is set at the end of `input.css`.
-- **Printouts open in the app's own PDF preview, never the browser's PDF viewer** (`js/ui/pdf-preview.js`,
-  `openPdfPreview({ url, title, filename })`; `previewBlobModal` hands PDFs to it). PDF.js (`pdfjs-dist`) draws the
-  pages from our own origin (`/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN, no `<iframe>` or `<embed>` of a
-  PDF); only the app's Download PDF and Print buttons. The pages stay paper-coloured (`--paper`) in dark mode. Every
+- **Printouts open in the app's own preview dialog** (`js/ui/pdf-preview.js`, `openPdfPreview({ url, title, filename })`;
+  `previewBlobModal` hands PDFs to it). Where the browser can show a PDF inline (`navigator.pdfViewerEnabled`: desktop
+  Chrome, Edge, Firefox, Safari) the dialog shows the PDF in the browser's own viewer with its toolbar hidden, as
+  NAVY-PAYROLL does: the server's PDF is fetched as a blob and shown in an `<iframe>` from the blob URL with
+  `#toolbar=0&navpanes=0` (CSP `frame-src 'self' blob:`), so it is exactly the PDF that is downloaded; the blob URL is
+  revoked on close. Phones and other browsers without an inline PDF viewer get the pages drawn by PDF.js
+  (`pdfjs-dist`, from our own origin `/vendor/pdfjs`, CSP `worker-src 'self' blob:`; no CDN) at 2x to 3x resolution with
+  the PDF's own background. Only the app's own title, close, Download PDF and Print buttons. Every
   Static Table has **Print List** (`GET /api/tables/<slug>/print?q=&status=`, the `static-table-list` template: the crest, title,
   list columns, Active, row count, date printed and page numbers; the table's view privilege).
 - **Printouts are Handlebars templates, made into PDFs by Chromium** (owner's decision, 19/11/2026; WP13). The
@@ -447,6 +452,21 @@ action)`, and `req.actor`, the actor for the audit trail. `/api/auth/me` returns
   checks, so the dialog's count and what is added cannot differ. The batch number is made from the course's id,
   never its optional code. The screens take their dropdowns from `GET /api/training-drafting/options`, and the
   Excel upload reads every row before writing any (`upload/review`, then `upload/import`, which reads the file again).
+- **Advancement Processing** (`src/modules/advancement/`, WP8): screens `advancement.due` (view; **add** makes a batch),
+  `advancement.review` (view, add, edit, delete), `advancement.approval` (view, **approve**), `advancement.close` (view;
+  **edit** closes), `advancement.board` (view; **edit** enters board dates), `advancement.promoted` (view) and
+  `advancement.upload` (view; **add** checks and imports). It registers the `DOA` flow on WP7a's batch cycle
+  (`cycle.registerFlow('DOA', { rowsTable: 'advancement_rows', target: 'new_rate_id', closedStatus: 'awaiting_board',
+rateColumn: 'new_rate_id', ... })`; `rateColumn` makes the approval's totals count the new rate) and does not copy it.
+  Its own reusable part:
+  - **The rate change** (`rates.service.js`): `advance(tx, actor, { serviceNumber, fromRateId, toRateId, date, authority,
+decoration, source })` ends the open `rating_advancement` line the day before the date, opens the new rate's line on
+    it and sets `ratings.rate_id`, or, for a date after today, schedules it (kind `advancement`); `applyNow` (no
+    scheduling: the upload), `onSource(table, { applied, cancelled })`, `scheduledFor(serviceNumber)` (the record's
+    Advancement tab shows it, `js/sections/advancement-record.js`). Never change a rating's rate for an advancement any
+    other way. The next rate is the next active rate by Rates `sort_order`.
+  - Its due rule is in `settings` (`advancement.due_months`, `advancement.band_green_to`, `advancement.band_amber_to`);
+    time in rate counts from the latest `rating_advancement` line of the current rate, else `seniority_date`.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -477,9 +497,10 @@ action)`, and `req.actor`, the actor for the audit trail. `/api/auth/me` returns
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Drafting and Special Drafting (Operations); Advancement Processing, Naval Character
+Drafting and Special Drafting (Operations); Naval Character
 Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
+Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 
 ## Open items
 

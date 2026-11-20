@@ -11,3 +11,10 @@ storage/uploads/photos/*
 !storage/uploads/photos/.gitkeep
 storage/uploads/documents/*
 !storage/uploads/documents/.gitkeep
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

@@ -24,9 +24,9 @@ import { pill } from '../ui/pill.js';
 import { facts } from '../ui/facts.js';
 import { emptyState } from '../ui/empty-state.js';
 import { toast } from '../ui/toast.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { openNewRating, newRatingButton } from './rating-new.js';
 import { ratingName, personName, shortRate } from './rating-names.js';
-import { photoAvatar } from './rating-record.js';
 
 const COLUMNS = {
   current: [
@@ -91,7 +91,7 @@ async function ratingCard(row) {
   const sn = encodeURIComponent(r.service_number);
   return h('div', { className: 'space-y-4' }, [
     h('div', { className: 'flex items-start gap-3' }, [
-      photoAvatar(r, 'lg'),
+      photoAvatar(personName(r), r.passport_photo_url, 'lg'),
       h('div', { className: 'min-w-0' }, [
         h('div', { className: 'text-base font-semibold leading-tight', text: ratingName(r) }),
         h('div', { className: 'text-sm text-muted-foreground', text: [r.service_number, r.rate_name].filter(Boolean).join(' · ') }),
@@ -165,7 +165,7 @@ export async function mountRatingsList(outlet, { status = 'current', info, openN
       columns: COLUMNS[status],
       load: ({ page, pageSize }) => api.get(`/api/ratings?${params({ page, pageSize })}`),
       card: {
-        avatar: (r) => personName(r),
+        avatarNode: (r) => photoAvatar(personName(r), r.passport_photo_url, 'md'),
         title: (r) => ratingName(r),
         subtitle: (r) => `${r.service_number} · ${isCurrent ? r.current_ship_name || 'No current posting' : `Left ${formatDisplayDate(r.exit_date) || '-'}`}`,
       },

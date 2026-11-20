@@ -14,7 +14,7 @@ import { can, moduleVisible, moduleHref, visibleTabs } from '../core/access.js';
 import { icon } from '../core/icons.js';
 import { navigate } from '../core/router.js';
 import { h, cx, fill } from '../ui/html.js';
-import { avatar } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { emptyState } from '../ui/empty-state.js';
 import { pillClass } from '../ui/pill.js';
 import { openNewRating } from '../sections/rating-new.js';
@@ -127,7 +127,7 @@ export function openPalette() {
           onClick: (e) => { e.preventDefault(); activate(it); },
           onMousemove: () => { if (at !== i) { at = i; paintActive(); } },
         }, [
-          it.rating ? avatar({ name: personName(it.rating), size: 'xs' }) : h('span', { className: 'flex h-8 w-8 flex-none items-center justify-center rounded-ctl bg-muted text-muted-foreground' }, icon(it.icon)),
+          it.rating ? photoAvatar(personName(it.rating), it.rating.passport_photo_url, 'xs') : h('span', { className: 'flex h-8 w-8 flex-none items-center justify-center rounded-ctl bg-muted text-muted-foreground' }, icon(it.icon)),
           h('span', { className: 'min-w-0 flex-1' }, [
             h('b', { className: 'block truncate font-medium', text: it.label }),
             it.sub ? h('span', { className: 'block truncate text-xs text-muted-foreground', text: it.sub }) : null,

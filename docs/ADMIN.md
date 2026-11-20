@@ -126,9 +126,9 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, the plan, `docs/waves/` |
-| Sessions | WP7a `drafting-cycle`: session `session_01G8RfvhqhVge4sdaGzfKLGa` (Opus 5.5, high), started 19/11/2026 after WP13 merged. WP6 `training-drafting` is with a developer on another device (their report note comes as `docs/reports/WP6.md` on that branch; check it as section 4). On WP7a's report: run its walkthrough and the four others, owner merges, archive |
-| Next | Wave P (PDF reforming): D4, then WP13 (it also fixes the walkthrough steps WP3b and WP3c broke). Then E (WP6, WP7a), F (WP5 any time after WP13, WP8 after WP7a), F2 (WP12 any time after WP13, WP11 after WP7a), G (WP7b, WP9), H (WP10). All written out for any developer in `docs/waves/`; report notes in `docs/reports/` |
+| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
+| Sessions | None running. WP13b (`preview-sharp`, the browser's own viewer as NAVY-PAYROLL) merged 19/11/2026 and its session archived. The remaining packages (WP6, WP5, WP12, WP11, WP7b, WP9, then WP10) are with other developers: check each branch when its report note arrives |
+| Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
 Notes for coming briefs:
@@ -150,6 +150,9 @@ Notes for coming briefs:
   `core/access.js` and `shell/lock.js` in `docs/design/components.md`.
 - **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
   D2's layouts stand.
+- **WP10:** a label in the label-and-value rows breaks inside a word when its column is narrow ("Vice/Deploymen t" in
+  Review/Print Draft's dialog): labels should wrap at spaces or the slash only. First names in some demo data are in
+  mixed case ("EKWUEME Chioma Ada").
 - **WP10:** demo data: B0575's middle name is stored in lower case ("archibong"); names should read in capitals.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a

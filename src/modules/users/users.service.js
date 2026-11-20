@@ -5,6 +5,7 @@ const audit = require('../../shared/audit');
 const password = require('../../shared/password');
 const { accountName, accountInitials } = require('../../shared/rating-name');
 const usersRepo = require('./users.repo');
+const { passportPhotoUrl } = require('../../shared/rating-photo');
 const { validationError, notFound, conflict } = require('../../shared/errors');
 
 const PAGE_SIZE = 25;
@@ -22,6 +23,7 @@ function toDto(r) {
     username: r.username,
     fullName: accountName(r), // from the account's rating
     initials: accountInitials(r),
+    passportPhotoUrl: passportPhotoUrl(r.service_number, r.passport_photo_path),
     roleId: r.role_id,
     role: r.role_name,
     fullAccess: !!r.full_access,
