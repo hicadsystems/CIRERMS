@@ -179,7 +179,7 @@ export async function mountReview(outlet, { info, query = {} } = {}) {
   const headSlot = h('div');
   const body = h('div');
   const labelOf = (b) => [b.batchNumber, branchText(b), b.rate === 'All' ? '' : b.rate].filter(Boolean).join(' · ');
-  const picker = batches.length ? h('section', { className: cx(CARD, 'mb-4 flex flex-wrap items-end gap-3 p-4') }, batchSelect({ batches, value: reviewPick, labelOf, onChange: (id) => { reviewPick = id; draw(); } })) : null;
+  const picker = batches.length ? h('div', { className: 'mb-4 flex flex-wrap items-end gap-3' }, batchSelect({ batches, value: reviewPick, labelOf, onChange: (id) => { reviewPick = id; draw(); } })) : null;
 
   async function draw() {
     if (!batches.length) {
@@ -498,7 +498,7 @@ export async function mountBoard(outlet, { info, query = {} } = {}) {
       body.replaceChildren(emptyCard(emptyState({ icon: 'calendar', title: 'No Batch Is Waiting for Board Returns', text: 'A batch appears here once it is closed with its authority.', action: can('advancement.close', 'view') ? button({ label: 'Close', icon: 'lock', variant: 'primary', href: '#advancement/close' }) : null })));
       return;
     }
-    pickSlot.replaceChildren(h('section', { className: cx(CARD, 'mb-4 flex flex-wrap items-end gap-3 p-4') },
+    pickSlot.replaceChildren(h('div', { className: 'mb-4 flex flex-wrap items-end gap-3' },
       batchSelect({ batches, value: boardPick, labelOf: (x) => `${x.batchNumber} · ${x.authority}`, onChange: (id) => { boardPick = id; draw(); } })));
     if (!boardPick) {
       headSlot.replaceChildren(header(info, 'Board Returns Update', []));

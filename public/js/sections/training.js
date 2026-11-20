@@ -111,7 +111,7 @@ async function batchScreen(outlet, { info, params, title, subtitle, build }) {
     value: startId && batches.some((b) => b.id === startId) ? startId : '',
     onPick: (id) => { navigate(id ? `#${info.tab}/${id}` : `#${info.tab}`); },
   });
-  const bar = h('section', { className: cx(CARD, 'mb-4 p-4') }, field({ label: 'Batch Number', control: picker }));
+  const bar = h('div', { className: 'mb-4 min-w-0 desk:w-96 phone:w-full' }, field({ label: 'Batch Number', control: picker }));
   const top = h('div', {}, header(null));
   const setActions = (actions) => top.replaceChildren(header(actions));
   outlet.replaceChildren(top, bar, body);
