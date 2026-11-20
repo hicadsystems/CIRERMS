@@ -163,7 +163,7 @@ export async function mountBatchContent(outlet, { info, params = {} } = {}) {
     });
   }
 
-  outlet.replaceChildren(header(info, `Batch ${b.batchNumber}`, b.authority ? `Authority ${b.authority}` : 'Open: no authority yet', [back, printBtn, excelBtn]), facts, bar.el, count, lv.el);
+  outlet.replaceChildren(pageHeader({ title: `Batch ${b.batchNumber}`, subtitle: b.authority ? `Authority ${b.authority}` : 'Open: no authority yet', actions: [back, printBtn, excelBtn] }), facts, bar.el, count, lv.el);
 }
 
 // =====================================================================================================
