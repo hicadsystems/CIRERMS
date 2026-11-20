@@ -38,8 +38,8 @@ function finder(outlet, { title, subtitle, show }) {
   const find = () => load();
   const reset = () => { search.clear(); result.replaceChildren(idle()); };
   search.addEventListener('change', () => { if (search.value) find(); else result.replaceChildren(idle()); });
-  const panel = h('div', { className: `${CARD} mb-3 flex flex-wrap items-end gap-3 p-3` }, [
-    field({ label: 'Official No or Name', control: search, className: 'min-w-0 flex-1 basis-72' }),
+  const panel = h('div', { className: 'mb-3 flex flex-wrap items-end gap-3' }, [
+    field({ label: 'Official No or Name', control: search, className: 'w-full desk:w-96' }),
     actionGroup([
       button({ label: 'Search', icon: 'search', variant: 'primary', onClick: find }),
       button({ label: 'Reset', icon: 'rotate-ccw', variant: 'outline', onClick: reset }),

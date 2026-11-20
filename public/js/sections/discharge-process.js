@@ -102,7 +102,7 @@ export async function mountProcess(outlet) {
     h('div', { className: 'cirerms-progress-track flex-1' }, progressBar),
     progressText,
   ]);
-  const proposalSelector = h('section', { className: `${CARD} mb-3 p-4` });
+  const proposalSelector = h('div', { className: 'mb-3' });
   const proposalRows = listView({
     columns: [
       { label: 'Official No', key: 'serviceNumber' },
@@ -546,7 +546,7 @@ export async function mountProcess(outlet) {
         proposalRows.reload({ resetPage: true });
       }
     };
-    proposalSelector.replaceChildren(field({ label: 'Proposal', control: select, className: 'w-full max-w-xl' }));
+    proposalSelector.replaceChildren(field({ label: 'Proposal', control: select, className: 'w-full desk:w-96' }));
   }
 
   async function loadProposals() {
