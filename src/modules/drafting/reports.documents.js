@@ -4,7 +4,7 @@
  * Drafting report printouts and workbooks (WP7b). The PDFs are D4's templates (src/templates/printouts):
  *   draft-batch-summary   Batch/Signal Content, Print Summary
  *   draft-report-batch    Batch/Signal Content, one batch, Print Draft Report
- *   draft-history         Rate DOD History, Print PDF
+ *   draft-history         Rate DOD History, Print PDF (one rating, portrait; everyone, landscape)
  *   draft-report-all      Draft Report, Print Report
  * The workbooks fix the old Excel's faults: the header is spelled right, the WEF column holds the WEF and the
  * vice column holds the vice.
@@ -131,25 +131,52 @@ async function batchWorkbook({ b, rows, generatedBy }) {
 
 // ---- Rate DOD History -----------------------------------------------------------------------------------------------
 
-async function historyPdf({ rating, items, generatedBy }) {
+const draftTo = (x) => (x.status === 'not_recommended' ? 'Not recommended' : x.newShip);
+
+async function historyPdf({ rating, items, total, generatedBy }) {
+  const one = !!rating;
   return renderPdf('draft-history', {
     title: 'DRAFT HISTORY',
     generatedBy,
-    ref: rating.serviceNumber,
-    facts: [f('Official No', rating.serviceNumber, 'code'), f('Name', rating.name), f('Rate', rating.rateCode)],
+    ref: one ? rating.serviceNumber : undefined,
+    subtitle: one ? undefined : `All ratings, ${total} ${total === 1 ? 'draft' : 'drafts'}`,
+    orientation: one ? 'portrait' : 'landscape', // the template's head reads it
+    facts: one
+      ? [f('Official No', rating.serviceNumber, 'code'), f('Name', rating.name), f('Rate', rating.rateCode)]
+      : [f('Drafts', String(total)), f('Printed', dmy(todayIso()))],
     table: {
-      columns: [
-        { label: 'Batch Number', key: 'no', kind: 'code', w: '26%' }, { label: 'Authority', key: 'auth', kind: 'code', w: '20%' },
-        { label: 'Old Ship', key: 'old', w: '20%' }, { label: 'New Ship', key: 'neu', w: '20%' }, { label: 'Date Reported', key: 'wef', kind: 'date' },
-      ],
+      dense: !one,
+      columns: one
+        ? [
+          { label: 'Batch Number', key: 'no', kind: 'code', w: '26%' }, { label: 'Authority', key: 'auth', kind: 'code', w: '20%' },
+          { label: 'Old Ship', key: 'old', w: '20%' }, { label: 'New Ship', key: 'neu', w: '20%' }, { label: 'Date Reported', key: 'wef', kind: 'date' },
+        ]
+        : [
+          { label: 'Official No', key: 'sn', kind: 'code', w: '9%' }, { label: 'Name', key: 'name', kind: 'name', w: '19%' }, { label: 'Rate', key: 'rate', w: '5%' },
+          { label: 'Old Ship', key: 'old', w: '14%' }, { label: 'New Ship', key: 'neu', w: '14%' }, { label: 'Date Reported', key: 'wef', kind: 'date', w: '10%' },
+          { label: 'Batch Number', key: 'no', kind: 'code', w: '17%' }, { label: 'Authority', key: 'auth', kind: 'code' },
+        ],
       rows: items.map((x) => ({
-        no: x.batchNumber, auth: x.authority, old: x.oldShip,
-        neu: x.status === 'not_recommended' ? 'Not recommended' : x.newShip,
-        wef: reportedText(x), struck: x.status === 'not_recommended',
+        sn: x.serviceNumber, name: x.name, rate: x.rateCode, no: x.batchNumber, auth: x.authority, old: x.oldShip,
+        neu: draftTo(x), wef: reportedText(x), struck: x.status === 'not_recommended',
       })),
-      empty: 'This rating has not been through a draft batch.',
+      empty: one ? 'This rating has not been through a draft batch.' : 'No draft has been made yet.',
     },
   });
+}
+
+async function historyWorkbook({ rating, items, generatedBy }) {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = generatedBy || 'CIRERMS';
+  const ws = sheet(wb, 'Draft History', 'Draft History',
+    [rating ? `Rating: ${rating.serviceNumber} ${rating.name}` : 'All ratings', `Printed: ${dmy(todayIso())}`],
+    ['Official Number', 'Name', 'Rate', 'Old Ship', 'New Ship', 'Date Reported', 'Status', 'Batch Number', 'Authority', 'Deployment/Vice', 'Not Recommended Because'],
+    [14, 30, 8, 22, 22, 16, 16, 26, 24, 26, 30]);
+  items.forEach((x) => ws.addRow([
+    x.serviceNumber, x.name, x.rateCode, x.oldShip, x.newShip, x.status === 'reported' ? dmy(x.wef) : reportedText(x), ROW_STATE[x.status] || x.status,
+    x.batchNumber, x.authority, x.vice, x.notRecommendedReason,
+  ]));
+  return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
 // ---- Draft Report ------------------------------------------------------------------------------------------------------
@@ -188,4 +215,4 @@ async function postingsWorkbook({ items, filters, generatedBy }) {
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
-module.exports = { summaryPdf, summaryWorkbook, batchPdf, batchWorkbook, historyPdf, postingsPdf, postingsWorkbook };
+module.exports = { summaryPdf, summaryWorkbook, batchPdf, batchWorkbook, historyPdf, historyWorkbook, postingsPdf, postingsWorkbook };

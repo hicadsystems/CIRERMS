@@ -118,21 +118,40 @@ async function findRating(serviceNumber) {
   return rows[0] || null;
 }
 
-/** Every draft the rating has been through (every DOD batch holding a row for it), newest first. */
-async function history({ serviceNumber, specialisationId = null, today }) {
-  const sql = ['d.service_number = ?'];
-  const params = [serviceNumber];
-  if (specialisationId) { sql.push('d.specialisation_id = ?'); params.push(specialisationId); }
-  return db.query(
-    `SELECT d.id, d.status, d.wef, d.vice, d.not_recommended_reason, d.batch_id,
-            b.batch_number, b.status AS batch_status, b.authority, b.close_date,
-            cs.name AS current_ship_name, ps.name AS proposed_ship_name
-       FROM draft_rows d
+const HISTORY_FROM = `FROM draft_rows d
        JOIN batches b ON b.id = d.batch_id AND b.flow = 'DOD'
+       JOIN ratings r ON r.service_number = d.service_number`;
+
+function historyWhere(f) {
+  const sql = ['1 = 1'];
+  const params = [];
+  if (f.serviceNumber) { sql.push('d.service_number = ?'); params.push(f.serviceNumber); }
+  if (f.specialisationId) { sql.push('d.specialisation_id = ?'); params.push(f.specialisationId); }
+  return { sql: `WHERE ${sql.join(' AND ')}`, params };
+}
+
+/**
+ * The drafts (every DOD batch row), newest first: a rating's, or everyone's. One page (page, pageSize), or up to
+ * `limit` rows when pageSize is 0. The rating's name and rate come with each row.
+ */
+async function history(f, { page = 1, pageSize = 25, limit = MAX_ROWS } = {}) {
+  const w = historyWhere(f);
+  const [{ n }] = await db.query(`SELECT COUNT(*) AS n ${HISTORY_FROM} ${w.sql}`, w.params);
+  const sql = `SELECT d.id, d.service_number, d.status, d.wef, d.vice, d.not_recommended_reason, d.batch_id,
+            b.batch_number, b.status AS batch_status, b.authority, b.close_date,
+            r.surname, r.first_name, r.middle_name, rt.code AS rate_code, rt.name AS rate_name,
+            cs.name AS current_ship_name, ps.name AS proposed_ship_name
+       ${HISTORY_FROM}
+       LEFT JOIN ref_rate rt ON rt.id = r.rate_id
        LEFT JOIN ref_ship cs ON cs.id = d.current_ship_id
        LEFT JOIN ref_ship ps ON ps.id = d.proposed_ship_id
-      WHERE ${sql.join(' AND ')}
-      ORDER BY COALESCE(d.wef, ?) DESC, b.id DESC LIMIT ${MAX_ROWS}`, [...params, today]);
+      ${w.sql}
+      ORDER BY COALESCE(d.wef, ?) DESC, b.id DESC, d.id DESC`;
+  const today = f.today;
+  const items = pageSize
+    ? await db.query(`${sql} LIMIT ? OFFSET ?`, [...w.params, today, pageSize, (page - 1) * pageSize])
+    : await db.query(`${sql} LIMIT ${Number(limit) || MAX_ROWS}`, [...w.params, today]);
+  return { items, total: Number(n) };
 }
 
 // ---- Draft Report: every posting that has reported ----------------------------------------------------
