@@ -470,7 +470,7 @@ module.exports = {
   `discharge.forms` and `discharge.report` (view) and `discharge.upload` (view; **add** imports). `applyExit(tx, actor,
   serviceNumber, { exitTypeId, exitDate, exitReason })` in `discharge.service.js` is the only place a rating leaves:
   Former (status, exit type, date, reason), the open `rating_drafting` posting ends on the exit date, the user
-  account is deactivated and its sessions end, each step audited, all in the caller's transaction; Process, Upload
+  account is deactivated and its sessions end, and every other scheduled change of the rating dated on or after the exit date is cancelled (`scheduled.cancel`), each step audited, all in the caller's transaction; Process, Upload
   Discharge and the scheduled change all call it. A later exit date is scheduled with
   `scheduled.schedule(tx, actor, { kind: 'discharge', ... })` and the handler registered for `discharge` applies it (or,
   if the rating can no longer leave, puts the row back to pending). Re-engagement is its own table
