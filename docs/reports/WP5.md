@@ -2,11 +2,11 @@
 
 - Package: WP5 Discharge Administration (clean-up of the first build: make it work, check it, tidy the branch)
 - Branch: discharge
-- Last commit: d47fa59 Discharge: the walkthrough runs through the screens, the rules and the layouts (the last code commit; the documentation commit and this report come after it)
+- Last commit: 3265a08 Discharge: pickers sit on the page with no card, desk:w-96 wide (the last code commit; the documentation commit and this report come after it)
 - Done by: AI session for the administrator
 - Date: 20/11/2026
 
-The first build (commit 0cd385d, by another developer, no report) had never been run. It is kept as it is (no rewrite of history); five commits and the merge of the latest `master` follow it.
+The first build (commit 0cd385d, by another developer, no report) had never been run. It is kept as it is (no rewrite of history); my commits and two merges of `master` (the second after WP6 was merged, 6141835) follow it.
 
 ## Built (against the brief, page by page)
 - **Process Discharge**: *Due for Discharge* reads only. The filter bar (Official No or name, Branch, Rate, Entry Mode) folds into a Filters button on a phone; age and years of service are coloured pills from the settings; a rating with a pending disciplinary case has a *Pending case* pill and a warning in its dialog (nothing blocks). Left out: ratings with a running re-engagement and ratings with a closed or scheduled discharge. **Create Proposal** (`DIS-YYYY-NNNN`) opens a confirming dialog and writes only on confirm. *Proposals*: a picker, progress, the ratings; a row opens a dialog with **Process**, **Re-engage**, **Remove**, Open Record; **Add Rating** uses the rating search select. **Process** takes the exit type (only types that do not keep a rating current), exit date, reason (100 characters), approved by, comment, the death documents (only for a Death exit type, never enforced) and status Pending or Closed; Closed asks first and says it is final. Closing with today or an earlier date makes the rating Former in one transaction (status, exit type, date, reason), ends its open posting, deactivates its account and ends its sessions; a later date is Scheduled and takes effect on that date.
@@ -45,17 +45,19 @@ The first build (commit 0cd385d, by another developer, no report) had never been
 - A scheduled discharge that cannot be made is cancelled by the shared scheduler and its row returns to Pending (the Proposals list).
 - A proposal is listed while it has a pending rating; scheduled and closed rows leave it.
 - The lists use `filterBar` (live filters, a Filters button on a phone) and not Search and Reset buttons as the demo has, as every other module built from the same demo does.
-- Demo officer and ratings are `B1000` to `B1042`.
+- Demo officer and ratings are `B1000` to `B1042` (WP6's accounts `B0901` and `B0902` are untouched).
+- The owner's picker rule: the Proposal picker (Process Discharge, Proposals) and the rating pickers of Print Service Details and Verification Forms sit on the page with no card, label above, `desk:w-96` wide on desktop and full width on a phone, their buttons beside them (wrapping under on a phone). The filter bars with several fields stay as they were.
 
 ## Checks
-Each on a fresh database (`migrate:fresh`, `seed`), run one after the other with this branch's final code:
-- discharge: 285 passed, 0 failed, in 98 s (limit 300 s)
-- access (with the second server on 3001): 177 passed, 0 failed, in 84 s
-- static tables: 1474 passed, 0 failed, in 91 s
+Each on a fresh database (`migrate:fresh`, `seed`), run one after the other with this branch's final code (after the second merge of `master`):
+- discharge: 285 passed, 0 failed, in 100 s (limit 300 s)
+- access (with the second server on 3001): 177 passed, 0 failed, in 82 s
+- static tables: 1487 passed, 0 failed, in 89 s
 - system admin: 285 passed, 0 failed, in 64 s
 - disciplinary: 191 passed, 0 failed, in 44 s
-- drafting: 195 passed, 0 failed, in 53 s
-- advancement: 243 passed, 0 failed, in 48 s
+- drafting: 195 passed, 0 failed, in 52 s
+- advancement: 243 passed, 0 failed, in 49 s
+- training drafting (WP6): 266 passed, 0 failed, in 47 s
 
 The discharge walkthrough covers: propose (cancel writes nothing, confirm writes), process (refusals under the fields, Pending, Closed in the future, Closed today), the rating Former with its posting ended and account deactivated and its signed-in session refused (401), the rating in Former Ratings and gone from Current, a scheduled close taking effect on its date by the scheduler (audited by SYSTEM), a re-engagement (rating current, not a discharge, not due), a pending case warning and not blocking, Remove, Add Rating, Print Service Details, every verification form and the one that is off, the upload in every state (not a workbook, no columns, review with ready/skipped/error rows, import into one proposal, the same file again), the report (figures, filters, a bad date, the printout with page 2, the workbook), the rules through the API (the due rule and bands from the settings, every refusal), the Discharge role, a read-only role and a rating (403 on every route), the audit rows for every table written, and every page and its main dialog at 1440 and 390 px in light and dark with no overflow and no browser errors. The 5-minute limit is enforced by the script.
 
@@ -69,7 +71,7 @@ Screens looked at (screenshots, 1440 and 390 px, light and dark, against `docs/d
 ## Files outside the package's own module
 - `public/js/core/nav.js`: the Discharge Administration entry and its five pages (the first build's lines); the Verification Forms tab icon is `clipboard-check` (the sprite has no `file-check`).
 - `public/css/output.css`: rebuilt.
-- `README.md`, `CONVENTIONS.md`: WP5's lines only (the feature list entry is **18**, placed before item 16, and its migration line is **16**, placed before item 14, so that WP6's lines (17 and 15, added after the last ones) merge without a conflict; renumber on merge if you want them in order). I did **not** touch the "Soon" sentences (README after the feature list; CONVENTIONS, "The other sidebar items carry a Soon badge"): WP6 edits the same lines. After both are merged, remove "Discharge Administration" from them (it is built).
+- `README.md`, `CONVENTIONS.md`: WP5's lines only, after WP6's (feature item 18, migration line 16, a Discharge section, a module paragraph, the walkthrough and the printouts). The "Soon" sentences no longer name Discharge Administration. Merge conflicts with WP6 (`nav.js`, `CONVENTIONS.md`, `output.css`) were resolved by keeping both sides; the stylesheet was rebuilt.
 - `tests/e2e/discharge-walkthrough.js`, `src/db/seeds/009_discharge.sql`, `src/db/migrations/20261120_050000_create_discharge.sql` (unchanged: it ran as written) are WP5's own.
 
 ## For the next packages
