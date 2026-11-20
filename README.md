@@ -46,7 +46,9 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
 
 16. **Advancement Processing** (`#advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`; WP8) — the advancement cycle, seven tabs. **Rates due for Advancement**: who is due (Branch, Specialisation, Current Rate, each with All; the list only reads), months in rate as a coloured pill; **Create Advancement Batch** in a confirming dialog. **Advancement Review**: an open batch, its progress, a row's dialog with **Set New Rate** (the next rate in rank order only; optional Remarks), **Not Recommended** (a reason; struck out, on the Advancement Form too; back on the due list next time) and **Remove**; **Add Personnel** (the rating search select), **Print Form** (the Advancement Form), **Export Excel**, **Clear Batch**. **Approval**: one row per department with its totals by new rate; **Approve Department**. **Close**: one fully approved batch, a new authority, the close date; final. **Board Returns Update**: closed batches; **Set Date** per rating and **Set Date for Batch**; the new rate applies from that date (the rating's rate and its Advancement tab), or is **scheduled** for a later date. **Report on Promoted Rates**: filters, the batches with total and promoted, **Print Batch Summary**, a batch's ratings and **Print Advancement Report** (an unreached date reads Pending). **Upload Advanced Rates**: template, the whole file checked first, the ready rows imported together. Details below, *Advancement Processing*.
 
-*(The other sidebar items — Special Drafting, Training Drafting, Naval Character Assessment, Discharge Administration, Reports — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
+17. **Training Drafting** (`#training/process`, `review`, `history`, `reports`, `upload`; WP6) — the training draft, five tabs. **Process Training Draft**: the open batches and **New Training Batch** (course and period, then the eligible ratings by Branch, Specialisation and Rate with the live count); a batch is `DOT-YYYY-MM-NN`, one a course a month. **Training Review**: the batch's ratings with rate, length of service and last course; Add Rating, Add by Branch, Remove. **Update Training History**: Attended per rating, Change Dates, and **Confirm Training History**, which adds a Training entry (with its result) to each attending rating's record and closes the batch. **Reports**: the batches by training, month, year and number, and the Training Draft Report as a PDF. **Excel Upload**: a template, a review of every row, then the import. See *Training Drafting* below.
+
+*(The other sidebar items — Special Drafting, Naval Character Assessment, Discharge Administration, Reports — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
 
 How a module registers itself, declares its privileges and writes to the audit trail: `CONVENTIONS.md`, *Access, audit and modules*.
 
@@ -81,6 +83,18 @@ The map of the old system (how it is built, one file per module, definitions fro
 - **Audit:** every write (manning, batches, rows, approvals, close, the postings and the scheduled changes) is recorded in its transaction; a scheduled move made on its date is recorded as `SYSTEM`.
 - **Printouts:** the Manning Requirement Report and the Draft Form (`drafting.documents.js`, the templates `manning-requirement-report` and `draft-form`); the batch, and the open batches by department, as Excel workbooks.
 - **Demo data (seed 008):** the three settings; 27 ratings with postings (months on a ship in every band), 27 manning requirements; a batch at each stage (Seaman open in review, Marine Engineering approved and ready to close, Logistics with a rating not recommended, Naval Police closed and waiting for its WEF, Weapon Engineering closed with two ratings reported and one move scheduled); the old role **Drafting** (proposal and review; reads the rest; account `B0705`), the same tied to the Marine Propulsion department (account `B0706`), and **Drafting Approver** (manning, approval, close, WEF; account `B0707`); password `Admin@123`.
+
+### Training Drafting
+
+`src/modules/training-drafting/` (manifest, routes, service, repo, upload, documents, format) and `public/js/sections/training.js` (the five screens) with `training-parts.js` (the dropdown rows, the form dialog, the two-step New Training Batch dialog, Add Ratings and the open-batch picker; the filter bar, row tooltip and PDF preview are `disciplinary-parts.js`'s).
+
+- **A batch** is one course in one month of one year, `open` or `closed`, with the number `DOT-YYYY-MM-NN` (`NN` is the course's id padded to two digits, so `DOT-2026-11-06`). A second batch for the same course, month and year is refused, naming the batch it matches (also a unique key). `training_batch_ratings` holds each rating in a batch: `attended`, its own `start_date` and `end_date` when they differ from the batch's, the `result` (Distinction, Credit, Pass, Fail) and `training_id`, the record entry made when the batch was confirmed. Every link is a foreign key, so the Static Tables in-use check sees a course or institution used by a batch.
+- **Eligible** (PLAN 9a decision 6): current ratings that match the branch and the specialisation the course sets (none means Any) and its rates (none means every rate), and are not in an open batch for the course. Adding a rating that is not eligible is refused with the reason (the branch, specialisation or rates the course is open to, or the open batch the rating is already in). Training has no numeric rule, so it has no settings.
+- **Confirm Training History** needs an institution, a start and end date (end not before start, not in the future), a result for every rating that attended, and at least one attending rating. In one transaction it adds a `rating_training` entry to each attending rating (`training_course_id`, `institution_id`, the names kept as text as the record's own form does, the result in `classification`, the rating's own dates or the batch's), sets each result on the batch row and closes the batch. A rating that did not attend gets no entry and no result. A closed batch is final: a mistake is put right on the rating's record, under the audit trail.
+- **Routes** `/api/training-drafting`: `options`, `eligible`, `batches` (list, one batch, POST), `batches/:id/ratings` (POST, and DELETE `/:serviceNumber`), `batches/:id/ratings/filter`, `batches/:id/ratings/:serviceNumber` (PUT: Attended, own dates), `batches/:id/confirm`, `batches/:id/pdf`, `upload/template`, `upload/review`, `upload/import`. Screens: `training.process` (view, add), `training.review` (view, edit), `training.history` (view, edit), `training.reports` (view), `training.upload` (view, add). Training Review's rating search is allowed by `training.review` edit.
+- **Excel Upload** columns: Official No, Course, Institution, Qualification, Start Date, End Date, Authority. Course and Institution are matched by name or code; a blank Institution is the course's; a blank Qualification is the course name. Every row is read first: a problem is listed with its row, field and problem as an *Error* (the row is wrong) or *Skipped* (it repeats an earlier row, or is already on the rating's record); Import adds the rest in one transaction. Authority has no column on the record, so it is kept in the audit row of each Training entry.
+- **Printout:** the Training Draft Report (`training-draft-report`) lists a batch's ratings with their previous course and its dates; a closed batch lists those who attended.
+- **Demo data (seed 007):** four batches (two open, two closed with their history confirmed and the Training entries on the records); the old role **Training** with every privilege of the module (account `B0901`, password `Admin@123`) and **Training Viewer** (account `B0902`), which may only view the batches and the reports.
 
 ### Advancement Processing
 
@@ -200,6 +214,8 @@ Choices made where the design and decisions were silent (also in the report):
 | `B0801` | `Admin@123` | Advancement | `B0801` | The old Advancement role: who is due, makes advancement batches and reviews them; reads the other advancement pages. |
 | `B0802` | `Admin@123` | Advancement Approver | `B0802` | Approves departments, closes advancement batches, enters board dates and uploads advanced rates. |
 | `B0803` | `Admin@123` | Advancement | `B0803` | As `B0801`, tied to the **Gunnery** department: sees only its due list, batches and approval. |
+| `B0901` | `Admin@123` | Training | `B0901` | The old Training role: makes training batches, reviews them, updates the history, reads the reports and uses the Excel upload. |
+| `B0902` | `Admin@123` | Training Viewer | `B0902` | May only view the open batches and the reports. |
 
 An account made in Manage Users or reset in Manage Password has a **one-time password** that the person must replace at first sign-in; the seeded accounts above do not (so the demo opens straight in).
 
@@ -298,6 +314,14 @@ NODE_PATH=$(npm root -g) node tests/e2e/drafting-walkthrough.js
 NODE_PATH=$(npm root -g) node tests/e2e/advancement-walkthrough.js
 ```
 
+`tests/e2e/training-drafting-walkthrough.js` (WP6) does the same for Training Drafting: a batch made, Review, Update Training History and Confirm (every rule refused first), the reports and PDF, the Excel upload, the audit trail, the Training and viewer roles, then every page and dialog at 1440 and 390 px in light and dark.
+
+```bash
+npm run migrate:fresh
+npm start
+NODE_PATH=$(npm root -g) node tests/e2e/training-drafting-walkthrough.js
+```
+
 ---
 
 ## 7. Printouts (PDFs made by Chromium)
@@ -312,6 +336,7 @@ Every PDF the app makes is an HTML (Handlebars) template in `src/templates/print
 | Static Tables, Print List (all 16; landscape over four columns) | `static-table-list` | `tables.service.js` |
 | Disciplinary: Pending Cases, Report, Case Sheet | `disciplinary-pending-cases`, `disciplinary-report`, `disciplinary-case-sheet` | `disciplinary.documents.js` |
 | Drafting: Manning Requirement Report, Draft Form | `manning-requirement-report`, `draft-form` | `drafting.documents.js` |
+| Training Draft Report (a batch) | `training-draft-report` | `training-drafting.documents.js` |
 | Advancement: Advancement Form, Batch Summary Report for Advancement, Advancement Report | `advancement-form`, `advancement-batch-summary`, `advancement-report` | `advancement.documents.js` |
 
 The other templates in the folder (drafting, advancement, discharge, appraisal and so on) are ready for the packages that build those screens. How to add a printout is in `CONVENTIONS.md` (Frontend).

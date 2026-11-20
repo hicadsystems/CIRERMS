@@ -91,7 +91,21 @@ export const AREAS = [
         ],
       },
       { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
-      { key: 'training-drafting', label: 'Training Drafting', short: 'Training', icon: 'graduation-cap', soon: true },
+      {
+        key: 'training-drafting',
+        label: 'Training Drafting',
+        short: 'Training',
+        icon: 'graduation-cap',
+        href: 'training/process',
+        // the training draft (WP6)
+        tabs: [
+          { route: 'training/process', label: 'Process Training Draft', icon: 'graduation-cap', screen: 'training.process' },
+          { route: 'training/review', label: 'Training Review', icon: 'list', screen: 'training.review' },
+          { route: 'training/history', label: 'Update Training History', icon: 'history', screen: 'training.history' },
+          { route: 'training/reports', label: 'Reports', icon: 'file-text', screen: 'training.reports' },
+          { route: 'training/upload', label: 'Excel Upload', icon: 'file-up', screen: 'training.upload' },
+        ],
+      },
     ],
   },
   {
@@ -232,6 +246,14 @@ export const PAGES = [
   { pattern: 'disciplinary/pending', module: 'disciplinary', tab: 'disciplinary/pending', title: 'Pending Cases', subtitle: 'Incidents waiting for a decision', short: 'Pending Cases', screen: 'disciplinary.pending', view: { file: 'disciplinary.js', mount: 'mountPending' } },
   { pattern: 'disciplinary/concluded', module: 'disciplinary', tab: 'disciplinary/concluded', title: 'Concluded Cases', subtitle: 'Cases with a decision; a mistake is changed with Correct', short: 'Concluded Cases', screen: 'disciplinary.concluded', view: { file: 'disciplinary.js', mount: 'mountConcluded' } },
   { pattern: 'disciplinary/report', module: 'disciplinary', tab: 'disciplinary/report', title: 'Disciplinary Report', subtitle: 'Concluded cases by period, offence, sanction, ship and rate', short: 'Disciplinary Report', screen: 'disciplinary.report', view: { file: 'disciplinary.js', mount: 'mountReport' } },
+  // Training Drafting (WP6): Review and History also open on one batch (training/review/7)
+  { pattern: 'training/process', module: 'training-drafting', tab: 'training/process', title: 'Process Training Draft', subtitle: 'The open training batches', short: 'Process Training Draft', screen: 'training.process', view: { file: 'training.js', mount: 'mountProcess' } },
+  { pattern: 'training/review', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
+  { pattern: 'training/review/:batchId', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
+  { pattern: 'training/history', module: 'training-drafting', tab: 'training/history', title: 'Update Training History', subtitle: 'Who attended, and confirm the history', short: 'Update Training History', screen: 'training.history', view: { file: 'training.js', mount: 'mountHistory' } },
+  { pattern: 'training/history/:batchId', module: 'training-drafting', tab: 'training/history', title: 'Update Training History', subtitle: 'Who attended, and confirm the history', short: 'Update Training History', screen: 'training.history', view: { file: 'training.js', mount: 'mountHistory' } },
+  { pattern: 'training/reports', module: 'training-drafting', tab: 'training/reports', title: 'Training Reports', subtitle: 'Batches by training, month, year and number', short: 'Training Reports', screen: 'training.reports', view: { file: 'training.js', mount: 'mountReports' } },
+  { pattern: 'training/upload', module: 'training-drafting', tab: 'training/upload', title: 'Training Excel Upload', subtitle: 'Add Training entries to many records from one workbook', short: 'Training Excel Upload', screen: 'training.upload', view: { file: 'training.js', mount: 'mountUpload' } },
  ...TABLES.map((t) => ({
     pattern: `tables/${t.slug}`,
     module: 'tables',
