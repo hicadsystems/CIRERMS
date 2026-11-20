@@ -174,6 +174,7 @@ DROP TABLE ratings;
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
 13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
 14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
+15. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -462,6 +463,15 @@ module.exports = {
     `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
     `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
     rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
+- **Training Drafting** (`src/modules/training-drafting/`, WP6): screens `training.process` (view; add makes a
+  batch and adds ratings), `training.review` (view; edit adds and removes a batch's ratings), `training.history`
+  (view; edit sets Attended, a rating's own dates and confirms the history), `training.reports` (view) and
+  `training.upload` (view; add imports). A batch is `open` or `closed` (a `status` column); closing is confirming
+  its history, which adds a Training entry to each attending rating's record in one transaction, and a closed batch
+  is final. Eligibility is one SQL fragment (`eligibleWhere` in the repo) used by the count, the bulk add and the
+  checks, so the dialog's count and what is added cannot differ. The batch number is made from the course's id,
+  never its optional code. The screens take their dropdowns from `GET /api/training-drafting/options`, and the
+  Excel upload reads every row before writing any (`upload/review`, then `upload/import`, which reads the file again).
 - **Advancement Processing** (`src/modules/advancement/`, WP8): screens `advancement.due` (view; **add** makes a batch),
   `advancement.review` (view, add, edit, delete), `advancement.approval` (view, **approve**), `advancement.close` (view;
   **edit** closes), `advancement.board` (view; **edit** enters board dates), `advancement.promoted` (view) and
@@ -507,11 +517,12 @@ module.exports = {
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Special Drafting and Training Drafting (Operations); Naval Character
+Special Drafting (Operations); Naval Character
 Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
+Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
 
 ## Open items
 
