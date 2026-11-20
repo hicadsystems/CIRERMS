@@ -49,7 +49,7 @@ database.
    discharges and re-engagements; Scheduled shown as such); **Print PDF** and **Export Excel** from one query.
 7. **Upload Discharge**: template keyed by Official No (Official No, Exit Type, Exit Date, Authority, Approved By,
    Comment), the whole file read first, problem rows listed with row number, ratings already in a proposal or
-   already discharged skipped, the rest closed or scheduled by exit date in one transaction.
+   already discharged skipped, the rest in one transaction.
 8. Privileges per page (edit on Process), grants in your seed (the old role was "Discharge"); Discharge
    Administration loses Soon; Ctrl K; demo data on every page; `README.md` and `CONVENTIONS.md`.
 
