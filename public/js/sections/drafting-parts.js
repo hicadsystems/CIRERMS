@@ -144,7 +144,7 @@ export function previewPdf(url, title, fileName) {
 /** A labelled select of batches (Review, Update WEF). onChange(id). */
 export function batchSelect({ label = 'Batch Number', batches, value, labelOf, onChange, placeholder = '-- Select Batch --' }) {
   const sel = selectInput({ name: 'batch', options: batches.map((b) => ({ value: b.id, label: labelOf(b) })), value: value || '', placeholder, 'aria-label': label });
-  const wrap = h('div', { className: 'min-w-0 flex-1 phone:w-full' }, [h('span', { className: LABEL, text: label }), sel]);
+  const wrap = h('div', { className: 'min-w-0 desk:w-96 phone:w-full' }, [h('span', { className: LABEL, text: label }), sel]);
   wrap.addEventListener('change', (e) => {
     const t = e.target.closest('[name="batch"]') || e.target;
     if (t.getAttribute && t.getAttribute('name') === 'batch') onChange(Number(t.value) || null);

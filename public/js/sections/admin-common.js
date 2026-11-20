@@ -10,7 +10,7 @@
 import { icon } from '../core/icons.js';
 import { formatDisplayDate } from '../core/dates.js';
 import { h, cx } from '../ui/html.js';
-import { avatar } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { pill } from '../ui/pill.js';
 import { openDialog } from '../ui/dialog.js';
 import { button } from '../ui/button.js';
@@ -94,7 +94,7 @@ export function statusPill(active) {
 
 export function accountHead(u) {
   return h('div', { className: 'flex items-start gap-3' }, [
-    avatar({ name: u.fullName, initials: u.initials || undefined, size: 'lg' }),
+    photoAvatar(u.fullName, u.passportPhotoUrl, 'lg', u.initials || undefined),
     h('div', { className: 'min-w-0' }, [
       h('div', { className: 'break-words text-xl font-semibold leading-tight', text: u.fullName }),
       h('div', { className: 'text-sm text-muted-foreground', text: u.username }),

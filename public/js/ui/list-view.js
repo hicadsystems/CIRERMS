@@ -6,7 +6,8 @@
  *     columns   [{ key, label, render(row) -> text | node, className, muted }]
  *               (render defaults to row[key]; the first column is muted, the second bold, as in the demo)
  *     load      async ({ page, pageSize }) => the API response { data: rows, meta }
- *     card      { title(row), subtitle(row), avatar(row) -> name for initials | null, aside(row) -> node }
+ *     card      { title(row), subtitle(row), avatar(row) -> name for initials | null,
+ *                 avatarNode(row) -> node, aside(row) -> node }
  *               (defaults: the second column as title, the first as subtitle)
  *     onPick(row)   a row or card was clicked or Enter was pressed on it; omit for a read-only list
  *     rowKey(row)   a row's id (default row.id), used to mark the picked row
@@ -79,7 +80,7 @@ export function listView({ columns = [], load, card = {}, onPick = null, rowKey 
 
       const who = card.avatar ? card.avatar(row) : null;
       const inner = [
-        who ? avatar({ name: who, size: 'md' }) : null,
+        card.avatarNode ? card.avatarNode(row) : who ? avatar({ name: who, size: 'md' }) : null,
         h('span', { className: 'min-w-0 flex-1' }, [
           h('b', { className: 'block truncate text-sm font-semibold' }, text(title(row))),
           h('span', { className: 'block truncate text-xs text-muted-foreground' }, subtitle(row) || ''),

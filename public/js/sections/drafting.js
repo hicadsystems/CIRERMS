@@ -228,7 +228,7 @@ export async function mountReview(outlet, { info, query = {} } = {}) {
   const headSlot = h('div');
   const body = h('div');
   const labelOf = (b) => [b.batchNumber, b.branch === 'All' ? 'All branches' : b.branch, b.rate === 'All' ? '' : b.rate].filter(Boolean).join(' · ');
-  const picker = batches.length ? h('section', { className: cx(CARD, 'mb-4 flex flex-wrap items-end gap-3 p-4') }, batchSelect({ batches, value: reviewPick, labelOf, onChange: (id) => { reviewPick = id; draw(); } })) : null;
+  const picker = batches.length ? h('div', { className: 'mb-4 flex flex-wrap items-end gap-3' }, batchSelect({ batches, value: reviewPick, labelOf, onChange: (id) => { reviewPick = id; draw(); } })) : null;
 
   async function draw() {
     if (!batches.length) {
@@ -564,7 +564,7 @@ export async function mountWef(outlet, { info, query = {} } = {}) {
     const deptSel = selectInput({ name: 'department', options: depts.map((d) => ({ value: d.specialisationId, label: `${d.department} (${d.pending} pending)` })), value: wefDept, placeholder: 'All Departments', 'aria-label': 'Department' });
     const deptWrap = h('div', { className: 'w-72 phone:w-full' }, [h('span', { className: 'mb-1 block text-xs font-semibold text-muted-foreground', text: 'Department' }), deptSel]);
     deptWrap.addEventListener('change', (e) => { const t = e.target; if (t.getAttribute && t.getAttribute('name') === 'department') { wefDept = t.value; draw(); } });
-    pickSlot.replaceChildren(h('section', { className: cx(CARD, 'mb-4 flex flex-wrap items-end gap-3 p-4 phone:gap-2') }, [
+    pickSlot.replaceChildren(h('div', { className: 'mb-4 flex flex-wrap items-end gap-3 phone:gap-2' }, [
       batchSelect({ batches, value: wefPick, labelOf: (x) => `${x.batchNumber} · ${x.authority}`, onChange: (id) => { wefPick = id; wefDept = ''; draw(); } }),
       b ? deptWrap : null,
     ]));

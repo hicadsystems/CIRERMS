@@ -11,6 +11,7 @@
  * Same on a phone, except 'xl' drops to 56 px.
  */
 import { cx, h } from './html.js';
+import { api } from '../core/api.js';
 
 const SIZES = {
   xs: 'h-8 w-8 text-2xs',
@@ -19,6 +20,7 @@ const SIZES = {
   md: 'h-10 w-10 text-xs',
   lg: 'h-12 w-12 text-base',
   xl: 'h-16 w-16 text-xl phone:h-14 phone:w-14 phone:text-lg',
+  '2xl': 'h-20 w-20 text-2xl',
 };
 
 export function initialsOf(name = '') {
@@ -34,4 +36,24 @@ export function avatar({ name = '', initials, src, size = 'base', className = ''
   );
   if (src) return h('span', { className: cls }, h('img', { src, alt: '', className: 'h-full w-full object-cover' }));
   return h('span', { className: cls, 'aria-hidden': 'true', text: initials || initialsOf(name) });
+}
+
+export function photoAvatar(name, photoUrl, size = 'base', initials, className = '') {
+  const node = avatar({ name, initials, size, className });
+  if (photoUrl) {
+    api.fetchBlob(photoUrl).then(({ blob }) => {
+      const src = URL.createObjectURL(blob);
+      if (!node.isConnected) {
+        URL.revokeObjectURL(src);
+        return;
+      }
+      const img = h('img', { src, alt: '', className: 'h-full w-full object-cover' });
+      img.addEventListener('load', () => URL.revokeObjectURL(src), { once: true });
+      img.addEventListener('error', () => URL.revokeObjectURL(src), { once: true });
+      node.replaceChildren(img);
+    }).catch((err) => {
+      if (node.isConnected) console.warn('Could not load passport photo.', err);
+    });
+  }
+  return node;
 }

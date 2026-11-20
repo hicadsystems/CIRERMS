@@ -19,6 +19,9 @@ router.use(requireAuth);
 const ownRecord = (req) => req.can('ratings.my-details', 'view')
   && !!req.user.serviceNumber
   && String(req.params.serviceNumber || '').trim().toUpperCase() === String(req.user.serviceNumber).toUpperCase();
+const ownPassportPhoto = (req) => req.params.kind === 'passport'
+  && !!req.user.serviceNumber
+  && String(req.params.serviceNumber || '').trim().toUpperCase() === String(req.user.serviceNumber).toUpperCase();
 
 // ============================================================================
 // Static routes FIRST (before /:serviceNumber)
@@ -49,6 +52,7 @@ router.get(
     ['ratings.list', 'view'], ['ratings.edit', 'view'], ['ratings.documents', 'view'],
     ['admin.users', 'add'], ['admin.users', 'view'], ['admin.password', 'view'], ['admin.audit', 'view'],
     ['disciplinary.initiate', 'add'], ['disciplinary.pending', 'view'], ['disciplinary.concluded', 'view'], ['disciplinary.report', 'view'],
+    ['training.review', 'edit'],
   ]),
   asyncHandler(async (req, res) => {
     const r = await ratingsService.searchRatings(req.query);
@@ -189,7 +193,9 @@ router.post(
 
 router.get(
   '/:serviceNumber/photo/:kind',
-  requireAnyPrivilege([['ratings.edit', 'view'], ['ratings.list', 'view'], ['ratings.documents', 'view']], { own: ownRecord }),
+  requireAnyPrivilege([
+    ['ratings.edit', 'view'], ['ratings.list', 'view'], ['ratings.documents', 'view'], ['admin.users', 'view'],
+  ], { own: (req) => ownRecord(req) || ownPassportPhoto(req) }),
   asyncHandler(async (req, res) => {
     const file = await ratingsService.resolveRatingPhotoFile(
       req.params.serviceNumber,

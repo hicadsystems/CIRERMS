@@ -22,7 +22,7 @@ import { CARD } from '../ui/classes.js';
 import { button } from '../ui/button.js';
 import { card } from '../ui/card.js';
 import { pill } from '../ui/pill.js';
-import { avatar } from '../ui/avatar.js';
+import { photoAvatar } from '../ui/avatar.js';
 import { factPanels } from '../ui/facts.js';
 import { emptyState } from '../ui/empty-state.js';
 import { pageHeader } from '../ui/page-header.js';
@@ -33,9 +33,10 @@ import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { setPhoneTitle } from '../shell/phone.js';
-import { SECTIONS, sectionByKey, sectionFields, wireCascades, readForm, displayRows } from './rating-fields.js';
+import { sectionByKey, sectionFields, wireCascades, readForm, displayRows } from './rating-fields.js';
 import { CHILD_TABS, childPanel } from './rating-children.js';
 import { documentsBlock } from './rating-documents-block.js';
+import { dischargePills } from './discharge-record.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
 import { ratingName, personName } from './rating-names.js';
 import { disciplinePanel } from './disciplinary-parts.js';
@@ -44,20 +45,6 @@ const ALL_TABS = [{ key: 'details', label: 'Details' }, ...CHILD_TABS.map((t) =>
 
 function loadingNode() {
   return h('div', { className: 'flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground' }, [icon('loader-circle', 'icon animate-spin'), 'Loading']);
-}
-
-/** The passport photo when there is one, the initials otherwise. */
-export function photoAvatar(r, size = 'xl') {
-  const node = avatar({ name: personName(r), size });
-  if (r.passport_photo_url) {
-    api.fetchBlob(r.passport_photo_url).then(({ blob }) => {
-      const src = URL.createObjectURL(blob);
-      const img = h('img', { src, alt: '', className: 'h-full w-full object-cover' });
-      node.textContent = '';
-      node.appendChild(img);
-    }).catch(() => {});
-  }
-  return node;
 }
 
 /**
@@ -106,7 +93,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
     ];
     fill(head, [
       h('div', { className: 'flex flex-wrap items-center gap-3 p-4 desk:gap-4' }, [
-        photoAvatar(r),
+        photoAvatar(personName(r), r.passport_photo_url, 'xl'),
         h('div', { className: 'min-w-0 flex-1' }, [
           h(readOnly ? 'h2' : 'h1', { className: 'break-words text-xl font-semibold tracking-tight', text: name }),
           h('div', { className: 'text-sm text-muted-foreground', text: [r.service_number, r.rate_name, where].filter(Boolean).join(' · ') }),
@@ -114,6 +101,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
             pill(r.status === 'former' ? 'Former' : 'Current', r.status === 'former' ? 'neutral' : 'success'),
             r.branch_name ? pill(r.branch_name, 'info') : null,
             r.command_name ? pill(r.command_name, 'neutral') : null,
+            r.status === 'current' ? dischargePills(r.service_number) : null,
           ]),
         ]),
         h('div', { className: 'flex flex-wrap gap-2 phone:w-full phone:[&>*]:flex-1' }, actions),
@@ -167,7 +155,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
   function detailsTab() {
     const r = state.rating;
     const posting = (state.children.drafting || []).find((p) => !p.end_date);
-    return card({ body: factPanels(SECTIONS.map((s) => {
+    return card({ body: factPanels(['basic', 'official', 'contact', 'health'].map(sectionByKey).filter(Boolean).map((s) => {
       const rows = displayRows(s, r);
       if (s.key === 'official') {
         rows.splice(5, 0, ['Current Ship', r.current_ship_name ? `${r.current_ship_name}${posting && posting.start_date ? ` (${durationSince(posting.start_date)})` : ''}` : '']);

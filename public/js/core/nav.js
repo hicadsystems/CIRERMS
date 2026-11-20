@@ -94,7 +94,21 @@ export const AREAS = [
         ],
       },
       { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
-      { key: 'training-drafting', label: 'Training Drafting', short: 'Training', icon: 'graduation-cap', soon: true },
+      {
+        key: 'training-drafting',
+        label: 'Training Drafting',
+        short: 'Training',
+        icon: 'graduation-cap',
+        href: 'training/process',
+        // the training draft (WP6)
+        tabs: [
+          { route: 'training/process', label: 'Process Training Draft', icon: 'graduation-cap', screen: 'training.process' },
+          { route: 'training/review', label: 'Training Review', icon: 'list', screen: 'training.review' },
+          { route: 'training/history', label: 'Update Training History', icon: 'history', screen: 'training.history' },
+          { route: 'training/reports', label: 'Reports', icon: 'file-text', screen: 'training.reports' },
+          { route: 'training/upload', label: 'Excel Upload', icon: 'file-up', screen: 'training.upload' },
+        ],
+      },
     ],
   },
   {
@@ -132,7 +146,20 @@ export const AREAS = [
           { route: 'disciplinary/report', label: 'Disciplinary Report', icon: 'file-text', screen: 'disciplinary.report' },
         ],
       },
-      { key: 'discharge', label: 'Discharge Administration', short: 'Discharge', icon: 'door-open', soon: true },
+      {
+        key: 'discharge',
+        label: 'Discharge Administration',
+        short: 'Discharge',
+        icon: 'door-open',
+        href: 'discharge/process',
+        tabs: [
+          { route: 'discharge/process', label: 'Process Discharge', icon: 'door-open', screen: 'discharge.process' },
+          { route: 'discharge/service', label: 'Print Service Details', icon: 'printer', screen: 'discharge.service' },
+          { route: 'discharge/forms', label: 'Verification Forms', icon: 'clipboard-check', screen: 'discharge.forms' },
+          { route: 'discharge/report', label: 'Discharge Report', icon: 'chart-column', screen: 'discharge.report' },
+          { route: 'discharge/upload', label: 'Upload Discharge', icon: 'upload', screen: 'discharge.upload' },
+        ],
+      },
     ],
   },
   {
@@ -240,6 +267,20 @@ export const PAGES = [
   { pattern: 'disciplinary/pending', module: 'disciplinary', tab: 'disciplinary/pending', title: 'Pending Cases', subtitle: 'Incidents waiting for a decision', short: 'Pending Cases', screen: 'disciplinary.pending', view: { file: 'disciplinary.js', mount: 'mountPending' } },
   { pattern: 'disciplinary/concluded', module: 'disciplinary', tab: 'disciplinary/concluded', title: 'Concluded Cases', subtitle: 'Cases with a decision; a mistake is changed with Correct', short: 'Concluded Cases', screen: 'disciplinary.concluded', view: { file: 'disciplinary.js', mount: 'mountConcluded' } },
   { pattern: 'disciplinary/report', module: 'disciplinary', tab: 'disciplinary/report', title: 'Disciplinary Report', subtitle: 'Concluded cases by period, offence, sanction, ship and rate', short: 'Disciplinary Report', screen: 'disciplinary.report', view: { file: 'disciplinary.js', mount: 'mountReport' } },
+  // Discharge Administration (WP5): five pages
+  { pattern: 'discharge/process', module: 'discharge', tab: 'discharge/process', title: 'Process Discharge', subtitle: 'Create proposals and process, close, re-engage or remove ratings', short: 'Process', screen: 'discharge.process', view: { file: 'discharge.js', mount: 'mountProcess' } },
+  { pattern: 'discharge/service', module: 'discharge', tab: 'discharge/service', title: 'Print Service Details', subtitle: 'Find a current or former rating and print its personnel details', short: 'Service Details', screen: 'discharge.service', view: { file: 'discharge.js', mount: 'mountService' } },
+  { pattern: 'discharge/forms', module: 'discharge', tab: 'discharge/forms', title: 'Verification Forms', subtitle: 'Re-engagement, retirement and engagement verification forms', short: 'Forms', screen: 'discharge.forms', view: { file: 'discharge.js', mount: 'mountForms' } },
+  { pattern: 'discharge/report', module: 'discharge', tab: 'discharge/report', title: 'Discharge Report', subtitle: 'Closed discharges and re-engagements by date, exit type, rate and branch', short: 'Report', screen: 'discharge.report', view: { file: 'discharge.js', mount: 'mountReport' } },
+  { pattern: 'discharge/upload', module: 'discharge', tab: 'discharge/upload', title: 'Upload Discharge', subtitle: 'Check and import discharge rows from an Excel workbook', short: 'Upload', screen: 'discharge.upload', view: { file: 'discharge.js', mount: 'mountUpload' } },
+  // Training Drafting (WP6): Review and History also open on one batch (training/review/7)
+  { pattern: 'training/process', module: 'training-drafting', tab: 'training/process', title: 'Process Training Draft', subtitle: 'The open training batches', short: 'Process Training Draft', screen: 'training.process', view: { file: 'training.js', mount: 'mountProcess' } },
+  { pattern: 'training/review', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
+  { pattern: 'training/review/:batchId', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
+  { pattern: 'training/history', module: 'training-drafting', tab: 'training/history', title: 'Update Training History', subtitle: 'Who attended, and confirm the history', short: 'Update Training History', screen: 'training.history', view: { file: 'training.js', mount: 'mountHistory' } },
+  { pattern: 'training/history/:batchId', module: 'training-drafting', tab: 'training/history', title: 'Update Training History', subtitle: 'Who attended, and confirm the history', short: 'Update Training History', screen: 'training.history', view: { file: 'training.js', mount: 'mountHistory' } },
+  { pattern: 'training/reports', module: 'training-drafting', tab: 'training/reports', title: 'Training Reports', subtitle: 'Batches by training, month, year and number', short: 'Training Reports', screen: 'training.reports', view: { file: 'training.js', mount: 'mountReports' } },
+  { pattern: 'training/upload', module: 'training-drafting', tab: 'training/upload', title: 'Training Excel Upload', subtitle: 'Add Training entries to many records from one workbook', short: 'Training Excel Upload', screen: 'training.upload', view: { file: 'training.js', mount: 'mountUpload' } },
  ...TABLES.map((t) => ({
     pattern: `tables/${t.slug}`,
     module: 'tables',

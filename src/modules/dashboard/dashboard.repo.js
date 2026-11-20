@@ -36,7 +36,7 @@ async function getCurrentByRate() {
 async function getRecentlyEnlisted(limit) {
   const rows = await db.query(
     `
-    SELECT r.service_number, r.surname, r.first_name, r.middle_name, r.status,
+    SELECT r.service_number, r.surname, r.first_name, r.middle_name, r.status, r.passport_photo_path,
            rate.name AS rate_name, ship.name AS current_ship_name,
            COALESCE(r.date_employed, DATE(r.created_at)) AS enlisted
       FROM ratings r

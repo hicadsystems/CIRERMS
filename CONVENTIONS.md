@@ -174,6 +174,8 @@ DROP TABLE ratings;
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
 13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
 14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
+15. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
+16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -205,6 +207,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 - Every "add" opens in a dialog (a bottom sheet on a phone), New Rating included; Ctrl K opens the search palette
   (`js/shell/search-palette.js`).
 - Details read as label and value on one row with a divider (`facts`, `factPanels`), never small capital labels above values.
+- A page's picker (batch, period) sits on the page without a card, label above, `desk:w-96`, full width on a phone.
 - Date fields are typed and shown as dd/mm/yyyy (`core/dates.js` `parseDisplayDate`) and sent as YYYY-MM-DD.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
 - Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);
@@ -465,6 +468,30 @@ module.exports = {
     `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
     `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
     rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
+- **Discharge Administration** (`src/modules/discharge/`, WP5): screens `discharge.process` (view; **add** makes a
+  proposal and adds a rating; **edit** processes and re-engages; **delete** removes a rating), `discharge.service`,
+  `discharge.forms` and `discharge.report` (view) and `discharge.upload` (view; **add** imports). `applyExit(tx, actor,
+  serviceNumber, { exitTypeId, exitDate, exitReason })` in `discharge.service.js` is the only place a rating leaves:
+  Former (status, exit type, date, reason), the open `rating_drafting` posting ends on the exit date, the user
+  account is deactivated and its sessions end, and every other scheduled change of the rating dated on or after the exit date is cancelled (`scheduled.cancel`), each step audited, all in the caller's transaction; Process, Upload
+  Discharge and the scheduled change all call it. A later exit date is scheduled with
+  `scheduled.schedule(tx, actor, { kind: 'discharge', ... })` and the handler registered for `discharge` applies it (or,
+  if the rating can no longer leave, puts the row back to pending). Re-engagement is its own table
+  (`discharge_reengagements`) and never changes the rating. Exit types offered are the ones with `keeps_current = 0`;
+  the death documents are kept only for `is_death`. The due rule and its pill bands are settings
+  (`discharge.age_due`, `discharge.service_due`, `discharge.age_band_1` to `3`, `discharge.service_band_1` to `3`).
+  Demo ratings and the Discharge account (`B1000`) are in `009_discharge.sql` (official numbers `B1000` to `B1042`):
+  a seed takes official numbers no other seed uses, because `INSERT IGNORE` would otherwise quietly keep the earlier
+  seed's rating and account.
+- **Training Drafting** (`src/modules/training-drafting/`, WP6): screens `training.process` (view; add makes a
+  batch and adds ratings), `training.review` (view; edit adds and removes a batch's ratings), `training.history`
+  (view; edit sets Attended, a rating's own dates and confirms the history), `training.reports` (view) and
+  `training.upload` (view; add imports). A batch is `open` or `closed` (a `status` column); closing is confirming
+  its history, which adds a Training entry to each attending rating's record in one transaction, and a closed batch
+  is final. Eligibility is one SQL fragment (`eligibleWhere` in the repo) used by the count, the bulk add and the
+  checks, so the dialog's count and what is added cannot differ. The batch number is made from the course's id,
+  never its optional code. The screens take their dropdowns from `GET /api/training-drafting/options`, and the
+  Excel upload reads every row before writing any (`upload/review`, then `upload/import`, which reads the file again).
 - **Advancement Processing** (`src/modules/advancement/`, WP8): screens `advancement.due` (view; **add** makes a batch),
   `advancement.review` (view, add, edit, delete), `advancement.approval` (view, **approve**), `advancement.close` (view;
   **edit** closes), `advancement.board` (view; **edit** enters board dates), `advancement.promoted` (view) and
@@ -510,11 +537,13 @@ module.exports = {
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Special Drafting and Training Drafting (Operations); Naval Character
-Assessment and Discharge Administration (Records); Reports
+Special Drafting (Operations); Naval Character
+Assessment (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
+Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`; WP7b: 3 report tabs, `drafting/batches` (and `drafting/batches/:id`), `history`, `report`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
+Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
 
 ## Open items
 

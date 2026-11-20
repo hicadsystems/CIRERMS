@@ -6,7 +6,8 @@ const { NAME_COLUMNS, NAME_JOINS } = require('../../shared/rating-name');
 const escapeLike = (s) => String(s).replace(/[\\%_]/g, (c) => `\\${c}`);
 
 // never the hash
-const COLUMNS = `u.id, u.username, ${NAME_COLUMNS}, u.role_id, r.name AS role_name, r.full_access,
+const COLUMNS = `u.id, u.username, ${NAME_COLUMNS}, rg.passport_photo_path AS passport_photo_path,
+       u.role_id, r.name AS role_name, r.full_access,
        u.service_number, u.email, u.phone, u.specialisation_id, s.name AS specialisation_name,
        u.is_active, u.must_change_password, u.last_login_at, u.password_changed_at,
        u.created_at, u.updated_at`;
