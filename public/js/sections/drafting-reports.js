@@ -173,7 +173,7 @@ export async function mountHistory(outlet, { info, query = {} } = {}) {
   const headSlot = h('div');
   const body = h('div');
   const picker = ratingSearch({ name: 'serviceNumber', status: 'all', value: query.serviceNumber || null, ariaLabel: 'Rating', placeholder: 'Official number or name' });
-  const pickCard = h('section', { className: cx(CARD, 'mb-4 p-4') }, h('label', { className: 'block max-w-2xl' }, [
+  const pickCard = h('div', { className: 'mb-4 min-w-0 desk:w-96 phone:w-full' }, h('label', { className: 'block' }, [
     h('span', { className: 'mb-1 block text-xs font-semibold text-muted-foreground', text: 'Rating' }), picker,
     h('span', { className: 'mt-1 block text-xs text-muted-foreground', text: 'Type at least 2 characters of the official number or name.' }),
   ]));
