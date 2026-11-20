@@ -173,6 +173,7 @@ DROP TABLE ratings;
 11. `20261120_030100_users_require_rating.sql` — `users.service_number` becomes required (an account with none gets a rating of its user name first) and the link `ON DELETE RESTRICT` (WP3)
 12. `20261120_030200_users_name_from_rating.sql` — `users.full_name` becomes nullable and unused (an account's name is its rating's, `src/shared/rating-name.js`) (WP3)
 13. `20261120_070000_create_drafting.sql` — `settings`, `scheduled_changes`, `manning_requirements`, `batches`, `batch_approvals`, `draft_rows` (WP7a)
+16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
 14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
@@ -462,6 +463,21 @@ module.exports = {
     `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
     `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
     rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
+- **Discharge Administration** (`src/modules/discharge/`, WP5): screens `discharge.process` (view; **add** makes a
+  proposal and adds a rating; **edit** processes and re-engages; **delete** removes a rating), `discharge.service`,
+  `discharge.forms` and `discharge.report` (view) and `discharge.upload` (view; **add** imports). `applyExit(tx, actor,
+  serviceNumber, { exitTypeId, exitDate, exitReason })` in `discharge.service.js` is the only place a rating leaves:
+  Former (status, exit type, date, reason), the open `rating_drafting` posting ends on the exit date, the user
+  account is deactivated and its sessions end, each step audited, all in the caller's transaction; Process, Upload
+  Discharge and the scheduled change all call it. A later exit date is scheduled with
+  `scheduled.schedule(tx, actor, { kind: 'discharge', ... })` and the handler registered for `discharge` applies it (or,
+  if the rating can no longer leave, puts the row back to pending). Re-engagement is its own table
+  (`discharge_reengagements`) and never changes the rating. Exit types offered are the ones with `keeps_current = 0`;
+  the death documents are kept only for `is_death`. The due rule and its pill bands are settings
+  (`discharge.age_due`, `discharge.service_due`, `discharge.age_band_1` to `3`, `discharge.service_band_1` to `3`).
+  Demo ratings and the Discharge account (`B1000`) are in `009_discharge.sql` (official numbers `B1000` to `B1042`):
+  a seed takes official numbers no other seed uses, because `INSERT IGNORE` would otherwise quietly keep the earlier
+  seed's rating and account.
 - **Advancement Processing** (`src/modules/advancement/`, WP8): screens `advancement.due` (view; **add** makes a batch),
   `advancement.review` (view, add, edit, delete), `advancement.approval` (view, **approve**), `advancement.close` (view;
   **edit** closes), `advancement.board` (view; **edit** enters board dates), `advancement.promoted` (view) and
@@ -510,6 +526,7 @@ The other sidebar items carry a Soon badge and open a "Coming in a Later Release
 Special Drafting and Training Drafting (Operations); Naval Character
 Assessment and Discharge Administration (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
+Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 
