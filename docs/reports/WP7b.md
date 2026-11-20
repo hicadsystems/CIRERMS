@@ -1,8 +1,8 @@
 # WP7b report
 
 - Package: WP7b Drafting Reports (Batch/Signal Content, Rate DOD History, Draft Report)
-- Branch: drafting-reports (not pushed: the work is delivered as files, as the owner prefers)
-- Last commit: none (no git history was in the upload)
+- Branch: drafting-reports
+- Last commit: 1ed2ecc Drafting reports: the history page's rating picker sits on the page without a card
 - Done by: AI session for the owner
 - Date: 20/11/2026
 
@@ -22,13 +22,27 @@
 - The Branch filter uses a rating's current branch.
 
 ## Checks
-- **Nothing was run.** No server, database, browser, test or CSS build was started (the owner's rule: no running without approval). Files were only syntax-checked with `node --check`.
-- `tests/e2e/drafting-reports-walkthrough.js` is written (API rules, privileges, every screen, four layouts) but has never been run; expect to fix small things on its first run.
-- No existing walkthrough was re-run. Screens at 1440 and 390 px, light and dark, were not looked at.
-- Every CSS class I used already exists in `public/css/output.css` (checked by script), so no rebuild is needed.
+Merged `origin/master` first (conflict only in `CONVENTIONS.md`: both sides' lines kept, module list in order). Every walkthrough ran on a fresh database (`migrate:fresh`, `seed`, `npm start` before each), MySQL 8 in Docker, Chromium for the PDFs:
+- Drafting reports (WP7b): 150 passed, 0 failed, in 21 s (24 s before the fixes below, 149 of 150)
+- Access (with the second server): 177 passed, 0 failed, in 79 s
+- Static tables: 1487 passed, 0 failed, in 87 s
+- System administration: 285 passed, 0 failed, in 62 s
+- Disciplinary: 191 passed, 0 failed, in 42 s
+- Drafting: 195 passed, 0 failed, in 50 s
+- Advancement: 243 passed, 0 failed, in 45 s
+- Training drafting: 266 passed, 0 failed, in 44 s
+- Discharge: 305 passed, 0 failed, in 98 s
+
+Fixed:
+- **"Batch: the page names the batch"**: the batch page passed the page's navigation title ("Batch Contents") to the header, so the h1 never held the batch number. The design demo titles it `Batch <number>` with `Authority <signal>` (or "Open: no authority yet") under it, so the page now builds its own header and the check is unchanged.
+- **Rate DOD History**: the rating picker sat in a card, `max-w-2xl`. The rule of 20/11/2026 puts a page's picker on the page with no card, label above, `desk:w-96`, full width on a phone; done. (The batch page's Official No and Name filters are a filter bar, not a page picker, and stay as the demo has them.)
+
+Looked at myself (Playwright, screenshots): the three pages, the batch page and the row dialog of each, and the four printouts in the app's preview (Draft Batch Summary, batch Draft Report, Draft History, Draft Report), at 1440 px light and at 390 px dark (bottom sheet, pages drawn by PDF.js). They follow the demo; nothing cut off, nothing scrolls sideways, no browser errors. Excel exports of the batch list, the batch and the Draft Report download at 1440 px and open with their title row, headers and data (checked with a spreadsheet reader).
 
 ## Not verified
-- All SQL against MySQL; the PDFs and workbooks; the front end in a browser; the walkthrough itself.
+- Page 2 of a printout: with the demo data every printout is one page, so a second page was never drawn.
+- The 390 px dark pass was not repeated for the Excel buttons (they are the same buttons).
+- The first commit on this branch (31ab74d) carries a different author e-mail from the owner's no-reply address; history was not rewritten, as the rules say. Question for the owner: is that acceptable, or should the commit be recreated?
 
 ## Files outside the package's own module
 - `drafting.routes.js` and `drafting.module.js` (routes, three privileges), `public/js/core/nav.js` (three tabs, four pages), `README.md`, `CONVENTIONS.md`.
