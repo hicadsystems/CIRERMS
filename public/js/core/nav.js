@@ -80,7 +80,7 @@ export const AREAS = [
         short: 'Drafting',
         icon: 'briefcase',
         href: 'drafting/manning',
-        // the draft cycle (WP7a); Batch/Signal Content, Rate DOD History and Draft Report come with WP7b
+        // the draft cycle (WP7a) and its three reports (WP7b)
         tabs: [
           { route: 'drafting/manning', label: 'Update Manning Requirement', icon: 'ship', screen: 'drafting.manning' },
           { route: 'drafting/proposal', label: 'Print Draft Proposal', icon: 'users', screen: 'drafting.proposal' },
@@ -88,6 +88,9 @@ export const AREAS = [
           { route: 'drafting/approval', label: 'Draft Approval', icon: 'shield-check', screen: 'drafting.approval' },
           { route: 'drafting/close', label: 'Close Draft', icon: 'lock', screen: 'drafting.close' },
           { route: 'drafting/wef', label: 'Update WEF', icon: 'calendar', screen: 'drafting.wef' },
+          { route: 'drafting/batches', label: 'Batch/Signal Content', icon: 'file-text', screen: 'drafting.batches' },
+          { route: 'drafting/history', label: 'Rate DOD History', icon: 'history', screen: 'drafting.history' },
+          { route: 'drafting/report', label: 'Draft Report', icon: 'clipboard-check', screen: 'drafting.report' },
         ],
       },
       { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
@@ -218,6 +221,11 @@ export const PAGES = [
   { pattern: 'drafting/approval', module: 'drafting', tab: 'drafting/approval', title: 'Draft Approval', subtitle: 'Approve each department\u2019s draft before its batch is closed', short: 'Draft Approval', screen: 'drafting.approval', view: { file: 'drafting.js', mount: 'mountApproval' } },
   { pattern: 'drafting/close', module: 'drafting', tab: 'drafting/close', title: 'Close Draft', subtitle: 'Close a reviewed and approved draft with its authority', short: 'Close Draft', screen: 'drafting.close', view: { file: 'drafting.js', mount: 'mountClose' } },
   { pattern: 'drafting/wef', module: 'drafting', tab: 'drafting/wef', title: 'Update WEF', subtitle: 'Date each posting: the rating moves to the new ship from that date', short: 'Update WEF', screen: 'drafting.wef', view: { file: 'drafting.js', mount: 'mountWef' } },
+  // Drafting reports (WP7b): read-only, each page needs view
+  { pattern: 'drafting/batches', module: 'drafting', tab: 'drafting/batches', title: 'Batch/Signal Content', subtitle: 'Every draft batch, its authority and how many have reported', short: 'Batches', screen: 'drafting.batches', view: { file: 'drafting-reports.js', mount: 'mountBatches' } },
+  { pattern: 'drafting/batches/:id', module: 'drafting', tab: 'drafting/batches', title: 'Batch Contents', subtitle: 'The ratings in one draft batch', short: 'Batch', back: 'drafting/batches', screen: 'drafting.batches', view: { file: 'drafting-reports.js', mount: 'mountBatchContent' } },
+  { pattern: 'drafting/history', module: 'drafting', tab: 'drafting/history', title: 'Rate DOD History', subtitle: 'Every draft a rating has been through', short: 'DOD History', screen: 'drafting.history', view: { file: 'drafting-reports.js', mount: 'mountHistory' } },
+  { pattern: 'drafting/report', module: 'drafting', tab: 'drafting/report', title: 'Draft Report', subtitle: 'Every posting that has reported, by WEF', short: 'Draft Report', screen: 'drafting.report', view: { file: 'drafting-reports.js', mount: 'mountDraftReport' } },
   // Advancement Processing (WP8): the advancement cycle, each page needs view
   { pattern: 'advancement/due', module: 'advancement', tab: 'advancement/due', title: 'Rates due for Advancement', subtitle: 'Ratings due for the next rate; make a batch of them for review', short: 'Rates Due', screen: 'advancement.due', view: { file: 'advancement.js', mount: 'mountDue' } },
   { pattern: 'advancement/review', module: 'advancement', tab: 'advancement/review', title: 'Advancement Review', subtitle: 'Set each rating\u2019s next rate, or mark it not recommended', short: 'Review', screen: 'advancement.review', view: { file: 'advancement.js', mount: 'mountReview' } },

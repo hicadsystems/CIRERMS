@@ -9,7 +9,9 @@
  *   drafting.approval   Draft Approval: view, approve (Approve Department)
  *   drafting.close      Close Draft: view, edit (Close)
  *   drafting.wef        Update WEF: view, edit (Set WEF, Set WEF for Department)
- * Batch/Signal Content, Rate DOD History and Draft Report are WP7b's.
+ *   drafting.batches    Batch/Signal Content: view (list, a batch's ratings, Print Summary, Print Draft Report, Excel)
+ *   drafting.history    Rate DOD History: view (a rating's drafts, Print PDF)
+ *   drafting.report     Draft Report: view (every posting that has reported, Print Report, Excel)
  */
 module.exports = {
   key: 'drafting',
@@ -24,5 +26,8 @@ module.exports = {
     { screen: 'drafting.approval', label: 'Draft Approval', actions: ['view', 'approve'] },
     { screen: 'drafting.close', label: 'Close Draft', actions: ['view', 'edit'] },
     { screen: 'drafting.wef', label: 'Update WEF', actions: ['view', 'edit'] },
+    { screen: 'drafting.batches', label: 'Batch/Signal Content', actions: ['view'] },
+    { screen: 'drafting.history', label: 'Rate DOD History', actions: ['view'] },
+    { screen: 'drafting.report', label: 'Draft Report', actions: ['view'] },
   ],
 };
