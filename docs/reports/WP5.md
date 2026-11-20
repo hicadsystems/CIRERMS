@@ -76,6 +76,7 @@ Screens looked at (screenshots, 1440 and 390 px, light and dark, against `docs/d
 
 ## Files outside the package's own module
 - `public/js/core/nav.js`: the Discharge Administration entry and its five pages (the first build's lines); the Verification Forms tab icon is `clipboard-check` (the sprite has no `file-check`).
+- `public/js/ui/tabs.js`: an optional `pills` setting (default off, so every other use is unchanged) draws the tabs as rounded chips at every width; Process Discharge's *Due for Discharge* and *Proposals* use it, as the design shows.
 - `public/js/sections/rating-record.js`: two lines for the header pills (the import and the span).
 - `public/css/output.css`: rebuilt.
 - `README.md`, `CONVENTIONS.md`: WP5's lines only, after WP6's (feature item 18, migration line 16, a Discharge section, a module paragraph, the walkthrough and the printouts). The "Soon" sentences no longer name Discharge Administration. Merge conflicts with WP6 (`nav.js`, `CONVENTIONS.md`, `output.css`) were resolved by keeping both sides; the stylesheet was rebuilt.
