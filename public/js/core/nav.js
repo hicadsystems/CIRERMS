@@ -93,7 +93,19 @@ export const AREAS = [
           { route: 'drafting/report', label: 'Draft Report', icon: 'clipboard-check', screen: 'drafting.report' },
         ],
       },
-      { key: 'special-drafting', label: 'Special Drafting', short: 'Special', icon: 'anchor', soon: true },
+      {
+        key: 'special-drafting',
+        label: 'Special Drafting',
+        short: 'Special',
+        icon: 'anchor',
+        href: 'special-drafting/proposal',
+        // special drafts outside the batch cycle (WP11)
+        tabs: [
+          { route: 'special-drafting/proposal', label: 'Special Draft Proposal', icon: 'users', screen: 'special-drafting.proposal' },
+          { route: 'special-drafting/report', label: 'Special Draft Report', icon: 'file-text', screen: 'special-drafting.report' },
+          { route: 'special-drafting/upload', label: 'Upload Draft', icon: 'file-up', screen: 'special-drafting.upload' },
+        ],
+      },
       {
         key: 'training-drafting',
         label: 'Training Drafting',
@@ -273,6 +285,10 @@ export const PAGES = [
   { pattern: 'discharge/forms', module: 'discharge', tab: 'discharge/forms', title: 'Verification Forms', subtitle: 'Re-engagement, retirement and engagement verification forms', short: 'Forms', screen: 'discharge.forms', view: { file: 'discharge.js', mount: 'mountForms' } },
   { pattern: 'discharge/report', module: 'discharge', tab: 'discharge/report', title: 'Discharge Report', subtitle: 'Closed discharges and re-engagements by date, exit type, rate and branch', short: 'Report', screen: 'discharge.report', view: { file: 'discharge.js', mount: 'mountReport' } },
   { pattern: 'discharge/upload', module: 'discharge', tab: 'discharge/upload', title: 'Upload Discharge', subtitle: 'Check and import discharge rows from an Excel workbook', short: 'Upload', screen: 'discharge.upload', view: { file: 'discharge.js', mount: 'mountUpload' } },
+  // Special Drafting (WP11): special drafts outside the batch cycle, each page needs view
+  { pattern: 'special-drafting/proposal', module: 'special-drafting', tab: 'special-drafting/proposal', title: 'Special Draft Proposal', subtitle: 'Draft one rating outside the batch cycle, on a signal’s authority', short: 'Proposal', screen: 'special-drafting.proposal', view: { file: 'special-drafting.js', mount: 'mountProposal' } },
+  { pattern: 'special-drafting/report', module: 'special-drafting', tab: 'special-drafting/report', title: 'Special Draft Report', subtitle: 'Print the waiting drafts of a posting type on one form, and the forms already printed', short: 'Report', screen: 'special-drafting.report', view: { file: 'special-drafting.js', mount: 'mountReport' } },
+  { pattern: 'special-drafting/upload', module: 'special-drafting', tab: 'special-drafting/upload', title: 'Upload Draft', subtitle: 'Load special drafts for many ratings from a workbook', short: 'Upload', screen: 'special-drafting.upload', view: { file: 'special-drafting.js', mount: 'mountUpload' } },
   // Training Drafting (WP6): Review and History also open on one batch (training/review/7)
   { pattern: 'training/process', module: 'training-drafting', tab: 'training/process', title: 'Process Training Draft', subtitle: 'The open training batches', short: 'Process Training Draft', screen: 'training.process', view: { file: 'training.js', mount: 'mountProcess' } },
   { pattern: 'training/review', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
