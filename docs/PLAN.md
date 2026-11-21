@@ -246,7 +246,7 @@ the next wave once the owner has merged.
 | WP8 | Merged 19/11/2026 (Opus 5.5 · high; about $16.60) | `advancement` | 19/11/2026: bf86b3b, the seven advancement pages on WP7a's cycle (no WP7a part changed), the next rate only, a future board date scheduled, the rate applied through `rates.service.js`, the three printouts, the upload. Administrator's run on fresh databases: advancement 243 (49 s), drafting 195, access 177, static tables 1,474, system admin 285, disciplinary 191, each under 90 s; screens looked at. Not verified: MariaDB, a real midnight |
 | WP9 | Not started | `reports` | |
 | D3 | Merged 19/11/2026, approved by the owner (Sonnet 5.5 · medium; about $2.70) | `design-special` | 19/11/2026: 91884e3, Special Drafting and Naval Character Assessment designed; no Soon items left |
-| WP11 | Not started | `special-drafting` | |
+| WP11 | Clean-up session running 21/11/2026 (Sonnet 5.5 · medium, `session_01G8RfvmAQDr2pBV5oNdeeAs`): built by a developer (6bf9ea9); on the administrator's fresh run special-drafting passes 126 checks in 26 s, static tables, system admin and disciplinary pass, but drafting fails one check (the Under by n pill, likely WP11's seed); an editor reformatted nav.js, ratings.routes.js, README, CONVENTIONS and this plan. The session undoes the reformatting, fixes the drafting check, checks the Posting Type dropdown in a browser, runs every walkthrough and rewrites the report | `special-drafting` | |
 | WP12 | Not started | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
 
