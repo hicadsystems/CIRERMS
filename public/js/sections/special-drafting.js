@@ -207,7 +207,7 @@ export async function mountReport(outlet, { info } = {}) {
   async function refreshTypes() {
     const r = (await api.get(`${BASE}/report/types?${qs({ postingType: type })}`)).data;
     state = r.postingType ? r : null;
-    counts.replaceChildren(h('div', { className: 'grid grid-cols-4 gap-3 phone:gap-2' }, r.types.map((t) => h('div', { className: cx(CARD, 'min-w-0 px-4 py-2 phone:px-2') }, [
+    counts.replaceChildren(h('div', { className: 'grid grid-cols-4 gap-3 phone:grid-cols-2' }, r.types.map((t) => h('div', { className: cx(CARD, 'min-w-0 px-4 py-2 phone:px-2') }, [
       h('div', { className: 'truncate text-2xs font-semibold uppercase tracking-wider text-muted-foreground', text: t.label }),
       h('div', { className: cx('text-xl font-semibold', t.waiting ? 'text-primary-hover' : ''), text: String(t.waiting) }),
     ]))));
