@@ -176,6 +176,7 @@ DROP TABLE ratings;
 14. `20261120_080000_create_advancement.sql` — `advancement_rows` (the DOA flow's rows), `advancement_uploads` (WP8)
 15. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
 16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
+17. `20261120_110000_create_special_drafting.sql` — `special_draft_forms`, `special_drafts` (WP11)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -507,6 +508,12 @@ module.exports = {
     other way. The next rate is the next active rate by Rates `sort_order`.
   - Its due rule is in `settings` (`advancement.due_months`, `advancement.band_green_to`, `advancement.band_amber_to`);
     time in rate counts from the latest `rating_advancement` line of the current rate, else `seniority_date`.
+- **Special Drafting** (`src/modules/special-drafting/`, WP11): screens `special-drafting.proposal` (view, add, delete),
+  `special-drafting.report` (view; **edit** prints) and `special-drafting.upload` (view; **add** checks and imports).
+  A special draft (`special_drafts`) moves a rating only when its form (`special_draft_forms`, `SDF-YYYY-NNNN`) is
+  printed, through WP7a's `postings.move` with `source: { table: 'special_drafts', id }`; a WEF after today is scheduled
+  and the module's `postings.onSource('special_drafts', ...)` hook sets the draft to `moved` or `cancelled`. Posting
+  types are the fixed codes in `POSTING_TYPES`. See `docs/reports/WP11.md`.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -537,13 +544,14 @@ module.exports = {
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Special Drafting (Operations); Naval Character
+Naval Character
 Assessment (Records); Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`; WP7b: 3 report tabs, `drafting/batches` (and `drafting/batches/:id`), `history`, `report`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
+Special Drafting is built (WP11: 3 tabs, `special-drafting/proposal`, `report`, `upload`).
 
 ## Open items
 
