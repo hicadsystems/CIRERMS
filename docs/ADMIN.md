@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | Draft history for all (`draft-history-all`, session `session_01G8Rfvk18qCLDFvphtSWMWy`, Sonnet 5.5 · medium, a WP7b follow-up) done at eb1afa1 and checked; owner to merge, then archive. WP7b merged 20/11/2026 and archived. WP5 merged 20/11/2026 and archived; WP6 and Picker width merged 20/11/2026 and archived. The other remaining packages (WP12, WP11, WP9, then WP10) are with other developers: check each branch when its report note arrives. WP11's branch `special-drafting` (plain name; the two with invisible characters are gone) was created 20/11/2026 from master d053b6f, with nothing on it yet |
+| Sessions | None running. WP11 (`special-drafting`) merged 21/11/2026 and archived. Draft history for all (`draft-history-all`) merged 20/11/2026 and archived. WP7b merged 20/11/2026 and archived. WP5 merged 20/11/2026 and archived; WP6 and Picker width merged 20/11/2026 and archived. The other remaining packages (WP12, WP9, then WP10) are with other developers: check each branch when its report note arrives. |
 | Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
