@@ -6,7 +6,7 @@
  *
  *   GET /options                                  the pickers' lists                         any reports screen
  *   GET /ship-history?shipId&from&to&page         Ship History (a ship is required)          ship-history view
- *   GET /ship-history/excel                       the workbook (there is no PDF)              ship-history view
+ *   GET /ship-history/pdf  /ship-history/excel    the printout, the workbook                  ship-history view
  *   GET /personnel?status&rateId&branchId&commandId&shipId&staffBranchId&specialisationId&entryModeId&stateId&zoneId&sort&page
  *   GET /personnel/pdf  /personnel/excel          Ratings Report, workbook                     all-personnel view
  *   GET /disposition?commandId&areaId&specialisationId&page      ships with counts by rate    disposition view
@@ -49,10 +49,14 @@ router.get('/options', ANY, asyncHandler(async (req, res) => {
   res.json({ data: await service.options() });
 }));
 
-// ---- Ship History: a workbook only ----
+// ---- Ship History ----
 router.get('/ship-history', requirePrivilege('reports.ship-history', 'view'), asyncHandler(async (req, res) => {
   const r = await service.shipHistory(req.query);
   res.json({ data: r.items, summary: r.summary, meta: r.meta });
+}));
+router.get('/ship-history/pdf', requirePrivilege('reports.ship-history', 'view'), asyncHandler(async (req, res) => {
+  const p = await service.shipHistoryForPrint(req.query, 'pdf');
+  pdf(res, await docs.shipHistoryPdf({ ...p, generatedBy: who(req) }), 'Ship History.pdf');
 }));
 router.get('/ship-history/excel', requirePrivilege('reports.ship-history', 'view'), asyncHandler(async (req, res) => {
   const p = await service.shipHistoryForPrint(req.query);

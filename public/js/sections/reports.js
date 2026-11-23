@@ -1,8 +1,7 @@
 /*
  * Reports (WP9): six read-only pages in the Reports module (each page's `view` in core/nav.js).
  *
- *   mountShipHistory        Ship History Report: a ship and a period, the ratings posted to it; Export Excel (the old
- *                           system's workbook; its Print PDF button says so)
+ *   mountShipHistory        Ship History Report: a ship and a period, the ratings posted to it; Print PDF and Export Excel
  *   mountAllPersonnel       All Personnel: filters, figures, the list; Print PDF (the Ratings Report) and Export Excel
  *   mountDisposition        Disposition Report: where the current ratings serve, by ship or unit and rate; Print PDF
  *   mountNominalRoll        Nominal Roll: the ratings serving on a ship or unit, or on every ship of a command
@@ -149,9 +148,7 @@ export async function mountShipHistory(outlet, { info } = {}) {
   });
   const ready = () => !!bar.values().shipId && !bar.bad();
   const redraw = () => warn.say(bar.bad());
-  const out = outputs({ screen: 'reports.ship-history', excelUrl: `${BASE}/ship-history/excel`, excelName: 'Ship History.xlsx', query: () => bar.query(), pdf: false });
-  // the old system's report is a workbook: its Print PDF button says so
-  const printBtn = button({ label: 'Print PDF', icon: 'printer', variant: 'blue', onClick: () => toast('The Ship History Report is an Excel workbook, as in the old system. Use Export Excel.', 'info') });
+  const out = outputs({ screen: 'reports.ship-history', pdfUrl: `${BASE}/ship-history/pdf`, pdfTitle: 'Ship History Report', pdfName: 'Ship History.pdf', excelUrl: `${BASE}/ship-history/excel`, excelName: 'Ship History.xlsx', query: () => bar.query() });
   const prompt = pickPrompt('ship', 'Choose a Ship', 'Pick a ship or unit to see the ratings posted to it.');
 
   const lv = list({
@@ -198,7 +195,7 @@ export async function mountShipHistory(outlet, { info } = {}) {
     });
   }
 
-  outlet.replaceChildren(header(info, [printBtn, out.excelBtn]), stats, bar.el, warn.el, count, prompt.el, lv.el);
+  outlet.replaceChildren(header(info, [out.printBtn, out.excelBtn]), stats, bar.el, warn.el, count, prompt.el, lv.el);
   lv.reload({ resetPage: true });
 }
 
