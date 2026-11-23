@@ -4,7 +4,7 @@
 self-contained file: open it in a browser, offline. Everything on it is sample data and nothing saves.
 
 The app now follows it: the theme, the shell, the component kit (`components.md`), every screen of every module
-except Reports (WP9) and Ctrl K search are built (the list is at the end, *What is built*). What is still only in the
+and Ctrl K search are built (the list is at the end, *What is built*). What is still only in the
 demo is listed under *Demo only*.
 
 | File | What it is |
@@ -493,8 +493,7 @@ The Ship History Report stays an Excel workbook. Posting types TY and DW stay as
 
 ## What is built (package WP10, Demo Finish)
 
-Every module of the demo is built and works end to end on demo data, except **Reports**, whose entry in the menu
-carries *Soon* until WP9 is merged. Each page was compared with the demo (title, subtitle, header buttons, filters,
+Every module of the demo is built and works end to end on demo data. Each page was compared with the demo (title, subtitle, header buttons, filters,
 figures and columns, by script, then by eye at 1440 px light and 390 px dark). The rules that win over the demo stay:
 wide tables show about four columns and open the row in a dialog, details are label and value rows, ratings are picked
 with the rating search select, printouts open in the PDF preview, the type scale is fluid. What differs, and why, is in
@@ -513,4 +512,4 @@ with the rating search select, printouts open in the PDF preview, the type scale
 | Discharge Administration | Process Discharge, Print Service Details, Verification Forms, Discharge Report, Upload Discharge | WP5 |
 | Static Tables | the 16 tables | WP2 |
 | System Administration | Manage Users, Manage Roles, Manage Password, Audit Trail (and Change Password in the account menu) | WP1, WP3 |
-| Reports | not built yet (WP9) | |
+| Reports | Ship History, All Personnel, Disposition (in the demo) and Nominal Roll, Manning State, Retirement Forecast (added by the owner, 23/11/2026, not in the demo) | WP9 |

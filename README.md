@@ -1,6 +1,6 @@
 # CIRERMS — Nigerian Navy Ratings Management (Migration Demo)
 
-Modernised **Centralised Integrated Ratings Electronic Records Management System (CIRERMS)**: Ratings Management, Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Static Tables and System Administration all work end to end on demo data (Reports follows, WP9). It demonstrates a clean migration from legacy **ASP.NET MVC / Razor / jQuery DataTables** to a zero-framework **HTML5 + Tailwind CSS + Vanilla ES Modules SPA** backed by **Node.js (Express) + MySQL 8**.
+Modernised **Centralised Integrated Ratings Electronic Records Management System (CIRERMS)**: Ratings Management, Drafting, Special Drafting, Training Drafting, Advancement Processing, Naval Character Assessment, Disciplinary Action, Discharge Administration, Static Tables, Reports and System Administration all work end to end on demo data. It demonstrates a clean migration from legacy **ASP.NET MVC / Razor / jQuery DataTables** to a zero-framework **HTML5 + Tailwind CSS + Vanilla ES Modules SPA** backed by **Node.js (Express) + MySQL 8**.
 
 ---
 
@@ -402,7 +402,7 @@ NODE_PATH=$(npm root -g) node tests/e2e/special-drafting-walkthrough.js
 NODE_PATH=$(npm root -g) node tests/e2e/appraisal-walkthrough.js
 ```
 
-`tests/e2e/demo-walkthrough.js` (WP10) is the smoke walk-through of the whole app, in under a minute: the dashboard's five tiles equal the counts of the real tables; every demo name is in capitals and every account belongs to a rating; a rating's new Official Number becomes its account's user name (audited, and refused when another account holds it); 401 and 403 answers; Ctrl K finds every screen of every module by its label, ratings by Official No and by name, and shows a role only its own screens. Then every page of every module (67 of them, the record's tabs included) opens as the Administrator at 1440 px light and at 390 px dark, side by side, each page's main dialog is opened, nothing scrolls sideways, no label breaks inside a word, and there are no browser errors. Reports (WP9) is not walked until it is merged.
+`tests/e2e/demo-walkthrough.js` (WP10) is the smoke walk-through of the whole app, in under a minute: the dashboard's five tiles equal the counts of the real tables; every demo name is in capitals and every account belongs to a rating; a rating's new Official Number becomes its account's user name (audited, and refused when another account holds it); 401 and 403 answers; Ctrl K finds every screen of every module by its label, ratings by Official No and by name, and shows a role only its own screens. Then every page of every module (73 of them, Reports' six and the record's tabs included) opens as the Administrator at 1440 px light and at 390 px dark, side by side, each page's main dialog is opened, nothing scrolls sideways, no label breaks inside a word, and there are no browser errors. Ship History and Nominal Roll are walked with a ship picked; the rules of the six Reports pages are in `reports-walkthrough.js`.
 
 ```bash
 npm run migrate:fresh

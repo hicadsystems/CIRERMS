@@ -19,7 +19,7 @@
  * Then every page of every module is opened (the Administrator, desktop 1440 px light and phone 390 px dark, side by
  * side), each page's main dialog is opened, nothing scrolls sideways, label and value rows
  * never break inside a word, the dashboard shows its five tiles; no browser errors anywhere.
- * The Reports module is WP9's: its pages are not walked here.
+ * The six Reports pages are walked like every other (from the router's own list); WP9's reports-walkthrough does their rules.
  */
 const fs = require('fs');
 const path = require('path');
@@ -237,11 +237,13 @@ const DIALOG_BUTTON = /^(New |Add |Create |Initiate |Draft a )/;
 // pages that are forms or pickers: no list and no add button, so no dialog is expected
 const NO_DIALOG = new Set(['ratings/upload', 'ratings/documents', 'ratings/my-details', 'advancement/upload', 'disciplinary/initiate', 'discharge/service', 'discharge/forms', 'discharge/upload', 'special-drafting/upload', 'training/review', 'training/history', 'training/upload', 'admin/password', 'ratings/edit/B0539']);
 
+const NEEDS_SHIP = new Set(['reports/ship-history', 'reports/nominal-roll']);
+
 async function pagesIn(browser, viewport, theme, routes) {
   const label = `${viewport.width}px ${theme}`;
   const { context, page, errors, phone } = await open(browser, { viewport, theme });
   await signIn(page, ADMIN);
-  const bad = { sideways: [], noHeading: [], noDialog: [], dialogWide: [], breaks: [] };
+  const bad = { sideways: [], noHeading: [], noDialog: [], dialogWide: [], breaks: [], half: [] };
   let dialogs_ = 0;
   for (const route of routes) {
     await go(page, route);
@@ -250,6 +252,16 @@ async function pagesIn(browser, viewport, theme, routes) {
     const wide = await page.evaluate(() => ({ page: document.documentElement.scrollWidth - window.innerWidth, main: document.querySelector('#app-main').scrollWidth - document.querySelector('#app-main').clientWidth }));
     if (wide.page > 1 || wide.main > 1) bad.sideways.push(`${route} ${JSON.stringify(wide)}`);
     if (route === 'dashboard') continue;
+    // Ship History and Nominal Roll list nothing until a ship is picked: pick the first one
+    if (NEEDS_SHIP.has(route)) {
+      if (phone) {
+        const panelHidden = await page.locator('#app-main [data-filters] > div').last().isHidden();
+        if (panelHidden) await page.locator('#app-main [data-filters] button', { hasText: 'Filters' }).click();
+      }
+      await page.locator('#app-main [data-filters] .custom-dropdown-wrapper[name="shipId"] input:not(.custom-dropdown-hidden)').first().click();
+      await page.locator('.custom-dropdown-list:visible .custom-dropdown-item:not(.cdd-placeholder)').first().click();
+      await settle(page);
+    }
     // the page's main dialog: its add button, else its first row
     let opened = false;
     const add = page.locator('#app-main button:visible').filter({ hasText: DIALOG_BUTTON }).first();
@@ -268,10 +280,13 @@ async function pagesIn(browser, viewport, theme, routes) {
       dialogs_ += 1;
       const d = await dialogOf(page).evaluate((el) => {
         const labels = Array.from(el.querySelectorAll('dl dt')).map((dt) => { const cs = getComputedStyle(dt); return { broken: cs.overflowWrap !== 'normal' || cs.wordBreak !== 'normal' || dt.scrollWidth > dt.clientWidth + 1 }; });
-        return { fits: el.scrollWidth <= el.clientWidth + 1 && el.getBoundingClientRect().right <= window.innerWidth + 1, breaks: labels.filter((l) => l.broken).length };
+        // a lone panel (factPanels) takes the whole width, not the left half
+        const half = Array.from(el.querySelectorAll('section')).filter((sec) => sec.querySelector(':scope > dl') && sec.parentElement.children.length === 1 && sec.parentElement.className.includes('gap-x-8') && sec.getBoundingClientRect().width < sec.parentElement.getBoundingClientRect().width * 0.9).length;
+        return { fits: el.scrollWidth <= el.clientWidth + 1 && el.getBoundingClientRect().right <= window.innerWidth + 1, breaks: labels.filter((l) => l.broken).length, half };
       });
       if (!d.fits) bad.dialogWide.push(route);
       if (d.breaks) bad.breaks.push(route);
+      if (d.half) bad.half.push(route);
       await closeAll(page);
     } else if (!NO_DIALOG.has(route)) {
       bad.noDialog.push(route);
@@ -282,6 +297,7 @@ async function pagesIn(browser, viewport, theme, routes) {
   check(bad.noDialog.length === 0, `${label}: every page with a list or an add button opens its dialog (${dialogs_} opened)`, bad.noDialog.join(' '));
   check(bad.dialogWide.length === 0, `${label}: every dialog fits the screen`, bad.dialogWide.join(' '));
   check(bad.breaks.length === 0, `${label}: no label breaks inside a word`, bad.breaks.join(' '));
+  check(bad.half.length === 0, `${label}: no dialog lays a lone panel out in half its width`, bad.half.join(' '));
 
   // the dashboard
   await go(page, 'dashboard');
@@ -316,7 +332,7 @@ async function main_() {
   try {
     await rules(browser, db);
     await palette(browser);
-    // every page the router knows without a parameter, then one of each with a parameter (the Reports module is WP9's)
+    // every page the router knows without a parameter, then one of each with a parameter (Reports included)
     const probe = await open(browser, { viewport: DESKTOP, theme: 'light' });
     await signIn(probe.page, ADMIN);
     const routes = await probe.page.evaluate(async () => {

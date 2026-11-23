@@ -10,7 +10,7 @@
  *               For two panels side by side use factPanels().
  *
  *   factPanels([{ title, rows, actions }, ...])
- *     panels side by side on a wide page (title in the brand colour, optional action buttons beside it, then its rows);
+ *     panels side by side on a wide page (a lone panel takes the full width; two or more keep two columns) (title in the brand colour, optional action buttons beside it, then its rows);
  *     they stack on a phone. Each row stays label left, value right.
  */
 import { cx, h } from './html.js';
@@ -36,7 +36,7 @@ export function facts(rows = [], { className = '' } = {}) {
 export function factPanels(panels = [], { className = '' } = {}) {
   return h(
     'div',
-    { className: cx('grid grid-cols-2 gap-x-8 gap-y-6 phone:grid-cols-1', className) },
+    { className: cx('grid gap-x-8 gap-y-6 phone:grid-cols-1', panels.length > 1 ? 'grid-cols-2' : 'grid-cols-1', className) },
     panels.map((p) =>
       h('section', { className: 'min-w-0' }, [
         h('div', { className: 'flex min-h-9 items-center justify-between gap-2 border-b border-border pb-1' }, [
