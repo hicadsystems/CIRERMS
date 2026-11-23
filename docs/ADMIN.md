@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | WP12 (`appraisal`, session `session_01G8Rfvjcssd8mGkzzqDfatu`) done at 773118e and checked; owner to merge, then archive. WP11 (`special-drafting`) merged 21/11/2026 and archived. Draft history for all (`draft-history-all`) merged 20/11/2026 and archived. WP7b merged 20/11/2026 and archived. WP5 merged 20/11/2026 and archived; WP6 and Picker width merged 20/11/2026 and archived. The other remaining packages (WP12, WP9, then WP10) are with other developers: check each branch when its report note arrives. |
+| Sessions | Two at once, at the owner's request (23/11/2026): WP9 (`reports`, session `session_01G8RfvnQmh6dHraEjPdXNZs`, done at 87d5104 and checked; owner to merge, then archive) and WP10 (`demo-finish`, session `session_01G8RfviynTAfn7EnjP8MaMq`, everything but Reports; round 1 checked, round 1b undoing its tab changes at the owner's word). Each reports with send_message. When both are clear, the owner merges WP12, then WP9; then WP10 merges master again (round 2: Reports in Ctrl K, the demo walkthrough and the comparison); then the owner merges WP10 and the administrator runs the whole walkthrough set on master once. WP12 merged 23/11/2026 and archived |
 | Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
@@ -152,7 +152,8 @@ Notes for coming briefs:
   D2's layouts stand.
 - **WP10:** a label in the label-and-value rows breaks inside a word when its column is narrow ("Vice/Deploymen t" in
   Review/Print Draft's dialog): labels should wrap at spaces or the slash only. First names in some demo data are in
-  mixed case ("EKWUEME Chioma Ada").
+  mixed case ("EKWUEME Chioma Ada"). (Done in WP10 round 1.) The tab strips stay as they are: the owner
+  (23/11/2026) did not want WP10 to change how tabs work; relatives' names stay as typed.
 - **WP10:** demo data: B0575's middle name is stored in lower case ("archibong"); names should read in capitals.
 - **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
 - **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
