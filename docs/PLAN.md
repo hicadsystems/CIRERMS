@@ -247,7 +247,7 @@ the next wave once the owner has merged.
 | WP9 | Not started | `reports` | |
 | D3 | Merged 19/11/2026, approved by the owner (Sonnet 5.5 · medium; about $2.70) | `design-special` | 19/11/2026: 91884e3, Special Drafting and Naval Character Assessment designed; no Soon items left |
 | WP11 | Merged 21/11/2026 (clean-up by Sonnet 5.5 · medium; about $1.60; `session_01G8RfvmAQDr2pBV5oNdeeAs`): built by a developer (6bf9ea9); the clean-up restored nav.js, ratings.routes.js, README, CONVENTIONS and this plan to master's style with only WP11's lines, moved WP11's demo rating B1116 off NNS BEECROFT's Catering requirement (which broke the drafting walkthrough's Under by n check), found the Posting Type dropdown working, and put the type counts in two columns on a phone. All ten walkthroughs pass; special drafting 126 and drafting 195 on the administrator's fresh run. Last code commit dca389f, head 73c4945 | `special-drafting` | |
-| WP12 | Not started | `appraisal` | |
+| WP12 | Clean-up session running 23/11/2026 (Sonnet 5.5 · medium, `session_01G8Rfvjcssd8mGkzzqDfatu`): built by a developer (7791894), clean diff, never run; on the administrator's fresh run the appraisal walkthrough crashed after 19 checks at the audit trail's before and after for an edit. The session fixes it, runs every walkthrough, looks at the screens and rewrites the report | `appraisal` | |
 | WP10 | Not started | `demo-finish` | |
 
 ## 9. Open questions
