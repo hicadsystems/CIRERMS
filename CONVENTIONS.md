@@ -208,6 +208,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 - Every "add" opens in a dialog (a bottom sheet on a phone), New Rating included; Ctrl K opens the search palette
   (`js/shell/search-palette.js`).
 - Details read as label and value on one row with a divider (`facts`, `factPanels`), never small capital labels above values.
+  A label wraps at its spaces and after a slash ("Vice/" then "Deployment"), never inside a word.
 - A page's picker (batch, period) sits on the page without a card, label above, `desk:w-96`, full width on a phone.
 - Date fields are typed and shown as dd/mm/yyyy (`core/dates.js` `parseDisplayDate`) and sent as YYYY-MM-DD.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
@@ -265,7 +266,10 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
-  keep their vertical scrollbar and never scroll sideways (Wide tables, below).
+  keep their vertical scrollbar and never scroll sideways (Wide tables, below). The exception is the module's
+  tab strip on desktop: it wraps onto a second line when a module has more tabs than fit (Drafting's nine,
+  Static Tables' sixteen at 1440 px), so no tab is hidden; the record's eleven tabs fit one line; a phone's
+  chips scroll.
 - **Type scales with the screen** (owner's decision, 19/11/2026). Font sizes are fluid: every step of
   the type scale grows smoothly from its phone size at 360 px wide to its desktop size at 1440 px (CSS
   `clamp()` in the Tailwind font sizes), so text steps up or down with the screen instead of jumping
@@ -538,7 +542,7 @@ module.exports = {
 | Screen ID | Screen |
 |---|---|
 | `auth.login` | Login (`public/index.html`) |
-| `dashboard.home` | Dashboard: Members tile live (`total`, `current`, `former`), the others `0`; Recently Enlisted; Current Ratings by Rate |
+| `dashboard.home` | Dashboard: five live tiles (Members, Drafting, Disciplinary, Discharge, Appraisals), each counted from its own tables in `dashboard.repo.js`; Recently Enlisted; Current Ratings by Rate |
 | `ratings.list` | Current / Former Ratings (one screen, `status`): search, Rate and Ship filters, 25 a page, the picked rating beside the list (1280 px and up) or in a dialog or sheet; Export (Copy Rows, Excel, PDF, CSV) and New Rating |
 | `ratings.new` | New Rating: a dialog with the four steps (Basic Details, Contact, Health, Official); `#ratings/new` opens it over the current list |
 | `ratings.edit` | The rating's record: head row, completeness bar, ten tabs (Details as four cards with Edit dialogs; Next of Kin, Spouse, Children, Advancement, Drafting, Training, Education, Language with Add / Edit / Delete; Documents) |
@@ -546,7 +550,7 @@ module.exports = {
 | `ratings.my-details` | My Details: the record read-only for the signed-in user's `service_number`, or a notice for an account with none |
 | `ratings.documents` | Documents: find a rating by Official No or name, then its files by category, preview, download and upload |
 
-Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
+Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K (`tests/e2e/demo-walkthrough.js` opens every page of every module and checks that Ctrl K finds each).
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
 Reports
@@ -561,5 +565,5 @@ Naval Character Assessment is built (WP12: 3 tabs, `assessment/grading`, `report
 ## Open items
 
 - Real dropdown values (rate, title, religion denomination, tribe, state/LGA, ship, ...) — realistic placeholders seeded until official lists are supplied.
-- Demo data: generated synthetic ratings shaped like the real records (`HICO001` the administrator, itself a rating, and `B0539`; every login account is a rating).
+- Demo data: generated synthetic ratings shaped like the real records (`HICO001` the administrator, itself a rating, and `B0539`; every login account is a rating). Every name is in capitals, in the seeds as in the app (the app writes a rating's surname, first name and middle name in capitals), and a user name is its rating's official number: changing a rating's number changes its account's user name in the same transaction.
 - MySQL vs Postgres — final call pending (all SQL isolated in `src/modules/*/*.repo.js`).

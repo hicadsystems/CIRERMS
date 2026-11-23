@@ -3,8 +3,9 @@
 `demo.html` is the approved layout and look for the CIRERMS frontend (approved 18/11/2026). It is one
 self-contained file: open it in a browser, offline. Everything on it is sample data and nothing saves.
 
-The app now follows it: the theme, the shell, the component kit (`components.md`), every Ratings screen and
-Ctrl K search are built. What is still only in the demo is listed at the end.
+The app now follows it: the theme, the shell, the component kit (`components.md`), every screen of every module
+except Reports (WP9) and Ctrl K search are built (the list is at the end, *What is built*). What is still only in the
+demo is listed under *Demo only*.
 
 | File | What it is |
 |---|---|
@@ -489,3 +490,30 @@ Data shape for the table-style printouts: `title`, `ref`, `subtitle`, `generated
 | `report-on-appraisal.hbs` | Report on Appraisal, *Print PDF* | landscape | filters; grade counts for both grades; the list; signatures | WP12 |
 
 The Ship History Report stays an Excel workbook. Posting types TY and DW stay as codes. The three verification forms keep D2's content until the owner supplies the real forms.
+
+## What is built (package WP10, Demo Finish)
+
+Every module of the demo is built and works end to end on demo data, except **Reports**, whose entry in the menu
+carries *Soon* until WP9 is merged. Each page was compared with the demo (title, subtitle, header buttons, filters,
+figures and columns, by script, then by eye at 1440 px light and 390 px dark). The rules that win over the demo stay:
+wide tables show about four columns and open the row in a dialog, details are label and value rows, ratings are picked
+with the rating search select, printouts open in the PDF preview, the type scale is fluid. What differs, and why, is in
+`docs/reports/WP10.md`.
+
+| Module | Pages | Built by |
+|---|---|---|
+| Dashboard | five live tiles (Members, Drafting, Disciplinary, Discharge, Appraisals), Recently Enlisted, Current Ratings by Rate | WP1, WP10 |
+| Ratings Management | Current, Former, Batch Upload, Documents, My Details, New Rating, the record (ten tabs and Discipline) | WP1 to WP3c |
+| Drafting | Update Manning Requirement, Print Draft Proposal, Review/Print Draft, Draft Approval, Close Draft, Update WEF, Batch/Signal Content, Rate DOD History, Draft Report | WP7a, WP7b |
+| Special Drafting | Special Draft Proposal, Special Draft Report, Upload Draft | WP11 |
+| Training Drafting | Process Training Draft, Training Review, Update Training History, Reports, Excel Upload | WP6 |
+| Advancement Processing | Rates due, Review, Approval, Close, Board Returns Update, Report on Promoted Rates, Upload Advanced Rates | WP8 |
+| Naval Character Assessment | Recommendation and Grading, Report on Appraisal, Appraisal Periods | WP12 |
+| Disciplinary Action | Initiate Incident, Pending Cases, Concluded Cases, Disciplinary Report | WP4 |
+| Discharge Administration | Process Discharge, Print Service Details, Verification Forms, Discharge Report, Upload Discharge | WP5 |
+| Static Tables | the 16 tables | WP2 |
+| System Administration | Manage Users, Manage Roles, Manage Password, Audit Trail (and Change Password in the account menu) | WP1, WP3 |
+| Reports | not built yet (WP9) | |
+
+A module's tab strip on desktop wraps onto a second line when it has more tabs than fit at 1440 px (Drafting's nine,
+Static Tables' sixteen); the demo's strip scrolls. The record's eleven tabs fit one line.
