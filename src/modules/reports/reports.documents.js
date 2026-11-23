@@ -2,12 +2,13 @@
 
 /*
  * Reports printouts and workbooks (WP9). The PDFs are D4's templates (src/templates/printouts):
+ *   ship-history                Ship History, Print PDF
  *   ratings-report-all          All Personnel, Print PDF (the Ratings Report)
  *   disposition-report          Disposition, Print PDF
  *   nominal-roll                Nominal Roll, Print PDF
  *   manning-requirement-report  Manning State, Print PDF (Drafting's own printout: drafting.documents.manningPdf)
  *   retirement-forecast         Retirement Forecast, Print PDF
- * Ship History is a workbook only, as in the old system. Every page's workbook is made from the same data as its PDF.
+ * Every page's workbook is made from the same data as its PDF.
  */
 const ExcelJS = require('exceljs');
 const { renderPdf } = require('../../shared/printouts');
@@ -39,7 +40,27 @@ function sheet(wb, name, title, lines, headers, widths) {
 const workbook = (generatedBy) => { const wb = new ExcelJS.Workbook(); wb.creator = generatedBy || 'CIRERMS'; return wb; };
 const buffer = async (wb) => Buffer.from(await wb.xlsx.writeBuffer());
 
-// ---- 1. Ship History: the workbook ----------------------------------------------------------------
+// ---- 1. Ship History: the printout and the workbook ----------------------------------------------------------------
+
+async function shipHistoryPdf({ ship, period, items, total, aboard, averageTour, generatedBy }) {
+  return renderPdf('ship-history', {
+    title: 'SHIP HISTORY REPORT',
+    generatedBy,
+    subtitle: `${ship}, ${period}`,
+    summary: [{ label: 'Postings', value: total }, { label: 'Aboard Now', value: aboard }, { label: 'Average Tour', value: averageTour || 'N/A' }],
+    facts: [f('Ship or Unit', ship), f('Period', period), f('Postings', String(total))],
+    table: {
+      columns: [
+        { label: 'No', key: 'no', kind: 'ctr', w: '5%' }, { label: 'Official No', key: 'sn', kind: 'code', w: '13%' }, { label: 'Name', key: 'name', kind: 'name' },
+        { label: 'Rate', key: 'rate', w: '8%' }, { label: 'From', key: 'from', kind: 'date', w: '13%' }, { label: 'To', key: 'to', w: '13%' },
+        { label: 'Time There', key: 'tour', w: '14%' },
+      ],
+      rows: items.map((x, i) => ({ no: i + 1, sn: x.serviceNumber, name: x.name, rate: x.rateCode, from: x.from, to: x.aboard ? 'Aboard' : dmy(x.to), tour: x.tour })),
+      empty: 'No rating was posted here in this period.',
+    },
+    signatures: SIGNATURES,
+  });
+}
 
 async function shipHistoryWorkbook({ ship, period, items, total, aboard, generatedBy }) {
   const wb = workbook(generatedBy);
@@ -251,6 +272,6 @@ async function retirementForecastWorkbook({ items, total, quarters, months, ageD
 }
 
 module.exports = {
-  shipHistoryWorkbook, personnelPdf, personnelWorkbook, dispositionPdf, dispositionWorkbook, nominalRollPdf, nominalRollWorkbook,
+  shipHistoryPdf, shipHistoryWorkbook, personnelPdf, personnelWorkbook, dispositionPdf, dispositionWorkbook, nominalRollPdf, nominalRollWorkbook,
   manningStatePdf, manningStateWorkbook, retirementForecastPdf, retirementForecastWorkbook,
 };

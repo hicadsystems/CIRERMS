@@ -244,7 +244,8 @@ async function apiFlow(browser, db) {
   check(before.status === 200 && before.body.summary.postings === 0, 'Ship History: a period before any posting is an empty list');
   check((await api(page, 'GET', `${R}/ship-history?shipId=${aradu.id}&from=2026-12-01&to=2026-01-01`)).status === 422, 'Ship History: a From after To is refused');
   check((await api(page, 'GET', `${R}/ship-history?shipId=${aradu.id}&from=31/02/2026`)).status === 422, 'Ship History: a bad date is refused');
-  check((await api(page, 'GET', `${R}/ship-history/pdf?shipId=${aradu.id}`)).status === 404, 'Ship History: there is no PDF (it is a workbook, as in the old system)');
+  const shPdf = await fileHead(page, `${R}/ship-history/pdf?shipId=${aradu.id}`);
+  check(shPdf.status === 200 && shPdf.head.startsWith('%PDF') && shPdf.size > 2000, 'Ship History: the printout', JSON.stringify(shPdf));
   const shWb = await workbookOf(page, `${R}/ship-history/excel?shipId=${aradu.id}`);
   check(dataRows(shWb.worksheets[0]) === shExpect && headerOf(shWb.worksheets[0]).includes('Official Number') && headerOf(shWb.worksheets[0]).includes('Tour'), 'Ship History: the workbook holds every posting of the same query');
 
@@ -548,8 +549,7 @@ async function screensFlow(browser, shared) {
   await go(page, 'reports/ship-history');
   check(/Choose a Ship/.test(await main(page).innerText()) && (await rowsOf(page, false).count()) === 0, 'Ship History: without a ship it asks for one');
   check(await main(page).getByRole('button', { name: 'Export Excel' }).isDisabled(), 'Ship History: Export Excel is off until a ship is picked');
-  await main(page).getByRole('button', { name: 'Print PDF' }).click();
-  check(/Excel workbook/.test(await toastText(page, /Excel workbook/)), 'Ship History: its Print PDF button says the report is an Excel workbook');
+  check(await main(page).getByRole('button', { name: 'Print PDF' }).isDisabled(), 'Ship History: Print PDF is off until a ship is picked');
   await filterSelect(page, false, 'shipId', shared.ship.name);
   const shRows = await rowTexts(page, false);
   check(shRows.length > 0 && /POSTINGS\s*\d+/i.test(await main(page).locator('[data-stats]').innerText()) && /AVERAGE TOUR/i.test(await main(page).locator('[data-stats]').innerText()), 'Ship History: the figures (postings, aboard now, average tour) and the list');
@@ -568,6 +568,7 @@ async function screensFlow(browser, shared) {
   const dtext = await dialogOf(page).innerText();
   check(/Official No/.test(dtext) && /From/.test(dtext) && /Tour/.test(dtext) && /Ship or Unit/.test(dtext) && await dialogOf(page).getByRole('button', { name: 'Open Record' }).count() > 0, 'Ship History: a row opens with the posting and Open Record');
   await closeAll(page);
+  await printPreview(page, 'Ship History');
   await downloadsWorkbook(page, 'Ship History', /^Ship History .*\.xlsx$/);
 
   // ---- All Personnel
