@@ -443,4 +443,4 @@ scheduled.register('discharge', {
   },
 });
 
-module.exports = { applyExit, documentsOf, options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification, recordStatus };
+module.exports = { rule, applyExit, documentsOf, options, due, proposalCandidate, createProposal, proposals, proposalRows, proposal, addRating, processRow, reengage, removeRow, report, serviceDetails, verification, recordStatus };

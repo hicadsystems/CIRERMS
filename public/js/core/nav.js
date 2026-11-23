@@ -192,7 +192,22 @@ export const AREAS = [
     modules: [
       // one tab and page per table (TABLES below); each is its own privilege, screen tables.<slug>
       { key: 'tables', label: 'Static Tables', short: 'Tables', icon: 'database', href: 'tables/appraisal-ratings', tabs: [] },
-      { key: 'reports', label: 'Reports', short: 'Reports', icon: 'chart-column', soon: true },
+      {
+        key: 'reports',
+        label: 'Reports',
+        short: 'Reports',
+        icon: 'chart-column',
+        href: 'reports/ship-history',
+        // read-only reports (WP9)
+        tabs: [
+          { route: 'reports/ship-history', label: 'Ship History', icon: 'ship', screen: 'reports.ship-history' },
+          { route: 'reports/all-personnel', label: 'All Personnel', icon: 'users', screen: 'reports.all-personnel' },
+          { route: 'reports/disposition', label: 'Disposition', icon: 'anchor', screen: 'reports.disposition' },
+          { route: 'reports/nominal-roll', label: 'Nominal Roll', icon: 'list', screen: 'reports.nominal-roll' },
+          { route: 'reports/manning-state', label: 'Manning State', icon: 'clipboard-check', screen: 'reports.manning-state' },
+          { route: 'reports/retirement-forecast', label: 'Retirement Forecast', icon: 'calendar', screen: 'reports.retirement-forecast' },
+        ],
+      },
       {
         key: 'admin',
         label: 'System Administration',
@@ -323,6 +338,13 @@ export const PAGES = [
     screen: `tables.${t.slug}`,
     view: { file: 'static-table.js', mount: 'mountStaticTable', props: { slug: t.slug } },
   })),
+  // Reports (WP9): read-only, each page needs view
+  { pattern: 'reports/ship-history', module: 'reports', tab: 'reports/ship-history', title: 'Ship History Report', subtitle: 'Ratings posted to a ship over time', short: 'Ship History', screen: 'reports.ship-history', view: { file: 'reports.js', mount: 'mountShipHistory' } },
+  { pattern: 'reports/all-personnel', module: 'reports', tab: 'reports/all-personnel', title: 'All Personnel', subtitle: 'The Ratings Report, filtered your way', short: 'All Personnel', screen: 'reports.all-personnel', view: { file: 'reports.js', mount: 'mountAllPersonnel' } },
+  { pattern: 'reports/disposition', module: 'reports', tab: 'reports/disposition', title: 'Disposition Report', subtitle: 'Where ratings serve, by ship or unit and rate', short: 'Disposition', screen: 'reports.disposition', view: { file: 'reports.js', mount: 'mountDisposition' } },
+  { pattern: 'reports/nominal-roll', module: 'reports', tab: 'reports/nominal-roll', title: 'Nominal Roll', subtitle: 'The ratings serving now on a ship or unit, or on every ship of a command', short: 'Nominal Roll', screen: 'reports.nominal-roll', view: { file: 'reports.js', mount: 'mountNominalRoll' } },
+  { pattern: 'reports/manning-state', module: 'reports', tab: 'reports/manning-state', title: 'Manning State', subtitle: 'Every ship\u2019s manning requirement against who is aboard', short: 'Manning State', screen: 'reports.manning-state', view: { file: 'reports.js', mount: 'mountManningState' } },
+  { pattern: 'reports/retirement-forecast', module: 'reports', tab: 'reports/retirement-forecast', title: 'Retirement Forecast', subtitle: 'Who becomes due for discharge in the next 6, 12 or 24 months', short: 'Retirement', screen: 'reports.retirement-forecast', view: { file: 'reports.js', mount: 'mountRetirementForecast' } },
   { pattern: 'admin/users', module: 'admin', tab: 'admin/users', title: 'Manage Users', subtitle: 'Accounts that can sign in', short: 'Users', screen: 'admin.users', view: { file: 'admin-users.js', mount: 'mountAdminUsers' } },
   { pattern: 'admin/roles', module: 'admin', tab: 'admin/roles', title: 'Manage Roles', subtitle: 'What each role may open and change', short: 'Roles', screen: 'admin.roles', view: { file: 'admin-roles.js', mount: 'mountAdminRoles' } },
   { pattern: 'admin/password', module: 'admin', tab: 'admin/password', title: 'Manage Password', subtitle: 'Reset a password for someone who cannot sign in', short: 'Password', screen: 'admin.password', view: { file: 'admin-password.js', mount: 'mountAdminPassword' } },

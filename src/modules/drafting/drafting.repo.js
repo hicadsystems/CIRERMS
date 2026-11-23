@@ -46,6 +46,7 @@ function manningWhere(f) {
   if (f.shipId) { sql.push('m.ship_id = ?'); params.push(f.shipId); }
   if (f.rateId) { sql.push('m.rate_id = ?'); params.push(f.rateId); }
   if (f.specialisationId) { sql.push('m.specialisation_id = ?'); params.push(f.specialisationId); }
+  if (f.commandId) { sql.push('m.ship_id IN (SELECT id FROM ref_ship WHERE command_id = ?)'); params.push(f.commandId); }
   return { sql: sql.length ? `WHERE ${sql.join(' AND ')}` : '', params };
 }
 
@@ -65,9 +66,9 @@ async function listManning(f, { page = 1, pageSize = 25 } = {}) {
   return { items, total: Number(total), required: Number(required), aboard: Number(aboard) };
 }
 
-async function allManning(f) {
+async function allManning(f, limit = 5000) {
   const w = manningWhere(f);
-  return db.query(`${MANNING_SELECT} ${w.sql} ${MANNING_ORDER} LIMIT 5000`, w.params);
+  return db.query(`${MANNING_SELECT} ${w.sql} ${MANNING_ORDER} LIMIT ${Number(limit) || 5000}`, w.params);
 }
 
 async function findManning(id, conn = null) {
@@ -359,6 +360,7 @@ async function batchDepartmentCounts(batchId, conn = null) {
 }
 
 module.exports = {
+  CURRENT_POSTING,
   options, refRow, listManning, allManning, findManning, manningRaw, manningDuplicate, insertManning, updateManning, deleteManning,
   requirement, aboardCount, draftFlows, listDue, dueFresh, ratingForDraft, ratingBasic, pendingDraftOf,
   listBatches, listRows, allRows, findRow, rowRaw, rowOfRating, rowsOfBatch, insertRow, resetRow, updatePosting, notRecommend,
