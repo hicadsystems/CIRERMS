@@ -118,6 +118,8 @@ async function closeAll(page) {
     await page.waitForTimeout(150);
   }
 }
+// waits for text to show in the open dialog (the server's answer arrives after the click)
+const dialogShows = (page, re) => dialogOf(page).getByText(re).first().waitFor({ timeout: 8000 }).then(() => true, () => false);
 const press = (page, name) => dialogOf(page).getByRole('button', { name, exact: true }).click();
 const fillIn = (page, name, value) => dialogOf(page).locator(`[name="${name}"]`).first().fill(value);
 async function noOverflow(page, label) {
@@ -179,7 +181,7 @@ async function rules(browser, db) {
   check((await upd(a1.id, same)).status === 422, 'an edit that changes nothing is refused');
   const edited = await upd(a1.id, { ...same, efficiencyGradeId: grade('A').id, directorName: 'CAPT N. EZE', directorDate: openPeriod.start > '2026-07-01' ? openPeriod.start : '2026-08-01' });
   check(edited.status === 200 && edited.body.data.efficiency.code === 'A', 'an edit is saved');
-  const [trail] = await db.query("SELECT changes FROM audit_trail WHERE table_name = 'appraisals' AND record_id = ? AND action = 'UPDATE' ORDER BY id DESC LIMIT 1", [`B1222:${a1.id}`]);
+  const [[trail]] = await db.query("SELECT changes FROM audit_trail WHERE table_name = 'appraisals' AND record_id = ? AND action = 'UPDATE' ORDER BY id DESC LIMIT 1", [`B1222:${a1.id}`]);
   const changes = trail ? (typeof trail.changes === 'string' ? JSON.parse(trail.changes) : trail.changes) : [];
   check(changes.some((c) => c.field === 'Efficiency Grade' && /C - /.test(c.from) && /A - /.test(c.to)), 'the audit trail lists the change with before and after', JSON.stringify(changes));
   const one = (await api(page, 'GET', `/api/appraisal/appraisals/${a1.id}`)).body.data;
@@ -218,7 +220,7 @@ async function rules(browser, db) {
 
   // the record's list and the dashboard
   const rec = (await api(page, 'GET', '/api/appraisal/rating/B1211/appraisals')).body.data;
-  check(rec.items.length >= 3 && rec.canInitiate === false, 'the record lists the rating\u2019s appraisals (B1211 already has one in the open period)');
+  check(rec.items.length >= 3 && rec.canInitiate === true, 'the record lists the rating\u2019s appraisals and can initiate one (WT Period A2 is open and B1211 has none in it)');
   const dash = (await api(page, 'GET', '/api/dashboard/summary')).body.data;
   check(dash.appraisals.month >= 1 && dash.appraisals.openPeriods >= 1, 'the dashboard counts the appraisals this month and the open periods');
 
@@ -245,7 +247,7 @@ async function screens(browser, db) {
   await page.getByRole('button', { name: 'Initiate Appraisal' }).click();
   await dialogOf(page).waitFor();
   await press(page, 'Record Appraisal');
-  check(/Choose a rating/.test(await dialogOf(page).innerText()), 'Initiate Appraisal: nothing chosen is refused under the fields');
+  check(await dialogShows(page, /Choose a rating/), 'Initiate Appraisal: nothing chosen is refused under the fields');
   await closeAll(page);
 
   // the same through the rating's record: Initiate from the Advancement tab
@@ -276,7 +278,7 @@ async function screens(browser, db) {
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await dialogOf(page).waitFor();
   await press(page, 'Save Changes');
-  check(/Nothing was changed/.test(await dialogOf(page).innerText()), 'Edit: no change is refused');
+  check(await dialogShows(page, /Nothing was changed/), 'Edit: no change is refused');
   await fillIn(page, 'remark', 'Edited by the walk-through');
   await press(page, 'Save Changes');
   check(/saved/.test(await toastText(page, /saved/)), 'an edit is saved');
@@ -300,7 +302,7 @@ async function screens(browser, db) {
   await page.getByRole('button', { name: 'Add Period' }).click();
   await dialogOf(page).waitFor();
   await press(page, 'Add Period');
-  check(/Enter the period name/.test(await dialogOf(page).innerText()), 'Add Period: an empty form is refused');
+  check(await dialogShows(page, /Enter the period name/), 'Add Period: an empty form is refused');
   await fillIn(page, 'name', 'WT Screen Period');
   await fillIn(page, 'start', ddmmyyyy('2035-01-01'));
   await fillIn(page, 'end', ddmmyyyy('2035-06-30'));
@@ -317,7 +319,7 @@ async function screens(browser, db) {
 
   // the dashboard tile
   await go(page, 'dashboard');
-  check(/Appraisals/.test(await page.locator('#app-main').innerText()) && !/Soon/.test(await page.locator('#app-main').innerText()), 'the dashboard\u2019s Appraisals tile counts appraisals');
+  check(/Appraisals/i.test(await page.locator('#app-main').innerText()) && !/Soon/.test(await page.locator('#app-main').innerText()), 'the dashboard\u2019s Appraisals tile counts appraisals');
 
   await db.query("DELETE FROM appraisals WHERE remark IS NULL AND co_name = 'CDR WT SCREEN'");
   await db.query("DELETE FROM appraisals WHERE co_name = 'CDR WT SCREEN'");

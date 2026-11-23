@@ -49,7 +49,7 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
   UNION ALL SELECT 'B1218', 'LS',  'SALIU',    'Ramat',    'Zainab',   'Female', '1993-04-09', 'LG', 'STS', 40, '2012-11-26'
   UNION ALL SELECT 'B1219', 'PO',  'OGBU',     'Uche',     'Martins',  'Male',   '1989-06-23', 'ME', 'HMT', 46, '2010-02-08'
   UNION ALL SELECT 'B1220', 'AB',  'AJAYI',    'Seun',     'Timothy',  'Male',   '1997-02-12', 'SM', 'NAV', 18, '2018-08-27'
-  UNION ALL SELECT 'B1221', 'AB',  'ITA',      'Ekemini',  'Okon',     'Male',   '1996-11-04', 'SM', 'GUN', 22, '2017-03-13'
+  UNION ALL SELECT 'B1221', 'AB',  'ITA',      'Ekemini',  'Udo',       'Male',   '1996-11-04', 'SM', 'GUN', 22, '2017-03-13'
   UNION ALL SELECT 'B1222', 'LS',  'MOHAMMED', 'Binta',    'Hauwa',    'Female', '1992-05-26', 'LG', 'STS', 33, '2014-01-20'
   UNION ALL SELECT 'B1223', 'PO',  'AGU',      'Ifeanyi',  'Charles',  'Male',   '1986-09-15', 'ME', 'MPR', 58, '2007-06-04'
   UNION ALL SELECT 'B1224', 'AB',  'ADELEKE',  'Kayode',   'Dare',     'Male',   '1995-12-22', 'IT', 'ICT', 24, '2016-10-10'
@@ -152,16 +152,18 @@ SELECT p.id, r.service_number, r.rate_id, (SELECT id FROM ref_ship WHERE name = 
    AND NOT EXISTS (SELECT 1 FROM appraisals x WHERE x.period_id = p.id AND x.service_number = r.service_number);
 
 -- the audit trail of the demo: the cancel, and the edit of B1213's Efficiency grade in the open period
-INSERT INTO audit_trail (created_at, user_id, username, action, table_name, record_id, changes)
+INSERT INTO audit_trail (created_at, user_id, username, action, table_name, record_id, changes, ip_address)
 SELECT a.cancelled_at, a.cancelled_by, 'B1202', 'UPDATE', 'appraisals', CONCAT(a.service_number, ':', a.id),
-       JSON_ARRAY(JSON_OBJECT('field', 'Status', 'from', 'active', 'to', 'cancelled'), JSON_OBJECT('field', 'Reason', 'from', NULL, 'to', a.cancelled_reason))
+       JSON_ARRAY(JSON_OBJECT('field', 'Status', 'from', 'active', 'to', 'cancelled'), JSON_OBJECT('field', 'Reason', 'from', NULL, 'to', a.cancelled_reason)),
+       '127.0.0.1'
   FROM appraisals a JOIN appraisal_periods p ON p.id = a.period_id AND p.name = '2026 Second Half'
  WHERE a.service_number = 'B1224' AND a.status = 'cancelled'
    AND NOT EXISTS (SELECT 1 FROM audit_trail t WHERE t.table_name = 'appraisals' AND t.record_id = CONCAT(a.service_number, ':', a.id));
 
-INSERT INTO audit_trail (created_at, user_id, username, action, table_name, record_id, changes)
+INSERT INTO audit_trail (created_at, user_id, username, action, table_name, record_id, changes, ip_address)
 SELECT DATE_SUB(NOW(), INTERVAL 2 DAY), (SELECT id FROM users WHERE username = 'B1201'), 'B1201', 'UPDATE', 'appraisals', CONCAT(a.service_number, ':', a.id),
-       JSON_ARRAY(JSON_OBJECT('field', 'Efficiency Grade', 'from', 'C - Good', 'to', CONCAT(g.code, ' - ', g.name)))
+       JSON_ARRAY(JSON_OBJECT('field', 'Efficiency Grade', 'from', 'C - Good', 'to', CONCAT(g.code, ' - ', g.name))),
+       '127.0.0.1'
   FROM appraisals a
   JOIN appraisal_periods p ON p.id = a.period_id AND p.name = '2026 Second Half'
   JOIN ref_appraisal_rating g ON g.id = a.efficiency_grade_id
