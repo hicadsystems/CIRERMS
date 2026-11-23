@@ -56,8 +56,36 @@ async function getRecentlyEnlisted(limit) {
   return rows;
 }
 
+// Drafting: ratings who reported to their new ship this year (WEF in the year), and the batches still open
+// (open or approved, not yet closed).
+async function getDraftingCounts() {
+  const rows = await db.query(`SELECT
+      (SELECT COUNT(*) FROM draft_rows WHERE status = 'reported' AND YEAR(wef) = YEAR(CURDATE())) AS reported_n,
+      (SELECT COUNT(*) FROM batches WHERE flow = 'DOD' AND status IN ('open', 'approved')) AS open_n`);
+  return { reportedThisYear: Number(rows[0].reported_n) || 0, openBatches: Number(rows[0].open_n) || 0 };
+}
+
+// Disciplinary Action: cases waiting for a decision, and cases concluded this year.
+async function getDisciplineCounts() {
+  const rows = await db.query(`SELECT
+      (SELECT COUNT(*) FROM discipline_cases WHERE status = 'pending') AS pending_n,
+      (SELECT COUNT(*) FROM discipline_cases WHERE status = 'concluded' AND YEAR(decision_date) = YEAR(CURDATE())) AS concluded_n`);
+  return { pending: Number(rows[0].pending_n) || 0, concludedThisYear: Number(rows[0].concluded_n) || 0 };
+}
+
+// Discharge Administration: discharges closed with an exit date this year, and the ratings waiting in a proposal.
+async function getDischargeCounts() {
+  const rows = await db.query(`SELECT
+      (SELECT COUNT(*) FROM discharge_rows WHERE status = 'closed' AND YEAR(exit_date) = YEAR(CURDATE())) AS year_n,
+      (SELECT COUNT(*) FROM discharge_rows WHERE status = 'pending') AS proposed_n`);
+  return { thisYear: Number(rows[0].year_n) || 0, proposed: Number(rows[0].proposed_n) || 0 };
+}
+
 module.exports = {
   getRatingsCounts,
+  getDraftingCounts,
+  getDisciplineCounts,
+  getDischargeCounts,
   getCurrentByRate,
   getRecentlyEnlisted,
 };

@@ -1,7 +1,7 @@
 /*
- * Dashboard (#dashboard): the stat tiles (Members live, with current and
- * former; Drafting, Memos and Mails and Appraisals stay 0 until those modules
- * exist), Recently Enlisted and Current Ratings by Rate.
+ * Dashboard (#dashboard): five live stat tiles (Members, Drafting, Disciplinary, Discharge and
+ * Appraisals, each from its own tables, each foot line a link to the page it counts),
+ * Recently Enlisted and Current Ratings by Rate.
  */
 import { api } from '../core/api.js';
 import { can } from '../core/access.js';
@@ -25,20 +25,22 @@ const loading = () => h('div', { className: 'flex items-center justify-center ga
 export async function mountDashboard(outlet) {
   const currentFoot = h('span');
   const formerFoot = h('span');
-  const members = statTile({ label: 'Members', value: '--', icon: 'users', tone: 'primary', foot: [currentFoot, formerFoot] });
+  const members = statTile({ label: 'Members', value: '--', icon: 'users', tone: 'primary', foot: [currentFoot, formerFoot], className: 'col-span-2 phone:col-span-1' });
+  // the other tiles: the foot lines are links when the person may open the page, plain text when not
+  const draftingFoot = [h('span'), h('span')];
+  const drafting = statTile({ label: 'Drafting', value: '--', icon: 'briefcase', tone: 'destructive', foot: draftingFoot, className: 'col-span-2 phone:col-span-1' });
+  const disciplineFoot = [h('span'), h('span')];
+  const discipline = statTile({ label: 'Disciplinary', value: '--', icon: 'gavel', tone: 'brand', foot: disciplineFoot, className: 'col-span-2 phone:col-span-1' });
+  const dischargeFoot = [h('span'), h('span')];
+  const discharge = statTile({ label: 'Discharge', value: '--', icon: 'door-open', tone: 'secondary', foot: dischargeFoot, className: 'col-span-3 phone:col-span-1' });
   const appraisalFoot = h('span');
-  const appraisals = statTile({ label: 'Appraisals', value: '--', icon: 'clipboard-check', tone: 'brand', foot: appraisalFoot });
+  const appraisals = statTile({ label: 'Appraisals', value: '--', icon: 'clipboard-check', tone: 'brand', foot: appraisalFoot, className: 'col-span-3 phone:col-span-2' });
   const recent = h('div', {}, loading());
   const byRate = h('div', {}, loading());
 
   outlet.replaceChildren(
     pageHeader({ title: 'Dashboard', subtitle: 'Ratings at a glance', actions: [newRatingButton()] }),
-    h('div', { className: 'grid grid-cols-4 gap-4 phone:grid-cols-2 phone:gap-3' }, [
-      members,
-      statTile({ label: 'Drafting', value: 0, icon: 'briefcase', tone: 'destructive', foot: footText(0, 'this year') }),
-      statTile({ label: 'Memos and Mails', value: 0, icon: 'file-text', tone: 'secondary', foot: footText(0, 'unread') }),
-      appraisals,
-    ]),
+    h('div', { className: 'grid grid-cols-6 gap-4 phone:grid-cols-2 phone:gap-3' }, [members, drafting, discipline, discharge, appraisals]),
     h('div', { className: 'mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1' }, [
       card({
         title: 'Recently Enlisted',
@@ -57,6 +59,24 @@ export async function mountDashboard(outlet) {
     members.setValue(m.total ?? 0);
     fill(currentFoot, footLink('#ratings/current', m.current ?? 0, 'current'));
     fill(formerFoot, footLink('#ratings/former', m.former ?? 0, 'former'));
+
+    // a foot line: a link to its page when the person may open it, plain text when not
+    const foot = (screen, href, n, word) => (can(screen) ? footLink(href, n, word) : footText(n, word));
+
+    const dr = data.drafting || {};
+    drafting.setValue(dr.reportedThisYear ?? 0);
+    fill(draftingFoot[0], foot('drafting.report', '#drafting/report', dr.reportedThisYear ?? 0, 'this year'));
+    fill(draftingFoot[1], foot('drafting.review', '#drafting/review', dr.openBatches ?? 0, (dr.openBatches ?? 0) === 1 ? 'open batch' : 'open batches'));
+
+    const di = data.discipline || {};
+    discipline.setValue(di.pending ?? 0);
+    fill(disciplineFoot[0], foot('disciplinary.pending', '#disciplinary/pending', di.pending ?? 0, 'pending'));
+    fill(disciplineFoot[1], foot('disciplinary.concluded', '#disciplinary/concluded', di.concludedThisYear ?? 0, 'concluded this year'));
+
+    const dc = data.discharge || {};
+    discharge.setValue(dc.thisYear ?? 0);
+    fill(dischargeFoot[0], foot('discharge.report', '#discharge/report', dc.thisYear ?? 0, 'this year'));
+    fill(dischargeFoot[1], foot('discharge.process', '#discharge/process', dc.proposed ?? 0, 'proposed'));
 
     // Naval Character Assessment (WP12): appraisals recorded this month, and the open periods
     const ap = data.appraisals || {};
@@ -97,7 +117,7 @@ export async function mountDashboard(outlet) {
         }))
       : emptyState({ icon: 'chart-column', title: 'No Current Ratings' }));
   } catch (err) {
-    members.setValue(0);
+    [members, drafting, discipline, discharge, appraisals].forEach((t) => t.setValue(0));
     fill(recent, emptyState({ icon: 'circle-alert', title: 'Could Not Load the Dashboard' }));
     fill(byRate, emptyState({ icon: 'circle-alert', title: 'Could Not Load the Dashboard' }));
     toast(err.message || 'Could not load the dashboard.', 'error');
