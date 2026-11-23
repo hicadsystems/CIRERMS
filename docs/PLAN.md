@@ -164,7 +164,7 @@ Sonnet where screens follow patterns already in the kit.
 | WP7a | `drafting-cycle` | The draft cycle (`docs/legacy/drafting.md` section 15): Update Manning Requirement, Print Draft Proposal (who is due, section 9), Review/Print Draft, Draft Approval, Close Draft, Update WEF; it creates the drafting tables and updates the record's Drafting tab and current ship | Opus 5.5 · high | WP13 | L |
 | WP7b | `drafting-reports` | Batch/Signal Content, Rate DOD History and Draft Report, reading WP7a's tables, with their printouts | Sonnet 5.5 · medium | WP7a | M |
 | WP8 | `advancement` | Rates due for advancement (eligibility by the old rules), review, approval, close, board returns update, report on promoted rates, upload advanced rates; updates the record's Advancement tab and rate. Eligibility does not read appraisal grades (WP0) | Opus 5.5 · high | WP7a | L |
-| WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts | Sonnet 5.5 · medium | WP7a | M |
+| WP9 | `reports` | Ship history, all personnel (with filters) and disposition reports, as PDF and Excel, and the static tables' list printouts; and (owner, 23/11/2026) Nominal Roll, Manning State and Retirement Forecast | Sonnet 5.5 · high | WP7a | L |
 | WP11 | `special-drafting` | Special Draft Proposal, Special Draft Report (the draft form by posting type), Upload Draft from Excel, as D3 shows them; a special draft moves the rating on its WEF through WP7a's postings | Sonnet 5.5 · medium | WP7a, D3 | M |
 | WP12 | `appraisal` | Appraisal Periods, Recommendation and Grading (character and efficiency grades from the Appraisal Ratings table), Report on Appraisal (PDF and Excel), the dashboard's Appraisals tile, as D3 shows them | Sonnet 5.5 · medium | WP13 | M |
 | WP13 | `printouts` | PDF reforming, build: a Chromium renderer (as NAVY-PAYROLL's) with Handlebars, D4's templates in `src/templates/printouts/`, every PDF the app makes today rebuilt from them and pdfkit removed; the walkthrough steps WP3b and WP3c broke fixed (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D4 | M |
@@ -266,6 +266,13 @@ the next wave once the owner has merged.
   (`docs/legacy/advancement.md`); WP8 settles it with the owner.
 - **The discharge upload template** is missing from the old repository; D2 designs one from the
   fields the old import reads.
+
+**Three more reports for WP9** (owner, 23/11/2026, asked because the Reports menu was scanty): **Nominal Roll** (the
+named ratings serving on a ship, unit or command, by rate and seniority), **Manning State** (every ship's manning
+requirement against who is aboard, short or over, counted as Drafting counts it) and **Retirement Forecast** (who
+becomes due for discharge in the next 6, 12 or 24 months by Discharge's own rule). Not in the design demo; WP9's
+brief describes them in the house patterns (filters, figures, the wide-table list, Print PDF, Export Excel).
+Offered and not chosen: a Federal Character distribution (by state of origin and zone).
 
 ## 9a. Design decisions for Drafting, Training Drafting and Advancement
 

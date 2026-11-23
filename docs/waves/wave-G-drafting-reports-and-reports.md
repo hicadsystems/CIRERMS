@@ -47,7 +47,7 @@ database. Look at every page at 1440 and 390 px, light and dark.
 ## WP9 `reports`: Reports
 
 - **Branch:** `reports` · **Needs merged first:** WP7a
-- **AI session:** Sonnet 5.5, effort medium · **Size:** M · **Migration block:** `09` (only if you need one) ·
+- **AI session:** Sonnet 5.5, effort high · **Size:** L · **Migration block:** `09` (only if you need one) ·
   **Seed:** `014_reports.sql` (only if you need one)
 
 ### Read first
@@ -55,8 +55,12 @@ database. Look at every page at 1440 and 390 px, light and dark.
 - `docs/legacy/reports.md` in full (sections 1 to 4, and 6: unify the filter logic into one query).
 - The design: `docs/design/demo.html` (Reports: `reports/ship-history`, `all-personnel`, `disposition`) and
   `docs/design/README.md`, D2 section, "Reports pages (wide-table rule)" and "Printouts".
+- For pages 4 to 6 (the owner's additions, 23/11/2026, not in the demo): how Drafting counts who is aboard against
+  a manning requirement (`src/modules/drafting/`, Update Manning Requirement and its `manning-requirement-report`
+  printout) and how Discharge works out who is due (`src/modules/discharge/discharge.service.js`, `due`, and its
+  settings `discharge.age_due` and `discharge.service_due`). Reuse them; never copy them.
 
-### Build (as the demo shows, three pages)
+### Build (six pages: three as the demo shows, and three the owner added on 23/11/2026)
 1. **Ship History Report**: a ship and a period; the ratings posted to it over time (from the postings); an
    **Excel** workbook, as in the old system (its Print PDF button says so).
 2. **All Personnel**: filters (status current, former or all, labelled properly: the demo shows "all" in lower
@@ -64,7 +68,31 @@ database. Look at every page at 1440 and 390 px, light and dark.
    rating's details; figures; **Print PDF** (the Ratings Report) and **Export Excel** from one query.
 3. **Disposition Report**: where ratings serve, by ship or unit and rate; a row opens its counts; **Print PDF** (the
    Disposition Report).
-4. Privileges per page (view), grants in your seed (the old role was "Report"); Reports loses Soon; Ctrl K;
+4. **Nominal Roll** (owner, 23/11/2026): the named list of the ratings serving now on one ship or unit, or on every
+   ship of a command. Filters: Command, Ship or Unit, Branch, Rate. The list: official number and name, rate,
+   specialisation, the date the rating joined the ship and months there; ordered by rate (highest first), then
+   seniority date, then official number; 25 a page from the server; a row opens the rating's details with Open
+   Record. Figures: the total, and how many in each rate group. **Print PDF** (a new `nominal-roll` template,
+   grouped by ship when a command is chosen, the ship and command in the heading) and **Export Excel**, both from
+   one query.
+5. **Manning State** (owner, 23/11/2026): every ship's manning requirement against who is aboard, all ships at
+   once, by rate and specialisation: required, borne, short or over. Filters: Command, Ship, Rate,
+   Specialisation, and "Short only". The list: one row per ship with its totals (required, borne, difference as a
+   pill: short red, over amber, exact green); a row opens the ship's lines by rate and specialisation. Figures:
+   ships, required, borne, short. Count "borne" exactly as Drafting's Update Manning Requirement does (one shared
+   query, so the two pages never disagree). **Print PDF** (Drafting's `manning-requirement-report` template, which
+   already groups by ship) and **Export Excel**.
+6. **Retirement Forecast** (owner, 23/11/2026): the current ratings who become due for discharge in the next 6, 12
+   or 24 months (a choice, 12 by default), by Discharge's own rule and settings (today a placeholder: the age
+   `discharge.age_due` or the years of service `discharge.service_due`, whichever comes first), with the same
+   exclusions as Process Discharge (re-engaged, already in a proposal, closed). Filters: the period, Branch, Rate,
+   Ship. The list: official number and name, rate, ship, the date the rating becomes due and why (age or service);
+   soonest first; 25 a page. Figures: due in the period, and how many each quarter. Ratings already due today are
+   not listed; a figure counts them and links to Process Discharge. **Print PDF** (a new `retirement-forecast`
+   template) and **Export Excel**.
+   New templates go in `src/templates/printouts/` in the house style (D4's `printout.css` and partials), and their
+   rows are listed in `docs/design/README.md`'s printout table by the administrator, not by you.
+7. Privileges per page (view), grants in your seed (the old role was "Report"); Reports loses Soon; Ctrl K;
    `README.md`.
 
 ### Check

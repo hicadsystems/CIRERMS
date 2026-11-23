@@ -25,7 +25,7 @@ package you take before you start, so two people never take the same one.
 | F2 | `wave-F2-appraisal-and-special-drafting.md` | WP12 Naval Character Assessment | `appraisal` | WP13 | Sonnet 5.5 · medium | M | `12` | `011_appraisal.sql` |
 | F2 | `wave-F2-appraisal-and-special-drafting.md` | WP11 Special Drafting | `special-drafting` | WP7a | Sonnet 5.5 · medium | M | `11` | `012_special_drafting.sql` |
 | G | `wave-G-drafting-reports-and-reports.md` | WP7b Drafting Reports | `drafting-reports` | WP7a | Sonnet 5.5 · medium | M | `71` (if any) | `013_drafting_reports.sql` (if any) |
-| G | `wave-G-drafting-reports-and-reports.md` | WP9 Reports | `reports` | WP7a | Sonnet 5.5 · medium | M | `09` (if any) | `014_reports.sql` (if any) |
+| G | `wave-G-drafting-reports-and-reports.md` | WP9 Reports (six pages) | `reports` | WP7a | Sonnet 5.5 · high | L | `09` (if any) | `014_reports.sql` (if any) |
 | H | `wave-H-demo-finish.md` | WP10 Demo Finish | `demo-finish` | all of the above | Sonnet 5.5 · medium | M | `10` (if any) | `015_demo_finish.sql` (if any) |
 
 The waves are an order, not a wall: WP5 and WP12 need only WP13, so they can start as soon as it is merged, even
