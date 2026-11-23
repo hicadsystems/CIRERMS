@@ -397,11 +397,28 @@ async function updateRating(serviceNumberRaw, payload, actor) {
   }
 
   const effectiveSn = fields.service_number || currentSn;
+  if (effectiveSn !== currentSn && await ratingsRepo.usernameTaken(effectiveSn, currentSn)) {
+    throw conflict(
+      `The user name "${effectiveSn}" belongs to another account, so this rating cannot take that Official Number.`,
+      'DUPLICATE_SERVICE_NUMBER',
+      { service_number: `Official Number "${effectiveSn}" is already in use.` }
+    );
+  }
   await db.transaction(async (tx) => {
     const before = await ratingsRepo.findRawRating(currentSn, tx.connection);
     await ratingsRepo.updateRatingByServiceNumber(currentSn, fields, tx.connection);
     const after = await ratingsRepo.findRawRating(effectiveSn, tx.connection);
     await audit.record(tx, actor, { action: 'UPDATE', table: 'ratings', recordId: effectiveSn, before, after });
+    // the user name is the official number: the rating's account follows it
+    if (effectiveSn !== currentSn) {
+      const account = await ratingsRepo.followOfficialNumber(effectiveSn, tx.connection);
+      if (account && account.before !== effectiveSn) {
+        await audit.record(tx, actor, {
+          action: 'UPDATE', table: 'users', recordId: effectiveSn,
+          before: { username: account.before }, after: { username: effectiveSn },
+        });
+      }
+    }
   });
   return getFullDossier(effectiveSn);
 }

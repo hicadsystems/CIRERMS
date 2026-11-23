@@ -564,6 +564,22 @@ async function findDocumentById(docId, serviceNumber, conn = null) {
 }
 
 /** The user account that belongs to the rating, if any. */
+/** An account's user name is its rating's official number: when the number changes (the link followed it
+ *  by ON UPDATE CASCADE) the user name is set to the new number. Returns the account's id, or null. */
+async function followOfficialNumber(newServiceNumber, conn = null) {
+  const rows = await db.query('SELECT id, username FROM users WHERE service_number = ? LIMIT 1', [newServiceNumber], conn);
+  if (!rows[0]) return null;
+  if (rows[0].username !== newServiceNumber) {
+    await db.query('UPDATE users SET username = ? WHERE id = ?', [newServiceNumber, rows[0].id], conn);
+  }
+  return { id: rows[0].id, before: rows[0].username };
+}
+
+async function usernameTaken(username, exceptServiceNumber, conn = null) {
+  const rows = await db.query('SELECT 1 FROM users WHERE username = ? AND service_number <> ? LIMIT 1', [username, exceptServiceNumber], conn);
+  return rows.length > 0;
+}
+
 async function findAccountUsername(serviceNumber, conn = null) {
   const rows = await db.query('SELECT username FROM users WHERE service_number = ? LIMIT 1', [serviceNumber], conn);
   return rows[0] ? rows[0].username : null;
@@ -571,6 +587,8 @@ async function findAccountUsername(serviceNumber, conn = null) {
 
 module.exports = {
   findAccountUsername,
+  followOfficialNumber,
+  usernameTaken,
   listRatings,
   searchForSelect,
   findByServiceNumber,
