@@ -9,14 +9,14 @@
  *   t.el  t.setActive(key)  t.setCount(key, n)  t.active()
  *
  * Arrow keys move between tabs. The row scrolls sideways with no scrollbar showing
- * (a mouse wheel moves it too). Phones: rounded chips. The record's eleven tabs fit a 1440 px screen without scrolling.
+ * (a mouse wheel moves it too). Phones: rounded chips.
  */
 import { cx, h } from './html.js';
 import { scrollRow } from './scroll-row.js';
 
-const ON = 'text-brand desk:after:absolute desk:after:inset-x-2 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground';
+const ON = 'text-brand desk:after:absolute desk:after:inset-x-3 desk:after:bottom-0 desk:after:h-0.5 desk:after:rounded-full desk:after:bg-brand phone:border-brand phone:bg-brand phone:text-brand-foreground';
 const OFF = 'text-muted-foreground hover:text-foreground phone:border-border phone:bg-background phone:text-foreground';
-const BASE = 'inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 desk:relative desk:px-2 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5';
+const BASE = 'inline-flex flex-none items-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15 desk:relative desk:px-2.5 desk:py-2.5 phone:h-9 phone:rounded-full phone:border phone:px-3.5';
 
 const PILL_ON = 'border-brand bg-brand text-brand-foreground';
 const PILL_OFF = 'border-border bg-background text-foreground hover:border-ring/40';

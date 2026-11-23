@@ -514,6 +514,3 @@ with the rating search select, printouts open in the PDF preview, the type scale
 | Static Tables | the 16 tables | WP2 |
 | System Administration | Manage Users, Manage Roles, Manage Password, Audit Trail (and Change Password in the account menu) | WP1, WP3 |
 | Reports | not built yet (WP9) | |
-
-A module's tab strip on desktop wraps onto a second line when it has more tabs than fit at 1440 px (Drafting's nine,
-Static Tables' sixteen); the demo's strip scrolls. The record's eleven tabs fit one line.

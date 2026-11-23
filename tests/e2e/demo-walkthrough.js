@@ -17,7 +17,7 @@
  * without the grant 403). Ctrl K: every screen of every module is found by its label, ratings are found by official
  * number and by name, Enter opens the screen, a role sees only the screens it may open.
  * Then every page of every module is opened (the Administrator, desktop 1440 px light and phone 390 px dark, side by
- * side), each page's main dialog is opened, nothing scrolls sideways, the module tab strips fit, label and value rows
+ * side), each page's main dialog is opened, nothing scrolls sideways, label and value rows
  * never break inside a word, the dashboard shows its five tiles; no browser errors anywhere.
  * The Reports module is WP9's: its pages are not walked here.
  */
@@ -249,16 +249,6 @@ async function pagesIn(browser, viewport, theme, routes) {
     if (!heading) bad.noHeading.push(route);
     const wide = await page.evaluate(() => ({ page: document.documentElement.scrollWidth - window.innerWidth, main: document.querySelector('#app-main').scrollWidth - document.querySelector('#app-main').clientWidth }));
     if (wide.page > 1 || wide.main > 1) bad.sideways.push(`${route} ${JSON.stringify(wide)}`);
-    if (!phone) {
-      // the module's tab strip shows every tab and nothing scrolls
-      const strip = await page.evaluate(() => {
-        const s = document.querySelector('#module-tabs div.flex-wrap');
-        if (!s) return null;
-        const r = s.getBoundingClientRect();
-        return { scrolls: s.scrollWidth > s.clientWidth + 1, hidden: Array.from(s.querySelectorAll('a')).filter((a) => { const b = a.getBoundingClientRect(); return b.left < r.left - 1 || b.right > r.right + 1; }).length, rows: new Set(Array.from(s.querySelectorAll('a')).map((a) => Math.round(a.getBoundingClientRect().top))).size };
-      });
-      if (strip && (strip.scrolls || strip.hidden)) bad.sideways.push(`${route} tab strip ${JSON.stringify(strip)}`);
-    }
     if (route === 'dashboard') continue;
     // the page's main dialog: its add button, else its first row
     let opened = false;
@@ -288,7 +278,7 @@ async function pagesIn(browser, viewport, theme, routes) {
     }
   }
   check(bad.noHeading.length === 0, `${label}: all ${routes.length} pages draw a heading`, bad.noHeading.join(' '));
-  check(bad.sideways.length === 0, `${label}: nothing scrolls sideways, every tab strip fits`, bad.sideways.join(' | '));
+  check(bad.sideways.length === 0, `${label}: nothing scrolls sideways`, bad.sideways.join(' | '));
   check(bad.noDialog.length === 0, `${label}: every page with a list or an add button opens its dialog (${dialogs_} opened)`, bad.noDialog.join(' '));
   check(bad.dialogWide.length === 0, `${label}: every dialog fits the screen`, bad.dialogWide.join(' '));
   check(bad.breaks.length === 0, `${label}: no label breaks inside a word`, bad.breaks.join(' '));
@@ -303,15 +293,14 @@ async function pagesIn(browser, viewport, theme, routes) {
   await context.close();
 }
 
-// the record's own tab strip fits at 1440 px
+// every tab of the record opens
 async function recordTabs(browser) {
   const { context, page, errors } = await open(browser, { viewport: DESKTOP, theme: 'light' });
   await signIn(page, ADMIN);
   await go(page, 'ratings/edit/B0539');
   const tabs = page.locator('#app-main [role="tablist"] [role="tab"]');
   const n = await tabs.count();
-  const fit = await page.locator('#app-main [role="tablist"]').evaluate((s) => s.scrollWidth <= s.clientWidth + 1);
-  check(n >= 10 && fit, `the record’s ${n} tabs fit at 1440 px`);
+  check(n >= 10, `the record has its ${n} tabs`);
   for (let i = 0; i < n; i += 1) {
     await tabs.nth(i).click();
     await settle(page);

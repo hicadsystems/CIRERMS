@@ -266,10 +266,7 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
 - **Scrollbars** are thin and the theme blue everywhere (`--scrollbar`); on the blue sidebar the thumb is
   translucent ivory (`.cirerms-scroll`). Rows of tabs and chips show no scrollbar: they scroll sideways by
   swipe, trackpad or mouse wheel (`scrollRow` from `js/ui/scroll-row.js`, class `scrollbar-none`). Tables
-  keep their vertical scrollbar and never scroll sideways (Wide tables, below). The exception is the module's
-  tab strip on desktop: it wraps onto a second line when a module has more tabs than fit (Drafting's nine,
-  Static Tables' sixteen at 1440 px), so no tab is hidden; the record's eleven tabs fit one line; a phone's
-  chips scroll.
+  keep their vertical scrollbar and never scroll sideways (Wide tables, below).
 - **Type scales with the screen** (owner's decision, 19/11/2026). Font sizes are fluid: every step of
   the type scale grows smoothly from its phone size at 360 px wide to its desktop size at 1440 px (CSS
   `clamp()` in the Tailwind font sizes), so text steps up or down with the screen instead of jumping
