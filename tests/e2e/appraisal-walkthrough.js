@@ -124,7 +124,7 @@ const press = (page, name) => dialogOf(page).getByRole('button', { name, exact: 
 const fillIn = (page, name, value) => dialogOf(page).locator(`[name="${name}"]`).first().fill(value);
 async function noOverflow(page, label) {
   const wide = await page.evaluate(() => {
-    const over = Array.from(document.querySelectorAll('#app-main *')).filter((e) => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX === 'auto' && e.closest('table')).length;
+    const over = Array.from(document.querySelectorAll('#app-main *')).filter((e) => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX === 'auto' && (e.closest('table') || e.querySelector('table'))).length;
     return { page: document.documentElement.scrollWidth - window.innerWidth, main: document.querySelector('#app-main').scrollWidth - document.querySelector('#app-main').clientWidth, tables: over };
   });
   check(wide.page <= 1 && wide.main <= 1 && wide.tables === 0, `${label}: nothing scrolls sideways`, JSON.stringify(wide));
