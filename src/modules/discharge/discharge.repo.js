@@ -42,9 +42,20 @@ const DUE_SELECT = `
     LEFT JOIN ref_branch br ON br.id = r.branch_id
     LEFT JOIN ref_entry_mode em ON em.id = r.entry_mode_id`;
 
+// The due rule, as one fragment: the age or the years of service reached on `today` (the settings
+// discharge.age_due and discharge.service_due), and who it never lists: a rating re-engaged until later, or one with a
+// closed or scheduled discharge. Process Discharge and Reports' Retirement Forecast both read these.
+const DUE_RULE = '(TIMESTAMPDIFF(YEAR, r.date_of_birth, ?) >= ? OR TIMESTAMPDIFF(YEAR, r.date_employed, ?) >= ?)';
+const dueRuleParams = (f) => [f.today, f.ageDue, f.today, f.serviceDue];
+const DUE_EXCLUSIONS = [
+  'NOT EXISTS (SELECT 1 FROM discharge_reengagements x WHERE x.service_number = r.service_number AND x.until_date >= ?)',
+  "NOT EXISTS (SELECT 1 FROM discharge_rows d WHERE d.service_number = r.service_number AND d.status IN ('closed','scheduled'))",
+];
+const dueExclusionParams = (f) => [f.today];
+
 function dueWhere(f) {
-  const sql = ["r.status = 'current'", '(TIMESTAMPDIFF(YEAR, r.date_of_birth, ?) >= ? OR TIMESTAMPDIFF(YEAR, r.date_employed, ?) >= ?)'];
-  const params = [f.today, f.ageDue, f.today, f.serviceDue];
+  const sql = ["r.status = 'current'", DUE_RULE];
+  const params = dueRuleParams(f);
   if (f.branchId) { sql.push('r.branch_id = ?'); params.push(f.branchId); }
   if (f.rateId) { sql.push('r.rate_id = ?'); params.push(f.rateId); }
   if (f.entryModeId) { sql.push('r.entry_mode_id = ?'); params.push(f.entryModeId); }
@@ -53,9 +64,8 @@ function dueWhere(f) {
     const term = `%${String(f.q).replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
     params.push(term, term, term);
   }
-  sql.push('NOT EXISTS (SELECT 1 FROM discharge_reengagements x WHERE x.service_number = r.service_number AND x.until_date >= ?)');
-  params.push(f.today);
-  sql.push("NOT EXISTS (SELECT 1 FROM discharge_rows d WHERE d.service_number = r.service_number AND d.status IN ('closed','scheduled'))");
+  sql.push(...DUE_EXCLUSIONS);
+  params.push(...dueExclusionParams(f));
   return { sql: `WHERE ${sql.join(' AND ')}`, params };
 }
 
@@ -447,6 +457,7 @@ async function uploadRaw(id, conn = null) {
 }
 
 module.exports = {
+  DUE_RULE, dueRuleParams, DUE_EXCLUSIONS, dueExclusionParams, dueWhere,
   options, exitType, listDue, ratingBasic, proposalCandidate, nextProposalNumber, insertProposal, proposalRaw, proposals,
   insertRow, rowRaw, rowByProposal, hasExistingProposalRow, listRows, pendingProposalRows, updateRow, setScheduled, rowByScheduledChange, reopenRow, removeRow,
   insertReengagement, reengagementRaw, runningReengagement, ratingExitRaw, setFormer, openPostings, postingRaw, endPosting, accountOf, deactivateAccount, reengagementRow, reengagementHistory, verificationDischarge, report, serviceDetails,
