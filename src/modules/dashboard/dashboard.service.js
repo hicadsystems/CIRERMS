@@ -2,12 +2,14 @@
 
 const dashboardRepo = require('./dashboard.repo');
 const { passportPhotoUrl } = require('../../shared/rating-photo');
+const appraisalRepo = require('../appraisal/appraisal.repo');
 
 async function getSummary() {
-  const [members, byRate, recent] = await Promise.all([
+  const [members, byRate, recent, appraisals] = await Promise.all([
     dashboardRepo.getRatingsCounts(),
     dashboardRepo.getCurrentByRate(),
     dashboardRepo.getRecentlyEnlisted(5),
+    appraisalRepo.dashboardCounts(),
   ]);
 
   return {
@@ -28,8 +30,11 @@ async function getSummary() {
       unread: 0,
       total: 0,
     },
+    // Naval Character Assessment (WP12): appraisals recorded this month (cancelled ones left out) and the open periods
     appraisals: {
-      total: 0,
+      month: appraisals.month,
+      openPeriods: appraisals.openPeriods,
+      total: appraisals.month,
     },
   };
 }

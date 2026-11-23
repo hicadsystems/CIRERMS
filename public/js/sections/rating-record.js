@@ -40,6 +40,7 @@ import { dischargePills } from './discharge-record.js';
 import { photoPicker, uploadPassport } from './rating-new.js';
 import { ratingName, personName } from './rating-names.js';
 import { disciplinePanel } from './disciplinary-parts.js';
+import { appraisalList } from './appraisal-record.js';
 
 const ALL_TABS = [{ key: 'details', label: 'Details' }, ...CHILD_TABS.map((t) => ({ key: t.key, label: t.label })), { key: 'documents', label: 'Documents' }];
 
@@ -133,7 +134,7 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
       return;
     }
     const tab = CHILD_TABS.find((t) => t.key === state.tab);
-    fill(body, childPanel({
+    const panel = childPanel({
       serviceNumber: sn(),
       tab,
       rows: state.children[tab.bundleKey] || [],
@@ -149,7 +150,9 @@ function recordView(outlet, { data, readOnly, lookups, initialTab = 'details', d
         drawHead();
         drawBody();
       },
-    }));
+    });
+    // the appraisals sit under the Advancement tab (WP12): for whoever may view Recommendation and Grading, never on My Details
+    fill(body, tab.key === 'advancement' && !readOnly && can('appraisal.grading', 'view') ? [panel, appraisalList(sn())] : panel);
   }
 
   function detailsTab() {

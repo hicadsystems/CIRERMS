@@ -144,7 +144,19 @@ export const AREAS = [
           { route: 'advancement/upload', label: 'Upload Advanced Rates', icon: 'file-up', screen: 'advancement.upload' },
         ],
       },
-      { key: 'assessment', label: 'Naval Character Assessment', short: 'Assess', icon: 'clipboard-check', soon: true },
+      {
+        key: 'assessment',
+        label: 'Naval Character Assessment',
+        short: 'Assess',
+        icon: 'clipboard-check',
+        href: 'assessment/grading',
+        // appraisals (WP12)
+        tabs: [
+          { route: 'assessment/grading', label: 'Recommendation and Grading', icon: 'clipboard-check', screen: 'appraisal.grading' },
+          { route: 'assessment/report', label: 'Report on Appraisal', icon: 'file-text', screen: 'appraisal.report' },
+          { route: 'assessment/periods', label: 'Appraisal Periods', icon: 'calendar', screen: 'appraisal.periods' },
+        ],
+      },
       {
         key: 'disciplinary',
         label: 'Disciplinary Action',
@@ -289,6 +301,10 @@ export const PAGES = [
   { pattern: 'special-drafting/proposal', module: 'special-drafting', tab: 'special-drafting/proposal', title: 'Special Draft Proposal', subtitle: 'Draft one rating outside the batch cycle, on a signal’s authority', short: 'Proposal', screen: 'special-drafting.proposal', view: { file: 'special-drafting.js', mount: 'mountProposal' } },
   { pattern: 'special-drafting/report', module: 'special-drafting', tab: 'special-drafting/report', title: 'Special Draft Report', subtitle: 'Print the waiting drafts of a posting type on one form, and the forms already printed', short: 'Report', screen: 'special-drafting.report', view: { file: 'special-drafting.js', mount: 'mountReport' } },
   { pattern: 'special-drafting/upload', module: 'special-drafting', tab: 'special-drafting/upload', title: 'Upload Draft', subtitle: 'Load special drafts for many ratings from a workbook', short: 'Upload', screen: 'special-drafting.upload', view: { file: 'special-drafting.js', mount: 'mountUpload' } },
+  // Naval Character Assessment (WP12): each page needs view
+  { pattern: 'assessment/grading', module: 'assessment', tab: 'assessment/grading', title: 'Recommendation and Grading', subtitle: 'Character and efficiency grades, one appraisal for each rating and period', short: 'Grading', screen: 'appraisal.grading', view: { file: 'appraisal.js', mount: 'mountGrading' } },
+  { pattern: 'assessment/report', module: 'assessment', tab: 'assessment/report', title: 'Report on Appraisal', subtitle: 'The appraisals of a period, with the grade counts', short: 'Report', screen: 'appraisal.report', view: { file: 'appraisal.js', mount: 'mountReport' } },
+  { pattern: 'assessment/periods', module: 'assessment', tab: 'assessment/periods', title: 'Appraisal Periods', subtitle: 'The periods appraisals are recorded in', short: 'Periods', screen: 'appraisal.periods', view: { file: 'appraisal.js', mount: 'mountPeriods' } },
   // Training Drafting (WP6): Review and History also open on one batch (training/review/7)
   { pattern: 'training/process', module: 'training-drafting', tab: 'training/process', title: 'Process Training Draft', subtitle: 'The open training batches', short: 'Process Training Draft', screen: 'training.process', view: { file: 'training.js', mount: 'mountProcess' } },
   { pattern: 'training/review', module: 'training-drafting', tab: 'training/review', title: 'Training Review', subtitle: 'The ratings of an open batch', short: 'Training Review', screen: 'training.review', view: { file: 'training.js', mount: 'mountReview' } },
