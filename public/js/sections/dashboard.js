@@ -26,6 +26,8 @@ export async function mountDashboard(outlet) {
   const currentFoot = h('span');
   const formerFoot = h('span');
   const members = statTile({ label: 'Members', value: '--', icon: 'users', tone: 'primary', foot: [currentFoot, formerFoot] });
+  const appraisalFoot = h('span');
+  const appraisals = statTile({ label: 'Appraisals', value: '--', icon: 'clipboard-check', tone: 'brand', foot: appraisalFoot });
   const recent = h('div', {}, loading());
   const byRate = h('div', {}, loading());
 
@@ -35,7 +37,7 @@ export async function mountDashboard(outlet) {
       members,
       statTile({ label: 'Drafting', value: 0, icon: 'briefcase', tone: 'destructive', foot: footText(0, 'this year') }),
       statTile({ label: 'Memos and Mails', value: 0, icon: 'file-text', tone: 'secondary', foot: footText(0, 'unread') }),
-      statTile({ label: 'Appraisals', value: 0, icon: 'clipboard-check', tone: 'brand', foot: footText(0, 'this month') }),
+      appraisals,
     ]),
     h('div', { className: 'mt-4 grid grid-cols-5 gap-4 phone:grid-cols-1' }, [
       card({
@@ -55,6 +57,15 @@ export async function mountDashboard(outlet) {
     members.setValue(m.total ?? 0);
     fill(currentFoot, footLink('#ratings/current', m.current ?? 0, 'current'));
     fill(formerFoot, footLink('#ratings/former', m.former ?? 0, 'former'));
+
+    // Naval Character Assessment (WP12): appraisals recorded this month, and the open periods
+    const ap = data.appraisals || {};
+    appraisals.setValue(ap.month ?? 0);
+    fill(appraisalFoot, [
+      can('appraisal.grading') ? footLink('#assessment/grading', ap.month ?? 0, 'this month') : footText(ap.month ?? 0, 'this month'),
+      ' \u00b7 ',
+      can('appraisal.periods') ? footLink('#assessment/periods', ap.openPeriods ?? 0, (ap.openPeriods ?? 0) === 1 ? 'open period' : 'open periods') : footText(ap.openPeriods ?? 0, (ap.openPeriods ?? 0) === 1 ? 'open period' : 'open periods'),
+    ]);
 
     const people = data.recentlyEnlisted || [];
     fill(recent, people.length

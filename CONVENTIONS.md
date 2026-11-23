@@ -514,6 +514,11 @@ module.exports = {
   printed, through WP7a's `postings.move` with `source: { table: 'special_drafts', id }`; a WEF after today is scheduled
   and the module's `postings.onSource('special_drafts', ...)` hook sets the draft to `moved` or `cancelled`. Posting
   types are the fixed codes in `POSTING_TYPES`. See `docs/reports/WP11.md`.
+- **Naval Character Assessment** (`src/modules/appraisal/`, WP12): screens `appraisal.periods` (view, add, **edit** also closes),
+  `appraisal.grading` (view, add initiates, edit, **delete** cancels) and `appraisal.report` (view). Grades are
+  `ref_appraisal_rating` rows; an appraisal keeps the rate and ship at the time. `appraisals.active_slot` (1, or NULL
+  once cancelled) under a unique key gives one active appraisal per rating per period. A closed period is read-only for
+  periods and appraisals alike. The record's list is `appraisal-record.js`, under the Advancement tab. See `docs/reports/WP12.md`.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -544,14 +549,14 @@ module.exports = {
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
 The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Naval Character
-Assessment (Records); Reports
+Reports
 (Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`; WP7b: 3 report tabs, `drafting/batches` (and `drafting/batches/:id`), `history`, `report`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
 Special Drafting is built (WP11: 3 tabs, `special-drafting/proposal`, `report`, `upload`).
+Naval Character Assessment is built (WP12: 3 tabs, `assessment/grading`, `report`, `periods`; screens `appraisal.*`).
 
 ## Open items
 

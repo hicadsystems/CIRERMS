@@ -40,7 +40,7 @@ const PHONE = { width: 390, height: 844 };
 // the 16 tables: slug, the Add button's item, the table, the /api/lookups key (when the ratings forms use it)
 // and a row a rating holds (column on `holder`), to try the in-use refusal
 const TABLES = [
-  { slug: 'appraisal-ratings', item: 'Grade', table: 'ref_appraisal_rating' },
+  { slug: 'appraisal-ratings', item: 'Grade', table: 'ref_appraisal_rating', holder: ['appraisals', 'character_grade_id'] },
   { slug: 'branch', item: 'Branch', table: 'ref_branch', lookup: 'branches', holder: ['ratings', 'branch_id'] },
   { slug: 'exit-type', item: 'Exit Type', table: 'ref_exit_type', lookup: 'exitTypes', holder: ['ratings', 'exit_type_id'] },
   { slug: 'entry-mode', item: 'Entry Mode', table: 'ref_entry_mode', lookup: 'entryModes', holder: ['ratings', 'entry_mode_id'] },

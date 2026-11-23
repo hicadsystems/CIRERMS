@@ -24,7 +24,7 @@ Modernised **Ratings Management** slice of the **Centralised Integrated Ratings 
 Every screen works on desktop (761 px and up) and on a phone (760 px and below), and every "add" opens in a dialog (a bottom sheet on a phone).
 
 1. **Sign In** (`/index.html`) — an animated sea with rolling waves, by day in light mode (a warm sun glow) and by night in dark mode (stars and a moon glow), with the Nigerian Navy crest at the left and the sign-in form at the right (the crest above the form on a phone); demo account buttons fill the form, and the button at the top right switches light and dark (the same setting the app uses). JWT session in `HttpOnly` cookie (`cirerms_session`), `bcrypt` password verification, brute-force throttle.
-2. **Dashboard** (`#dashboard`) — Live **Members** tile (total, current, former) queried from `ratings`; **Drafting**, **Memos and Mails** and **Appraisals** show `0`; **Recently Enlisted**; **Current Ratings by Rate**.
+2. **Dashboard** (`#dashboard`) — Live **Members** tile (total, current, former) queried from `ratings`; **Drafting** and **Memos and Mails** show `0`; **Appraisals** counts the appraisals recorded this month (cancelled ones left out) with the open periods; **Recently Enlisted**; **Current Ratings by Rate**.
 3. **Current and Former Ratings** (`#ratings/current`, `#ratings/former`) — search by Official No or name, **Rate** and **Ship** filters, 25 a page from the server, a table on desktop and cards on a phone. A clicked rating shows beside the list on a wide screen (in a dialog or bottom sheet otherwise) with **Open Record**, **Print Report** and **Documents**. **Export** (Copy Rows, Excel, PDF, CSV) uses the same filters.
 4. **New Rating** (`#ratings/new` or the **New Rating** buttons) — a dialog with four steps (*Basic Details*, *Contact*, *Health*, *Official*) and the passport photo; moving between steps keeps what was typed.
 5. **The rating's record** (`#ratings/edit/:serviceNumber`) — photo, name, labels and **Edit Details** / **Print Dossier** / **Delete**; a thin completeness bar (red below 50%, amber to 79%, green from 80%); ten tabs:
@@ -50,9 +50,10 @@ Every screen works on desktop (761 px and up) and on a phone (760 px and below),
 
 18. **Special Drafting** (`#special-drafting/proposal`, `report`, `upload`; WP11) — special drafts outside the batch cycle, three tabs. **Special Draft Proposal**: the drafts not yet printed, **Draft a Rating** (any current rating, its current ship and months, posting type Complement/Vice/TY/DW, Drafted To, Authority, WEF, Deployment/Vice, Remark), a draft's record with Draft Letter and Remove. **Special Draft Report**: a posting type's waiting drafts, Preview Draft Form, **Print and Mark Printed** (one form `SDF-YYYY-NNNN`; each rating moves on its WEF, a later WEF is scheduled), Printed Forms and Reprint Form. **Upload Draft**: template, every row checked, import.
 
+20. **Naval Character Assessment** (`#assessment/grading`, `report`, `periods`; WP12) — three tabs. **Recommendation and Grading**: filters (the rating search select, Period, Ship, Rate, Grade: either grade), 25 a page; **Initiate Appraisal** (a current rating, an open period, a Character and an Efficiency grade from Static Tables, Appraisal Ratings, a remark, the CO's name, the director's name and date, optional but together); one appraisal per rating per period (a second is refused naming the first); a row opens the appraisal with its changes, **Edit** (only a change counts; the audit trail keeps before and after) and **Cancel Appraisal** (a reason is required; it leaves the lists and the rating may be appraised again), both only while the period is open. **Report on Appraisal**: filters (Period, Ship, Rate, Branch, Grade), three figures, the grade counts for both grades, the list, **Print PDF** and **Export Excel** from one query. **Appraisal Periods**: counts, the list, **Add Period** (a unique name; the end after the start; periods never overlap), **Edit** and **Close Period** (confirmed, final: a closed period is read-only everywhere; it warns how many current ratings have no appraisal). The rating's record lists its appraisals under the **Advancement** tab for whoever may view Recommendation and Grading (not on My Details, not in the completeness).
 19. **Discharge Administration** (`#discharge/process`, `service`, `forms`, `report`, `upload`; WP5) — five tabs. **Process Discharge**: *Due for Discharge* (Branch, Rate, Entry Mode and Official No or name; the list only reads) shows age and years of service as coloured pills, and a *Pending case* pill for a rating with a pending disciplinary case; **Create Proposal** (`DIS-YYYY-NNNN`) opens a confirming dialog and writes only when confirmed. *Proposals*: the open proposal's ratings, a row's dialog with **Process** (exit type from the types that take a rating out of the service, exit date, reason up to 100 characters, approved by, comment, the four death documents only for a Death exit type and never enforced, status Pending or Closed), **Re-engage**, **Remove** and Open Record, and **Add Rating** with the rating search select. **Closing** with an exit date of today or earlier makes the rating Former in one transaction (status, exit type, exit date, reason), ends its open posting on the exit date, deactivates its user account and ends its sessions; a later exit date is **Scheduled** (`src/shared/scheduled`) and takes effect on that date. Closing also cancels, with the scheduler's own cancel and an audit row each, every other scheduled change of the rating (a posting, an advancement) dated on or after the exit date; earlier ones still apply. A closed discharge is final. The rating's record header shows **Leaves dd/mm/yyyy** while its discharge is Scheduled and **Re-engaged to dd/mm/yyyy** while a re-engagement runs. A pending disciplinary case only warns. **Re-engage** keeps the rating current (its own table, not a discharge) and takes it off the due list while it runs. **Print Service Details** and **Verification Forms** find a current or former rating with the rating search select and open the Personnel Details, Re-engagement Verification, Retirement Routine and Engagement Form in the preview (a form that has no source is off, with the reason). **Discharge Report**: filters (dates, exit type with Re-engagement, rate, branch), three figures, the list (Scheduled shown as such), **Print PDF** and **Export Excel** from one query. **Upload Discharge**: template keyed by Official No, the whole file read first with every problem row listed, ratings already in a proposal, already discharged or repeated in the file skipped, the rest closed or scheduled by exit date in one transaction. Details below, *Discharge Administration*.
 
-*(The other sidebar items — Naval Character Assessment, Reports — carry a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
+*(The other sidebar item — Reports — carries a **Soon** badge and open a "Coming in a Later Release" page; they are shown to the Administrator only.)*
 
 How a module registers itself, declares its privileges and writes to the audit trail: `CONVENTIONS.md`, *Access, audit and modules*.
 
@@ -128,6 +129,14 @@ The map of the old system (how it is built, one file per module, definitions fro
 - **Audit:** a proposal, each of its rows, every process, re-engagement and removal, the rating's exit, the ended posting, the deactivated account, the scheduled change and each imported row are recorded in their transaction.
 - **Printouts:** Personnel Details, Re-engagement Verification, Retirement Routine, Engagement Form and the Discharge Report (`discharge.documents.js`; the templates `personnel-details`, `re-engagement-verification`, `retirement-routine`, `engagement-form` and `discharge-report`); the report also as an Excel workbook. The three forms keep D2's indicative layouts until the owner supplies the real ones.
 - **Demo data (seed 009):** the settings; 22 ratings: ratings due in every band (`B1001` to `B1012`, with `B0640` from the disciplinary demo, who has a pending case), the proposal `DIS-YYYY-0001` with four closed discharges (`B1021` to `B1024`, one a death with its documents) and two re-engagements (`B1041`, `B1042`), the open proposal `DIS-YYYY-0002` (one rating processed, one with a pending case, one scheduled in a month: `B1031`); the old role **Discharge** (account `B1000`, password `Admin@123`).
+
+### Naval Character Assessment
+
+`src/modules/appraisal/` and `public/js/sections/appraisal.js` (the three screens) with `appraisal-record.js` (the record's list). Migration `20261120_120000_create_appraisal.sql` (`appraisal_periods`, `appraisals`), seed `011_appraisal.sql`. Full decisions are in `docs/reports/WP12.md`.
+
+- **One active appraisal per rating per period** is kept by `appraisals.active_slot` (1 while active, NULL once cancelled) under a unique key, so a cancelled one never blocks a new one. The rate and ship at the time are stored; the lists and the report show those.
+- **Edits** are written to the audit trail as readable changes (grades as `B - Very Good`); the appraisal's dialog reads them back from there.
+- **Demo data (seed 011):** four periods (three closed, `2026 Second Half` open), appraisals for `B1211` to `B1220` in the open period and most of the closed ones, an edited appraisal (`B1213`), a cancelled one (`B1224`), and `B1221` to `B1224` still to be appraised.
 
 ### Special Drafting
 
@@ -249,6 +258,8 @@ Choices made where the design and decisions were silent (also in the report):
 | `B0902` | `Admin@123` | Training Viewer | `B0902` | May only view the open batches and the reports. |
 | `B1101` | `Admin@123` | Special Drafting | `B1101` | Proposes and removes special drafts, uploads drafts, reads the Special Draft Report and its forms |
 | `B1102` | `Admin@123` | Special Drafting Officer | `B1102` | As `B1101`, and Print and Mark Printed (the ratings move on their WEF) |
+| `B1201` | `Admin@123` | Naval Assessment | `B1201` | Initiates and edits appraisals, reads the Report on Appraisal and the Appraisal Periods |
+| `B1202` | `Admin@123` | Naval Assessment Officer | `B1202` | As `B1201`, and cancels appraisals and adds, edits and closes periods |
 
 An account made in Manage Users or reset in Manage Password has a **one-time password** that the person must replace at first sign-in; the seeded accounts above do not (so the demo opens straight in).
 
@@ -367,6 +378,12 @@ NODE_PATH=$(npm root -g) node tests/e2e/training-drafting-walkthrough.js
 
 ```bash
 NODE_PATH=$(npm root -g) node tests/e2e/special-drafting-walkthrough.js
+```
+
+`tests/e2e/appraisal-walkthrough.js` (WP12) runs Naval Character Assessment as the Naval Assessment Officer: the period and appraisal rules and every refusal through the API, edit, cancel, the closed period's read-only rule, the report with its PDF and workbook, the screens, the record's list and the dashboard tile, the privileges and the audit trail, then each layout. Run it on a fresh database (it leaves its test periods behind).
+
+```bash
+NODE_PATH=$(npm root -g) node tests/e2e/appraisal-walkthrough.js
 ```
 
 ---
