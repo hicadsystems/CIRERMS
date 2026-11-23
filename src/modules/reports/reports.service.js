@@ -121,10 +121,11 @@ async function shipHistory(q = {}) {
   };
 }
 
-async function shipHistoryForPrint(q = {}) {
+async function shipHistoryForPrint(q = {}, kind = 'excel') {
   const f = shipFilters(q);
+  const probe = await repo.shipHistory(f, { page: 1, pageSize: 1 });
+  printLimit(probe.total, kind);
   const r = await repo.shipHistory(f, { pageSize: 0 });
-  printLimit(r.total, 'excel');
   const ship = await labelOf('ref_ship', f.shipId);
   return {
     ship,
@@ -132,6 +133,7 @@ async function shipHistoryForPrint(q = {}) {
     items: r.items.map(shapePosting),
     total: r.total,
     aboard: r.aboard,
+    averageTour: r.avgMonths === null ? '' : yearsMonths(Math.round(r.avgMonths)),
   };
 }
 
