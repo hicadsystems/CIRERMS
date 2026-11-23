@@ -38,26 +38,26 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
        v.sen, (SELECT id FROM ref_entry_mode WHERE name = v.entry), v.emp,
        (SELECT id FROM ref_specialisation WHERE code = v.spec)
   FROM (
-            SELECT 'B1000' AS sn, 'CPO' AS rate, 'AGBAJE' AS sur, 'Bisi' AS fst, 'Ronke' AS mid, 'Female' AS sex, '1983-03-21' AS dob, 'ED' AS br, 'WRT' AS spec, '2024-01-01' AS sen, '2010-02-14' AS emp, 'Regular Recruitment' AS entry
-  UNION ALL SELECT 'B1001', 'PO',  'ADEKUNLE',  'Samuel',    'Olalekan', 'Male',   '1974-08-12', 'SM', 'NAV', '2024-02-01', '1994-04-03', 'Regular Recruitment'
-  UNION ALL SELECT 'B1002', 'CPO', 'OKPARA',     'Peter',     'Chukwuma', 'Male',   '1971-02-09', 'ME', 'MPR', '2024-03-01', '1991-09-16', 'Regular Recruitment'
-  UNION ALL SELECT 'B1003', 'WO',  'BAKARE',    'Tunde',     'Wale',     'Male',   '1966-11-30', 'WE', 'EWS', '2023-12-01', '1987-01-12', 'Direct Intake'
-  UNION ALL SELECT 'B1004', 'MWO', 'OGUNDIPE',  'Folake',    'Grace',    'Female', '1964-05-18', 'LG', 'STS', '2024-01-01', '1985-08-05', 'Direct Intake'
-  UNION ALL SELECT 'B1005', 'PO',  'MUSA',      'Aliyu',     'Danladi',  'Male',   '1975-09-04', 'NP', 'REG', '2024-04-01', '1996-03-25', 'Regular Recruitment'
-  UNION ALL SELECT 'B1006', 'LS',  'EKEZIE',    'Obiora',    'Kingsley', 'Male',   '1977-12-22', 'SM', 'GUN', '2024-05-01', '1999-02-08', 'Regular Recruitment'
-  UNION ALL SELECT 'B1007', 'CPO', 'ADEYEMO',   'Funmilayo', 'Ruth',     'Female', '1973-04-27', 'MD', 'MAS', '2024-02-01', '1993-07-19', 'Specialist Enlistment'
-  UNION ALL SELECT 'B1008', 'PO',  'UDOH',      'Etido',     'Sunday',   'Male',   '1980-01-14', 'ME', 'MPR', '2024-06-01', '2005-06-13', 'Regular Recruitment'
-  UNION ALL SELECT 'B1009', 'WO',  'LAWAL',     'Ibrahim',   'Kola',     'Male',   '1969-07-08', 'IT', 'ICT', '2024-01-01', '1989-04-17', 'Direct Intake'
-  UNION ALL SELECT 'B1010', 'PO',  'NNAMANI',   'Chiamaka',  'Joy',      'Female', '1982-10-03', 'LG', 'CAT', '2024-03-01', '2004-11-22', 'Regular Recruitment'
-  UNION ALL SELECT 'B1011', 'AB',  'OGBU',      'Emeka',     'Francis',  'Male',   '1981-06-19', 'SM', 'COM', '2024-07-01', '2003-05-12', 'Regular Recruitment'
-  UNION ALL SELECT 'B1012', 'LS',  'HASSAN',    'Maryam',    'Zainab',   'Female', '1979-03-02', 'ED', 'WRT', '2024-05-01', '2000-09-04', 'Regular Recruitment'
-  UNION ALL SELECT 'B1021', 'PO',  'AKINWALE',  'Adebayo',   'Tosin',    'Male',   '1972-01-26', 'SM', 'NAV', '2012-05-01', '1992-03-30', 'Regular Recruitment'
-  UNION ALL SELECT 'B1022', 'LS',  'NWANKWO',   'Ifeanyi',   'Cyril',    'Male',   '1985-08-15', 'WE', 'EWS', '2015-09-01', '2006-12-04', 'Regular Recruitment'
-  UNION ALL SELECT 'B1023', 'CPO', 'SULEIMAN',  'Ramatu',    'Hauwa',    'Female', '1976-12-11', 'MD', 'MAS', '2014-03-01', '1996-10-21', 'Specialist Enlistment'
-  UNION ALL SELECT 'B1024', 'PO',  'OSAGIE',    'Osaretin',  'Blessing', 'Male',   '1978-05-05', 'NP', 'REG', '2013-07-01', '1998-01-19', 'Regular Recruitment'
-  UNION ALL SELECT 'B1031', 'WO',  'IWUCHUKWU', 'Nkem',      'Patience', 'Female', '1967-09-23', 'LG', 'STS', '2024-02-01', '1988-05-30', 'Direct Intake'
-  UNION ALL SELECT 'B1041', 'CPO', 'YAHAYA',    'Abdullahi', 'Sani',     'Male',   '1970-04-13', 'SM', 'GUN', '2023-06-01', '1990-11-12', 'Regular Recruitment'
-  UNION ALL SELECT 'B1042', 'PO',  'EFFIONG',   'Mfon',      'Grace',    'Female', '1972-10-29', 'ED', 'WRT', '2024-01-01', '1993-02-23', 'Regular Recruitment'
+            SELECT 'B1000' AS sn, 'CPO' AS rate, 'AGBAJE' AS sur, 'BISI' AS fst, 'RONKE' AS mid, 'Female' AS sex, '1983-03-21' AS dob, 'ED' AS br, 'WRT' AS spec, '2024-01-01' AS sen, '2010-02-14' AS emp, 'Regular Recruitment' AS entry
+  UNION ALL SELECT 'B1001', 'PO',  'ADEKUNLE',  'SAMUEL',    'OLALEKAN', 'Male',   '1974-08-12', 'SM', 'NAV', '2024-02-01', '1994-04-03', 'Regular Recruitment'
+  UNION ALL SELECT 'B1002', 'CPO', 'OKPARA',     'PETER',     'CHUKWUMA', 'Male',   '1971-02-09', 'ME', 'MPR', '2024-03-01', '1991-09-16', 'Regular Recruitment'
+  UNION ALL SELECT 'B1003', 'WO',  'BAKARE',    'TUNDE',     'WALE',     'Male',   '1966-11-30', 'WE', 'EWS', '2023-12-01', '1987-01-12', 'Direct Intake'
+  UNION ALL SELECT 'B1004', 'MWO', 'OGUNDIPE',  'FOLAKE',    'GRACE',    'Female', '1964-05-18', 'LG', 'STS', '2024-01-01', '1985-08-05', 'Direct Intake'
+  UNION ALL SELECT 'B1005', 'PO',  'MUSA',      'ALIYU',     'DANLADI',  'Male',   '1975-09-04', 'NP', 'REG', '2024-04-01', '1996-03-25', 'Regular Recruitment'
+  UNION ALL SELECT 'B1006', 'LS',  'EKEZIE',    'OBIORA',    'KINGSLEY', 'Male',   '1977-12-22', 'SM', 'GUN', '2024-05-01', '1999-02-08', 'Regular Recruitment'
+  UNION ALL SELECT 'B1007', 'CPO', 'ADEYEMO',   'FUNMILAYO', 'RUTH',     'Female', '1973-04-27', 'MD', 'MAS', '2024-02-01', '1993-07-19', 'Specialist Enlistment'
+  UNION ALL SELECT 'B1008', 'PO',  'UDOH',      'ETIDO',     'SUNDAY',   'Male',   '1980-01-14', 'ME', 'MPR', '2024-06-01', '2005-06-13', 'Regular Recruitment'
+  UNION ALL SELECT 'B1009', 'WO',  'LAWAL',     'IBRAHIM',   'KOLA',     'Male',   '1969-07-08', 'IT', 'ICT', '2024-01-01', '1989-04-17', 'Direct Intake'
+  UNION ALL SELECT 'B1010', 'PO',  'NNAMANI',   'CHIAMAKA',  'JOY',      'Female', '1982-10-03', 'LG', 'CAT', '2024-03-01', '2004-11-22', 'Regular Recruitment'
+  UNION ALL SELECT 'B1011', 'AB',  'OGBU',      'EMEKA',     'FRANCIS',  'Male',   '1981-06-19', 'SM', 'COM', '2024-07-01', '2003-05-12', 'Regular Recruitment'
+  UNION ALL SELECT 'B1012', 'LS',  'HASSAN',    'MARYAM',    'ZAINAB',   'Female', '1979-03-02', 'ED', 'WRT', '2024-05-01', '2000-09-04', 'Regular Recruitment'
+  UNION ALL SELECT 'B1021', 'PO',  'AKINWALE',  'ADEBAYO',   'TOSIN',    'Male',   '1972-01-26', 'SM', 'NAV', '2012-05-01', '1992-03-30', 'Regular Recruitment'
+  UNION ALL SELECT 'B1022', 'LS',  'NWANKWO',   'IFEANYI',   'CYRIL',    'Male',   '1985-08-15', 'WE', 'EWS', '2015-09-01', '2006-12-04', 'Regular Recruitment'
+  UNION ALL SELECT 'B1023', 'CPO', 'SULEIMAN',  'RAMATU',    'HAUWA',    'Female', '1976-12-11', 'MD', 'MAS', '2014-03-01', '1996-10-21', 'Specialist Enlistment'
+  UNION ALL SELECT 'B1024', 'PO',  'OSAGIE',    'OSARETIN',  'BLESSING', 'Male',   '1978-05-05', 'NP', 'REG', '2013-07-01', '1998-01-19', 'Regular Recruitment'
+  UNION ALL SELECT 'B1031', 'WO',  'IWUCHUKWU', 'NKEM',      'PATIENCE', 'Female', '1967-09-23', 'LG', 'STS', '2024-02-01', '1988-05-30', 'Direct Intake'
+  UNION ALL SELECT 'B1041', 'CPO', 'YAHAYA',    'ABDULLAHI', 'SANI',     'Male',   '1970-04-13', 'SM', 'GUN', '2023-06-01', '1990-11-12', 'Regular Recruitment'
+  UNION ALL SELECT 'B1042', 'PO',  'EFFIONG',   'MFON',      'GRACE',    'Female', '1972-10-29', 'ED', 'WRT', '2024-01-01', '1993-02-23', 'Regular Recruitment'
   ) v;
 
 -- ---- the account ----

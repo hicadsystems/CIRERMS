@@ -26,8 +26,8 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
        v.sen, (SELECT id FROM ref_entry_mode WHERE name = 'Regular Recruitment'), v.emp,
        (SELECT id FROM ref_specialisation WHERE code = v.spec)
   FROM (
-            SELECT 'B0901' AS sn, 'PO' AS rate, 'AKPAN' AS sur, 'Mfon' AS fst, 'Etim' AS mid, 'Female' AS sex, '1988-04-12' AS dob, 'ED' AS br, 'WRT' AS spec, '2020-06-01' AS sen, '2008-03-10' AS emp
-  UNION ALL SELECT 'B0902', 'LS', 'UDOH', 'Ekaette', 'Grace', 'Female', '1993-09-27', 'ED', 'WRT', '2021-08-01', '2014-05-19'
+            SELECT 'B0901' AS sn, 'PO' AS rate, 'AKPAN' AS sur, 'MFON' AS fst, 'ETIM' AS mid, 'Female' AS sex, '1988-04-12' AS dob, 'ED' AS br, 'WRT' AS spec, '2020-06-01' AS sen, '2008-03-10' AS emp
+  UNION ALL SELECT 'B0902', 'LS', 'UDOH', 'EKAETTE', 'GRACE', 'Female', '1993-09-27', 'ED', 'WRT', '2021-08-01', '2014-05-19'
   ) v;
 
 INSERT IGNORE INTO users (username, password_hash, full_name, role_id, service_number, is_active)

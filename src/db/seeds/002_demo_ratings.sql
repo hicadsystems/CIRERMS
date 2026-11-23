@@ -214,7 +214,7 @@ INSERT IGNORE INTO ratings (
   'B0575', 'current',
   (SELECT id FROM ref_rate WHERE name = 'Warrant Officer (WO)'),
   (SELECT id FROM ref_title WHERE name = 'WO'),
-  'BASSEY', 'EFFIONG', 'archibong',
+  'BASSEY', 'EFFIONG', 'ARCHIBONG',
   (SELECT id FROM ref_gender WHERE name = 'Male'),
   '1983-03-30',
   (SELECT id FROM ref_marital_status WHERE name = 'Married'),

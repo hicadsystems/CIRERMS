@@ -46,25 +46,25 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
        (SELECT id FROM ref_entry_mode WHERE name = 'Regular Recruitment'), v.emp,
        (SELECT id FROM ref_specialisation WHERE code = v.spec)
   FROM (
-            SELECT 'B0801' AS sn, 'PO' AS rate, 'OKAFOR' AS sur, 'Nnamdi' AS fst, 'Ugo' AS mid, 'Male' AS sex, '1986-04-12' AS dob, 'SM' AS br, 'NAV' AS spec, 30 AS mo, '2008-03-03' AS emp
-  UNION ALL SELECT 'B0802', 'CPO', 'ALIYU',     'Hauwa',     'Binta',   'Female', '1982-08-19', 'ED', 'WRT', 26, '2003-07-14'
-  UNION ALL SELECT 'B0803', 'PO',  'EKPO',      'Ini',       'Etim',    'Male',   '1985-11-02', 'SM', 'GUN', 22, '2007-09-24'
-  UNION ALL SELECT 'B0811', 'AB',  'OGUNLEYE',  'Tobi',      'James',   'Male',   '1994-02-17', 'SM', 'GUN', 52, '2015-05-11'
-  UNION ALL SELECT 'B0812', 'AB',  'NWOSU',     'Adaeze',    'Mary',    'Female', '1995-06-30', 'IT', 'ICT', 49, '2016-01-18'
-  UNION ALL SELECT 'B0813', 'AB',  'GARBA',     'Sule',      'Idris',   'Male',   '1993-10-08', 'LG', 'STS', 60, '2014-08-04'
-  UNION ALL SELECT 'B0814', 'LS',  'EZE',       'Ikenna',    'Paul',    'Male',   '1990-03-21', 'ME', 'MPR', 55, '2011-02-28'
-  UNION ALL SELECT 'B0815', 'PO',  'ETUK',      'Edidiong',  'Sam',     'Male',   '1987-12-14', 'ME', 'HMT', 50, '2008-10-06'
-  UNION ALL SELECT 'B0816', 'OS',  'ADEOYE',    'Kemi',      'Ruth',    'Female', '1998-05-09', 'LG', 'CAT', 50, '2019-03-11'
-  UNION ALL SELECT 'B0817', 'AB',  'MOHAMMED',  'Yusuf',     'Bala',    'Male',   '1994-09-27', 'LG', 'STS', 58, '2015-02-02'
-  UNION ALL SELECT 'B0818', 'LS',  'UMOH',      'Imaobong',  'Grace',   'Female', '1991-01-15', 'LG', 'STS', 49, '2012-06-25'
-  UNION ALL SELECT 'B0819', 'LS',  'ADEBISI',   'Femi',      'Oluwole', 'Male',   '1993-07-03', 'MD', 'MAS', 51, '2014-04-14'
-  UNION ALL SELECT 'B0820', 'PO',  'UCHE',      'Chiamaka',  'Ngozi',   'Female', '1989-11-22', 'MD', 'MAS', 56, '2010-09-13'
-  UNION ALL SELECT 'B0821', 'PO',  'IBRAHIM',   'Musa',      'Lawal',   'Male',   '1988-02-11', 'MD', 'MAS', 53, '2009-05-04'
-  UNION ALL SELECT 'B0822', 'CPO', 'OLAWALE',   'Segun',     'Tayo',    'Male',   '1984-06-06', 'SM', 'NAV', 62, '2005-01-17'
-  UNION ALL SELECT 'B0823', 'CPO', 'EDET',      'Uduak',     'Effiong', 'Male',   '1985-09-18', 'SM', 'RDP', 57, '2006-03-27'
-  UNION ALL SELECT 'B0824', 'PO',  'AMADI',     'Chukwudi',  'Kingsley','Male',   '1986-12-01', 'SM', 'COM', 49, '2007-11-05'
-  UNION ALL SELECT 'B0825', 'LS',  'BELLO',     'Rukayat',   'Ayo',     'Female', '1992-04-25', 'SM', 'COM', 47, '2013-07-08'
-  UNION ALL SELECT 'B0826', 'WO',  'NDUKWE',    'Emmanuel',  'Obi',     'Male',   '1980-10-10', 'WE', 'EWS', 66, '2000-02-21'
+            SELECT 'B0801' AS sn, 'PO' AS rate, 'OKAFOR' AS sur, 'NNAMDI' AS fst, 'UGO' AS mid, 'Male' AS sex, '1986-04-12' AS dob, 'SM' AS br, 'NAV' AS spec, 30 AS mo, '2008-03-03' AS emp
+  UNION ALL SELECT 'B0802', 'CPO', 'ALIYU',     'HAUWA',     'BINTA',   'Female', '1982-08-19', 'ED', 'WRT', 26, '2003-07-14'
+  UNION ALL SELECT 'B0803', 'PO',  'EKPO',      'INI',       'ETIM',    'Male',   '1985-11-02', 'SM', 'GUN', 22, '2007-09-24'
+  UNION ALL SELECT 'B0811', 'AB',  'OGUNLEYE',  'TOBI',      'JAMES',   'Male',   '1994-02-17', 'SM', 'GUN', 52, '2015-05-11'
+  UNION ALL SELECT 'B0812', 'AB',  'NWOSU',     'ADAEZE',    'MARY',    'Female', '1995-06-30', 'IT', 'ICT', 49, '2016-01-18'
+  UNION ALL SELECT 'B0813', 'AB',  'GARBA',     'SULE',      'IDRIS',   'Male',   '1993-10-08', 'LG', 'STS', 60, '2014-08-04'
+  UNION ALL SELECT 'B0814', 'LS',  'EZE',       'IKENNA',    'PAUL',    'Male',   '1990-03-21', 'ME', 'MPR', 55, '2011-02-28'
+  UNION ALL SELECT 'B0815', 'PO',  'ETUK',      'EDIDIONG',  'SAM',     'Male',   '1987-12-14', 'ME', 'HMT', 50, '2008-10-06'
+  UNION ALL SELECT 'B0816', 'OS',  'ADEOYE',    'KEMI',      'RUTH',    'Female', '1998-05-09', 'LG', 'CAT', 50, '2019-03-11'
+  UNION ALL SELECT 'B0817', 'AB',  'MOHAMMED',  'YUSUF',     'BALA',    'Male',   '1994-09-27', 'LG', 'STS', 58, '2015-02-02'
+  UNION ALL SELECT 'B0818', 'LS',  'UMOH',      'IMAOBONG',  'GRACE',   'Female', '1991-01-15', 'LG', 'STS', 49, '2012-06-25'
+  UNION ALL SELECT 'B0819', 'LS',  'ADEBISI',   'FEMI',      'OLUWOLE', 'Male',   '1993-07-03', 'MD', 'MAS', 51, '2014-04-14'
+  UNION ALL SELECT 'B0820', 'PO',  'UCHE',      'CHIAMAKA',  'NGOZI',   'Female', '1989-11-22', 'MD', 'MAS', 56, '2010-09-13'
+  UNION ALL SELECT 'B0821', 'PO',  'IBRAHIM',   'MUSA',      'LAWAL',   'Male',   '1988-02-11', 'MD', 'MAS', 53, '2009-05-04'
+  UNION ALL SELECT 'B0822', 'CPO', 'OLAWALE',   'SEGUN',     'TAYO',    'Male',   '1984-06-06', 'SM', 'NAV', 62, '2005-01-17'
+  UNION ALL SELECT 'B0823', 'CPO', 'EDET',      'UDUAK',     'EFFIONG', 'Male',   '1985-09-18', 'SM', 'RDP', 57, '2006-03-27'
+  UNION ALL SELECT 'B0824', 'PO',  'AMADI',     'CHUKWUDI',  'KINGSLEY','Male',   '1986-12-01', 'SM', 'COM', 49, '2007-11-05'
+  UNION ALL SELECT 'B0825', 'LS',  'BELLO',     'RUKAYAT',   'AYO',     'Female', '1992-04-25', 'SM', 'COM', 47, '2013-07-08'
+  UNION ALL SELECT 'B0826', 'WO',  'NDUKWE',    'EMMANUEL',  'OBI',     'Male',   '1980-10-10', 'WE', 'EWS', 66, '2000-02-21'
   ) v;
 
 -- the Advancement lines: one open line for the current rate (since the seniority date); an advanced rating
