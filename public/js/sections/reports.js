@@ -316,7 +316,7 @@ export async function mountDisposition(outlet, { info } = {}) {
       title: s.ship,
       panels: [
         { title: 'Ship or Unit', rows: [['Ship or Unit', h('b', { text: s.ship })], ['Type', s.type], ['Current Ratings', h('b', { text: String(s.total) })]] },
-        { title: 'By Rate', rows: [...s.rates.map((r) => [r.name, String(r.count)]), s.noRate ? ['No rate recorded', String(s.noRate)] : null].filter(Boolean) },
+        { title: 'By Rate', rows: [...s.rates.map((r) => [r.name.replace(/\s*\([^)]*\)\s*$/, ''), String(r.count)]), s.noRate ? ['No rate recorded', String(s.noRate)] : null].filter(Boolean) },
       ],
       actions: [s.shipId ? rowLink('Nominal Roll', 'list', `#reports/nominal-roll?shipId=${s.shipId}`, 'reports.nominal-roll') : null],
     });

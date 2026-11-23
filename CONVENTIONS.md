@@ -18,7 +18,7 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Every account belongs to a rating (owner's rule, 19/11/2026): `users.service_number` is required, unique, and is the account's user name, the Hicad administrator `HICO001` included (a rating of that official number is in the demo data); it also decides *View My Details*, which so works for every account. **An account's name is its rating's** (`src/shared/rating-name.js`: rate abbreviation, surname, first name, as the rest of the app writes a rating's name); `users.full_name` is not read. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
-| Out of scope (for now) | CI pipelines. On hold until the legacy system is available as reference: Reports (its look is agreed in `docs/design/demo.html`). The other modules not yet built. System Administration is built (WP3) |
+| Out of scope (for now) | CI pipelines. The other modules not yet built. System Administration is built (WP3) |
 | Current focus | Ratings Management only — migration show-and-tell demo |
 
 ## Folder layout
@@ -519,6 +519,15 @@ module.exports = {
   `ref_appraisal_rating` rows; an appraisal keeps the rate and ship at the time. `appraisals.active_slot` (1, or NULL
   once cancelled) under a unique key gives one active appraisal per rating per period. A closed period is read-only for
   periods and appraisals alike. The record's list is `appraisal-record.js`, under the Advancement tab. See `docs/reports/WP12.md`.
+- **Reports** (`src/modules/reports/`, WP9): six read-only screens, each needing only `view`: `reports.ship-history`,
+  `reports.all-personnel`, `reports.disposition`, `reports.nominal-roll`, `reports.manning-state` and
+  `reports.retirement-forecast` (the pages in `js/sections/reports.js`; `reports.service.js`, `reports.repo.js` and
+  `reports.documents.js`). One filtered query feeds a page, its PDF and its workbook, and nothing is written, the audit
+  trail included. Two parts are borrowed, never copied: **who is aboard** (Manning State reads `drafting.repo.allManning`,
+  the query Update Manning Requirement lists with, so the two pages never disagree) and **who is due** (Retirement Forecast
+  reads Discharge's settings `discharge.age_due` and `discharge.service_due` through `discharge.service.rule`, and its due
+  rule and exclusions exported from `discharge.repo.js`, `DUE_RULE`, `DUE_EXCLUSIONS` and `dueWhere`). Ship History is a
+  workbook only. A PDF holds 3,000 lines at most and a workbook 50,000 (a 422 asks for narrower filters). See `docs/reports/WP9.md`.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
@@ -548,15 +557,14 @@ module.exports = {
 
 Every screen has both layouts (desktop 761 px and up, phone 760 px and below) and is found by Ctrl K.
 
-The other sidebar items carry a Soon badge and open a "Coming in a Later Release" page (`#soon/<key>`):
-Reports
-(Administration). Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
+Static Tables is built (16 tabs, `tables.<slug>`), and so is System Administration (4 tabs: `admin/users`, `admin/roles`, `admin/password`, `admin/audit`).
 Discharge Administration is built (WP5: 5 tabs, `discharge/process`, `service`, `forms`, `report`, `upload`).
 Drafting is built (WP7a: 6 tabs, `drafting/manning`, `proposal`, `review`, `approval`, `close`, `wef`; WP7b: 3 report tabs, `drafting/batches` (and `drafting/batches/:id`), `history`, `report`).
 Advancement Processing is built (WP8: 7 tabs, `advancement/due`, `review`, `approval`, `close`, `board`, `promoted`, `upload`).
 Training Drafting is built (WP6: 5 tabs, `training/process`, `review`, `history`, `reports`, `upload`).
 Special Drafting is built (WP11: 3 tabs, `special-drafting/proposal`, `report`, `upload`).
 Naval Character Assessment is built (WP12: 3 tabs, `assessment/grading`, `report`, `periods`; screens `appraisal.*`).
+Reports is built (WP9: 6 tabs, `reports/ship-history`, `all-personnel`, `disposition`, `nominal-roll`, `manning-state`, `retirement-forecast`; screens `reports.*`).
 
 ## Open items
 
