@@ -1,6 +1,8 @@
 /*
  * facts: a details sheet. One row per field: the label on the left (about 40%),
- * the value on the right, a thin divider under every row.
+ * the value on the right, a thin divider under every row. A label wraps at its
+ * spaces (and after a slash: "Vice/Deployment"), never inside a word: its
+ * column is never narrower than its longest word.
  *
  *   facts(rows, { columns, className })
  *     rows      [[label, value], ...]; value is text or a node; empty values show "N/A"
@@ -15,13 +17,16 @@ import { cx, h } from './html.js';
 
 const empty = (v) => v === null || v === undefined || v === '';
 
+// a label as text and break opportunities: the browser may also break after a slash
+const labelNodes = (label) => String(label ?? '').split(/(?<=\/)/).flatMap((part, i) => (i ? [document.createElement('wbr'), part] : [part]));
+
 export function facts(rows = [], { className = '' } = {}) {
   return h(
     'dl',
     { className: cx('text-sm', className) },
     rows.map(([label, value]) =>
-      h('div', { className: 'grid grid-cols-[2fr_3fr] gap-x-3 border-b border-border py-2' }, [
-        h('dt', { className: 'min-w-0 break-words font-medium text-foreground', text: label }),
+      h('div', { className: 'grid grid-cols-[minmax(min-content,2fr)_3fr] gap-x-3 border-b border-border py-2' }, [
+        h('dt', { className: 'min-w-0 font-medium text-foreground' }, labelNodes(label)),
         h('dd', { className: 'min-w-0 break-words' }, empty(value) ? 'N/A' : value),
       ])
     )

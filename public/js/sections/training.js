@@ -106,7 +106,8 @@ async function batchScreen(outlet, { info, params, title, subtitle, build }) {
   let batches;
   try { batches = await allOpenBatches(); } catch (err) { outlet.replaceChildren(header(null), empty('circle-alert', 'Could Not Load', err.message || 'Try again.')); return; }
   const body = h('div');
-  const startId = params && params.batchId ? Number(params.batchId) : null;
+  // a batch from the address, else the first open batch (as Drafting and Advancement do, and the demo shows)
+  const startId = params && params.batchId ? Number(params.batchId) : (batches[0] ? batches[0].id : null);
   const picker = batchPicker(batches, {
     value: startId && batches.some((b) => b.id === startId) ? startId : '',
     onPick: (id) => { navigate(id ? `#${info.tab}/${id}` : `#${info.tab}`); },
