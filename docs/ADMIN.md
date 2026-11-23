@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | WP10 round 2 (`demo-finish`, session `session_01G8RfviynTAfn7EnjP8MaMq`) and Ship History PDF (`ship-history-pdf`, session `session_01G8RfvnNwZBwDTsVwsSzX2C`, Sonnet 5.5 · low), both running since 23/11/2026; each reports with send_message. WP9 and WP12 merged 23/11/2026 and archived. When both are merged, the administrator runs every walkthrough on master once (the owner, 23/11/2026) |
+| Sessions | WP10 round 2 (`demo-finish`, session `session_01G8RfviynTAfn7EnjP8MaMq`) running since 23/11/2026, reporting with send_message; Ship History PDF (`ship-history-pdf`, session `session_01G8RfvnNwZBwDTsVwsSzX2C`) done at 14db1e8 and checked; owner to merge, then archive. WP9 and WP12 merged 23/11/2026 and archived. When both are merged, the administrator runs every walkthrough on master once (the owner, 23/11/2026) |
 | Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
