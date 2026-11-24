@@ -36,21 +36,21 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
        (SELECT id FROM ref_entry_mode WHERE name = 'Regular Recruitment'), v.emp,
        (SELECT id FROM ref_specialisation WHERE code = v.spec)
   FROM (
-            SELECT 'B1101' AS sn, 'PO' AS rate, 'IDOWU' AS sur, 'Bolanle' AS fst, 'Ruth' AS mid, 'Female' AS sex, '1987-03-09' AS dob, 'SM' AS br, 'NAV' AS spec, 40 AS mo, '2009-05-18' AS emp
-  UNION ALL SELECT 'B1102', 'CPO', 'MUSA',     'Abubakar', 'Sani',     'Male',   '1981-10-21', 'ED', 'WRT', 60, '2002-02-11'
-  UNION ALL SELECT 'B1111', 'AB',  'OSAGIE',   'Efosa',    'Peter',    'Male',   '1993-06-14', 'SM', 'GUN', 26, '2014-04-07'
-  UNION ALL SELECT 'B1112', 'LS',  'AKPAN',    'Mfon',     'Emmanuel', 'Male',   '1991-01-30', 'ME', 'MPR', 30, '2012-09-17'
-  UNION ALL SELECT 'B1113', 'PO',  'BALOGUN',  'Tunde',    'Segun',    'Male',   '1988-08-05', 'SM', 'NAV', 22, '2010-01-25'
-  UNION ALL SELECT 'B1114', 'AB',  'OKORO',    'Chioma',   'Janet',    'Female', '1995-11-23', 'LG', 'STS', 18, '2016-06-13'
-  UNION ALL SELECT 'B1115', 'LS',  'YAKUBU',   'Danjuma',  'Isa',      'Male',   '1990-04-02', 'IT', 'ICT', 20, '2012-03-05'
-  UNION ALL SELECT 'B1116', 'OS',  'EDET',     'Aniekan',  'Bassey',   'Male',   '1998-12-16', 'LG', 'STS', 15, '2019-08-19'
-  UNION ALL SELECT 'B1117', 'AB',  'NWANKWO',  'Obinna',   'Kelechi',  'Male',   '1994-02-08', 'SM', 'GUN', 28, '2015-01-12'
-  UNION ALL SELECT 'B1118', 'LS',  'TIJANI',   'Rukayat',  'Aisha',    'Female', '1992-07-27', 'LG', 'STS', 32, '2013-10-14'
-  UNION ALL SELECT 'B1119', 'PO',  'AMADI',    'Ngozi',    'Rita',     'Female', '1989-09-12', 'ME', 'HMT', 24, '2011-05-23'
-  UNION ALL SELECT 'B1120', 'AB',  'FASHOLA',  'Kayode',   'Wale',     'Male',   '1995-05-19', 'SM', 'NAV', 21, '2016-11-07'
-  UNION ALL SELECT 'B1121', 'AB',  'ONOJA',    'Ojo',      'Sunday',   'Male',   '1996-03-03', 'SM', 'GUN', 14, '2017-07-24'
-  UNION ALL SELECT 'B1122', 'LS',  'UKPONG',   'Idara',    'Grace',    'Female', '1993-10-29', 'LG', 'STS', 17, '2014-12-01'
-  UNION ALL SELECT 'B1123', 'PO',  'WADA',     'Shehu',    'Haruna',   'Male',   '1986-01-17', 'ME', 'MPR', 36, '2008-02-18'
+            SELECT 'B1101' AS sn, 'PO' AS rate, 'IDOWU' AS sur, 'BOLANLE' AS fst, 'RUTH' AS mid, 'Female' AS sex, '1987-03-09' AS dob, 'SM' AS br, 'NAV' AS spec, 40 AS mo, '2009-05-18' AS emp
+  UNION ALL SELECT 'B1102', 'CPO', 'MUSA',     'ABUBAKAR', 'SANI',     'Male',   '1981-10-21', 'ED', 'WRT', 60, '2002-02-11'
+  UNION ALL SELECT 'B1111', 'AB',  'OSAGIE',   'EFOSA',    'PETER',    'Male',   '1993-06-14', 'SM', 'GUN', 26, '2014-04-07'
+  UNION ALL SELECT 'B1112', 'LS',  'AKPAN',    'MFON',     'EMMANUEL', 'Male',   '1991-01-30', 'ME', 'MPR', 30, '2012-09-17'
+  UNION ALL SELECT 'B1113', 'PO',  'BALOGUN',  'TUNDE',    'SEGUN',    'Male',   '1988-08-05', 'SM', 'NAV', 22, '2010-01-25'
+  UNION ALL SELECT 'B1114', 'AB',  'OKORO',    'CHIOMA',   'JANET',    'Female', '1995-11-23', 'LG', 'STS', 18, '2016-06-13'
+  UNION ALL SELECT 'B1115', 'LS',  'YAKUBU',   'DANJUMA',  'ISA',      'Male',   '1990-04-02', 'IT', 'ICT', 20, '2012-03-05'
+  UNION ALL SELECT 'B1116', 'OS',  'EDET',     'ANIEKAN',  'BASSEY',   'Male',   '1998-12-16', 'LG', 'STS', 15, '2019-08-19'
+  UNION ALL SELECT 'B1117', 'AB',  'NWANKWO',  'OBINNA',   'KELECHI',  'Male',   '1994-02-08', 'SM', 'GUN', 28, '2015-01-12'
+  UNION ALL SELECT 'B1118', 'LS',  'TIJANI',   'RUKAYAT',  'AISHA',    'Female', '1992-07-27', 'LG', 'STS', 32, '2013-10-14'
+  UNION ALL SELECT 'B1119', 'PO',  'AMADI',    'NGOZI',    'RITA',     'Female', '1989-09-12', 'ME', 'HMT', 24, '2011-05-23'
+  UNION ALL SELECT 'B1120', 'AB',  'FASHOLA',  'KAYODE',   'WALE',     'Male',   '1995-05-19', 'SM', 'NAV', 21, '2016-11-07'
+  UNION ALL SELECT 'B1121', 'AB',  'ONOJA',    'OJO',      'SUNDAY',   'Male',   '1996-03-03', 'SM', 'GUN', 14, '2017-07-24'
+  UNION ALL SELECT 'B1122', 'LS',  'UKPONG',   'IDARA',    'GRACE',    'Female', '1993-10-29', 'LG', 'STS', 17, '2014-12-01'
+  UNION ALL SELECT 'B1123', 'PO',  'WADA',     'SHEHU',    'HARUNA',   'Male',   '1986-01-17', 'ME', 'MPR', 36, '2008-02-18'
   ) v;
 
 INSERT IGNORE INTO users (username, password_hash, role_id, service_number, email, phone, specialisation_id, is_active) VALUES

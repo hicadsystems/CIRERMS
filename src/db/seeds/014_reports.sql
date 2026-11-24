@@ -23,15 +23,15 @@ SELECT v.sn, 'current', (SELECT id FROM ref_rate WHERE code = v.rate), v.sur, v.
        v.sen, (SELECT id FROM ref_entry_mode WHERE name = v.entry), v.emp,
        (SELECT id FROM ref_specialisation WHERE code = v.spec)
   FROM (
-            SELECT 'B1301' AS sn, 'CPO' AS rate, 'OKEKE' AS sur, 'Ngozi' AS fst, 'Amaka' AS mid, 'Female' AS sex, '1985-06-14' AS dob, 'ED' AS br, 'Western Naval Command' AS cmd, 'WRT' AS spec, '2024-01-01' AS sen, '2008-03-10' AS emp, 'Regular Recruitment' AS entry
-  UNION ALL SELECT 'B1302', 'PO',  'ADEWALE',  'Kunle',    'Tunde',    'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 2 MONTH),  INTERVAL 50 YEAR), 'SM', 'Western Naval Command', 'NAV', '2023-06-01', '2008-05-02', 'Regular Recruitment'
-  UNION ALL SELECT 'B1303', 'CPO', 'EZEKWE',   'Ikenna',   'Paul',     'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 4 MONTH),  INTERVAL 50 YEAR), 'ME', 'Eastern Naval Command', 'MPR', '2022-09-01', '2008-08-11', 'Regular Recruitment'
-  UNION ALL SELECT 'B1304', 'PO',  'GARBA',    'Hassan',   'Umar',     'Male',   DATE_SUB(CURDATE(), INTERVAL 41 YEAR), 'NP', 'Western Naval Command', 'REG', '2023-03-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 5 MONTH),  INTERVAL 20 YEAR), 'Regular Recruitment'
-  UNION ALL SELECT 'B1305', 'LS',  'OLATUNJI', 'Bimpe',    'Ronke',    'Female', DATE_SUB(CURDATE(), INTERVAL 40 YEAR), 'ED', 'Central Naval Command', 'WRT', '2024-02-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 8 MONTH),  INTERVAL 20 YEAR), 'Regular Recruitment'
-  UNION ALL SELECT 'B1306', 'WO',  'NWOSU',    'Chidi',    'Martin',   'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 11 MONTH), INTERVAL 50 YEAR), 'WE', 'Naval Headquarters', 'EWS', '2021-12-01', '2009-02-20', 'Direct Intake'
-  UNION ALL SELECT 'B1307', 'AB',  'YUSUF',    'Zainab',   'Halima',   'Female', DATE_SUB(CURDATE(), INTERVAL 39 YEAR), 'MD', 'Eastern Naval Command', 'MAS', '2024-05-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 14 MONTH), INTERVAL 20 YEAR), 'Regular Recruitment'
-  UNION ALL SELECT 'B1308', 'CPO', 'ODION',    'Efe',      'Samuel',   'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 19 MONTH), INTERVAL 50 YEAR), 'LG', 'Western Naval Command', 'STS', '2022-03-01', '2010-07-15', 'Regular Recruitment'
-  UNION ALL SELECT 'B1309', 'PO',  'BASSEY',   'Ekong',    'Emmanuel', 'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 23 MONTH), INTERVAL 50 YEAR), 'SM', 'Central Naval Command', 'GUN', '2023-09-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 23 MONTH), INTERVAL 20 YEAR), 'Regular Recruitment'
+            SELECT 'B1301' AS sn, 'CPO' AS rate, 'OKEKE' AS sur, 'NGOZI' AS fst, 'AMAKA' AS mid, 'Female' AS sex, '1985-06-14' AS dob, 'ED' AS br, 'Western Naval Command' AS cmd, 'WRT' AS spec, '2024-01-01' AS sen, '2008-03-10' AS emp, 'Regular Recruitment' AS entry
+  UNION ALL SELECT 'B1302', 'PO',  'ADEWALE',  'KUNLE',    'TUNDE',    'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 2 MONTH),  INTERVAL 50 YEAR), 'SM', 'Western Naval Command', 'NAV', '2023-06-01', '2008-05-02', 'Regular Recruitment'
+  UNION ALL SELECT 'B1303', 'CPO', 'EZEKWE',   'IKENNA',   'PAUL',     'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 4 MONTH),  INTERVAL 50 YEAR), 'ME', 'Eastern Naval Command', 'MPR', '2022-09-01', '2008-08-11', 'Regular Recruitment'
+  UNION ALL SELECT 'B1304', 'PO',  'GARBA',    'HASSAN',   'UMAR',     'Male',   DATE_SUB(CURDATE(), INTERVAL 41 YEAR), 'NP', 'Western Naval Command', 'REG', '2023-03-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 5 MONTH),  INTERVAL 20 YEAR), 'Regular Recruitment'
+  UNION ALL SELECT 'B1305', 'LS',  'OLATUNJI', 'BIMPE',    'RONKE',    'Female', DATE_SUB(CURDATE(), INTERVAL 40 YEAR), 'ED', 'Central Naval Command', 'WRT', '2024-02-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 8 MONTH),  INTERVAL 20 YEAR), 'Regular Recruitment'
+  UNION ALL SELECT 'B1306', 'WO',  'NWOSU',    'CHIDI',    'MARTIN',   'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 11 MONTH), INTERVAL 50 YEAR), 'WE', 'Naval Headquarters', 'EWS', '2021-12-01', '2009-02-20', 'Direct Intake'
+  UNION ALL SELECT 'B1307', 'AB',  'YUSUF',    'ZAINAB',   'HALIMA',   'Female', DATE_SUB(CURDATE(), INTERVAL 39 YEAR), 'MD', 'Eastern Naval Command', 'MAS', '2024-05-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 14 MONTH), INTERVAL 20 YEAR), 'Regular Recruitment'
+  UNION ALL SELECT 'B1308', 'CPO', 'ODION',    'EFE',      'SAMUEL',   'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 19 MONTH), INTERVAL 50 YEAR), 'LG', 'Western Naval Command', 'STS', '2022-03-01', '2010-07-15', 'Regular Recruitment'
+  UNION ALL SELECT 'B1309', 'PO',  'BASSEY',   'EKONG',    'EMMANUEL', 'Male',   DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 23 MONTH), INTERVAL 50 YEAR), 'SM', 'Central Naval Command', 'GUN', '2023-09-01', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 23 MONTH), INTERVAL 20 YEAR), 'Regular Recruitment'
   ) v;
 
 INSERT IGNORE INTO users (username, password_hash, role_id, service_number, email, phone, is_active) VALUES

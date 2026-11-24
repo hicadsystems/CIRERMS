@@ -5,11 +5,14 @@ const { passportPhotoUrl } = require('../../shared/rating-photo');
 const appraisalRepo = require('../appraisal/appraisal.repo');
 
 async function getSummary() {
-  const [members, byRate, recent, appraisals] = await Promise.all([
+  const [members, byRate, recent, appraisals, drafting, discipline, discharge] = await Promise.all([
     dashboardRepo.getRatingsCounts(),
     dashboardRepo.getCurrentByRate(),
     dashboardRepo.getRecentlyEnlisted(5),
     appraisalRepo.dashboardCounts(),
+    dashboardRepo.getDraftingCounts(),
+    dashboardRepo.getDisciplineCounts(),
+    dashboardRepo.getDischargeCounts(),
   ]);
 
   return {
@@ -22,14 +25,10 @@ async function getSummary() {
         passport_photo_url: passportPhotoUrl(rating.service_number, photoPath),
       };
     }),
-    // Non-Ratings modules remain disabled/zeroed in the Ratings Management migration demo
-    drafting: {
-      postedLastThreeMonths: 0,
-    },
-    memos: {
-      unread: 0,
-      total: 0,
-    },
+    // the tiles of the other modules, counted from their own tables
+    drafting,
+    discipline,
+    discharge,
     // Naval Character Assessment (WP12): appraisals recorded this month (cancelled ones left out) and the open periods
     appraisals: {
       month: appraisals.month,

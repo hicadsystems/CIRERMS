@@ -252,6 +252,8 @@ the next wave once the owner has merged.
 
 ## 9. Open questions
 
+The questions for Hicad (the due rules, the posting types TY and DW, the verification forms) are restated in one list in `docs/FOR-HICAD.md` (WP10).
+
 - **Who is due (draft, advancement, training drafting, discharge).** The rules lived in the live database's
   procedures and views; we have neither, and the owner has no access to the live server. Known so far
   (`docs/legacy/drafting.md`, `advancement.md`): months on a ship 10 to 20 green, 21 to 24 amber,
