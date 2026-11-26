@@ -209,7 +209,7 @@ The administrator session creates each session with its model and effort, the re
 `hicadsystems/cirems` (read only) for the old code. Nobody watches a running session.
 
 When done, the session sends one message to the administrator session
-(`session_01G8RfvmysEhqqTQUZ45Qn5D`) with:
+(`session_01G8Rfvk1tUaL2XBW6Z3tbvT` from 26/11/2026; before it `session_01G8RfvmysEhqqTQUZ45Qn5D`) with:
 
 - the branch and its last commit
 - what was built or designed: every page and action, against the module's row in section 4
