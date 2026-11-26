@@ -1,6 +1,6 @@
 # Wave U: the User Guide
 
-> **G1 and G2 done and merged (26/11/2026); G3 added at the owner's request the same day.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
+> **Done and merged (G1, G2 and G3 on 26/11/2026). Do not start this again.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
 
 The owner (26/11/2026): a user guide inside the app, made the way the `praxisjbs/mycity-app` application makes
 theirs. It is reached from a **User Guide** item in the account menu, just before Sign Out. On a desktop, **Ctrl+H**
