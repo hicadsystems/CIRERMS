@@ -59,10 +59,14 @@ Set in `.env` (see `.env.example`) or in the Compose environment. Defaults are i
 | `PORT` | 3000 | HTTP port |
 | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | | The database. Inside Compose the host is `db` |
 | `DB_POOL_LIMIT` | 10 | Database connection pool size |
-| `JWT_SECRET` | | Required in production. Changing it signs everyone out |
+| `JWT_SECRET` | | Required in production. Changing it signs everyone out, and makes any e-mailed Forgot Password code still unused stop working |
 | `JWT_EXPIRES_IN` | 8h | Session token lifetime |
 | `SESSION_IDLE_MINUTES` | 15 | Idle time before a session locks |
 | `SESSION_SERVER_GRACE_SECONDS` | 120 | Seconds added to the idle time before the server itself treats the session as idle |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | empty, 587, false | The mail server Forgot Password sends its code through. With no `SMTP_HOST`, production starts with a warning and sends no code (the page still answers the same); development writes the message to `MAIL_DIR` |
+| `SMTP_USER`, `SMTP_PASSWORD` | empty | The mail server's sign-in, when it needs one |
+| `MAIL_FROM` | `CIRERMS <no-reply@cirerms.example>` | The sender of that e-mail |
+| `MAIL_DIR` | `./storage/mail` | Where development mail is written when `SMTP_HOST` is empty |
 | `UPLOAD_DIR` | `./storage/uploads` | Where uploads are stored |
 | `MAX_PHOTO_SIZE_MB`, `MAX_DOC_SIZE_MB`, `MAX_EXCEL_SIZE_MB` | 5, 15, 10 | Upload limits |
 | `PDF_CHROMIUM_PATH` | | A Chromium to use for PDFs; otherwise the bundled one |

@@ -57,6 +57,18 @@ const config = Object.freeze({
     serverGraceSeconds: toInt(process.env.SESSION_SERVER_GRACE_SECONDS, 120),
   }),
 
+  // Mail (Forgot Password): with no SMTP_HOST, development writes each message to MAIL_DIR instead
+  // of sending it, and production logs a warning and sends nothing.
+  mail: Object.freeze({
+    smtpHost: (process.env.SMTP_HOST || '').trim(),
+    smtpPort: toInt(process.env.SMTP_PORT, 587),
+    smtpSecure: /^(1|true|yes)$/i.test((process.env.SMTP_SECURE || '').trim()),
+    smtpUser: (process.env.SMTP_USER || '').trim(),
+    smtpPassword: process.env.SMTP_PASSWORD || '',
+    from: (process.env.MAIL_FROM || '').trim() || 'CIRERMS <no-reply@cirerms.example>',
+    dir: process.env.MAIL_DIR ? path.resolve(ROOT_DIR, process.env.MAIL_DIR) : path.join(ROOT_DIR, 'storage', 'mail'),
+  }),
+
   uploads: Object.freeze({
     rootDir: uploadRoot,
     photosDir: path.join(uploadRoot, 'photos'),
