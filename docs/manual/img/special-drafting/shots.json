@@ -1,0 +1,26 @@
+{
+  "special-drafting-draft-dialog": {
+    "spec": "5d485d77c4ae2dab",
+    "source": "38643f79509ab33d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "special-drafting-proposal-list": {
+    "spec": "6d4ff55c2c0b7dd1",
+    "source": "38643f79509ab33d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "special-drafting-report-page": {
+    "spec": "8f701c60e754d58f",
+    "source": "38643f79509ab33d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

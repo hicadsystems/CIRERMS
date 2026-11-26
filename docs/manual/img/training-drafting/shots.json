@@ -1,0 +1,34 @@
+{
+  "training-history-page": {
+    "spec": "3d800a189610131c",
+    "source": "39a9554daeb03517",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "training-new-batch-dialog": {
+    "spec": "8b78907554bd09dd",
+    "source": "39a9554daeb03517",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "training-process-list": {
+    "spec": "178d690d7c60c8f8",
+    "source": "39a9554daeb03517",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "training-review-page": {
+    "spec": "52c174b480e83035",
+    "source": "39a9554daeb03517",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
