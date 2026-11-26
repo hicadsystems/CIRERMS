@@ -1,6 +1,6 @@
 # Wave U: the User Guide
 
-> **Done and merged (G1 and G2 on 26/11/2026). Do not start this again.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
+> **G1 and G2 done and merged (26/11/2026); G3 added at the owner's request the same day.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
 
 The owner (26/11/2026): a user guide inside the app, made the way the `praxisjbs/mycity-app` application makes
 theirs. It is reached from a **User Guide** item in the account menu, just before Sign Out. On a desktop, **Ctrl+H**
@@ -286,3 +286,49 @@ As G1's: one `send_message` to the administrator session, then stop. Include:
 - the PDF's page count as HICO001;
 - anything the app does that seemed wrong while you wrote about it (report it; do not fix app code in this
   package).
+
+---
+
+## G3 `guide-book-options`
+
+The owner (26/11/2026): "The download manual prompts options. 1. Desktop and light mode 2. Desktop and dark mode
+3. Mobile and light mode 4. Mobile and dark mode. So no recapture since all shots are on repo, just build the manual
+and insert the right set of images." This replaces the earlier rule that the book uses the desktop light pictures
+only.
+
+- **Branch:** `guide-book-options` · **Needs merged first:** G2 · **AI session:** Sonnet 5.5, effort medium ·
+  **Size:** S · **Migration block:** none · **Seed:** none
+
+### Do
+1. **The choice.** **Download PDF** on the User Guide page opens a small dialog (a bottom sheet on a phone, from the
+   kit in `public/js/ui/`) offering four options:
+   - **Desktop, Light Mode**
+   - **Desktop, Dark Mode**
+   - **Mobile, Light Mode**
+   - **Mobile, Dark Mode**
+
+   The option matching the reader's current device and theme is chosen at first. A **Make PDF** button opens the
+   book in `openPdfPreview`, as today. Cancel closes the dialog.
+2. **The book.** `GET /api/guide/book?device=desktop|phone&theme=light|dark` (default desktop and light; anything
+   else is refused with 400). `src/modules/guide/guide.book.js` inserts the pictures of that set,
+   `<shot>.<device>.<theme>.png`. A picture taken for one device only falls back to the other device's capture, in
+   the chosen theme.
+   - Phone pictures are drawn at their natural size (width in pixels divided by 2), centred, never enlarged.
+   - The cover names the set ("Desktop · Light Mode").
+   - The page stays the house printout style, light paper, in every option: only the pictures change.
+   - The PDF's file name names the set too (`CIRERMS-User-Guide-desktop-dark.pdf`).
+   - Contents page numbers stay right for each set: the two-pass render already handles it.
+3. **No recapture.** Every capture is in `docs/manual/img/`. Do not run `guide:shots` and do not change any picture
+   or chapter.
+4. **Docs.** One line each in `README.md` (the User Guide part) and `docs/manual/README.md`.
+
+### Check (no tests or walkthroughs)
+On a fresh database, as HICO001:
+- Make all four books.
+- Note each one's page count and size.
+- Look at a few pages of each, with pictures of the right device and theme and the contents numbers right.
+
+Look at the dialog at 1440 px and 390 px, in light and dark. Make one book as B0541, to see the cut still holds.
+
+### Report
+One `send_message` to the administrator session, then stop.
