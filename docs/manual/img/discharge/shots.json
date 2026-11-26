@@ -1,0 +1,26 @@
+{
+  "discharge-due-list": {
+    "spec": "2232772e9f33ba98",
+    "source": "1c7300eada3549d2",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "discharge-process-dialog": {
+    "spec": "3765a74636e9ea4e",
+    "source": "1c7300eada3549d2",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "discharge-report-page": {
+    "spec": "a36af09a6fccc0c5",
+    "source": "1c7300eada3549d2",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

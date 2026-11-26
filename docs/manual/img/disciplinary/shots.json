@@ -1,0 +1,42 @@
+{
+  "disciplinary-conclude-dialog": {
+    "spec": "f8b1b2e52fdecb40",
+    "source": "b224d46c6c217849",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "disciplinary-concluded-list": {
+    "spec": "960259750c6703a4",
+    "source": "b224d46c6c217849",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "disciplinary-initiate-page": {
+    "spec": "4a2f564232ab2cf4",
+    "source": "b224d46c6c217849",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "disciplinary-open-case-dialog": {
+    "spec": "fe2d57ce2a3a0f8d",
+    "source": "b224d46c6c217849",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "disciplinary-pending-list": {
+    "spec": "8474958e7041d0d5",
+    "source": "b224d46c6c217849",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
