@@ -303,8 +303,8 @@ System Administration. Next, after the documents are brought up to date: a **use
 
 **Decisions for the user guide (owner, 26/11/2026,** asked by the administrator after studying mycity-app's guide):
 each reader receives only their part (the page, the Ctrl+H panel, the search and the PDF book are cut on the server
-to the reader's privileges, as mycity-app does); every picture is taken on desktop and on phone, the page shows the
-one for the reader's device and the PDF book the desktop one; two packages, G1 (Sonnet 5.5 · high) then G2 (Sonnet
+to the reader's privileges, as mycity-app does); every picture is taken four times (desktop and phone, each light and dark), by a fast script; the
+page shows the one for the reader's device and theme, and the PDF book the desktop light one; two packages, G1 (Sonnet 5.5 · high) then G2 (Sonnet
 5.5 · medium). Decided by the administrator: mycity-app's chapter format and screenshot specs (numbered marks,
 crops, hashes to find stale pictures) are kept; its Quick Start, meaning search, written answers, voice search and CI gate
 are not; the search is by words; the PDF book is new to CIRERMS (mycity-app's guide has none) and uses `renderPdf`

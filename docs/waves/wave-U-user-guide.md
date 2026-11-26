@@ -19,8 +19,9 @@ the app and look at every screen and every page of the PDF yourself.
    the server, to the reader's own privileges. A section about a screen goes only to someone who may open that
    screen. A task or step that needs an action goes only to someone who holds it. A Records Clerk never reads Manage
    Roles. The Administrator receives everything.
-2. **Every picture is taken twice**: at desktop size and at phone size. The page and the panel show the one for
-   the reader's device. The PDF book uses the desktop pictures.
+2. **Every picture is taken four times**: desktop light, desktop dark, phone light and phone dark. The page and the
+   panel show the one for the reader's device and theme, and switch when the theme switches. The PDF book uses the
+   desktop light pictures only. The script takes all four, and fast.
 3. **Two packages, Sonnet 5.5**: G1 at high effort, then G2 at medium.
 4. **No tests or walkthroughs.** The session and the administrator check by running the app and looking.
 
@@ -113,7 +114,8 @@ everything in our own words and our own house style.
    - A step's link to a screen opens it and leaves a **Back to Guide** chip that returns to the same step, as
      mycity-app does.
    - **Download PDF** at the top right.
-   - Both themes. The pictures themselves stay light.
+   - Both themes. Each picture follows the reader's device and theme (decision 2), and changes with the theme
+     without reloading the page.
 5. **Ctrl+H on a desktop.** It opens the guide in a mini panel that slides in from the right, over any page:
    - about 440 px wide;
    - at the section for the page in view, or at the contents when there is none;
@@ -129,7 +131,8 @@ everything in our own words and our own house style.
    - `-- --chapter <slug>`, `-- --shot <id>` and `-- --stale`;
    - signs in as the spec's demo account (`as: admin`, `records`, `clerk`, `drafting`, `approver`, `discharge`,
      `rating` and so on: map them to README's demo accounts in one table at the top of the script);
-   - **light theme**, desktop 1440 × 900 and phone 390 × 844, **device scale 2**;
+   - **four captures per picture**: desktop 1440 × 900 and phone 390 × 844, each in light and in dark,
+     **device scale 2**;
    - a fixed clock;
    - the session lock and any toast, tooltip or focus ring hidden;
    - fonts loaded and the page settled before each picture;
@@ -138,8 +141,22 @@ everything in our own words and our own house style.
    - the **numbered marks** drawn over their targets in the app's brand colour, with a legend;
    - **cropped** to what the step shows: `crop: modal` (the open dialog or sheet), `crop: <selector>`, or the page
      without the empty space below it;
-   - saves `<shot>.desktop.png` and `<shot>.phone.png` and their hashes in `shots.json`, so a picture whose spec or
-     screen changed can be found and retaken.
+   - saves `<shot>.desktop.light.png`, `.desktop.dark.png`, `.phone.light.png` and `.phone.dark.png` and their
+     hashes in `shots.json`, so a picture whose spec or screen changed can be found and retaken.
+
+   **Very fast** (the owner, 26/11/2026). Build it for speed from the start:
+   - one browser for the whole run;
+   - each demo account signs in once, through the API, and its session is reused by every picture;
+   - the desktop and phone runs of a picture go in parallel, with a few pictures at a time (a `--jobs` option,
+     4 by default);
+   - a spec's steps run **once per device**: take the light capture, switch the theme in place (as the app's own
+     theme switch does, with no reload and no transitions), wait for the next frame, then take the dark capture
+     with the same crop and marks;
+   - no fixed sleeps, only waits for what the next step needs;
+   - `--stale` retakes only what changed.
+
+   Print the run's time and each picture's. Getting Started's pictures should take well under a minute, and report
+   the time in your report.
 
    **No personal data in a picture**: demo data only, never a password field with text in it, never a one-time
    password dialog, never an e-mail address of a real person. Keep each file as small as a sharp picture allows,
@@ -151,7 +168,7 @@ everything in our own words and our own house style.
    - A **table of contents** with the real page number of every chapter and section. Render once, read where each
      heading landed (`pdfjs-dist` is already a dependency), then render again with the numbers.
    - Each chapter from a new page.
-   - The desktop pictures, sharp, never cut across a page break, with their legends.
+   - The desktop light pictures, sharp, never cut across a page break, with their legends.
    - Steps and notes as on the page.
 
    The pictures go into the HTML as data URIs, so nothing is fetched while rendering. Download PDF on the page
@@ -233,8 +250,8 @@ its pictures taken by `npm run guide:shots`:
 Every task carries the `needs` of the action it uses, so each reader receives only what they may do. Explain each
 message a person can meet in its own words (in bold) and what to do about it. Explain each workflow from start to
 end (for example a draft batch: due list, batch, review, approval, close, WEF) as one task across the pages,
-linking each page. Pictures follow G1's rules: demo data, light, sharp, cropped to the step, desktop and phone, no
-personal data.
+linking each page. Pictures follow G1's rules: demo data, sharp, cropped to the step, the four captures (desktop and phone,
+light and dark), no personal data.
 
 ### Check (no tests or walkthroughs)
 - `npm run guide:shots` takes every picture without a failure.
