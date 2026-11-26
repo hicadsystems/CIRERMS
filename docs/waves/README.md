@@ -1,6 +1,6 @@
 # CIRERMS: the remaining waves, for any developer
 
-> **Every wave is done and merged (26/11/2026).** Wave P (D4, WP13) on 19/11/2026; wave E (WP7a 19/11, WP6 20/11); wave F (WP8 19/11, WP5 20/11); wave F2 (WP11 21/11, WP12 23/11); wave G (WP7b 20/11, WP9 23/11); wave H (WP10 23/11/2026). Nobody starts one again. Wave U (the user guide) followed Phase 1 and is done too: G1 and G2 merged 26/11/2026. This folder stays as the record of how the work was briefed; what was built is in `docs/PLAN.md` section 8 and the report notes in `docs/reports/`.
+> **Every wave is done and merged (26/11/2026).** Wave P (D4, WP13) on 19/11/2026; wave E (WP7a 19/11, WP6 20/11); wave F (WP8 19/11, WP5 20/11); wave F2 (WP11 21/11, WP12 23/11); wave G (WP7b 20/11, WP9 23/11); wave H (WP10 23/11/2026). Nobody starts one again. Wave U (the user guide) followed Phase 1 and is done too: G1, G2 and G3 merged 26/11/2026. This folder stays as the record of how the work was briefed; what was built is in `docs/PLAN.md` section 8 and the report notes in `docs/reports/`.
 
 This folder handed out the work of Phase 1 (`docs/PLAN.md`). Any developer can take a package: a
 person, or an AI coding session working for one. Each wave has its own file with a full brief per package: what to
