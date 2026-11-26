@@ -1,10 +1,13 @@
 # CIRERMS Project Plan
 
-Written 18/11/2026, last updated 19/11/2026. Owner: swizfcodes. This file is the plan every work
+Written 18/11/2026, last updated 26/11/2026. Owner: swizfcodes. This file is the plan every work
 session follows; the administrator session hands out the packages below, one branch each, and
 updates the status table as they report back.
 
 ## 1. Goal
+
+**Phase 1 is built:** every package of this plan is merged (the last on 23/11/2026, section 8); what remains is in
+section 9 (what next) and `docs/OPEN-QUESTIONS.md`.
 
 **Phase 1, this plan: finish the demo, fully, design first.** Every module, Special Drafting and
 Naval Character Assessment included (owner, 19/11/2026: D3 designs them, WP11 and WP12 build them),
@@ -54,8 +57,8 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
 2. Commits are authored as the owner: `git config user.name swizfcodes` and
    `git config user.email 191121624+swizfcodes@users.noreply.github.com`.
 3. No pull requests, of any kind. The owner opens and merges them.
-4. Nothing about Claude or Anthropic in any commit message, code, comment or document, and no
-   Co-Authored-By lines.
+4. Nothing about AI tools, assistants, their makers or their models in any commit message, code, comment or
+   document, and no Co-Authored-By lines.
 5. Never edit `public/js/core/choices.js`.
 6. `CONVENTIONS.md` is binding: colour tokens only (no hex, no white), 25 rows a page from the
    server, every add opens in a dialog (a sheet on a phone), the component kit in `public/js/ui/`,
@@ -118,17 +121,17 @@ tables are settled. (Special Drafting and Naval Character Assessment were here u
 | Old menu | New module | Old actions (controller/action) | Design | Build |
 |---|---|---|---|---|
 | Ratings Management | Ratings Management | Employee: viewprofile (View My Details), Create, ExcelUpload, Index, FormerEmployeeList, GetFolderList2 (documents) | Done, approved | Done |
-| Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList, draftapproval, closedraftreview | D1 | WP7a, WP7b |
-| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | D3 | WP11 |
-| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement (in the code, not in the live menu; included by the owner's decision, 18/11/2026) | D1 | WP8 |
-| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | D3 | WP12 |
-| Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | D2 | WP4 |
-| Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | D2 | WP5 |
-| Training Drafting | Training Drafting | TrainingDraft: TrainingDraftiningProcess, Trainingreview, trainingdraftenddate (training history), summaryreport, ExcelUpload | D1 | WP6 |
-| Static Tables | Static Tables | 16 tables: Appraisal Ratings, Branch, Exit Type, Entry Mode, Disciplinary Offence, Disciplinary Sanction, Institution, Local Government, Languages, Relationship, Staff Branch, Specialisation Area, Ships, States, Title, Training | Done, approved | WP2 |
-| Report | Reports | Report: personellistbybranch (ship history), personellistfilter (all personnel), PersonelReport (disposition) | Done, approved; D2 adds the printouts each module's pages load (`docs/legacy/reports.md` section 5) | WP9 |
-| System Administration | System Administration | Security/CreateNewUser (Manage Users), RoleManagement/roleList (Manage Roles), Security/ResetPasswordServiceNumber (Manage Password), Account/AuditTrail | Done, approved | WP1 (backend), WP3 (screens) |
-| (from the new app) | Session lock | Locks after idle time; unlocks with the password only | Done, approved | WP1 |
+| Drafting | Drafting | ShipRequirement/viewrequirement (manning requirement); draftings: draftlistfilters (draft proposal), draftreview, draftenddate (WEF), summaryreport (batch / signal content), draftingreportindividual (rate DOD history), draftingreportList, draftapproval, closedraftreview | Done (D1) | Done (WP7a, WP7b) |
+| Special Drafting | Special Drafting | draftings: SpecialDraft (special draft proposal), specialdraftinglist (special draft report), and draftings/ExcelUpload (Upload Draft: listed under Drafting in the old menu, but it imports special drafts; moved here by the owner, 19/11/2026) | Done (D3) | Done (WP11) |
+| Advancement Processing | Advancement Processing | Advancement: advancementfilters (rates due), advancementreview, advancementenddate (board returns), summaryreportforadvancement, ExcelUpload; Advancementapproval and closeadvancement (in the code, not in the live menu; included by the owner's decision, 18/11/2026) | Done (D1) | Done (WP8) |
+| Assessment of Naval Character & Efficiency | Naval Character Assessment | AppraisalHistory/List (recommendation and grading); Report on Appraisal (never built, section 10) | Done (D3) | Done (WP12) |
+| Disciplinary Action | Disciplinary Action | Decipline: index (initiate incident), List (pending), DesciplineHistoryList (concluded, report) | Done (D2) | Done (WP4) |
+| Discharge Administration | Discharge Administration | Discharge: dischargereview (process discharge), ServiceDetails (print service details), Reports (verification forms), dischargereport, ExcelUpload | Done (D2) | Done (WP5) |
+| Training Drafting | Training Drafting | TrainingDraft: TrainingDraftiningProcess, Trainingreview, trainingdraftenddate (training history), summaryreport, ExcelUpload | Done (D1) | Done (WP6) |
+| Static Tables | Static Tables | 16 tables: Appraisal Ratings, Branch, Exit Type, Entry Mode, Disciplinary Offence, Disciplinary Sanction, Institution, Local Government, Languages, Relationship, Staff Branch, Specialisation Area, Ships, States, Title, Training | Done, approved | Done (WP2) |
+| Report | Reports | Report: personellistbybranch (ship history), personellistfilter (all personnel), PersonelReport (disposition) | Done, approved; D2 adds the printouts each module's pages load (`docs/legacy/reports.md` section 5) | Done (WP9) |
+| System Administration | System Administration | Security/CreateNewUser (Manage Users), RoleManagement/roleList (Manage Roles), Security/ResetPasswordServiceNumber (Manage Password), Account/AuditTrail | Done, approved | Done (WP1 (backend), WP3 (screens)) |
+| (from the new app) | Session lock | Locks after idle time; unlocks with the password only | Done, approved | Done (WP1) |
 | (from the new app) | Light and dark mode, sign-in page | The app has them; the demo got them in the `demo-themes` job (section 8) | Done | Done |
 
 Not in the old menu and out of scope: leave applications, medical history screens, the file
@@ -139,6 +142,8 @@ explorer and the info routers. Their tables stay in WP0's map only.
 Size: S (a day of session work), M, L. Model and effort are chosen per package to spend tokens
 where the thinking is: Opus where rules are ported from procedures or security is at stake,
 Sonnet where screens follow patterns already in the kit.
+
+Every package below is merged (section 8).
 
 ### Design packages (change only `docs/design/`)
 
@@ -172,22 +177,24 @@ Sonnet where screens follow patterns already in the kit.
 
 ## 6. Order: two sessions at a time
 
-| Wave | Runs together | Merged before the next wave |
-|---|---|---|
-| A | WP0 (and `demo-themes`, already running) | WP0, `demo-themes` |
-| B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 |
-| C | D2, WP2 | D2 after the owner's review, WP2 |
-| D | WP3, WP4, then D3 in the first free slot | WP3, WP4, D3 after the owner's review |
-| P | D4, then WP13 (PDF reforming) | D4 after the owner's review, WP13 |
-| E | WP6, WP7a | WP6, WP7a |
-| F | WP5 (any time after WP13), WP8 (after WP7a) | WP5, WP8 |
-| F2 | WP12 (any time after WP13), WP11 (after WP7a) | WP12, WP11 |
-| G | WP7b, WP9 | WP7b, WP9 |
-| H | WP10 | WP10: the demo is complete |
+| Wave | Runs together | Merged before the next wave | Done |
+|---|---|---|---|
+| A | WP0 (and `demo-themes`, already running) | WP0, `demo-themes` | Merged 18/11/2026 and 19/11/2026 |
+| B | D1, WP1, then T1 once WP1 is merged | D1 after the owner's review, WP1, T1 | Merged 19/11/2026 |
+| C | D2, WP2 | D2 after the owner's review, WP2 | Merged 19/11/2026 |
+| D | WP3, WP4, then D3 in the first free slot | WP3, WP4, D3 after the owner's review | Merged 19/11/2026 |
+| P | D4, then WP13 (PDF reforming) | D4 after the owner's review, WP13 | Merged 19/11/2026 |
+| E | WP6, WP7a | WP6, WP7a | WP7a merged 19/11/2026, WP6 20/11/2026 |
+| F | WP5 (any time after WP13), WP8 (after WP7a) | WP5, WP8 | WP8 merged 19/11/2026, WP5 20/11/2026 |
+| F2 | WP12 (any time after WP13), WP11 (after WP7a) | WP12, WP11 | WP11 merged 21/11/2026, WP12 23/11/2026 |
+| G | WP7b, WP9 | WP7b, WP9 | WP7b merged 20/11/2026, WP9 23/11/2026 |
+| H | WP10 | WP10: the demo is complete | Merged 23/11/2026 |
 
-The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, WP10) will most likely be done by
-other developers, from `docs/waves/`; the administrator checks each branch from its report note.
-Since 19/11/2026 the remaining waves are written out for any developer, one file per wave, in `docs/waves/` (start
+**Every wave is done and merged** (26/11/2026). Nothing in `docs/waves/` is to be started again.
+
+The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, WP10) were done by other
+developers, from `docs/waves/`; the administrator checked each branch from its report note.
+The remaining waves were written out for any developer, one file per wave, in `docs/waves/` (start
 with its `README.md`): model and effort, what to read, what to build, the checks, and the report note.
 
 A package starts only from a `master` that holds every package in its "Needs merged first" column.
@@ -211,11 +218,11 @@ When done, the session sends one message to the administrator session
 - for a design package, what the owner should look at first
 - what the next package should know
 
-A developer (a person, or an AI session working for one) leaves the same report as a note on their branch,
+A developer leaves the same report as a note on their branch,
 `docs/reports/<package>.md` (outline in `docs/reports/README.md`), naming the branch and its last commit, and tells
 the owner.
 
-The administrator checks the branch (author, no Claude mentions, rules 1 to 14 by reading the
+The administrator checks the branch (author, no mention of AI tools, rules 1 to 14 by reading the
 diff), tells the owner it is ready to review or merge, updates the status table below, and starts
 the next wave once the owner has merged.
 
@@ -249,27 +256,24 @@ the next wave once the owner has merged.
 | D3 | Merged 19/11/2026, approved by the owner (Sonnet 5.5 · medium; about $2.70) | `design-special` | 19/11/2026: 91884e3, Special Drafting and Naval Character Assessment designed; no Soon items left |
 | WP11 | Merged 21/11/2026 (clean-up by Sonnet 5.5 · medium; about $1.60; `session_01G8RfvmAQDr2pBV5oNdeeAs`): built by a developer (6bf9ea9); the clean-up restored nav.js, ratings.routes.js, README, CONVENTIONS and this plan to master's style with only WP11's lines, moved WP11's demo rating B1116 off NNS BEECROFT's Catering requirement (which broke the drafting walkthrough's Under by n check), found the Posting Type dropdown working, and put the type counts in two columns on a phone. All ten walkthroughs pass; special drafting 126 and drafting 195 on the administrator's fresh run. Last code commit dca389f, head 73c4945 | `special-drafting` | |
 | WP12 | Merged 23/11/2026 (clean-up by Sonnet 5.5 · medium; about $1.35; `session_01G8Rfvjcssd8mGkzzqDfatu`): built by a developer (7791894), never run; the crash was the walkthrough's (it read the audit row wrongly; the edit's before and after are recorded as the brief asks); the clean-up also fixed the demo audit rows, a demo name that broke the disciplinary search, the record's Appraisals list scrolling sideways on a phone, and gave Appraisal Ratings a holder in the static tables walkthrough. All eleven walkthroughs pass; appraisal 105 checks in 23 s and disciplinary 191 on the administrator's fresh run. The Grading and Report filters are filter bars and keep their card (the picker rule covers lone pickers only). Last code commit 4fc42c5, head 773118e | `appraisal` | |
-| WP10 | Merged 23/11/2026 (Sonnet 5.5 · high; about $6.93; `session_01G8RfviynTAfn7EnjP8MaMq`): five live dashboard tiles (Memos and Mails gone), every demo rating's name in capitals (WP9's too), labels wrap at spaces or slashes only, a rating's user name follows its official number, `factPanels` gives a lone panel the full width (the closed Appraisal Period and Manning State dialogs were half-empty), Reports in Ctrl K and the demo walkthrough (73 pages), docs and `docs/FOR-HICAD.md`. The owner's answers (23/11/2026): the tab strips stay as they were (undone in round 1b); relatives' names stay as typed. All thirteen walkthroughs pass; on the administrator's run of WP10 merged with master: reports 286, demo 57, appraisal 105. Last code commit 9a25cfc, head c27a3fe | `demo-finish` | |
+| WP10 | Merged 23/11/2026 (Sonnet 5.5 · high; about $6.93; `session_01G8RfviynTAfn7EnjP8MaMq`): five live dashboard tiles (Memos and Mails gone), every demo rating's name in capitals (WP9's too), labels wrap at spaces or slashes only, a rating's user name follows its official number, `factPanels` gives a lone panel the full width (the closed Appraisal Period and Manning State dialogs were half-empty), Reports in Ctrl K and the demo walkthrough (73 pages), docs and the open questions in one list (now `docs/OPEN-QUESTIONS.md`). The owner's answers (23/11/2026): the tab strips stay as they were (undone in round 1b); relatives' names stay as typed. All thirteen walkthroughs pass; on the administrator's run of WP10 merged with master: reports 286, demo 57, appraisal 105. Last code commit 9a25cfc, head c27a3fe | `demo-finish` | |
+| Documents (extra: every open document brought up to date, `docs/OPEN-QUESTIONS.md` made) | Done 26/11/2026, on this branch for the owner to merge | `project-plan` | 26/11/2026: documents only; the plan's status, waves and what next, the administrator handbook, the waves, report and design indexes, README and CONVENTIONS; the questions of section 9 and the separate list for Hicad folded into `docs/OPEN-QUESTIONS.md` |
 | Settings page | Running 26/11/2026 (Sonnet 5.5 · medium, `session_01G8RfvjbcUqTXG9aWUmaoaf`), at the owner's request: System Administration > Settings shows the 14 stand-in due-rule numbers (Drafting, Advancement, Discharge) and lets an Administrator change them, audited, so Hicad's real values go in with no code change | `settings` | |
 
-## 9. Open questions
+## 9. Open questions and what next
 
-The questions for Hicad (the due rules, the posting types TY and DW, the verification forms) are restated in one list in `docs/FOR-HICAD.md` (WP10).
+**Every open question is in `docs/OPEN-QUESTIONS.md`**, grouped *For Hicad* (the real due rules for drafting,
+advancement, training and discharge; the posting types TY and DW; the real verification forms; the discharge upload
+template; a schema-only copy of the live database; the old system's database passwords) and *For the owner* (Training
+Reports as a page or a dialog; what to carry over when the real records are imported; how much to test before real
+use; the phone tab chips). Each says what is asked, why, where the app uses it, what the app does meanwhile and who
+answers. Answered questions are not repeated there: the decision sections below (9a to 9e and the decisions of
+26/11/2026) are the record of what was decided, and the report notes in `docs/reports/` the record of what each
+package found.
 
-- **Who is due (draft, advancement, training drafting, discharge).** The rules lived in the live database's
-  procedures and views; we have neither, and the owner has no access to the live server. Known so far
-  (`docs/legacy/drafting.md`, `advancement.md`): months on a ship 10 to 20 green, 21 to 24 amber,
-  over 24 red; months in rate 48 to 50 green, 51 to 54 amber, over 54 red. The design (D1) goes on
-  without them. Before WP6, WP7a and WP8 start, the rules come from whoever at Hicad keeps the live
-  system (in plain words, or a schema-only script read in a container and never committed). If none
-  arrive, the demo uses the month bands as placeholder rules, marked unconfirmed in `docs/legacy/`.
-- **Memos and Mails** has no source in the old system (a fixed 0 on its dashboard, as are Drafting
-  and Appraisals). D2 shows the Drafting tile from the drafting tables; whether Memos and Mails stays
-  is for the owner at D2's review.
-- **Where advancement Close applies the new rate** to the rating is not visible in the old code
-  (`docs/legacy/advancement.md`); WP8 settles it with the owner.
-- **The discharge upload template** is missing from the old repository; D2 designs one from the
-  fields the old import reads.
+**What next** (owner, 26/11/2026): the **Settings page** (running, section 8), then the **user guide** in the app. After
+those, the import of the real records from the old database (section 1), once Hicad has answered what the open
+questions ask.
 
 **Three more reports for WP9** (owner, 23/11/2026, asked because the Reports menu was scanty): **Nominal Roll** (the
 named ratings serving on a ship, unit or command, by rate and seniority), **Manning State** (every ship's manning
@@ -281,7 +285,7 @@ Offered and not chosen: a Federal Character distribution (by state of origin and
 **Decisions of 26/11/2026 (owner):** Drafting keeps no Excel upload of its own: the old Drafting menu's "Upload Draft"
 imported special drafts, so it stays under Special Drafting (WP11). The stand-in due rules get a **Settings** page in
 System Administration. Next, after the documents are brought up to date: a **user guide** in the app (as the
-`praxisjbs/mycity-app` application does theirs), overseen by a new administrator session.
+`praxisjbs/mycity-app` application does theirs), overseen by a new administrator session (section 9, what next).
 
 ## 9a. Design decisions for Drafting, Training Drafting and Advancement
 

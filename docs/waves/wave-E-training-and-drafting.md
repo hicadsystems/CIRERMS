@@ -1,5 +1,7 @@
 # Wave E: Training Drafting and the Drafting Cycle
 
+> **Done and merged (WP7a on 19/11/2026, WP6 on 20/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 Two packages that can run at the same time, by two developers: WP6 builds Training Drafting, WP7a builds the
 drafting cycle (the heart of Drafting, which WP7b, WP8, WP9 and WP11 build on). Both start once WP13 (the shared PDF
 layout) is merged.

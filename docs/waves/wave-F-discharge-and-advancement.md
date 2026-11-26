@@ -1,5 +1,7 @@
 # Wave F: Discharge Administration and Advancement Processing
 
+> **Done and merged (WP8 on 19/11/2026, WP5 on 20/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 Two packages that can run at the same time, by two developers. WP5 can start as soon as WP13 is merged; WP8 waits
 for WP7a, whose batch, approval and close parts it reuses.
 

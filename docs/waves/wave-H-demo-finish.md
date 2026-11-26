@@ -1,5 +1,7 @@
 # Wave H: Demo Finish
 
+> **Done and merged (WP10 on 23/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 The last package of Phase 1. It starts when every other package is merged, and ends with the demo complete: every
 module works end to end on demo data and matches the approved design.
 

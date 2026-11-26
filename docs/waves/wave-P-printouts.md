@@ -1,5 +1,7 @@
 # Wave P: printouts (PDF reforming)
 
+> **Done and merged (D4 and WP13 on 19/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 The owner's decision (19/11/2026): printouts are **HTML templates turned into PDFs by Chromium**, as in the owner's
 NAVY-PAYROLL application. CIRERMS's own PDF conventions stay (the crest, the header, the footer with "RESTRICTED"
 and "Page X of Y", the colours); NAVY-PAYROLL's PDFs are the standard for improving on them. In the app a PDF shows as real

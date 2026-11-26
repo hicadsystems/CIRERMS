@@ -1,5 +1,7 @@
 # Wave F2: Naval Character Assessment and Special Drafting
 
+> **Done and merged (WP11 on 21/11/2026, WP12 on 23/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 Two packages that can run at the same time, by two developers. WP12 can start as soon as WP13 is merged; WP11
 waits for WP7a, whose posting move it uses.
 

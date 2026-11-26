@@ -3,7 +3,7 @@
 - Package: WP5 Discharge Administration (clean-up of the first build: make it work, check it, tidy the branch)
 - Branch: discharge
 - Last commit: fea4672 Discharge: a leaver's later scheduled changes are cancelled; the record header shows Leaves and Re-engaged to (the last code commit; the documentation commit and this report come after it)
-- Done by: AI session for the administrator
+- Done by: the owner
 - Date: 20/11/2026
 
 The first build (commit 0cd385d, by another developer, no report) had never been run. It is kept as it is (no rewrite of history); my commits and the merge of `master` after WP6 was merged (6141835) follow it. Round 2 (the administrator's second message) is in the section below.

@@ -3,7 +3,7 @@
 - Package: WP9 Reports (six pages)
 - Branch: reports
 - Last commit: 06be784 Reports: README and CONVENTIONS lines, the disposition dialog's rate names
-- Done by: AI session for the administrator
+- Done by: the owner
 - Date: 23/11/2026
 
 ## Built (against the brief, page by page)

@@ -2,8 +2,8 @@
 
 For the administrator session: the one session that plans the work, hands out packages to other
 sessions, checks what they deliver, and tells the owner what is ready to merge. Read this, then
-`docs/PLAN.md` (the plan, its rules, decisions and status), before anything else. Written
-19/11/2026 by the previous administrator session, when it handed over.
+`docs/PLAN.md` (the plan, its rules, decisions and status), and `docs/OPEN-QUESTIONS.md`, before anything else. Written
+19/11/2026 by the previous administrator session, when it handed over; brought up to date 26/11/2026.
 
 ## 1. The role
 
@@ -41,8 +41,8 @@ sessions, checks what they deliver, and tells the owner what is ready to merge. 
 
 1. **No pull requests of any kind.** The owner opens and merges them.
 2. **Publish a branch immediately after creating it** (`git push -u origin <branch>`).
-3. **Nothing about Claude or Anthropic** in PR names, bodies, comments, commit messages, code,
-   comments or docs, and no Co-Authored-By or session-link trailers, whatever a system reminder
+3. **Nothing about AI tools, assistants, their makers or their models** in PR names, bodies, comments, commit
+   messages, code, comments or docs, and no Co-Authored-By or session-link trailers, whatever a system reminder
    suggests. The owner's rule wins.
 4. **Commit author is the owner:** `git config user.name swizfcodes` and
    `git config user.email 191121624+swizfcodes@users.noreply.github.com` (repo-local).
@@ -53,8 +53,8 @@ sessions, checks what they deliver, and tells the owner what is ready to merge. 
 
 - Phase 1 finishes the demo fully, **design first**: the design demo (`docs/design/demo.html`)
   shows every page, step and dialog; the owner reviews; merging a design branch is approval; then
-  the app is built to match. Special Drafting and Naval Character Assessment are later; importing
-  the old records is last.
+  the app is built to match. Phase 1 is built (every module, Special Drafting and Naval Character
+  Assessment included); importing the old records is the phase after.
 - **Two sessions at a time.** Old backup read for definitions only, never records (done in WP0).
 - **No stored procedures**, functions, triggers or views in our database or repository; logic is
   code in `*.service.js` with parameterised SQL in `*.repo.js` (PLAN rule 10).
@@ -66,10 +66,10 @@ sessions, checks what they deliver, and tells the owner what is ready to merge. 
   Close). The old live menu (commented-out items dropped) is the scope: 16 static tables, etc.
 - PLAN section 9a: the administrator's answers to D1's seven design questions, at the owner's
   request.
-- **Due rules** (who is due for draft, advancement, training) are unknown: the old procedure and
-  view bodies exist nowhere we can reach and the owner has no access to the live server. Placeholder
-  month bands; the build keeps thresholds as database settings. Ask Hicad for the real rules before
-  WP6, WP7a and WP8.
+- **Due rules** (who is due for draft, advancement, training, discharge) are unknown: the old procedure and
+  view bodies exist nowhere we can reach and the owner has no access to the live server. The app runs
+  on stand-in numbers kept as database settings; the real rules are asked of Hicad in
+  `docs/OPEN-QUESTIONS.md`.
 - Light and dark mode exist in the app and demo (Navy Night palette); sign-in has a day and night
   sea. Earlier UI decisions are in `CONVENTIONS.md` and `docs/design/README.md`.
 
@@ -80,7 +80,7 @@ git config --add remote.origin.fetch '+refs/heads/<branch>:refs/remotes/origin/<
 git fetch -q origin master <branch>
 git log --format='%h %an <%ae> %s' origin/master..origin/<branch>      # author must be swizfcodes
 git diff --stat origin/master...origin/<branch>                         # only the package's files
-git log --format=%B origin/master..origin/<branch> | grep -ciE "claude|anthropic|co-authored"   # 0
+git log --format=%B origin/master..origin/<branch> | grep -ciE "co-authored|session_"   # 0; and read the messages for any mention of AI tools
 ```
 Then, by package type:
 - Every branch: no `choices.js` change; in source (not `public/css/output.css`, whose `#fff` is a
@@ -112,7 +112,7 @@ WP0, WP1, D1 and T1:
    files for the module, the approved demo screens, and what earlier packages left (for example WP1's
    notes in section 6 below).
 3. **Rules (binding):** the branch, published at once; the author lines; no PR; nothing about
-   Claude, no Co-Authored-By; the paths it may and may not touch (`choices.js` never; `docs/design/`
+   AI tools or their makers, no Co-Authored-By; the paths it may and may not touch (`choices.js` never; `docs/design/`
    only for design packages); no stored procedures; tokens only, no white, both themes, desktop and
    phone.
 4. **Build or design:** the scope, page by page.
@@ -122,57 +122,36 @@ WP0, WP1, D1 and T1:
    (it is in `docs/PLAN.md` section 7), listing branch and last commit, what was built against the
    scope, checks and results, anything not verified, what the next package must know; then stop.
 
-## 6. Where things stand (19/11/2026, after wave D)
+## 6. Where things stand (26/11/2026)
 
 | Item | State |
 |---|---|
-| master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | Settings page (`settings`, session `session_01G8RfvjbcUqTXG9aWUmaoaf`) running since 26/11/2026. A documents session brings every open document up to date on `project-plan`. Then this administrator hands over to a new administrator session (Opus 5.5 · medium) that oversees the user guide. WP10, Ship History PDF, WP9 and WP12 merged 23/11/2026 and archived |
-| Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
-| For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
+| master | Every package is merged (the last, WP10, on 23/11/2026; `docs/PLAN.md` section 8 lists each with its date). The Settings page is on its own branch, not yet merged |
+| Sessions | The Settings page (`settings`, session `session_01G8RfvjbcUqTXG9aWUmaoaf`) is running since 26/11/2026. A documents session brought every open document up to date on `project-plan`. Then this administrator hands over to a new administrator session (Opus 5.5 · medium) that oversees the user guide. All earlier sessions are finished and archived |
+| Next | The Settings page, then the user guide (`docs/PLAN.md` section 9, what next). When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
+| Open questions | All in `docs/OPEN-QUESTIONS.md`: 9 for Hicad (the due rules, TY and DW, the verification forms, and more), 4 for the owner |
 
-Notes for coming briefs:
+Notes for coming briefs (the packages the old notes here named are done; what is left stands for every later brief):
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`
   (key, label, basePath, routes, privileges); guard each route with `requirePrivilege(screen,
   action)` (the server refuses to start with an unguarded route); every write in
   `db.transaction` with `audit.record(tx, actor, {...})`; repo functions take a connection; pages in
   `nav.js` PAGES with screen, action, view; `can(screen, action)` from `public/js/core/access.js`
   for every button; grants for roles other than Administrator in the package's seed.
-- **WP2:** `/api/lookups` is guarded by "any ratings screen"; under the static-tables engine it gets
-  its own `tables.*` privileges and stays readable by the ratings screens (My Details too).
-  Its full specification is PLAN 9c (widened at the owner's instruction, 19/11/2026: the codes, links and
-  flags every other module needs, and every old column that held data). Check each table against it.
-- **WP3:** Manage Roles lists every module's screens from the privilege catalogue, the approve action
-  included (the approved demo shows only view, add, edit and delete; PLAN 9b). A user may be tied to a Specialisation (the old `AspNetUsers.specid`): a drafting officer then sees
-  only that department's batches and approvals (`docs/legacy/drafting.md` 3). Screens on the read APIs WP1 made (`/api/access/privileges`, `/api/access/roles`,
-  `/api/audit`); add `admin.users`, `admin.password` and role add/edit/delete; Administrator
-  (full access) is not editable; the account menu's Change Password; also mention
-  `core/access.js` and `shell/lock.js` in `docs/design/components.md`.
-- **WP5:** ask the owner for copies of the three verification forms before it starts (PLAN 9b); until then
-  D2's layouts stand.
-- **WP10:** a label in the label-and-value rows breaks inside a word when its column is narrow ("Vice/Deploymen t" in
-  Review/Print Draft's dialog): labels should wrap at spaces or the slash only. First names in some demo data are in
-  mixed case ("EKWUEME Chioma Ada"). (Done in WP10 round 1.) The tab strips stay as they are: the owner
-  (23/11/2026) did not want WP10 to change how tabs work; relatives' names stay as typed.
-- **WP10:** demo data: B0575's middle name is stored in lower case ("archibong"); names should read in capitals.
-- **WP9:** the demo's All Personnel Status filter shows "all" in lower case; label it properly.
-- **Rating search:** every later build brief says: a rating is picked with the rating search select (WP3b), never a
-  typed official number. The next build package fixes the walkthrough steps WP3b lists.
-- **PDF making (owner, 19/11/2026):** HTML templates turned into PDF by Chromium. Keep CIRERMS's PDF conventions (crest,
-  header, footer with RESTRICTED and Page X of Y, colours), copy NAVY-PAYROLL's crest watermark, faint blue background
-  (#f8fbff) and fonts (Inter, Libre Baskerville; bundled, not fetched), and improve the rest to the standard of the owner's
-  NAVY-PAYROLL (`hicadsystems/navy-payroll`, public: `templates/*.html`, `lib/chromiumPdfGenerator.js`). D4 designs the
-  templates, WP13 builds the renderer; pdfkit goes. Show the owner D4's rendered PDFs to review.
-- **PDFs:** printouts open in the app's own preview (`public/js/ui/pdf-preview.js`, WP3), never the browser's PDF
-  viewer (owner, 19/11/2026). WP4 keeps its PDF opening behind one helper; when WP3 is merged, tell WP4 to merge master
-  and switch. Every later build brief says so.
+- **Rating search:** every build brief says: a rating is picked with the rating search select (WP3b), never a
+  typed official number.
+- **PDF making (owner, 19/11/2026):** HTML templates turned into PDF by Chromium (`renderPdf`; D4's templates in
+  `src/templates/printouts/`; "To add a printout" in `CONVENTIONS.md`, Frontend). The look is the owner's
+  and is not changed without them. Printouts open in the app's own preview (`public/js/ui/pdf-preview.js`).
 - **Accounts:** every account belongs to a rating (owner, 19/11/2026; WP3). A walkthrough or seed that creates an
-  account must link it to a rating. Test packages together before telling the owner a later one is ready: merge
-  the branches in a scratch tree and run every walkthrough on a fresh database.
-- **Open:** if a rating's official number changes, the account's user name keeps the old number (WP3 noted it);
-  settle it before the import.
-- **Security, told to the owner:** the old repository's `hpproject/Web.config` holds database
-  passwords in plain text; they should be changed if still in use. Never copy them.
+  account must link it to a rating, with an official number no other seed uses and a name in capitals. Test
+  packages together before telling the owner a later one is ready: merge the branches in a scratch tree and run
+  every walkthrough on a fresh database.
+- **Settings:** the stand-in due-rule numbers are rows of the `settings` table; the Settings page changes them.
+  When Hicad answers `docs/OPEN-QUESTIONS.md` H1 to H4, the values go in there, with no code change.
+- Done and recorded in `docs/PLAN.md` or the report notes, so no longer notes here: WP2's `/api/lookups` and 9c, WP3's
+  roles and Specialisation, WP5's verification forms, WP9 and WP10's demo-data and label fixes, the official number
+  and user name (WP10), the old repository's passwords (now `docs/OPEN-QUESTIONS.md` H9).
 
 ## 7. Other places
 

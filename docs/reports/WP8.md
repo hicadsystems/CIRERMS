@@ -3,7 +3,7 @@
 - Package: WP8 Advancement Processing (Rates due for Advancement, Advancement Review, Approval, Close, Board Returns Update, Report on Promoted Rates, Upload Advanced Rates)
 - Branch: advancement
 - Last commit: this report, committed last on the branch; the last code commit before it is `06ad089` ("Advancement demo names that do not match the other walkthroughs' rating searches"), after `4ffd039` (the module)
-- Done by: AI session for the administrator
+- Done by: the owner
 - Date: 19/11/2026
 
 ## Built (against the brief, page by page)

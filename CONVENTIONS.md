@@ -18,8 +18,8 @@ NAVY-PAYROLL is the reference for patterns; CIRERMS keeps its own look and its o
 | Organisation | Module-first: one folder per sidebar menu |
 | Look & feel | CIRERMS colours (`#0074a8` sidebar, `#02a9f4` active pill, `#1caf9a` teal, `#d9534f` red, `#428bca` blue, `#1d2939` dark navy, `#e4e7ea` canvas), held as tokens in `public/css/input.css` and named by role (see Frontend). No white anywhere: ivory surfaces on an ivory-to-pale-blue page gradient. Light and dark mode (dark is "Navy Night"), following the device until the person chooses. Rounded corners, soft shadows, blue scrollbars. Nigerian Navy crest, sidebar, stat cards, Lucide icons. The approved look and layout is `docs/design/demo.html`. Payroll-style SPA behaviour |
 | Auth | Payroll-style JWT login against `users` table (separate from `ratings`), in an HttpOnly cookie naming a `user_sessions` row (so a session can be signed out, locked and refused). Every account belongs to a rating (owner's rule, 19/11/2026): `users.service_number` is required, unique, and is the account's user name, the Hicad administrator `HICO001` included (a rating of that official number is in the demo data); it also decides *View My Details*, which so works for every account. **An account's name is its rating's** (`src/shared/rating-name.js`: rate abbreviation, surname, first name, as the rest of the app writes a rating's name); `users.full_name` is not read. Each user has one role (`users.role_id`); a role holds privileges, each one action (view, add, edit, delete, approve) on one screen id, checked on every route and used to hide what a person may not do (see *Access, audit and modules*) |
-| Out of scope (for now) | CI pipelines. The other modules not yet built. System Administration is built (WP3) |
-| Current focus | Ratings Management only — migration show-and-tell demo |
+| Out of scope (for now) | CI pipelines. Importing the real records from the old database (later, once the tables are settled) |
+| Current focus | Phase 1 is built: every module of the old menu works end to end on demo data (`docs/PLAN.md`) |
 
 ## Folder layout
 
@@ -570,6 +570,6 @@ Reports is built (WP9: 6 tabs, `reports/ship-history`, `all-personnel`, `disposi
 
 ## Open items
 
-- Real dropdown values (rate, title, religion denomination, tribe, state/LGA, ship, ...) — realistic placeholders seeded until official lists are supplied.
+- Real dropdown values (rate, title, religion denomination, tribe, state/LGA, ship, ...) — realistic placeholders seeded until official lists are supplied. The other open questions (the due rules, the posting types TY and DW, the verification forms) are in `docs/OPEN-QUESTIONS.md`.
 - Demo data: generated synthetic ratings shaped like the real records (`HICO001` the administrator, itself a rating, and `B0539`; every login account is a rating). Every name is in capitals, in the seeds as in the app (the app writes a rating's surname, first name and middle name in capitals), and a user name is its rating's official number: changing a rating's number changes its account's user name in the same transaction.
 - MySQL vs Postgres — final call pending (all SQL isolated in `src/modules/*/*.repo.js`).

@@ -3,7 +3,7 @@
 - Package: WP7a Drafting Cycle (Update Manning Requirement, Print Draft Proposal, Review/Print Draft, Draft Approval, Close Draft, Update WEF)
 - Branch: drafting-cycle
 - Last commit: this report, committed last on the branch; the last code commit before it is `4d090e8` ("Drafting: user links ON DELETE SET NULL, portable row lock, approval dialog fixes, README and CONVENTIONS")
-- Done by: AI session for the administrator
+- Done by: the owner
 - Date: 19/11/2026
 
 ## Built (against the brief, page by page)
