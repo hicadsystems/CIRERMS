@@ -283,6 +283,21 @@ The demo data is shared by every module (seeds `001` to `014` in `src/db/seeds/`
 
 ---
 
+## 3.5. Documentation
+
+- [Documentation index](docs/README.md)
+- [Developer onboarding](docs/development/README.md)
+- [Local setup](docs/development/setup.md)
+- [Architecture](docs/development/architecture.md)
+- [Frontend setup and maintenance](docs/development/frontend.md)
+- [Creating and maintaining modules, backend to frontend (step-by-step, with tests)](docs/development/modules.md)
+- [Database and migrations](docs/development/database.md)
+- [Testing](docs/development/testing.md)
+- [Operations runbooks](docs/runbooks/README.md)
+- [Troubleshooting, by symptom](docs/runbooks/incident-troubleshooting.md)
+
+---
+
 ## 4. Quick Start
 
 ### Option A — Docker Compose (Recommended One-Command Setup)
