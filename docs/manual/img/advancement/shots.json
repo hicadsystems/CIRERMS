@@ -1,6 +1,6 @@
 {
   "advancement-board-list": {
-    "spec": "0395130b72f37ea1",
+    "spec": "829705b4f7b21703",
     "source": "f82390b89f4fd3eb",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "advancement-due-list": {
-    "spec": "577d48e4772bc38d",
+    "spec": "4886db753977526f",
     "source": "f82390b89f4fd3eb",
     "devices": [
       "desktop",
@@ -32,7 +32,7 @@
     ]
   },
   "advancement-review-page": {
-    "spec": "2ccfd01e60f972a8",
+    "spec": "b3071bfb5d0a0228",
     "source": "f82390b89f4fd3eb",
     "devices": [
       "desktop",

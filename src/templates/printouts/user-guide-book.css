@@ -51,6 +51,8 @@
 .g-note.important { border-left-color: var(--navy); background: rgba(0, 116, 168, 0.08); }
 .g-note.important .lead { color: var(--navy); }
 .g-table { margin: 2mm 0 4mm; font-size: 9pt; }
+table.data.g-table thead th, table.data.g-table tbody td { word-break: normal; overflow-wrap: normal; }
+table.data.g-table thead th:first-child, table.data.g-table tbody td:first-child { white-space: nowrap; width: 1%; }
 
 /* ---- pictures and their legends: never cut across a page ---- */
 .g-shot { margin: 3mm 0 4mm; break-inside: avoid-page; }

@@ -218,7 +218,7 @@ My Details is your own record, for reading. Every person with an account has one
 open: #ratings/current
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: searchbox | Type an Official Number or a name
   2: button "Export" | Save the list
@@ -238,7 +238,7 @@ marks:
 open: #ratings/edit/B0539
 as: admin
 crop: #app-main
-height: 560
+height: 480
 marks:
   1: button "Edit Details" | Change the details
   2: button "Print Dossier" | Print the record
@@ -273,14 +273,14 @@ as: admin
 crop: #app-main
 height: 360
 marks:
-  1: heading "Documents" | Pick a rating first
+  1: css #app-main input | Find the rating first
 ```
 
 ```shot ratings-my-details-page
 open: #ratings/my-details
 as: admin
 crop: #app-main
-height: 600
+height: 500
 marks:
   1: button "Print Dossier" | Print your record
   2: tab "Advancement" | Press a tab to read more

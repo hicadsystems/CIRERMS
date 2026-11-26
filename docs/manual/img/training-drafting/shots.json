@@ -1,6 +1,6 @@
 {
   "training-history-page": {
-    "spec": "3d800a189610131c",
+    "spec": "cb81b926ea76af35",
     "source": "39a9554daeb03517",
     "devices": [
       "desktop",
@@ -16,7 +16,7 @@
     ]
   },
   "training-process-list": {
-    "spec": "178d690d7c60c8f8",
+    "spec": "5cd54e9da36b542a",
     "source": "39a9554daeb03517",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "training-review-page": {
-    "spec": "52c174b480e83035",
+    "spec": "a93dac8df11fd008",
     "source": "39a9554daeb03517",
     "devices": [
       "desktop",

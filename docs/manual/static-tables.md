@@ -76,7 +76,7 @@ If the page says **This ... is in use** and names where, for example **(5 rating
 open: #tables/ships
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: searchbox | Find a value
   2: button "Add Ship" | Add a value

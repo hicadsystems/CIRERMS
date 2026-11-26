@@ -8,7 +8,7 @@
     ]
   },
   "admin-audit-page": {
-    "spec": "ab31f14a8d6c9e0d",
+    "spec": "b734fdd2559c6c79",
     "source": "d487434ba5216c22",
     "devices": [
       "desktop",
@@ -16,7 +16,7 @@
     ]
   },
   "admin-password-page": {
-    "spec": "c1fc0fd2bc6efc3a",
+    "spec": "dce2a3aa51abce9d",
     "source": "8cdcb7bee1d1104c",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "admin-roles-list": {
-    "spec": "aafdf27a8bd63317",
+    "spec": "38848aab26a69436",
     "source": "38f8a67854a4c825",
     "devices": [
       "desktop",
@@ -32,7 +32,7 @@
     ]
   },
   "admin-settings-page": {
-    "spec": "b6cfeb76236a14dc",
+    "spec": "0086c26d251291f5",
     "source": "006b9ca3057c08d1",
     "devices": [
       "desktop",
@@ -40,7 +40,7 @@
     ]
   },
   "admin-users-list": {
-    "spec": "5b8a50ab56190e04",
+    "spec": "7110e774a83563fd",
     "source": "48f3e2805158e059",
     "devices": [
       "desktop",

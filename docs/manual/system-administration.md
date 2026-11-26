@@ -139,7 +139,7 @@ If the dialog refuses a number, read the line under the field. For example, the 
 open: #admin/users
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: button "Add Account" | Add an account
 ```
@@ -157,7 +157,7 @@ crop: modal
 open: #admin/roles
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: button "Add Role" | Add a role
 ```
@@ -166,22 +166,19 @@ marks:
 open: #admin/password
 as: admin
 crop: #app-main
-height: 520
+height: 440
 ```
 
 ```shot admin-audit-page
 open: #admin/audit
 as: admin
 crop: #app-main
-height: 700
-marks:
-  1: button "Search" | Apply the filters
-  2: button "Reset" | Clear the filters
+height: 560
 ```
 
 ```shot admin-settings-page
 open: #admin/settings
 as: admin
 crop: #app-main
-height: 700
+height: 560
 ```

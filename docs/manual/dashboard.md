@@ -36,8 +36,7 @@ The page has three parts: the five tiles at the top, **Recently Enlisted** and *
 open: #dashboard
 as: admin
 crop: #app-main
-height: 640
+height: 330
 marks:
-  1: heading "Recently Enlisted" | The five newest ratings
-  2: heading "Current Ratings by Rate" | Serving ratings at each rate
+  1: css div.rounded-card:has(a[href="#disciplinary/pending"]) | A tile: the line at its foot opens the page it counts
 ```

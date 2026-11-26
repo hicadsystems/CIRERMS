@@ -80,7 +80,7 @@ If the page says **The file could not be read as an Excel workbook**, save the f
 open: #special-drafting/proposal
 as: admin
 crop: #app-main
-height: 620
+height: 520
 marks:
   1: button "Draft a Rating" | Draft a rating
 ```
@@ -100,7 +100,7 @@ marks:
 open: #special-drafting/report
 as: admin
 crop: #app-main
-height: 720
+height: 560
 marks:
   1: button "Preview Draft Form" | Read the form first
   2: button "Print and Mark Printed" | Print and move the ratings

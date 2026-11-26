@@ -1,6 +1,6 @@
 {
   "assessment-grading-list": {
-    "spec": "b121a9d13f5a69d6",
+    "spec": "124569fc19e950f2",
     "source": "7c0bb06f5e2c5904",
     "devices": [
       "desktop",
@@ -16,7 +16,7 @@
     ]
   },
   "assessment-periods-list": {
-    "spec": "64da337d60689e19",
+    "spec": "f53efc593bab5fa4",
     "source": "7c0bb06f5e2c5904",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "assessment-report-page": {
-    "spec": "aafe0bfed6f09a27",
+    "spec": "4db99db439c122ac",
     "source": "7c0bb06f5e2c5904",
     "devices": [
       "desktop",

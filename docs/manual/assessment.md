@@ -97,7 +97,7 @@ A new period is open at once.
 open: #assessment/grading
 as: admin
 crop: #app-main
-height: 620
+height: 520
 marks:
   1: button "Initiate Appraisal" | Record an appraisal
 ```
@@ -117,7 +117,7 @@ marks:
 open: #assessment/report
 as: admin
 crop: #app-main
-height: 760
+height: 490
 marks:
   1: button "Print PDF" | Print the report
   2: button "Export Excel" | Save as a workbook
@@ -127,7 +127,7 @@ marks:
 open: #assessment/periods
 as: admin
 crop: #app-main
-height: 520
+height: 440
 marks:
   1: button "Add Period" | Add a period
 ```

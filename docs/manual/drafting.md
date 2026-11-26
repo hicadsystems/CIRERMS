@@ -222,7 +222,7 @@ The Draft Report lists every posting that has reported, by WEF.
 open: #drafting/manning
 as: admin
 crop: #app-main
-height: 620
+height: 520
 marks:
   1: button "Print" | Print the requirement
   2: button "Add Requirement" | Add a line
@@ -232,7 +232,7 @@ marks:
 open: #drafting/proposal
 as: admin
 crop: #app-main
-height: 620
+height: 520
 marks:
   1: button "Create Draft Batch" | Make a batch of the ratings due
 ```
@@ -252,7 +252,7 @@ marks:
 open: #drafting/review
 as: admin
 crop: #app-main
-height: 700
+height: 560
 marks:
   1: role combobox "Batch Number" | Choose the batch
   2: button "Print Draft" | Open the Draft Form
@@ -274,14 +274,14 @@ marks:
 open: #drafting/approval
 as: admin
 crop: #app-main
-height: 560
+height: 480
 ```
 
 ```shot drafting-close-list
 open: #drafting/close
 as: admin
 crop: #app-main
-height: 420
+height: 380
 ```
 
 ```shot drafting-close-dialog
@@ -301,7 +301,7 @@ marks:
 open: #drafting/wef
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: button "Set WEF for Department" | Date a whole department
 ```
@@ -310,7 +310,5 @@ marks:
 open: #drafting/batches
 as: admin
 crop: #app-main
-height: 560
-marks:
-  1: button "Print Summary" | Print every batch listed
+height: 480
 ```

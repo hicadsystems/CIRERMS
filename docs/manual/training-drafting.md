@@ -96,7 +96,7 @@ Excel Upload adds Training entries to many records from one workbook, for course
 open: #training/process
 as: admin
 crop: #app-main
-height: 420
+height: 380
 marks:
   1: button "New Training Batch" | Open a batch
 ```
@@ -116,7 +116,7 @@ marks:
 open: #training/review
 as: admin
 crop: #app-main
-height: 680
+height: 560
 marks:
   1: button "Add Rating" | Add one rating
   2: button "Add by Branch" | Add many
@@ -126,7 +126,7 @@ marks:
 open: #training/history
 as: admin
 crop: #app-main
-height: 680
+height: 560
 marks:
   1: button "Confirm Training History" | Confirm and close the batch
 ```

@@ -1,6 +1,6 @@
 {
   "drafting-approval-list": {
-    "spec": "245a8b47ba6e28e5",
+    "spec": "b4895088051d608a",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",
@@ -8,7 +8,7 @@
     ]
   },
   "drafting-batches-list": {
-    "spec": "dee0e34698416e75",
+    "spec": "00dfa1e2c6d4d1e9",
     "source": "32838b0d0e740227",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "drafting-close-list": {
-    "spec": "65612a11b9f35f6f",
+    "spec": "012ea97ef29a833d",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",
@@ -40,7 +40,7 @@
     ]
   },
   "drafting-manning-list": {
-    "spec": "bffc556af28ca3e2",
+    "spec": "36b1d03c189a0ed0",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",
@@ -48,7 +48,7 @@
     ]
   },
   "drafting-proposal-list": {
-    "spec": "fea05d91c285a77d",
+    "spec": "878bfa01aaef6760",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",
@@ -56,7 +56,7 @@
     ]
   },
   "drafting-review-page": {
-    "spec": "aa5b66f108829648",
+    "spec": "df3568dd7a5f63c1",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",
@@ -72,7 +72,7 @@
     ]
   },
   "drafting-wef-list": {
-    "spec": "1f97f5dcd51168c8",
+    "spec": "7d4bd490fb64b83a",
     "source": "28b01ba472d7dd65",
     "devices": [
       "desktop",

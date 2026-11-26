@@ -16,7 +16,7 @@
     ]
   },
   "ratings-current-list": {
-    "spec": "2fa56f1a27cf405d",
+    "spec": "e2c34845b5e87c88",
     "source": "c00d537b77c07b04",
     "devices": [
       "desktop",
@@ -24,7 +24,7 @@
     ]
   },
   "ratings-documents-page": {
-    "spec": "1016f8c45f663c32",
+    "spec": "9fac03e8c81604f7",
     "source": "dc7c6b1a53f16946",
     "devices": [
       "desktop",
@@ -32,7 +32,7 @@
     ]
   },
   "ratings-my-details-page": {
-    "spec": "95f009b71cb4e888",
+    "spec": "26bdf92876ea0929",
     "source": "7bb42fca63badb28",
     "devices": [
       "desktop",
@@ -48,7 +48,7 @@
     ]
   },
   "ratings-record": {
-    "spec": "7c742c68769cc42c",
+    "spec": "0f6a7f429fa49196",
     "source": "7bb42fca63badb28",
     "devices": [
       "desktop",

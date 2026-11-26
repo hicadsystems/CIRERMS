@@ -141,7 +141,7 @@ Ratings already in a proposal, already discharged, or repeated in the file are s
 open: #discharge/process
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: button "Create Proposal" | Make a proposal
 ```
@@ -156,14 +156,14 @@ do:
   - wait: button "Save"
 crop: modal
 marks:
-  1: text "Exit Type" | The way the rating leaves
+  1: role combobox "-- Select Exit Type --" | The way the rating leaves
 ```
 
 ```shot discharge-report-page
 open: #discharge/report
 as: admin
 crop: #app-main
-height: 700
+height: 560
 marks:
   1: button "Print PDF" | Print the report
 ```

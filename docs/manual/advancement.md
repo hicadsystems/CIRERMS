@@ -139,7 +139,7 @@ If the page says **Column ... was not found in row 1**, download the template ag
 open: #advancement/due
 as: admin
 crop: #app-main
-height: 620
+height: 520
 marks:
   1: button "Create Advancement Batch" | Make a batch
 ```
@@ -159,7 +159,7 @@ marks:
 open: #advancement/review
 as: admin
 crop: #app-main
-height: 700
+height: 560
 marks:
   1: role combobox "Batch Number" | Choose the batch
   2: button "Print Form" | Open the Advancement Form
@@ -176,7 +176,7 @@ height: 400
 open: #advancement/board
 as: admin
 crop: #app-main
-height: 640
+height: 520
 marks:
   1: button "Set Date for Batch" | Date the whole batch
 ```

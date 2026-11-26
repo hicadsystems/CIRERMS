@@ -99,14 +99,14 @@ The forecast lists the current ratings who become due for discharge in the next 
 open: #reports/ship-history
 as: admin
 crop: #app-main
-height: 420
+height: 380
 ```
 
 ```shot reports-all-personnel-page
 open: #reports/all-personnel
 as: admin
 crop: #app-main
-height: 700
+height: 560
 marks:
   1: button "Print PDF" | Print the report
 ```
@@ -115,21 +115,21 @@ marks:
 open: #reports/nominal-roll
 as: admin
 crop: #app-main
-height: 420
+height: 380
 ```
 
 ```shot reports-manning-state-page
 open: #reports/manning-state
 as: admin
 crop: #app-main
-height: 700
+height: 560
 ```
 
 ```shot reports-retirement-forecast-page
 open: #reports/retirement-forecast
 as: admin
 crop: #app-main
-height: 700
+height: 560
 marks:
   1: button "Print PDF" | Print the report
 ```

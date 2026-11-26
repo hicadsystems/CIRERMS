@@ -274,12 +274,17 @@ const overlap = (a, b, gap = 0) => a.x < b.x + b.w + gap && a.x + a.w + gap > b.
  * spot), clear of the rings of every marked target and of the other numbers, and inside the picture with a margin.
  */
 function placeBadge(box, others, taken, content, blocks, vp, size) {
+  // first with a clear margin round the words, then with a thin one where the page is tight
+  return placeBadgeWith(box, others, taken, content, blocks, vp, size, 6) || placeBadgeWith(box, others, taken, content, blocks, vp, size, 2);
+}
+
+function placeBadgeWith(box, others, taken, content, blocks, vp, size, clear) {
   const m = 4;
-  const reach = 48; // how far from the target a number may be put
-  const left = Math.max(m, Math.floor(box.x - reach));
-  const top = Math.max(m, Math.floor(box.y - reach));
-  const right = Math.min(vp.width - m - size, Math.ceil(box.x + box.width + reach));
-  const bottom = Math.min(vp.height - m - size, Math.ceil(box.y + box.height + reach));
+  const reach = 40; // how far from the target a number may be put (the gap to its ring is limited again below)
+  const left = Math.max(m, Math.floor(box.x - reach), Math.ceil((vp.left || 0) + 2));
+  const top = Math.max(m, Math.floor(box.y - reach), Math.ceil(vp.top || 0));
+  const right = Math.min(vp.width - m - size, Math.ceil(box.x + box.width + reach), Math.floor((vp.right || vp.width) - 2 - size));
+  const bottom = Math.min(vp.height - m - size, Math.ceil(box.y + box.height + reach), Math.floor((vp.bottom || vp.height) - 2 - size));
   // the ring of another target is its edge: a number may lie inside a marked box (a menu's items inside the sidebar) but not on its ring
   const onRing = (r, o) => {
     // a small target is not to be entered at all; only a big one (the sidebar) may hold another mark's number
@@ -290,16 +295,20 @@ function placeBadge(box, others, taken, content, blocks, vp, size) {
     return overlap(r, outer) && !inside;
   };
   let best = null;
-  for (let y = top; y <= bottom; y += 6) {
-    for (let x = left; x <= right; x += 6) {
+  for (let y = top; y <= bottom; y += 2) {
+    for (let x = left; x <= right; x += 2) {
       const r = { x, y, w: size, h: size };
       if (taken.some((t) => overlap(r, t, 3))) continue;
       if (others.some((o) => onRing(r, o))) continue;
-      if (content.some((c) => overlap(r, c, 6))) continue;
+      if (content.some((c) => overlap(r, c, clear))) continue;
       // nor inside another field (only the free end of the field that is marked)
       if (blocks.some((b) => !(Math.abs(b.x - box.x) < 3 && Math.abs(b.y - box.y) < 3 && Math.abs(b.w - box.width) < 3) && overlap(r, b, 2))) continue;
       const cx = x + size / 2;
       const cy = y + size / 2;
+      // the number belongs to its own ring: no more than 8 px from it (the gap between the two boxes)
+      const gapX = Math.max(box.x - (x + size), 0, x - (box.x + box.width));
+      const gapY = Math.max(box.y - (y + size), 0, y - (box.y + box.height));
+      if (Math.hypot(gapX, gapY) > 8) continue;
       const insideTarget = cx > box.x && cx < box.x + box.width && cy > box.y && cy < box.y + box.height;
       // distance to the target's edge, and a preference for its left side, then the top
       const dx = Math.max(box.x - cx, 0, cx - (box.x + box.width));
@@ -314,14 +323,14 @@ function placeBadge(box, others, taken, content, blocks, vp, size) {
 
 /** The numbered marks over their targets, in the app's brand colour (its tokens, so the dark capture re-colours them).
  *  Returns the area they cover, so the crop can take every mark in whole. */
-async function drawMarks(page, marks) {
+async function drawMarks(page, marks, area) {
   if (!marks.length) return null;
   const found = [];
   for (const m of marks) found.push({ n: m.n, target: await find(page, m.target), what: describeTarget(m.target) });
   for (const f of found) await f.target.scrollIntoViewIfNeeded().catch(() => null);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const SIZE = 24;
-  const vp = page.viewportSize();
+  const vp = { ...page.viewportSize(), ...(area || {}) };
   const boxes = [];
   for (const f of found) {
     const box = await f.target.boundingBox();
@@ -339,7 +348,7 @@ async function drawMarks(page, marks) {
     const others = boxes.filter((o) => o !== b).map((o) => ({ x: o.box.x, y: o.box.y, w: o.box.width, h: o.box.height }));
     // the badge may sit on the box of its own target only where it is free of that target's words and icon (the content test)
     const spot = placeBadge(b.box, others, taken, content, blocks, vp, SIZE);
-    if (!spot) throw new Error(`mark ${b.n} (${b.what}) has no free place for its number: drop it or split the picture`);
+    if (!spot) throw new Error(`mark ${b.n} (${b.what}) has no free place for its number within 8 px of its ring: mark something else or split the picture`);
     taken.push({ x: spot.x, y: spot.y, w: SIZE, h: SIZE });
     return { n: b.n, box: b.box, badge: { left: spot.x, top: spot.y, size: SIZE } };
   });
@@ -386,11 +395,78 @@ const contentBottom = (el) => el.evaluate((root) => {
   return low;
 });
 
-/** Where the picture is cut: the page without the empty space under it, the open dialog or sheet, the open menu, or one element. */
+
+/**
+ * Where a picture may be cut without cutting through a row, a card, a line of words, a field or a button: the tops and bottoms of
+ * what a reader reads as one piece, inside `root`, in the page's own coordinates. A cut is clean when no piece lies across it.
+ */
+const pieces = (page, rootSelector) => page.evaluate((sel) => {
+  const root = document.querySelector(sel);
+  if (!root) return null;
+  const rects = [];
+  const add = (r) => { if (r.width >= 2 && r.height >= 2) rects.push({ top: r.top, bottom: r.bottom }); };
+  // decoration (the soft circles behind a tile) is not a piece: it is laid over nothing a reader reads
+  const visible = (el) => { const st = getComputedStyle(el); return st.visibility !== 'hidden' && st.display !== 'none' && !(st.pointerEvents === 'none' && st.position === 'absolute'); };
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!n.nodeValue.trim() || !n.parentElement || !visible(n.parentElement)) continue;
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    for (const r of range.getClientRects()) add(r);
+  }
+  root.querySelectorAll('*').forEach((el) => {
+    if (!visible(el)) return;
+    const r = el.getBoundingClientRect();
+    if (!r.width || r.height < 6) return;
+    const tag = el.tagName;
+    const st = getComputedStyle(el);
+    const bordered = ['Top', 'Right', 'Bottom', 'Left'].some((side) => parseFloat(st[`border${side}Width`]) > 0 && st[`border${side}Style`] !== 'none');
+    const filled = st.backgroundColor !== 'rgba(0, 0, 0, 0)' || st.backgroundImage !== 'none';
+    const card = el.parentElement && el.parentElement.matches('div.space-y-2, ul, ol, tbody');
+    if (/^(IMG|SVG|CANVAS|INPUT|SELECT|TEXTAREA|BUTTON|TR|LI|DT|DD|LABEL)$/i.test(tag) || card || ((bordered || filled) && r.height <= 220)) add(r);
+  });
+  const top = root.getBoundingClientRect().top;
+  return { rects, rootTop: top, rootBottom: root.getBoundingClientRect().bottom };
+}, rootSelector);
+
+const cleanAt = (rects, y) => !rects.some((r) => r.top < y - 1 && r.bottom > y + 1);
+/** The lowest clean cut at or above `limit` (and not above `floor`), a little air under the last piece. */
+function cleanBottom(rects, limit, floor) {
+  const ys = rects.map((r) => r.bottom).filter((y) => y <= limit + 0.5 && y >= floor).sort((a, b) => b - a);
+  for (const y of ys) {
+    if (!cleanAt(rects, y)) continue;
+    const next = rects.map((r) => r.top).filter((t) => t >= y - 1).sort((a, b) => a - b)[0];
+    return y + Math.max(2, Math.min(10, (next === undefined ? 10 : next - y) - 2));
+  }
+  return null;
+}
+/** The first clean cut at or below `limit` that is at least `from`: used to take a mark in whole. */
+function cleanBottomAfter(rects, from) {
+  const ys = rects.map((r) => r.bottom).filter((y) => y >= from - 0.5).sort((a, b) => a - b);
+  for (const y of ys) if (cleanAt(rects, y)) return y + 8;
+  return from;
+}
+/** The first clean cut at or below `from` for a picture's top, so it never starts through a heading or a row. */
+function cleanTop(rects, from) {
+  const ys = [from, ...rects.map((r) => r.top).filter((t) => t >= from - 0.5)].sort((a, b) => a - b);
+  for (const y of ys) if (cleanAt(rects, y - 4)) return Math.max(from, y - 6);
+  return from;
+}
+function cleanTopBefore(rects, to) {
+  const ys = rects.map((r) => r.top).filter((t) => t <= to + 0.5).sort((a, b) => b - a);
+  for (const y of ys) if (cleanAt(rects, y - 4)) return y - 6;
+  return to;
+}
+
+/** Where the picture is cut: the page without the empty space under it, the open dialog or sheet, the open menu, or one element.
+ *  A cut through the page (not a dialog) is moved to a clean edge: it never goes through a row, a card, a line of words or a field. */
 async function clipOf(page, crop, covered, height) {
   const vp = page.viewportSize();
+  const phone = vp.width < 761;
   const whole = { x: 0, y: 0, width: vp.width, height: vp.height };
   let clip;
+  let root = null;
+  let limitY = vp.height;
   if (crop === 'viewport') clip = whole;
   else if (crop === 'page') {
     if (await page.locator('[role=dialog]:visible').count()) clip = whole;
@@ -401,7 +477,8 @@ async function clipOf(page, crop, covered, height) {
         return last ? last.getBoundingClientRect().bottom : null;
       });
       // on a phone the bottom bar belongs to the picture; on a desktop the content's end, with some air under it
-      clip = !bottom || vp.width < 761 ? whole : { ...whole, height: Math.min(vp.height, Math.ceil(bottom + 28)) };
+      clip = !bottom || phone ? whole : { ...whole, height: Math.min(vp.height, Math.ceil(bottom + 28)) };
+      if (!phone) root = '#app-main';
     }
   } else {
     // `modal`: the open dialog or sheet, else the open menu
@@ -409,25 +486,85 @@ async function clipOf(page, crop, covered, height) {
     const el = crop === 'modal' ? modal : page.locator(crop).first();
     const box = await el.boundingBox();
     if (!box) throw new Error(`crop ${crop}: nothing on screen`);
-    // a menu is cut to itself (what is above it must not show); a dialog or element gets a little air
+    // a menu or an element is cut to itself (what lies beside it must not show); a dialog gets a little air
     const isMenu = crop === 'modal' && !(await page.locator('[role=dialog]:visible').count());
-    const pad = isMenu ? 0 : crop === 'modal' ? 10 : 12;
+    const pad = crop === 'modal' && !isMenu ? 10 : 0;
     const bottom = Math.min(box.y + box.height, (await contentBottom(el)) + 24);
     const x = Math.max(0, box.x - pad);
     const y = Math.max(0, box.y - pad);
     clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, bottom - y + pad) };
+    if (crop !== 'modal') {
+      root = crop;
+      if (phone) {
+        const bar = await page.evaluate(() => { const b = document.getElementById('bottom-bar'); return b && b.getClientRects().length ? b.getBoundingClientRect().top : null; });
+        if (bar) limitY = bar;
+      }
+    }
   }
   // `height:` keeps only the top of the crop (so a long page does not drag in what lies below)
   if (height) clip = { ...clip, height: Math.min(clip.height, height) };
+  // a picture of the page area never takes in the bars above and below it (the phone's header, tabs and bottom bar)
+  if (root === '#app-main' || (root && root.startsWith('#app-main '))) {
+    const pb = await page.locator('#page').boundingBox();
+    if (pb) {
+      const y = Math.max(clip.y, pb.y);
+      clip = { ...clip, y, height: Math.max(1, Math.min(clip.y + clip.height, pb.y + pb.height) - y) };
+      limitY = Math.min(limitY, pb.y + pb.height);
+    }
+  }
+  let top = clip.y;
+  let bottom = Math.min(clip.y + clip.height, limitY);
+  if (root) {
+    const p = await pieces(page, root);
+    if (p && p.rects.length) {
+      // a page scrolled under its top edge starts at the first whole piece
+      if (clip.y <= top && p.rootTop < clip.y) top = cleanTop(p.rects, clip.y);
+      const cut = cleanBottom(p.rects, bottom, top + (bottom - top) * 0.3);
+      if (cut !== null) bottom = Math.min(cut, limitY);
+      // every mark, with its number, is taken in whole, and the cut stays clean
+      if (covered) {
+        if (covered.y < top) top = Math.max(clip.y, cleanTopBefore(p.rects, covered.y));
+        if (covered.y + covered.height > bottom) bottom = Math.min(limitY, cleanBottomAfter(p.rects, covered.y + covered.height));
+      }
+    }
+  }
+  clip = { ...clip, y: top, height: Math.max(1, bottom - top) };
   if (covered && crop !== 'viewport') {
     // every mark, with its number, is inside the picture
     const x = Math.max(0, Math.min(clip.x, covered.x));
     const y = Math.max(0, Math.min(clip.y, covered.y));
     const right = Math.min(vp.width, Math.max(clip.x + clip.width, covered.x + covered.width));
-    const bottom = Math.min(vp.height, Math.max(clip.y + clip.height, covered.y + covered.height));
-    clip = { x, y, width: right - x, height: bottom - y };
+    const low = Math.min(vp.height, Math.max(clip.y + clip.height, covered.y + covered.height));
+    clip = { x, y, width: right - x, height: low - y };
   }
   return clip;
+}
+
+/** A sheet or dialog whose form scrolls: shown to the end of its last whole field, so its footer never covers one halfway. */
+async function fitDialog(page) {
+  const found = await page.evaluate(() => {
+    const dialogs = [...document.querySelectorAll('[role=dialog]')].filter((d) => d.getClientRects().length);
+    const dlg = dialogs[dialogs.length - 1];
+    const body = dlg && dlg.querySelector('.overflow-y-auto');
+    if (!body || body.scrollHeight <= body.clientHeight + 2) return false;
+    body.scrollTop = 0;
+    body.setAttribute('data-guide-body', '');
+    return true;
+  });
+  if (!found) return;
+  const p = await pieces(page, '[data-guide-body]');
+  const box = await page.locator('[data-guide-body]').boundingBox();
+  if (p && box) {
+    const cut = cleanBottom(p.rects, box.y + box.height, box.y + box.height * 0.3);
+    if (cut !== null && cut < box.y + box.height - 1) {
+      await page.evaluate((h) => {
+        const body = document.querySelector('[data-guide-body]');
+        body.style.flex = 'none';
+        body.style.height = `${h}px`;
+        body.style.overflow = 'hidden';
+      }, cut - box.y);
+    }
+  }
 }
 
 async function switchTheme(page, theme) {
@@ -472,7 +609,21 @@ async function takeDevice(browser, origin, shot, device) {
       await doStep(page, step);
       await settle(page, requests);
     }
-    const covered = await drawMarks(page, spec.marks);
+    if (await page.locator('[role=dialog]:visible').count()) await fitDialog(page);
+    // the numbers stay inside the page area when the picture is of it (never over the sidebar beside it)
+    let area = null;
+    if (!['page', 'viewport', 'modal'].includes(spec.crop)) area = { sel: spec.crop };
+    if (area) {
+      const ab = await page.locator(area.sel).first().boundingBox();
+      const pb = area.sel.startsWith('#app-main') ? await page.locator('#page').boundingBox() : null;
+      area = ab ? { left: ab.x, right: ab.x + ab.width, ...(pb ? { top: pb.y, bottom: pb.y + pb.height } : {}) } : null;
+    }
+    const covered = await drawMarks(page, spec.marks, area);
+    // what lies behind a dialog is hidden (the scrim then shows as plain colour, with no words cut across it); the round
+    // button over a phone's page is left out of a page's picture
+    const dialogOpen = await page.locator('[role=dialog]:visible').count();
+    if (spec.crop === 'modal' && dialogOpen) await page.addStyleTag({ content: '#shell, #fab { visibility: hidden !important; }' });
+    else if (device === 'phone' && !['page', 'viewport', 'modal'].includes(spec.crop)) await page.addStyleTag({ content: '#fab { display: none !important; }' });
     const clip = await clipOf(page, spec.crop, covered, spec.height);
     const out = {};
     for (const theme of lib.THEMES) {

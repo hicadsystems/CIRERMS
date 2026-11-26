@@ -140,7 +140,7 @@ marks:
 open: #disciplinary/pending
 as: admin
 crop: #app-main
-height: 600
+height: 500
 marks:
   1: button "Print List" | Print the list
 ```
@@ -161,5 +161,5 @@ marks:
 open: #disciplinary/concluded
 as: admin
 crop: #app-main
-height: 560
+height: 480
 ```
