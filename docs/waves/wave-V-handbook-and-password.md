@@ -1,5 +1,7 @@
 # Wave V: the technical handbook and Forgot Password
 
+> **Done and merged (K1, K2 and the handbook refresh on 26/11/2026). Do not start this again.**
+
 The owner (26/11/2026), as the real database is about to arrive:
 1. "Master has been updated, so there are three foreign documents about technical guide, run book, et al. Combine
    all into separate one word and one pdf."

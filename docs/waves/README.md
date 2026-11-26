@@ -10,7 +10,7 @@ note to leave. Read this page first, then your wave's file, then everything its 
 The administrator (who keeps `docs/PLAN.md`) inspects every branch before telling the owner it is ready to merge.
 The owner merges on GitHub. Nobody else merges, and nobody opens pull requests.
 
-## 1. The waves (all done and merged but wave V)
+## 1. The waves (all done and merged)
 
 A package may start only when everything in its "Needs merged first" column is on `master`. Two packages in the
 same wave do not depend on each other and can run at the same time, by two developers. Tell the owner which
