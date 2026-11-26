@@ -1,0 +1,18 @@
+{
+  "tables-add-ship": {
+    "spec": "bb75a89021522790",
+    "source": "3261bd81d61380ce",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "tables-ships-list": {
+    "spec": "09ce3581f0f468cb",
+    "source": "3261bd81d61380ce",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
