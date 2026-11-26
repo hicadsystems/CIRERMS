@@ -7,7 +7,7 @@ module: discharge
 
 Discharge Administration takes ratings out of the service, or keeps them in it for longer. A proposal is a list of ratings who are due. Each rating in it is processed with an exit type and an exit date.
 
-## The Discharge Cycle {#discharge-cycle}
+## The Discharge Cycle {#discharge-cycle needs="discharge.process view"}
 
 ### Discharge a rating from start to end {#discharge-whole-cycle needs="discharge.process view"}
 
@@ -60,6 +60,8 @@ If the page says **This rating is already in a proposal or has been discharged**
 11. Press **Save**.
 
 ![Processing a rating](shot:discharge-process-dialog)
+
+If the dialog says **This rating has 1 pending disciplinary case(s). Nothing blocks discharge; review them before processing.**, press **Open Pending Cases** to read them first. The case does not stop the discharge. It is a warning.
 
 When you close with an exit date of today or earlier, the rating becomes a former rating at once, its posting ends on the exit date, and its user account is turned off and signed out. A later exit date shows as **Scheduled**, and the system makes the change on that day. Closing also cancels any posting or advancement of the rating that is dated on or after the exit date.
 

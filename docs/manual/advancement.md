@@ -9,7 +9,7 @@ Advancement Processing promotes ratings to the next rate. It works like the draf
 
 > **Important:** If your account is tied to a department, you see only that department's ratings, batches and approvals.
 
-## The Advancement Cycle {#advancement-cycle}
+## The Advancement Cycle {#advancement-cycle needs="advancement.due view"}
 
 ### Run an advancement batch from start to end {#advancement-whole-cycle needs="advancement.due view"}
 

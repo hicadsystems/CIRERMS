@@ -17,18 +17,20 @@ Drafting moves ratings from one ship or unit to another. The work goes through a
 
 > **Important:** If your account is tied to a department, you see only that department's ratings, batches and approvals.
 
-## The Draft Cycle {#drafting-cycle}
+## The Draft Cycle {#drafting-cycle needs="drafting.proposal view"}
 
 The stages in order, from the first list to the last date.
 
 ### Run a draft from start to end {#drafting-whole-cycle needs="drafting.proposal view"}
 
-1. Open [Print Draft Proposal](#drafting/proposal). {needs="drafting.proposal add"} Press **Create Draft Batch** and confirm. See [Make a draft batch](#drafting-make-batch).
-2. Open [Review/Print Draft](#drafting/review). {needs="drafting.review edit"} Choose the proposed ship of each rating. See [Review a batch](#drafting-review-batch).
-3. {needs="drafting.approval approve"} Open [Draft Approval](#drafting/approval) and approve each department. See [Approve a department](#drafting-approve-department).
-4. {needs="drafting.close edit"} Open [Close Draft](#drafting/close) and close the batch with its authority. See [Close a batch](#drafting-close-batch).
-5. {needs="drafting.wef edit"} Open [Update WEF](#drafting/wef) and date each posting. See [Set the WEF](#drafting-set-wef).
-6. Open [Batch/Signal Content](#drafting/batches) to see how many ratings have reported.
+1. Open [Print Draft Proposal](#drafting/proposal) to see who is due.
+2. {needs="drafting.proposal add"} Press **Create Draft Batch** and confirm. See [Make a draft batch](#drafting-make-batch).
+3. Open [Review/Print Draft](#drafting/review).
+4. {needs="drafting.review edit"} Choose the proposed ship of each rating. See [Review a batch](#drafting-review-batch).
+5. {needs="drafting.approval approve"} Open [Draft Approval](#drafting/approval) and approve each department. See [Approve a department](#drafting-approve-department).
+6. {needs="drafting.close edit"} Open [Close Draft](#drafting/close) and close the batch with its authority. See [Close a batch](#drafting-close-batch).
+7. {needs="drafting.wef edit"} Open [Update WEF](#drafting/wef) and date each posting. See [Set the WEF](#drafting-set-wef).
+8. Open [Batch/Signal Content](#drafting/batches) to see how many ratings have reported.
 
 ## Update Manning Requirement {#drafting-manning screen=drafting.manning}
 

@@ -9,7 +9,7 @@ Static Tables are the lists the other screens choose from: the ships, the branch
 
 The sixteen tabs are: **Appraisal Ratings**, **Branch**, **Exit Type**, **Entry Mode**, **Offences**, **Sanctions**, **Institution**, **Local Government**, **Languages**, **Relationship**, **Staff Branch**, **Specialisation Area**, **Ships**, **States**, **Title** and **Training**.
 
-## How Every Table Works {#tables-engine}
+## How Every Table Works {#tables-engine needs="tables.ships view"}
 
 Each tab is a searchable list, 25 rows to a page. Press **Edit** at the end of a row, or the add button at the top, to change it. Every change is kept in the Audit Trail.
 
@@ -49,7 +49,7 @@ If the page says **This ... is in use** and names where, for example **(5 rating
 
 > **Important:** Never delete a value to hide it. Make it **Inactive**. Deleting is for a value added by mistake that nothing uses.
 
-## What Is Special in Each Table {#tables-special}
+## What Is Special in Each Table {#tables-special needs="tables.ships view"}
 
 | Tab | What is special |
 |---|---|

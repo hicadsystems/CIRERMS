@@ -7,7 +7,7 @@ module: reports
 
 Reports are read-only pages. They change no record. Each one has filters on the screen, a **Print PDF** button for a printed report and an **Export Excel** button for a workbook. The PDF and the workbook use the same filters as the screen.
 
-## Printing and Exporting {#reports-printing}
+## Printing and Exporting {#reports-printing needs="reports.ship-history view"}
 
 ### Print or export any report {#reports-print-export needs="reports.all-personnel view"}
 

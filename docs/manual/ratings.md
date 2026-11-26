@@ -25,7 +25,7 @@ You see only the pages and buttons your role may use. A Records Clerk, for examp
 
 The number under the search box says how many ratings match, for example **119 found**.
 
-> **Tip:** Press **Reset** or clear a filter to see everyone again.
+> **Tip:** Clear the search box and the filters to see everyone again.
 
 ### Open a rating {#ratings-open-rating needs="ratings.list view"}
 
@@ -134,7 +134,9 @@ Below the bar are ten tabs.
 
 ![Adding a next of kin](shot:ratings-add-next-of-kin)
 
-To change an entry, press its edit icon. {needs="ratings.edit delete"} To remove one, press its delete icon and confirm.
+To change an entry, press its edit icon.
+
+{needs="ratings.edit delete"} To remove an entry, press its delete icon and confirm.
 
 ### Delete a rating {#ratings-delete-rating needs="ratings.edit delete"}
 

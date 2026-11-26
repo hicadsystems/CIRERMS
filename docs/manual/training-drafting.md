@@ -7,7 +7,7 @@ module: training-drafting
 
 Training Drafting sends ratings on a course. A batch is for one course in one month, for example `DOT-2026-12-06`. The work runs through five pages: **Process Training Draft**, **Training Review**, **Update Training History**, **Reports** and **Excel Upload**.
 
-## The Training Cycle {#training-cycle}
+## The Training Cycle {#training-cycle needs="training.process view"}
 
 ### Run a training batch from start to end {#training-whole-cycle needs="training.process view"}
 

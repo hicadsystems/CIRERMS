@@ -9,7 +9,7 @@ Disciplinary Action keeps each case from the incident to the decision. A case is
 
 A case moves through three states: **Pending** (waiting for a decision), **Concluded** (decided) or cancelled (opened by mistake, and removed from the lists).
 
-## The Life of a Case {#disciplinary-cycle}
+## The Life of a Case {#disciplinary-cycle needs="disciplinary.pending view"}
 
 ### Take a case from start to end {#disciplinary-whole-case needs="disciplinary.initiate add"}
 
@@ -31,8 +31,8 @@ A case can be opened only for a current rating. A former rating is refused with 
 2. Type two characters of the Official Number or name in **Official No or Name**.
 3. Press the rating in the list. A dialog shows the rating's rate, branch, ship and **Cases on File**. If the rating has a pending case, the dialog says so. A new incident then opens a separate case.
 4. Press **Open Case**. The form opens.
-5. Choose the **Offence** from the list.
-6. Choose the **Incident Date**. It cannot be in the future or before the rating joined.
+5. Choose the **Incident Date**. It cannot be in the future or before the rating joined.
+6. Choose the **Offence** from the list.
 7. Type **What Happened**.
 8. Type **Reported By**.
 9. Press **Open Case** again.
