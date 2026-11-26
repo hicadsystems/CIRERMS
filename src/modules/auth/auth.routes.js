@@ -6,6 +6,7 @@
  */
 const express = require('express');
 const authService = require('./auth.service');
+const reset = require('./auth.reset');
 const throttle = require('./auth.throttle');
 const { requireAuth, setSessionCookie, clearSessionCookie } = require('../../middleware/auth');
 const { asyncHandler } = require('../../shared/errors');
@@ -30,6 +31,45 @@ router.post(
       res.json({ data: { user, token } });
     } catch (err) {
       if (err && err.code === 'INVALID_CREDENTIALS') throttle.fail(key);
+      throw err;
+    }
+  })
+);
+
+// Forgot Password (sign-in page, no session). Step 1: ask for a code. The answer is the same for every
+// Official Number, and for a client the throttle has stopped; a code goes only to an active account with an
+// e-mail address. Every request counts against the client's throttle, like a failed sign-in.
+router.post(
+  '/forgot-password',
+  asyncHandler(async (req, res) => {
+    const key = clientKey(req);
+    const meta = { ip: req.ip, userAgent: req.headers['user-agent'] || null };
+    try {
+      throttle.check(key);
+    } catch (err) {
+      if (err && err.code === 'TOO_MANY_ATTEMPTS') {
+        return res.json({ data: await reset.throttledAnswer() });
+      }
+      throw err;
+    }
+    throttle.fail(key);
+    const result = await reset.requestCode(req.body?.username, meta);
+    return res.json({ data: result });
+  })
+);
+
+// Step 2: the code and the new password. A wrong code counts against the client's throttle.
+router.post(
+  '/reset-password',
+  asyncHandler(async (req, res) => {
+    const key = clientKey(req);
+    throttle.check(key);
+    try {
+      const result = await reset.resetPassword(req.body || {}, { ip: req.ip, userAgent: req.headers['user-agent'] || null });
+      throttle.clear(key);
+      res.json({ data: result });
+    } catch (err) {
+      if (err && err.code === 'INVALID_CODE') throttle.fail(key);
       throw err;
     }
   })

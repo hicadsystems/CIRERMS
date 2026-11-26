@@ -26,7 +26,7 @@ Some tests start their own server or expect particular environment variables. Re
 
 Test in this order, so a failure tells you which layer is wrong:
 
-1. **The API alone.** Run a small Node script that signs in and exercises every route: success, validation refusal (422), not found (404), no session (401) and, for a limited role, 403. [Creating and Maintaining Modules](modules.md#4-check-the-backend) gives a complete one for the Notice Board that you can copy and adapt. It needs only Node 18, and works on Windows, macOS and Linux.
+1. **The API alone.** Run a small Node script that signs in and exercises every route: success, validation refusal (422), not found (404), no session (401) and, for a limited role, 403. [Creating and Maintaining Modules](modules.md#4-check-the-backend) gives a complete one for the Notice Board that you can copy and adapt. It needs only Node 20, and works on Windows, macOS and Linux.
 2. **The audit trail.** Confirm each write left an `INSERT`, `UPDATE` or `DELETE` row for the right table and record.
 3. **The screen.** Open it, and use the checklist and the console script in [Check the screen](modules.md#6-check-the-screen).
 4. **Each role.** Sign in as a role with full, partial and no access, and confirm buttons and refusals match.

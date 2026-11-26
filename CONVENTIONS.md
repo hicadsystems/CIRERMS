@@ -35,12 +35,12 @@ CIRERMS/
 │  │  ├─ migrations/            # YYYYMMDD_HHMMSS_name.sql
 │  │  └─ seeds/                 # 001_lookups.sql, 002_demo_ratings.sql
 │  ├─ middleware/               # auth.js (session), access.js (privileges), error.js, upload.js
-│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js,
+│  ├─ shared/                   # audit.js (the audit trail helper), password.js (hash, rules, one-time passwords), excel.js, mail/ (send an e-mail, or write it to storage/mail/ in development), printouts/ (renderPdf: Chromium and Handlebars), dates.js, errors.js,
 │  │                            # settings/ (values the business may change: the due rules), scheduled/ (changes that take effect on a later date)
 │  ├─ templates/printouts/      # the printout templates (.hbs), partials, printout.css, helpers.js, fonts: D4's approved design
 │  └─ modules/
 │     ├─ index.js               # module registration: mounts every <module>/<module>.module.js
-│     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js
+│     ├─ auth/                  # auth.module.js  auth.routes.js  auth.service.js  auth.repo.js  auth.throttle.js  auth.reset.js (Forgot Password)  auth.mail.js (its e-mail)
 │     ├─ access/                # roles (add, edit, delete) and the privilege catalogue, for Manage Roles
 │     ├─ audit/                 # the audit trail (read side, for Audit Trail)
 │     ├─ users/                 # Manage Users and Manage Password: accounts, one-time passwords, deactivation, reset
@@ -70,6 +70,7 @@ CIRERMS/
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
 ├─ scripts/guide/               # the User Guide's picture script (shoot.js) and checks (check.js); chapters are in docs/manual/
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
+├─ storage/mail/                # development e-mail (Forgot Password codes) when SMTP_HOST is empty (gitignored)
 ├─ migrate.js                   # migration CLI
 ├─ tailwind.config.js           # names the colour tokens, the phone/desk screens and the shared sizes
 ├─ CONVENTIONS.md
@@ -178,6 +179,7 @@ DROP TABLE ratings;
 15. `20261120_060000_create_training_batches.sql` — `training_batches` and `training_batch_ratings` (WP6)
 16. `20261120_050000_create_discharge.sql` — `discharge_proposals`, `discharge_rows`, `discharge_reengagements`, `discharge_uploads` (WP5)
 17. `20261120_110000_create_special_drafting.sql` — `special_draft_forms`, `special_drafts` (WP11)
+18. `20261120_150000_create_password_reset_codes.sql` — `password_reset_codes`: the e-mailed Forgot Password codes, hashed (K2)
 
 Each work package numbers its migrations in its own block, `20261120_WW####_name.sql` (WP1 is `01`).
 
@@ -423,7 +425,10 @@ module.exports = {
   their own (`requireAuth.allowLocked` and `requireAuth.allowPasswordChange` are the exceptions: `/api/auth/me`,
   lock, sign out, `POST /api/auth/change-password`), and the shell shows `js/shell/password.js` before anything
   else. Changing or resetting a password ends the person's other sessions (a reset, all of them); deactivating
-  ends them all. Accounts are never deleted. Guards (409 with a code): `SELF_DEACTIVATE`, `SELF_ROLE_CHANGE`,
+  ends them all. **Forgot Password** (`auth.reset.js`, `POST /api/auth/forgot-password` and `reset-password`, public and
+  throttled): a 6-digit code kept only as an HMAC, 10 minutes, once, 5 wrong tries, 3 codes an account an hour; the answer to a
+  request is the same for every Official Number; a success ends every session, and no code is ever logged or audited.
+  Accounts are never deleted. Guards (409 with a code): `SELF_DEACTIVATE`, `SELF_ROLE_CHANGE`,
   `SELF_RESET`, `LAST_ADMIN` (the last active full-access administrator), `ROLE_PROTECTED` (the Administrator
   role), `ROLE_IN_USE`, `DUPLICATE_ROLE`, `DUPLICATE_USERNAME`. **A later module's screens appear in Manage Roles
   from its manifest** (`privileges`), with nothing to add in System Administration; a grant to a role other than

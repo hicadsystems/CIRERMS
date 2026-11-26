@@ -11,3 +11,6 @@ storage/uploads/photos/*
 !storage/uploads/photos/.gitkeep
 storage/uploads/documents/*
 !storage/uploads/documents/.gitkeep
+
+# Development mail (written when SMTP_HOST is empty)
+storage/mail/

@@ -5,7 +5,7 @@
   "private": true,
   "main": "src/server.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "start": "node src/server.js",
@@ -23,7 +23,8 @@
     "demo:build": "node docs/design/build-demo.js",
     "printouts:render": "node docs/design/printouts/render.js",
     "guide:shots": "node scripts/guide/shoot.js",
-    "guide:check": "node scripts/guide/check.js"
+    "guide:check": "node scripts/guide/check.js",
+    "docs:book": "node scripts/docs-book/build.js"
   },
   "dependencies": {
     "@sparticuz/chromium": "153.0.0",
@@ -36,11 +37,14 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.5.0",
     "mysql2": "^3.11.5",
+    "nodemailer": "10.6.1",
     "pdfjs-dist": "4.10.38",
     "puppeteer-core": "25.18.1"
   },
   "devDependencies": {
+    "docx": "9.5.1",
     "lucide-static": "1.49.0",
+    "marked": "15.0.12",
     "tailwindcss": "^3.4.17"
   }
 }

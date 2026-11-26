@@ -20,7 +20,7 @@ CIRERMS is a browser-based personnel management system with a vanilla JavaScript
 
 The application uses:
 
-- Node.js `>=18` (Node.js 20 is the recommended and Docker runtime)
+- Node.js `>=20` (the Docker runtime is Node.js 20)
 - Express 4
 - CommonJS JavaScript on the server
 - Vanilla JavaScript ES modules in the browser

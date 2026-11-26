@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18 or later (`node >=18`; Node.js 20 is recommended)
+- Node.js 20 or later (`node >=20`)
 - npm
 - MySQL 8, or the Docker Compose MySQL service
 - Docker Desktop if using Compose
@@ -94,6 +94,7 @@ Core settings are in `.env.example`. Important groups are:
 - `SESSION_IDLE_MINUTES`, `SESSION_SERVER_GRACE_SECONDS`
 - `UPLOAD_DIR` and upload size limits
 - `PDF_CHROMIUM_PATH` and PDF limits
+- `SMTP_*`, `MAIL_FROM` and `MAIL_DIR` (optional: Forgot Password e-mails a code; with no `SMTP_HOST` the message is written to `storage/mail/` instead)
 
 `NODE_ENV=production` requires a `JWT_SECRET` that is not the development placeholder.
 
@@ -104,7 +105,7 @@ After seeding, use the administrator account documented in the root README:
 - Username: `HICO001`
 - Password: `Admin@123`
 
-Change the default password outside demonstration environments.
+Change the default password outside demonstration environments. The sign-in page shows no demo accounts; *Forgot password?* e-mails a one-time code (see the README, *Passwords*).
 
 ## Health check
 

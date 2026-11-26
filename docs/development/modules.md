@@ -417,7 +417,7 @@ npm run seed
 
 Test the API before you build any screen. If something is wrong here, you know it is the server and not the screen.
 
-Save this script as `notices-smoke.js` **outside the repository** (for example in your home folder). It signs in, then creates, lists, reads, edits and deletes a notice, and checks that bad input is refused. It needs only Node 18 or later, and works the same on Windows, macOS and Linux.
+Save this script as `notices-smoke.js` **outside the repository** (for example in your home folder). It signs in, then creates, lists, reads, edits and deletes a notice, and checks that bad input is refused. It needs only Node 20 or later, and works the same on Windows, macOS and Linux.
 
 ```js
 'use strict';
