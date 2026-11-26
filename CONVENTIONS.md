@@ -471,6 +471,7 @@ module.exports = {
     `numbers(keys)`, `list(prefix)`, `set(tx, actor, key, value)` (audited). The due rules live here, named
     `<module>.<rule>` (`drafting.due_months`, `drafting.band_green_to`, `drafting.band_amber_to`); a package adds its
     rows with `INSERT IGNORE` in its seed, so a value someone changed is kept.
+    **To add a setting** a package adds its seed row and one entry (label, unit, limits) in the group list of the Settings page, `src/modules/settings/settings.groups.js`, so the real value can be entered under System Administration > Settings.
 - **Discharge Administration** (`src/modules/discharge/`, WP5): screens `discharge.process` (view; **add** makes a
   proposal and adds a rating; **edit** processes and re-engages; **delete** removes a rating), `discharge.service`,
   `discharge.forms` and `discharge.report` (view) and `discharge.upload` (view; **add** imports). `applyExit(tx, actor,

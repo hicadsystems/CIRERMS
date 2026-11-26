@@ -10,7 +10,7 @@
  *   npm start                                   # the app on :3000
  *   NODE_PATH=$(npm root -g) node tests/e2e/system-admin-walkthrough.js
  *
- * BASE changes the address; SHOTS=<dir> saves screenshots there; ONLY=admin,guards,none,view,audit runs
+ * BASE changes the address; SHOTS=<dir> saves screenshots there; ONLY=admin,guards,none,view,settings,audit runs
  * part of it. It prints its total time and fails when that is over 5 minutes. It reads .env for the database,
  * to add throw-away roles and accounts (one with no administration grants, one that may only
  * view, one that manages users) and removes them again when it ends; the accounts and roles it
@@ -22,7 +22,8 @@
  * administrator, the Administrator role, a role with users, duplicate names), a new account's
  * forced first change, a reset ending the person's session, a role change applying on the next
  * request, the accounts without grants (no buttons, 403 from the API), and the audit trail
- * holding every write and no password.
+ * holding every write and no password. Settings (admin.settings): the page, an edit through the dialog, the
+ * refusals, a 403 without the grant and the audit row.
  */
 const fs = require('fs');
 const path = require('path');
@@ -1094,6 +1095,129 @@ async function auditHoldsEverything(browser) {
   await ctx.context.close();
 }
 
+/** Settings: the page, an edit through the dialog, refusals, and the audit row. Desktop light does it all; the others glance. */
+async function settingsSuite(browser, viewport, theme, full) {
+  const phone = viewport.width < 700;
+  console.log(`\nSettings, ${phone ? 'phone' : 'desktop'}, ${theme}`);
+  const ctx = await open(browser, { viewport, theme });
+  const { page } = ctx;
+  await signIn(page, ADMIN);
+  await go(page, 'admin/settings');
+  const main = page.locator('#app-main');
+  check(/Stand-in rules|stand-in rules/.test(await main.innerText()), 'Settings: the note about stand-in rules');
+  for (const g of ['Drafting', 'Advancement', 'Discharge']) check((await main.locator(`[data-group="${g.toLowerCase()}"]`).count()) === 1, `Settings: a card for ${g}`);
+  check((await main.locator('[data-setting]').count()) === 14, 'Settings: all 14 settings are listed');
+  check(/Due for a draft after \(months on a ship\)/.test(await main.innerText()) && /10 months/.test(await main.innerText()), 'Settings: plain label, value with its unit');
+  check(await noSideScroll(page), 'Settings: no sideways scroll');
+  await shot(page, `settings-${phone ? 'phone' : 'desktop'}-${theme}`);
+  const editDrafting = main.getByRole('button', { name: 'Edit Drafting settings' });
+  await editDrafting.click();
+  let dlg = dialogOf(page);
+  await dlg.waitFor();
+  await shot(page, `settings-dialog-${phone ? 'phone' : 'desktop'}-${theme}`);
+  const input = (name) => dlg.locator(`[name="${name}"]`);
+  if (!full) {
+    check((await dlg.locator('input').count()) === 3, 'Settings: the dialog has the group’s three numbers');
+    await footBtn(dlg, 'Cancel').click();
+    check(ctx.errors.length === 0, 'no browser errors', ctx.errors.join(' | '));
+    await ctx.context.close();
+    return;
+  }
+  // refusals in the dialog (the browser) and on the server
+  await input('drafting.due_months').fill('1.5');
+  await footBtn(dlg, 'Save').click();
+  await dlg.getByText('Enter a whole number.').waitFor();
+  check(true, 'Settings: a decimal is refused under the field');
+  await input('drafting.due_months').fill('12');
+  await input('drafting.band_green_to').fill('11');
+  await input('drafting.band_amber_to').fill('30');
+  await footBtn(dlg, 'Save').click();
+  const confirm = dialogOf(page);
+  await confirm.getByText('Due for a draft after (months on a ship): 10 months to 12 months').waitFor();
+  check(/Shown green up to/.test(await confirm.innerText()), 'Settings: the confirmation states what changes');
+  await footBtn(confirm, 'Change').click();
+  await dlg.getByText(/Must not be below the due value \(12\)/).waitFor();
+  check(true, 'Settings: a green band below the due month is refused by the server, under its field');
+  const stillTen = (await api(page, 'GET', '/api/settings')).body.data.find((g) => g.key === 'drafting').items.find((i) => i.key === 'drafting.due_months').value;
+  check(stillTen === '10', 'Settings: a refused save changes nothing', stillTen);
+  const auditBefore = (await api(page, 'GET', '/api/audit?table=settings')).body.meta.total;
+  await input('drafting.band_green_to').fill('20');
+  await footBtn(dlg, 'Save').click();
+  await footBtn(dialogOf(page), 'Change').click();
+  check(/Drafting settings saved/.test(await toastText(page, /Drafting settings saved/)), 'Settings: a toast follows the save');
+  await dlg.waitFor({ state: 'detached' });
+  check(/12 months/.test(await main.locator('[data-setting="drafting.due_months"]').innerText()), 'Settings: the page shows the new value');
+  // the rules, through the API
+  const put = (group, values) => api(page, 'PUT', `/api/settings/${group}`, { values });
+  let r = await put('drafting', { 'drafting.nope': 1 });
+  check(r.status === 422 && r.body.error.fields['drafting.nope'], 'Settings: an unknown key is refused', JSON.stringify(r.body));
+  r = await put('drafting', { 'advancement.due_months': 12 });
+  check(r.status === 422, 'Settings: a key of another group is refused');
+  r = await put('nothing', { 'drafting.due_months': 12 });
+  check(r.status === 404, 'Settings: an unknown group is 404');
+  for (const [v, why] of [[0, 'below 1'], [601, 'above 600'], ['abc', 'text'], ['', 'empty'], [-3, 'negative']]) {
+    r = await put('drafting', { 'drafting.due_months': v });
+    check(r.status === 422 && r.body.error.fields['drafting.due_months'], `Settings: months ${why} is refused`, `${r.status}`);
+  }
+  r = await put('drafting', { 'drafting.band_amber_to': 20 });
+  check(r.status === 422 && r.body.error.fields['drafting.band_amber_to'], 'Settings: an amber band not above the green band is refused');
+  r = await put('discharge', { 'discharge.age_due': 15 });
+  check(r.status === 422, 'Settings: age 15 is refused');
+  r = await put('discharge', { 'discharge.age_due': 71 });
+  check(r.status === 422, 'Settings: age 71 is refused');
+  r = await put('discharge', { 'discharge.service_due': 51 });
+  check(r.status === 422, 'Settings: 51 years is refused');
+  r = await put('discharge', { 'discharge.age_band_2': 50 });
+  check(r.status === 422 && r.body.error.fields['discharge.age_band_2'], 'Settings: a discharge band not above the one before is refused');
+  r = await put('discharge', { 'discharge.service_band_3': 30 });
+  check(r.status === 422 && r.body.error.fields['discharge.service_band_3'], 'Settings: the last service band must exceed the second');
+  // an all-or-nothing save: one bad value saves none of the others
+  r = await put('discharge', { 'discharge.age_due': 52, 'discharge.service_due': 99 });
+  const dis = (await api(page, 'GET', '/api/settings')).body.data.find((g) => g.key === 'discharge').items;
+  check(r.status === 422 && dis.find((i) => i.key === 'discharge.age_due').value === '50', 'Settings: one bad value saves none of the others');
+  // the audit row: before and after
+  const trail = (await api(page, 'GET', '/api/audit?table=settings&pageSize=25')).body;
+  const row = trail.data.find((e) => e.recordId === 'drafting.due_months');
+  const entry = row ? (await api(page, 'GET', `/api/audit/${row.id}`)).body.data : null;
+  check(trail.meta.total === auditBefore + 2 && !!entry && entry.action === 'UPDATE' && entry.changes.some((c) => c.from === '10' && c.to === '12'), 'Settings: the audit trail holds before and after for each changed key', JSON.stringify(entry && entry.changes));
+  // the change reaches Drafting's due list at once
+  const dueTotal = async () => (await api(page, 'GET', '/api/drafting/due?pageSize=100')).body.meta.total;
+  r = await put('drafting', { 'drafting.due_months': 10, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
+  const dueAt10 = await dueTotal();
+  await put('drafting', { 'drafting.due_months': 30, 'drafting.band_green_to': 40, 'drafting.band_amber_to': 50 });
+  const dueAt30 = await dueTotal();
+  check(dueAt10 > 0 && dueAt30 < dueAt10, 'Settings: changing drafting.due_months changes the due list at once', `${dueAt10} then ${dueAt30}`);
+  // put the stand-in numbers back
+  r = await put('drafting', { 'drafting.due_months': 10, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
+  check(r.status === 200, 'Settings: the stand-in numbers are put back');
+  // the Settings tab comes after Audit Trail, and Ctrl K finds the page
+  await page.keyboard.press('Control+k');
+  await page.locator('input[aria-label^="Search"]').last().fill('Settings');
+  check((await page.locator('[role="option"]', { hasText: 'Settings' }).count()) > 0, 'Settings: Ctrl K finds it');
+  await page.keyboard.press('Escape');
+  check(ctx.errors.length === 0, 'no browser errors', ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
+/** Someone with every administration grant except Settings: no tab, a refused page, 403 from the API. */
+async function settingsWithoutGrant(browser) {
+  console.log('\nSettings, an account without the grant');
+  const ctx = await open(browser, { viewport: DESKTOP, theme: 'light' });
+  const { page } = ctx;
+  await signIn(page, VIEWER);
+  await page.goto(`${BASE}/app.html#admin/settings`);
+  await page.waitForSelector('#app-main h1');
+  check(/You Do Not Have Access/.test(await page.locator('#app-main').innerText()), 'Settings: the page shows the not-allowed state');
+  let r = await api(page, 'GET', '/api/settings');
+  check(r.status === 403 && r.body.error.code === 'FORBIDDEN', 'GET /api/settings: 403', `${r.status}`);
+  r = await api(page, 'PUT', '/api/settings/drafting', { values: { 'drafting.due_months': 12 } });
+  check(r.status === 403, 'PUT /api/settings/drafting: 403', `${r.status}`);
+  const kept = await dbConn.query("SELECT value FROM settings WHERE setting_key = 'drafting.due_months'");
+  check(kept[0][0].value === '10', 'Settings: the refused write changed nothing');
+  check(ctx.errors.length === 0, 'no browser errors', ctx.errors.join(' | '));
+  await ctx.context.close();
+}
+
 async function main() {
   const started = Date.now();
   dbConn = await connect();
@@ -1117,6 +1241,13 @@ async function main() {
     if (want('view')) {
       await viewOnly(browser, DESKTOP, 'dark');
       await viewOnly(browser, PHONE, 'light');
+    }
+    if (want('settings')) {
+      await settingsSuite(browser, DESKTOP, 'light', true);
+      await settingsSuite(browser, DESKTOP, 'dark', false);
+      await settingsSuite(browser, PHONE, 'light', false);
+      await settingsSuite(browser, PHONE, 'dark', false);
+      await settingsWithoutGrant(browser);
     }
     if (want('audit')) await auditHoldsEverything(browser);
   } finally {
