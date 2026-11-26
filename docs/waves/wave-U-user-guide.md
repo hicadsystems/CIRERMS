@@ -1,5 +1,7 @@
 # Wave U: the User Guide
 
+> **Done and merged (G1 and G2 on 26/11/2026). Do not start this again.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
+
 The owner (26/11/2026): a user guide inside the app, made the way the `praxisjbs/mycity-app` application makes
 theirs. It is reached from a **User Guide** item in the account menu, just before Sign Out. On a desktop, **Ctrl+H**
 opens it in a mini panel from the right. The User Guide page also has a **Download** that gives the same guide as a
