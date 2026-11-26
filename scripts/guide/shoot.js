@@ -423,7 +423,9 @@ const pieces = (page, rootSelector) => page.evaluate((sel) => {
     const bordered = ['Top', 'Right', 'Bottom', 'Left'].some((side) => parseFloat(st[`border${side}Width`]) > 0 && st[`border${side}Style`] !== 'none');
     const filled = st.backgroundColor !== 'rgba(0, 0, 0, 0)' || st.backgroundImage !== 'none';
     const card = el.parentElement && el.parentElement.matches('div.space-y-2, ul, ol, tbody');
-    if (/^(IMG|SVG|CANVAS|INPUT|SELECT|TEXTAREA|BUTTON|TR|LI|DT|DD|LABEL)$/i.test(tag) || card || ((bordered || filled) && r.height <= 220)) add(r);
+    // a label and its field (with its hint) are one piece: a form never ends on a label with its box out of sight
+    if (tag === 'LABEL' && el.parentElement) { const pr = el.parentElement.getBoundingClientRect(); if (pr.height <= 260) add(pr); }
+    if (/^(IMG|SVG|CANVAS|INPUT|SELECT|TEXTAREA|BUTTON|TR|LI|DT|DD|LABEL)$/i.test(tag) || (card && r.height <= 260) || ((bordered || filled) && r.height <= 220)) add(r);
   });
   const top = root.getBoundingClientRect().top;
   return { rects, rootTop: top, rootBottom: root.getBoundingClientRect().bottom };
@@ -449,7 +451,12 @@ function cleanBottomAfter(rects, from) {
 /** The first clean cut at or below `from` for a picture's top, so it never starts through a heading or a row. */
 function cleanTop(rects, from) {
   const ys = [from, ...rects.map((r) => r.top).filter((t) => t >= from - 0.5)].sort((a, b) => a - b);
-  for (const y of ys) if (cleanAt(rects, y - 4)) return Math.max(from, y - 6);
+  for (const y of ys) {
+    if (!cleanAt(rects, y - 4)) continue;
+    // up to 16 px of the page's own background above the first piece, never reaching into the piece above it
+    const prev = Math.max(from, ...rects.map((r) => r.bottom).filter((b) => b <= y + 0.5));
+    return Math.max(from, y - Math.min(16, Math.max(4, y - prev - 2)));
+  }
   return from;
 }
 function cleanTopBefore(rects, to) {
@@ -490,9 +497,20 @@ async function clipOf(page, crop, covered, height) {
     const isMenu = crop === 'modal' && !(await page.locator('[role=dialog]:visible').count());
     const pad = crop === 'modal' && !isMenu ? 10 : 0;
     const bottom = Math.min(box.y + box.height, (await contentBottom(el)) + 24);
-    const x = Math.max(0, box.x - pad);
-    const y = Math.max(0, box.y - pad);
-    clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, bottom - y + pad) };
+    let x = Math.max(0, box.x - pad);
+    let y = Math.max(0, box.y - pad);
+    let width = Math.min(vp.width - x, box.width + pad * 2);
+    if (crop === '#app-main') {
+      // the page's own background round the content, the same on each side (its padding, up to 16 px), never the sidebar
+      const pb = await page.locator('#page').boundingBox();
+      if (pb) {
+        const m = Math.min(16, Math.max(0, box.x - pb.x), Math.max(0, pb.x + pb.width - (box.x + box.width)));
+        x = box.x - m;
+        width = box.width + m * 2;
+        y = Math.max(pb.y, box.y - m);
+      }
+    }
+    clip = { x, y, width, height: Math.min(vp.height - y, bottom - y + pad) };
     if (crop !== 'modal') {
       root = crop;
       if (phone) {
@@ -502,7 +520,8 @@ async function clipOf(page, crop, covered, height) {
     }
   }
   // `height:` keeps only the top of the crop (so a long page does not drag in what lies below)
-  if (height) clip = { ...clip, height: Math.min(clip.height, height) };
+  // (on a phone a list picture takes the screen down to the bottom bar, so its first cards show)
+  if (height && !phone) clip = { ...clip, height: Math.min(clip.height, height) };
   // a picture of the page area never takes in the bars above and below it (the phone's header, tabs and bottom bar)
   if (root === '#app-main' || (root && root.startsWith('#app-main '))) {
     const pb = await page.locator('#page').boundingBox();
