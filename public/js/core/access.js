@@ -31,6 +31,7 @@ export function can(screen, action = 'view') {
 export function pageAllowed(page) {
   if (!page) return false;
   if (page.screen === 'soon') return fullAccess;
+  if (page.open) return true;
   return can(page.screen, page.action || 'view');
 }
 

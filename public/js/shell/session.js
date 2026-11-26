@@ -6,7 +6,7 @@
  *   roleLabel(user)   the role's name ('Administrator', 'Rating', ...)
  *   signOut()   ends the session on the server, signs out the other tabs and returns to the sign-in page
  *   accountItems()   the account menu: View My Details (when allowed), Change Password, Lock Screen,
- *                    Dark Mode / Light Mode, Sign Out
+ *                    Dark Mode / Light Mode, User Guide, Sign Out
  */
 import { api, setFallbackToken } from '../core/api.js';
 import { can } from '../core/access.js';
@@ -42,6 +42,7 @@ export function accountItems() {
     currentTheme() === 'dark'
       ? { label: 'Light Mode', icon: 'sun', onSelect: toggleTheme }
       : { label: 'Dark Mode', icon: 'moon', onSelect: toggleTheme },
+    { label: 'User Guide', icon: 'book-open', href: '#guide' },
     { divider: true },
     { label: 'Sign Out', icon: 'log-out', tone: 'danger', onSelect: signOut },
   ].filter(Boolean);

@@ -31,6 +31,8 @@ function screens() {
     }
   }));
   if (can('ratings.new', 'add')) out.splice(1, 0, { label: 'New Rating', words: 'new rating add create enlist', icon: 'user-plus', run: () => openNewRating() });
+  // the guide is for everyone
+  out.push({ label: 'User Guide', words: 'user guide help manual how to instructions', href: 'guide', icon: 'book-open' });
   return out;
 }
 

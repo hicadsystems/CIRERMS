@@ -68,6 +68,7 @@ CIRERMS/
 │                               # rebuild it (npm run demo:build); components.md: the kit and the screen parts
 ├─ docs/legacy/                 # map of the old system: README.md (how to trace a page), one file per module, sql/ (definitions only)
 ├─ scripts/build-icons.js       # builds public/assets/icons.svg from Lucide (npm run icons:build)
+├─ scripts/guide/               # the User Guide's picture script (shoot.js) and checks (check.js); chapters are in docs/manual/
 ├─ storage/uploads/             # runtime uploaded photos & personnel documents (gitignored)
 ├─ migrate.js                   # migration CLI
 ├─ tailwind.config.js           # names the colour tokens, the phone/desk screens and the shared sizes
@@ -530,6 +531,17 @@ module.exports = {
   reads Discharge's settings `discharge.age_due` and `discharge.service_due` through `discharge.service.rule`, and its due
   rule and exclusions exported from `discharge.repo.js`, `DUE_RULE`, `DUE_EXCLUSIONS` and `dueWhere`). Ship History is a
   workbook only. A PDF holds 3,000 lines at most and a workbook 50,000 (a 422 asks for narrower filters). See `docs/reports/WP9.md`.
+- **User Guide** (`src/modules/guide/`, wave U): the chapters are Markdown files in `docs/manual/` with their pictures in
+  `docs/manual/img/<chapter>/` (`docs/manual/README.md` is the writers' page). `guide.format.js` reads a chapter (sections with a `screen`, tasks and
+  steps with `needs`, links, notes, tables, picture specs); `guide.cut.js` cuts every chapter to the signed-in person's privileges (steps numbered
+  again, a link to a screen they may not open made plain, an empty chapter left out); `guide.search.js` (words, 2 characters, 25 results, each at its
+  step), `guide.service.js` and `guide.book.js` (the PDF book: `renderPdf('user-guide-book')`, the contents' page numbers read from the first
+  render's links with pdfjs-dist, and a second render) work on that cut only. The module is `public` to the loader and every route is behind
+  `requireAuth`, so it needs no privilege and sends no part a person's privileges do not allow. The pages are `#guide` and `#guide/:section` in
+  `nav.js` (`open: true`), drawn by `js/sections/guide.js` and `guide-parts.js`; `js/shell/guide-panel.js` is Ctrl+H on a desktop and
+  `guide-back.js` the **Back to Guide** chip. A picture follows the reader's device and theme (`/api/guide/pictures/...`). **A change to a screen
+  retakes its pictures and corrects its chapter**: `npm run guide:shots -- --stale`, `npm run guide:check`. Needs for a new screen's privileges
+  are written in the chapter, never in the code.
 - **The session lock** (`js/shell/lock.js`) locks after `SESSION_IDLE_MINUTES` without use (default 15) or
   from Lock Screen in the account menu; it unlocks with the password only (`POST /api/auth/unlock`, under the
   sign-in throttle). While locked the page is hidden and inert, the server answers 423 `SESSION_LOCKED`, and
