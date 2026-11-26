@@ -306,7 +306,7 @@ each reader receives only their part (the page, the Ctrl+H panel, the search and
 to the reader's privileges, as mycity-app does); every picture is taken on desktop and on phone, the page shows the
 one for the reader's device and the PDF book the desktop one; two packages, G1 (Sonnet 5.5 · high) then G2 (Sonnet
 5.5 · medium). Decided by the administrator: mycity-app's chapter format and screenshot specs (numbered marks,
-crops, hashes to find stale pictures) are kept; its Quick Start, meaning search, AI answers, voice search and CI gate
+crops, hashes to find stale pictures) are kept; its Quick Start, meaning search, written answers, voice search and CI gate
 are not; the search is by words; the PDF book is new to CIRERMS (mycity-app's guide has none) and uses `renderPdf`
 and the house printout style.
 

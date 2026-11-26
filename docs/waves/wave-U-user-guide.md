@@ -32,7 +32,7 @@ The reference is public and is read only. Clone it outside the CIRERMS working c
 - `docs/manual/README.md`: how a chapter is written (front matter, sections, tasks, steps, bold names, links, notes,
   pictures and their `shot` specs).
 - `docs/guides/user-guide.md`, sections 1 to 6.7: the design (what a reader receives, the pictures, the way back
-  to a step, the gate). Leave out what CIRERMS does not take: the Quick Start, the meaning search, AI answers,
+  to a step, the gate). Leave out what CIRERMS does not take: the Quick Start, the meaning search, the written answers,
   voice, the public Help, the Procedures and the CI gate.
 - `scripts/guide/shoot.js` and `scripts/guide/lib.js`: the screenshot script. Note how it signs in, fixes the
   clock, hides toasts and notices, does a spec's steps, draws the numbered marks, crops to a dialog, and keeps
