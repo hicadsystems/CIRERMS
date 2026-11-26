@@ -31,6 +31,8 @@ package you take before you start, so two people never take the same one.
 | H | `wave-H-demo-finish.md` | WP10 Demo Finish | `demo-finish` | all of the above | Sonnet 5.5 · high | M | `10` (if any) | `015_demo_finish.sql` (if any) |
 | U | `wave-U-user-guide.md` | G1 the user guide's machinery, the screenshot script, the PDF book, Getting Started | `user-guide` | everything on master | Sonnet 5.5 · high | M | none | none |
 | U | `wave-U-user-guide.md` | G2 every module's chapter and its screenshots | `user-guide-content` | G1 | Sonnet 5.5 · medium | L | none | none |
+| V | `wave-V-handbook-and-password.md` | K1 the technical handbook (one Word file, one PDF) | `docs-book` | everything on master | Sonnet 5.5 · medium | S | none | none |
+| V | `wave-V-handbook-and-password.md` | K2 Forgot Password by e-mailed code; no demo box | `forgot-password` | everything on master | Sonnet 5.5 · high | M | `15` | `016_forgot_password.sql` (if needed) |
 
 The waves are an order, not a wall: WP5 and WP12 need only WP13, so they can start as soon as it is merged, even
 before wave E finishes. WP8 waits for WP7a because it reuses the batch, approval and close parts WP7a builds.
