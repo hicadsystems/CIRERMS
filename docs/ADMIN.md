@@ -126,8 +126,8 @@ WP0, WP1, D1 and T1:
 
 | Item | State |
 |---|---|
-| master | Every package is merged (the last, WP10, on 23/11/2026; `docs/PLAN.md` section 8 lists each with its date). The Settings page is on its own branch, not yet merged |
-| Sessions | The Settings page (`settings`, session `session_01G8RfvjbcUqTXG9aWUmaoaf`) has reported and waits for the owner to merge. G1 (`user-guide`, session `session_01G8RfvhykBcuGJKkernc9c7`) is running since 26/11/2026. A documents session brought every open document up to date on `project-plan`. The administrator is now `session_01G8Rfvk1tUaL2XBW6Z3tbvT` (Opus 5.5 · medium, from 26/11/2026), which took over from `session_01G8RfvmysEhqqTQUZ45Qn5D` and oversees the user guide. All earlier sessions are finished and archived |
+| master | Every package is merged (the last, WP10, on 23/11/2026; `docs/PLAN.md` section 8 lists each with its date). The Settings page merged 26/11/2026 |
+| Sessions | The Settings page (`settings`) merged 26/11/2026; its session is archived. G1 (`user-guide`, session `session_01G8RfvhykBcuGJKkernc9c7`) is running since 26/11/2026. A documents session brought every open document up to date on `project-plan`. The administrator is now `session_01G8Rfvk1tUaL2XBW6Z3tbvT` (Opus 5.5 · medium, from 26/11/2026), which took over from `session_01G8RfvmysEhqqTQUZ45Qn5D` and oversees the user guide. All earlier sessions are finished and archived |
 | Next | The Settings page, then the user guide: G1 then G2, one at a time (`docs/waves/wave-U-user-guide.md`; `docs/PLAN.md` section 5 and the decisions of 26/11/2026 in section 9). When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | Open questions | All in `docs/OPEN-QUESTIONS.md`: 9 for Hicad (the due rules, TY and DW, the verification forms, and more), 4 for the owner |
 
