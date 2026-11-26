@@ -110,7 +110,7 @@ Rules for a picture:
 - **Cropped to what the step shows.** A dialog's picture is of the dialog (`crop: modal`).
 - **Marks only where they help**, three or four at most, numbered in the order a person reads the picture.
 - A change to a screen changes its pictures and its chapter: retake with `--stale` and correct the words.
-- The book uses the desktop light pictures. A picture taken only for the phone is shown narrow in the book.
+- Download PDF asks for the set of pictures: desktop or mobile, light or dark mode (`GET /api/guide/book?device=&theme=`). A picture taken for one device only falls back to the other device's capture, in the chosen theme; the paper is always light.
 - Readers with fewer privileges than the picture's account see fewer items than the picture does. Say so in the text where it matters.
 
 ## Writing for the reader

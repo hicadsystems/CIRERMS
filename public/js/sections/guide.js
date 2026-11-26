@@ -1,8 +1,8 @@
 /*
  * User Guide page: #guide (the first chapter) and #guide/<section or task> (that part, and with ?step=N that step).
  * The contents sit beside the text on a desktop and above it, as a picker, on a phone. Each reader receives only the
- * parts their role uses (the server cuts the guide), so there is nothing here to hide. Download PDF opens the same
- * guide as a book in the PDF preview.
+ * parts their role uses (the server cuts the guide), so there is nothing here to hide. Download PDF asks which pictures
+ * (desktop or mobile, light or dark) and opens the guide as a book in the PDF preview.
  *
  *   mountGuide(outlet, { params, query })
  */
@@ -14,11 +14,11 @@ import { button } from '../ui/button.js';
 import { card } from '../ui/card.js';
 import { emptyState } from '../ui/empty-state.js';
 import { selectInput } from '../ui/field.js';
-import { openPdfPreview } from '../ui/pdf-preview.js';
+import { openBookChoice } from './guide-book.js';
 import { keepGuidePlace } from '../shell/guide-back.js';
 import { blockNodes, guideHref, loadChapter, loadContents, locateAnchor, searchBox, sectionNodes, showAnchor } from './guide-parts.js';
 
-const downloadPdf = () => openPdfPreview({ url: '/api/guide/book', title: 'User Guide', filename: 'CIRERMS-User-Guide.pdf' });
+const downloadPdf = () => openBookChoice();
 
 function header() {
   return pageHeader({
