@@ -4,7 +4,8 @@
  * the navigation catalogue (core/nav.js), and hands each route to its screen: the page's
  * `view` in nav.js names the section file and the function that draws it, loaded when the
  * page opens. A page the person may not open shows the not-allowed state; the session lock
- * (shell/lock.js) covers everything while the session is locked.
+ * (shell/lock.js) covers everything while the session is locked. Ctrl K opens the search
+ * palette and, on a desktop, Ctrl H the User Guide's mini panel (shell/guide-panel.js).
  */
 import { api } from '../core/api.js';
 import { PAGES, describe } from '../core/nav.js';
@@ -20,11 +21,13 @@ import { closeAllDialogs } from '../ui/dialog.js';
 import { closeMenus } from '../ui/menu.js';
 import { setUser } from '../shell/session.js';
 import { openChangePassword } from '../shell/password.js';
-import { startLock } from '../shell/lock.js';
+import { startLock, isLocked } from '../shell/lock.js';
 import { renderRail, isFolded, setFolded } from '../shell/rail.js';
 import { renderModuleTabs } from '../shell/module-tabs.js';
 import { renderPhone } from '../shell/phone.js';
 import { openPalette, closePalette } from '../shell/search-palette.js';
+import { toggleGuidePanel } from '../shell/guide-panel.js';
+import { showGuideBack } from '../shell/guide-back.js';
 import { openNewRating } from './rating-new.js';
 
 /** The signed-in user ({ username, fullName, role, serviceNumber }); kept for older imports. */
@@ -87,6 +90,7 @@ function drawChrome(path) {
   renderRail(info);
   renderModuleTabs(info);
   renderPhone(info);
+  showGuideBack(path);
   document.title = info ? `${info.title} · CIRERMS` : 'CIRERMS';
   const page = document.getElementById('page');
   if (page) page.scrollTop = 0;
@@ -142,6 +146,14 @@ async function initAppShell() {
   while (me.user.mustChangePassword) {
     if (await openChangePassword({ forced: true })) me.user.mustChangePassword = false;
   }
+
+  // Ctrl H: the guide beside the page in view. Claimed like Ctrl K, on a desktop only, never while the session is locked
+  document.addEventListener('keydown', (e) => {
+    if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || e.key.toLowerCase() !== 'h') return;
+    e.preventDefault();
+    if (isLocked() || !window.matchMedia('(min-width: 761px)').matches) return;
+    toggleGuidePanel({ screen: currentInfo && currentInfo.screen });
+  });
 
   const routes = PAGES.map((page) => ({ pattern: page.pattern, mount: (outlet, ctx) => mountPage(page, outlet, ctx) }));
   startRouter({

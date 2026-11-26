@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="portrait"}}
+<link rel="stylesheet" href="user-guide-book.css">
+</head>
+<body class="book">
+
+<section class="g-cover">
+  <img class="crest" src="assets/navy-logo.png" alt="">
+  <div class="org">NIGERIAN NAVY</div>
+  <h1>CIRERMS</h1>
+  <div class="sys">Centralised Integrated Ratings Electronic Records Management System</div>
+  <div class="rule"></div>
+  <div class="doc">User Guide</div>
+  <dl class="for">
+    <div><dt>Prepared for</dt><dd>{{cover.name}}</dd></div>
+    <div><dt>Role</dt><dd>{{cover.role}}</dd></div>
+    <div><dt>Date</dt><dd>{{cover.date}}</dd></div>
+  </dl>
+  <p class="own">This book holds the parts of the guide that your role uses. Someone with another role may read other parts.</p>
+</section>
+
+<section class="g-toc">
+  {{> header title="Contents"}}
+  {{#each toc}}
+  <div class="toc-chapter"><a class="toc-line" href="#{{id}}"><span class="t"><b>{{n}}</b> {{title}}</span><i class="dots"></i><span class="pg">{{page}}</span></a></div>
+  {{#each sections}}<div class="toc-section"><a class="toc-line" href="#{{id}}"><span class="t">{{n}} {{title}}</span><i class="dots"></i><span class="pg">{{page}}</span></a></div>
+  {{/each}}{{/each}}
+</section>
+
+{{#each chapters}}
+<section class="g-chapter">
+  {{> header title="User Guide" subtitle=summary}}
+  <h1 class="g-title" id="{{id}}"><span class="n">{{n}}</span>{{title}}</h1>
+  {{> guide-block blocks=intro}}
+  {{#each sections}}
+  <h2 class="sec g-section" id="{{id}}"><span class="n">{{n}}</span>{{title}}</h2>
+  {{> guide-block blocks=blocks}}
+  {{#each tasks}}
+  <h3 class="g-task" id="{{id}}">{{title}}</h3>
+  {{> guide-block blocks=blocks}}
+  {{/each}}
+  {{/each}}
+</section>
+{{/each}}
+
+</body>
+</html>

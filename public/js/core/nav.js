@@ -247,6 +247,7 @@ export function findModule(key) {
  *   back      a route: the phone header shows a back arrow to it instead of the crest
  *   screen    the screen id (module.screen): the privilege key, with `action`
  *   action    the privilege needed to open the page (default 'view')
+ *   open      true: every signed-in person may open the page, whatever their role (the User Guide)
  *   view      { file, mount, props }: the section file in js/sections/, the function it
  *             exports to draw the page (mount(outlet, { params, query, info, ...props })),
  *             and extra options for it. The shell imports it when the page opens.
@@ -281,6 +282,9 @@ export const PAGES = [
     view: { file: 'ratings-documents.js', mount: 'mountRatingsDocuments' },
   },
   { pattern: 'ratings/my-details', module: 'ratings', tab: 'ratings/my-details', title: 'My Details', subtitle: 'Your service record', short: 'My Details', screen: 'ratings.my-details', view: { file: 'rating-record.js', mount: 'mountMyDetails' } },
+  // the User Guide: open to every signed-in person (`open`); the server cuts what it sends to their privileges
+  { pattern: 'guide', title: 'User Guide', subtitle: 'How to use CIRERMS', short: 'User Guide', screen: 'guide', open: true, view: { file: 'guide.js', mount: 'mountGuide' } },
+  { pattern: 'guide/:section', title: 'User Guide', subtitle: 'How to use CIRERMS', short: 'User Guide', screen: 'guide', open: true, view: { file: 'guide.js', mount: 'mountGuide' } },
   // Drafting (WP7a): the draft cycle, each page needs view
   { pattern: 'drafting/manning', module: 'drafting', tab: 'drafting/manning', title: 'Update Manning Requirement', subtitle: 'What each ship or unit needs, and who is aboard now. It advises; it never blocks a draft', short: 'Manning', screen: 'drafting.manning', view: { file: 'drafting.js', mount: 'mountManning' } },
   { pattern: 'drafting/proposal', module: 'drafting', tab: 'drafting/proposal', title: 'Print Draft Proposal', subtitle: 'Ratings due for a draft; make a batch of them for review', short: 'Draft Proposal', screen: 'drafting.proposal', view: { file: 'drafting.js', mount: 'mountProposal' } },

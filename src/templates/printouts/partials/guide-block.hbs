@@ -1,0 +1,7 @@
+{{#each blocks}}{{#if (eq kind "paragraph")}}<p class="g-p">{{{html}}}</p>
+{{else if (eq kind "note")}}<p class="g-note {{tone}}"><b class="lead">{{label}}</b> {{{html}}}</p>
+{{else if (eq kind "bullets")}}<ul class="g-list">{{#each items}}<li>{{{html}}}</li>{{/each}}</ul>
+{{else if (eq kind "steps")}}<ol class="g-steps">{{#each items}}<li><span class="num">{{n}}</span><div class="body"><div class="say">{{{html}}}</div>{{#if figure}}{{> guide-figure figure}}{{/if}}</div></li>{{/each}}</ol>
+{{else if (eq kind "table")}}<table class="data g-table"><thead><tr>{{#each head}}<th>{{{html}}}</th>{{/each}}</tr></thead><tbody>{{#each rows}}<tr>{{#each cells}}<td>{{{html}}}</td>{{/each}}</tr>{{/each}}</tbody></table>
+{{else if (eq kind "figure")}}{{> guide-figure figure}}
+{{/if}}{{/each}}

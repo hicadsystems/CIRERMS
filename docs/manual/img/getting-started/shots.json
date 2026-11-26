@@ -1,0 +1,86 @@
+{
+  "getting-started-account-menu": {
+    "spec": "c91f141185c916c3",
+    "source": "758fcab0b82efa92",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-guide-page": {
+    "spec": "c3a580491e2be718",
+    "source": "e8097bf6f833e38d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-guide-panel": {
+    "spec": "084688b8a52f9cf7",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "desktop"
+    ]
+  },
+  "getting-started-guide-search": {
+    "spec": "049c18b2509d2255",
+    "source": "e8097bf6f833e38d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-layout-desktop": {
+    "spec": "6c48c97b387f1523",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "desktop"
+    ]
+  },
+  "getting-started-layout-phone": {
+    "spec": "e2251d0dc1aaae49",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "phone"
+    ]
+  },
+  "getting-started-lock-screen": {
+    "spec": "594cf704112fafee",
+    "source": "758fcab0b82efa92",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-more-sheet": {
+    "spec": "4bf3b8424ba1de1c",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "phone"
+    ]
+  },
+  "getting-started-pdf-preview": {
+    "spec": "416297d1cbf81e0c",
+    "source": "e8097bf6f833e38d",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-search": {
+    "spec": "ebc58517a8104685",
+    "source": "758fcab0b82efa92",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "getting-started-sign-in-page": {
+    "spec": "8fc1412b6fa91c7e",
+    "source": "e3b0c44298fc1c14",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

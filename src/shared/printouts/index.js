@@ -77,7 +77,7 @@ function fileFor(url) {
  * Make a PDF from a template.
  * @param {string} name     template name, for example 'ratings-list' (src/templates/printouts/<name>.hbs)
  * @param {object} data     what the template reads, with generatedBy and generatedAt
- * @param {{landscape?: boolean}} [options]
+ * @param {{landscape?: boolean, maxHtmlMb?: number}} [options]  maxHtmlMb: a printout that carries pictures (the User Guide's book) lifts the size limit
  * @returns {Promise<Buffer>}
  */
 async function renderPdf(name, data, options = {}) {
@@ -85,8 +85,9 @@ async function renderPdf(name, data, options = {}) {
   if (options.landscape !== undefined) input.orientation = options.landscape ? 'landscape' : 'portrait';
   const html = template(name)(input).replace('<head>', `<head><base href="${ORIGIN}/">`);
   const mb = Buffer.byteLength(html, 'utf8') / (1024 * 1024);
-  if (mb > config.pdf.maxHtmlMb) {
-    const e = new Error(`This printout is too large to make (${mb.toFixed(1)} MB; the limit is ${config.pdf.maxHtmlMb} MB). Narrow the list and try again.`);
+  const limit = options.maxHtmlMb || config.pdf.maxHtmlMb;
+  if (mb > limit) {
+    const e = new Error(`This printout is too large to make (${mb.toFixed(1)} MB; the limit is ${limit} MB). Narrow the list and try again.`);
     e.status = 400;
     throw e;
   }

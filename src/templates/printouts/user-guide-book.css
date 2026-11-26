@@ -1,0 +1,60 @@
+/* The User Guide's book: what the shared printout.css does not hold (the cover, the contents, steps, notes,
+   pictures and their legends). Colours are printout.css's own variables. */
+
+.book { font-size: 10pt; line-height: 1.55; }
+
+/* ---- cover ---- */
+.g-cover { height: 255mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; break-after: page; }
+.g-cover .crest { width: 46mm; height: auto; margin-bottom: 9mm; }
+.g-cover .org { font-size: 13pt; font-weight: 700; letter-spacing: 0.18em; color: var(--ink); }
+.g-cover h1 { font-family: var(--font-head); font-size: 40pt; line-height: 1.1; margin: 4mm 0 2mm; color: var(--navy); letter-spacing: 0.04em; }
+.g-cover .sys { font-size: 9.5pt; color: var(--muted); max-width: 120mm; }
+.g-cover .rule { width: 34mm; height: 2pt; background: var(--teal); margin: 11mm 0 9mm; }
+.g-cover .doc { font-family: var(--font-head); font-size: 22pt; font-weight: 700; color: var(--ink); }
+.g-cover .for { margin: 14mm 0 0; display: grid; row-gap: 2.2mm; text-align: left; }
+.g-cover .for div { display: grid; grid-template-columns: 30mm auto; column-gap: 5mm; }
+.g-cover .for dt { color: var(--muted); font-size: 9.5pt; text-align: right; }
+.g-cover .for dd { margin: 0; font-weight: 600; font-size: 11pt; }
+.g-cover .own { margin-top: 16mm; max-width: 110mm; font-size: 9pt; color: var(--muted); }
+
+/* ---- contents ---- */
+.g-toc { break-after: page; }
+.toc-chapter { margin-top: 3.4mm; font-size: 10.5pt; }
+.toc-section { margin-left: 6mm; font-size: 9.5pt; color: var(--ink); }
+.toc-line { display: flex; align-items: baseline; gap: 2mm; color: inherit; text-decoration: none; padding: 0.7mm 0; }
+.toc-line .t { flex: none; max-width: 84%; }
+.toc-line .dots { flex: 1; border-bottom: 1pt dotted var(--muted); transform: translateY(-1mm); min-width: 6mm; }
+.toc-line .pg { flex: none; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.toc-chapter .toc-line .t b { color: var(--teal); margin-right: 1.5mm; }
+
+/* ---- a chapter ---- */
+.g-chapter { break-before: page; }
+.g-chapter:first-of-type { break-before: auto; }
+.g-title { font-family: var(--font-head); font-size: 19pt; line-height: 1.2; color: var(--navy); margin: 1mm 0 3mm; break-after: avoid; }
+.g-title .n, .g-section .n { color: var(--teal); margin-right: 2.5mm; }
+.g-section { font-size: 12pt; margin: 8mm 0 3mm; }
+.g-task { font-size: 10.5pt; font-weight: 700; color: var(--ink); margin: 6mm 0 2mm; padding-left: 2.5mm; border-left: 2.2pt solid var(--teal); break-after: avoid; }
+.g-p { margin: 0 0 3mm; }
+.book b { font-weight: 700; }
+.book code { font-family: var(--font-mono); font-size: 9pt; background: var(--stripe); padding: 0 1mm; border-radius: 1mm; }
+.book a { color: inherit; text-decoration: none; }
+.book a.sec-link { color: var(--navy); text-decoration: underline; }
+
+/* ---- steps, lists, notes ---- */
+.g-steps { list-style: none; margin: 2mm 0 4mm; padding: 0; }
+.g-steps li { display: grid; grid-template-columns: 7mm 1fr; column-gap: 2.5mm; padding: 1.4mm 0; break-inside: avoid; }
+.g-steps .num { width: 6mm; height: 6mm; border-radius: 50%; background: var(--navy); color: var(--page); font-size: 8.5pt; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 0.4mm; }
+.g-list { margin: 2mm 0 4mm; padding-left: 5mm; }
+.g-list li { margin: 0.8mm 0; }
+.g-note { margin: 3mm 0 4mm; padding: 2.4mm 3.4mm; border-left: 2.4pt solid var(--teal); background: rgba(28, 175, 154, 0.08); break-inside: avoid; }
+.g-note .lead { color: var(--teal); }
+.g-note.important { border-left-color: var(--navy); background: rgba(0, 116, 168, 0.08); }
+.g-note.important .lead { color: var(--navy); }
+.g-table { margin: 2mm 0 4mm; font-size: 9pt; }
+
+/* ---- pictures and their legends: never cut across a page ---- */
+.g-shot { margin: 3mm 0 4mm; break-inside: avoid-page; }
+.g-shot img { display: block; max-width: 100%; max-height: 240mm; height: auto; object-fit: contain; margin: 0; border: 0.6pt solid var(--border); border-radius: 1.6mm; }
+.g-legend { list-style: none; margin: 2mm 0 0; padding: 0; font-size: 8.8pt; color: var(--muted); }
+.g-legend li { display: flex; align-items: baseline; gap: 2mm; margin: 0.7mm 0; }
+.g-legend .mark { flex: none; width: 4.6mm; height: 4.6mm; border-radius: 50%; background: var(--navy); color: var(--page); font-size: 7.4pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }

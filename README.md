@@ -470,3 +470,20 @@ Every template in the folder is used by a screen. How to add a printout is in `C
 | `PDF_TEMP_DIR` | system temp | Where `@sparticuz/chromium` unpacks and keeps its profile |
 
 A failed render is logged (`[printouts] <template> failed ...`) and the person gets "The printout could not be made. Try again in a moment."; the server never waits on it for ever.
+
+---
+
+## 8. User Guide
+
+The guide is read in the app and downloaded as a PDF book. Its chapters are Markdown files in `docs/manual/` (one for each chapter, with
+its pictures in `docs/manual/img/<chapter>/`); `docs/manual/README.md` says how to write a chapter and specify its pictures.
+
+- **Reading it.** Account menu, **User Guide** (just before Sign Out; also on a phone), opens `#guide` (`#guide/<section>`; `?step=3` for a
+  step). On a desktop `Ctrl+H` opens it in a mini panel from the right, at the section for the page in view. **Download PDF** (top right of the
+  page) opens the same guide as a book in the PDF preview. Every signed-in person may read it, and **each reader receives only their part**: the
+  server cuts the guide, the panel, the search, the pictures and the book to the person's privileges (a section is about a screen, a task or a
+  step needs an action), so a Records Clerk never reads Manage Roles.
+- **Taking the pictures.** `npm run guide:shots` (needs the app running on the seeded demo data, and the machine's Playwright) takes four
+  captures of every picture: desktop and phone, light and dark. `-- --chapter <slug>`, `-- --shot <id>` and `-- --stale` take less;
+  `npm run guide:check` finds mistakes in the chapters.
+- **Keeping it true.** A change to a screen should retake its pictures (`npm run guide:shots -- --stale`) and correct its chapter.
