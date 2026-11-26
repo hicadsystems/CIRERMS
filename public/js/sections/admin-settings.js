@@ -26,7 +26,7 @@ export async function mountAdminSettings(outlet, { info } = {}) {
   let groups = (await api.get('/api/settings')).data;
   const canEdit = can('admin.settings', 'edit');
 
-  const note = h('div', { className: 'mb-4 rounded-card border border-border bg-subtle px-4 py-3 text-sm text-muted-foreground', dataset: { settingsNote: '' }, text: 'These are stand-in rules until Hicad confirms the real ones (see docs/FOR-HICAD.md). A change applies at once, everywhere the rule is used, and is kept in the Audit Trail.' });
+  const note = h('div', { className: 'mb-4 rounded-card border border-border bg-subtle px-4 py-3 text-sm text-muted-foreground', dataset: { settingsNote: '' }, text: 'These are stand-in rules until Hicad confirms the real ones. A change applies at once, everywhere the rule is used, and is kept in the Audit Trail.' });
   const list = h('div', { className: 'grid grid-cols-1 gap-4 desk:grid-cols-2' });
   outlet.replaceChildren(pageHeader({ title: info ? info.title : 'Settings', subtitle: info ? info.subtitle : '' }), note, list);
   draw();
