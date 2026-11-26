@@ -1,0 +1,50 @@
+{
+  "admin-add-account-dialog": {
+    "spec": "9960eb413636aaa0",
+    "source": "48f3e2805158e059",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "admin-audit-page": {
+    "spec": "b734fdd2559c6c79",
+    "source": "d487434ba5216c22",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "admin-password-page": {
+    "spec": "dce2a3aa51abce9d",
+    "source": "8cdcb7bee1d1104c",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "admin-roles-list": {
+    "spec": "38848aab26a69436",
+    "source": "38f8a67854a4c825",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "admin-settings-page": {
+    "spec": "0086c26d251291f5",
+    "source": "006b9ca3057c08d1",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "admin-users-list": {
+    "spec": "7110e774a83563fd",
+    "source": "48f3e2805158e059",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

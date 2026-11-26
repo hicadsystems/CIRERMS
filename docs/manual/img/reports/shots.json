@@ -1,0 +1,42 @@
+{
+  "reports-all-personnel-page": {
+    "spec": "c519afcced3ecf3b",
+    "source": "c82bbbe9bb63eb51",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "reports-manning-state-page": {
+    "spec": "8f42293ed19eaf56",
+    "source": "c82bbbe9bb63eb51",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "reports-nominal-roll-page": {
+    "spec": "900a1cab469559b2",
+    "source": "c82bbbe9bb63eb51",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "reports-retirement-forecast-page": {
+    "spec": "4343349e1cae263d",
+    "source": "c82bbbe9bb63eb51",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "reports-ship-history-page": {
+    "spec": "90b3187cc2bb76d3",
+    "source": "c82bbbe9bb63eb51",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dashboard-overview": {
+    "spec": "ec60aff448401d18",
+    "source": "758fcab0b82efa92",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
