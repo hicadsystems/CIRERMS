@@ -1,0 +1,82 @@
+{
+  "drafting-approval-list": {
+    "spec": "b4895088051d608a",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-batches-list": {
+    "spec": "00dfa1e2c6d4d1e9",
+    "source": "32838b0d0e740227",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-close-dialog": {
+    "spec": "f5a5b00b064b595d",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-close-list": {
+    "spec": "012ea97ef29a833d",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-create-batch": {
+    "spec": "316c37b6092f6a8a",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-manning-list": {
+    "spec": "36b1d03c189a0ed0",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-proposal-list": {
+    "spec": "878bfa01aaef6760",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-review-page": {
+    "spec": "df3568dd7a5f63c1",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-review-row": {
+    "spec": "bf0d464bf7dacde4",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "drafting-wef-list": {
+    "spec": "7d4bd490fb64b83a",
+    "source": "28b01ba472d7dd65",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
