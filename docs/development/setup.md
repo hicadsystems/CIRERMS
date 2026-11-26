@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18 or later (`node >=18`; Node.js 20 is recommended)
+- Node.js 20 or later (`node >=20`)
 - npm
 - MySQL 8, or the Docker Compose MySQL service
 - Docker Desktop if using Compose

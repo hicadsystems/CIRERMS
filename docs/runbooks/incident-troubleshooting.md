@@ -356,7 +356,7 @@ fetch('/api/ratings?status=current&page=1&pageSize=25', { credentials: 'include'
 
 ### Call an API from the command line
 
-Works on Windows, macOS and Linux with Node 18 or later. Save as `api-check.js` outside the repository:
+Works on Windows, macOS and Linux with Node 20 or later. Save as `api-check.js` outside the repository:
 
 ```js
 // node api-check.js /api/notices          (reads: GET)
