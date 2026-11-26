@@ -184,8 +184,8 @@ screenshots must be well captured.
 
 | Pkg | Branch | Scope | Model · effort | Needs merged first | Size |
 |---|---|---|---|---|---|
-| G1 | `user-guide` | The guide's machinery: chapters as Markdown in `docs/manual/` (mycity-app's format), cut on the server to the reader's privileges; the account menu item (desktop and phone); the User Guide page (contents, search, Back to Guide); the Ctrl+H panel; the screenshot script (`npm run guide:shots`: light, 1440 and 390 px, device scale 2, numbered marks, cropped, demo data); the PDF book by `renderPdf` (cover, contents with page numbers, house style); the Getting Started chapter | Sonnet 5.5 · high | everything on master | M |
-| G2 | `user-guide-content` | Every module's chapter, each page's tasks step by step with their `needs`, every picture taken by the script on desktop and phone | Sonnet 5.5 · medium | G1 | L |
+| G1 | `user-guide` | The guide's machinery: chapters as Markdown in `docs/manual/` (mycity-app's format), cut on the server to the reader's privileges; the account menu item (desktop and phone); the User Guide page (contents, search, Back to Guide); the Ctrl+H panel; the screenshot script (`npm run guide:shots`, fast: desktop and phone, each light and dark, device scale 2, numbered marks, cropped, demo data); the PDF book by `renderPdf` (cover, contents with page numbers, house style); the Getting Started chapter | Sonnet 5.5 · high | everything on master | M |
+| G2 | `user-guide-content` | Every module's chapter, each page's tasks step by step with their `needs`, every picture taken by the script in its four captures | Sonnet 5.5 · medium | G1 | L |
 
 ## 6. Order: two sessions at a time
 
