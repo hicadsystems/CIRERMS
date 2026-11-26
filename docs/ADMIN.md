@@ -127,7 +127,7 @@ WP0, WP1, D1 and T1:
 | Item | State |
 |---|---|
 | master | WP0, WP1, T1, D1, D2, WP2, WP3, WP3b, WP3c, WP4, D3, D4, WP13, WP7a, WP8, the plan, `docs/waves/` |
-| Sessions | WP10 (`demo-finish`, session `session_01G8RfviynTAfn7EnjP8MaMq`) done at c27a3fe and checked; it merges cleanly with master; owner to merge, then archive. Then the administrator runs every walkthrough on master once (the owner, 23/11/2026). Ship History PDF, WP9 and WP12 merged 23/11/2026 and archived |
+| Sessions | Settings page (`settings`, session `session_01G8RfvjbcUqTXG9aWUmaoaf`) running since 26/11/2026. A documents session brings every open document up to date on `project-plan`. Then this administrator hands over to a new administrator session (Opus 5.5 · medium) that oversees the user guide. WP10, Ship History PDF, WP9 and WP12 merged 23/11/2026 and archived |
 | Next | The owner (19/11/2026): the remaining waves (WP5, WP6, WP11, WP12, WP7b, WP9, then WP10) will most likely be done by other developers from `docs/waves/`. When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
 | For Hicad | The due rules (draft, advancement, training, discharge), what the posting types TY and DW stand for, copies of the three discharge verification forms |
 
