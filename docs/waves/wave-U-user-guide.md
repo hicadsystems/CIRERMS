@@ -231,6 +231,24 @@ Then stop. No report note file is needed for an AI session.
   unclear.
 - The app itself: run it and use every page before you write about it.
 
+### What G1 left (26/11/2026, merged)
+- The format, spec keys (`open`, `as`, `device`, `do`, `marks`, `crop`, `height`, `session`, `sources`), targets
+  and the `as` account names are in `docs/manual/README.md` and at the top of `scripts/guide/shoot.js`. A section's
+  `screen=` is a nav screen id (`ratings.list`), not a route. Slugs have two or more words and are unique across the
+  guide.
+- **Run `npm run guide:check` after every edit**, and `npm run guide:shots -- --chapter <slug>` per chapter
+  (`--stale` retakes only what changed). Run the script with `NODE_PATH=$(npm root -g)`.
+- **Marks need free space.** The script places each number in the nearest free spot and stops with "mark N has no
+  free place for its number" rather than cover anything. Use two to four marks a picture. On a crowded phone screen,
+  mark fewer or smaller targets, or split the picture.
+- **Crop to the step.** Use `crop: modal` for a dialog or sheet, a selector for one panel, and `crop: #app-main`
+  with `height:` for the top of a page without the sidebar. Show the sidebar only where the step is about it. Keep
+  the pictures folder small. Getting Started's 11 pictures take 6 MB.
+- The `select:` step drives the dropdown component, but G1 never tried it on a real form. Try it first, and report
+  if it fails rather than editing `choices.js`.
+- Not to be pictured: one-time password dialogs, the forced Choose a New Password box, a password typed into a
+  field, and toasts (they are hidden).
+
 ### Write
 One chapter per module, in the sidebar's order, each with its sections (one per page), its tasks step by step and
 its pictures taken by `npm run guide:shots`:
@@ -245,7 +263,7 @@ its pictures taken by `npm run guide:shots`:
 - Discharge Administration (five);
 - Static Tables (the engine once, then what is special in each table);
 - Reports (six);
-- System Administration (Manage Users, Manage Roles, Manage Password, Audit Trail, and Settings if merged).
+- System Administration (Manage Users, Manage Roles, Manage Password, Audit Trail, Settings).
 
 Every task carries the `needs` of the action it uses, so each reader receives only what they may do. Explain each
 message a person can meet in its own words (in bold) and what to do about it. Explain each workflow from start to
