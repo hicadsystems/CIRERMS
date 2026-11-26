@@ -54,8 +54,95 @@ async function endOtherSessions(userId, exceptSessionId, conn = null) {
   return res.affectedRows || 0;
 }
 
+/** Ends every open session of the user (a reset by e-mailed code); how many ended. */
+async function endAllSessions(userId, conn = null) {
+  const res = await db.query(
+    'UPDATE user_sessions SET ended_at = NOW() WHERE user_id = ? AND ended_at IS NULL',
+    [userId],
+    conn
+  );
+  return res.affectedRows || 0;
+}
+
 async function touchLastLogin(id, conn = null) {
   await db.query('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [id], conn);
+}
+
+// ---- Forgot Password: the e-mailed codes (password_reset_codes) ----
+
+/** The account for a reset: its id, user name, e-mail and whether it is active. */
+async function findForReset(username, conn = null) {
+  const rows = await db.query(
+    'SELECT id, username, email, is_active FROM users WHERE username = ? LIMIT 1',
+    [username],
+    conn
+  );
+  return rows[0] || null;
+}
+
+/** Locks the account's row for the rest of the transaction, so two requests for one account queue. */
+async function lockUser(userId, conn) {
+  await db.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId], conn);
+}
+
+/** Codes made for the account in the last hour (replaced and dead ones included). */
+async function countRecentCodes(userId, conn) {
+  const rows = await db.query(
+    'SELECT COUNT(*) AS n FROM password_reset_codes WHERE user_id = ? AND created_at > NOW() - INTERVAL 1 HOUR',
+    [userId],
+    conn
+  );
+  return Number(rows[0].n);
+}
+
+/** A new code replaces every earlier one: their hashes are cleared (the rows stay for the hourly count). */
+async function replaceCodes(userId, codeHash, minutes, conn) {
+  await db.query('UPDATE password_reset_codes SET code_hash = NULL WHERE user_id = ? AND code_hash IS NOT NULL', [userId], conn);
+  await db.query(
+    'INSERT INTO password_reset_codes (user_id, code_hash, expires_at) VALUES (?, ?, NOW() + INTERVAL ? MINUTE)',
+    [userId, codeHash, minutes],
+    conn
+  );
+}
+
+/** Rows older than an hour no longer count for anything. */
+async function pruneCodes(conn) {
+  await db.query('DELETE FROM password_reset_codes WHERE created_at < NOW() - INTERVAL 1 HOUR', [], conn);
+}
+
+/** The account's live code (hash still set), locked; expired is true once its time is up. */
+async function findLiveCode(userId, conn) {
+  const rows = await db.query(
+    `SELECT id, code_hash, wrong_tries, expires_at <= NOW() AS expired
+       FROM password_reset_codes
+      WHERE user_id = ? AND code_hash IS NOT NULL
+      ORDER BY id DESC
+      LIMIT 1
+      FOR UPDATE`,
+    [userId],
+    conn
+  );
+  return rows[0] || null;
+}
+
+/** One wrong try; the code is dead (hash cleared) at `maxTries`. */
+async function countWrongTry(codeId, maxTries, conn) {
+  await db.query(
+    `UPDATE password_reset_codes
+        SET wrong_tries = wrong_tries + 1,
+            code_hash = IF(wrong_tries + 1 >= ?, NULL, code_hash)
+      WHERE id = ?`,
+    [maxTries, codeId],
+    conn
+  );
+}
+
+async function killCode(codeId, conn) {
+  await db.query('UPDATE password_reset_codes SET code_hash = NULL WHERE id = ?', [codeId], conn);
+}
+
+async function deleteCode(codeId, conn) {
+  await db.query('DELETE FROM password_reset_codes WHERE id = ?', [codeId], conn);
 }
 
 // ---- sessions ----
@@ -144,6 +231,16 @@ module.exports = {
   touchLastLogin,
   setPassword,
   endOtherSessions,
+  endAllSessions,
+  findForReset,
+  lockUser,
+  countRecentCodes,
+  replaceCodes,
+  pruneCodes,
+  findLiveCode,
+  countWrongTry,
+  killCode,
+  deleteCode,
   insertSession,
   findSession,
   touchSession,

@@ -6,7 +6,7 @@ The CIRERMS browser application is a zero-framework SPA built with HTML5, Tailwi
 
 | Area | Location | Responsibility |
 |---|---|---|
-| Sign-in page | `public/index.html` | Login form and animated sign-in environment |
+| Sign-in page | `public/index.html`, `public/js/sections/auth.js` | Login form, *Forgot password?* (the e-mailed-code reset, in place on the card) and the animated sign-in environment. It shows no demo accounts |
 | Application shell | `public/app.html` | Rail, top bar, tabs, phone navigation, and page outlet |
 | Navigation and routes | `public/js/core/nav.js` | Modules, tabs, pages, screen IDs, and page view mappings |
 | Hash router | `public/js/core/router.js` | Browser hash routes and page cleanup |

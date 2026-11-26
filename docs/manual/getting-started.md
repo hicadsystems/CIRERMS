@@ -29,6 +29,27 @@ Your user name is your Official Number. An administrator gives you a password th
 
 If the page says the user name or password is wrong, check both and try again. After many wrong tries it asks you to wait 15 minutes.
 
+### Forgot your password {#getting-started-forgot-password}
+
+If you cannot remember your password, CIRERMS can e-mail you a code. The code works for 10 minutes and only once.
+
+1. On the sign-in page, press **Forgot password?** above the password box.
+2. Type your Official Number in **Official Number**.
+3. Press **Send Code**.
+4. Read the message on the page. It says the same for every Official Number, so it does not tell you whether the e-mail was sent. Open your e-mail and find the message from CIRERMS.
+5. Type the 6 digits of the code in **Code**.
+6. Type your new password in **New Password** and again in **Confirm New Password**. The box shows each rule as you type.
+7. Press **Reset Password**.
+8. The sign-in page opens with a message. Sign in with your new password.
+
+![The reset step](shot:getting-started-reset-password)
+
+If the page says **That code is not right, or it has expired**, check the 6 digits. A code stops working after 5 wrong tries. Press **Send a new code** to get another one. You can ask for 3 codes in an hour.
+
+No e-mail on your account? Ask your administrator to reset your password. The administrator gives you a one-time password, and you choose your own at your next sign-in.
+
+> **Important:** When your password is reset, every place you were signed in is signed out. If you did not ask for a code, ignore the e-mail. Your password has not changed.
+
 ### Choose your own password {#getting-started-first-password}
 
 A new account, or one that an administrator reset, has a one-time password. It works once.
@@ -213,6 +234,22 @@ marks:
   1: label "Username or Official Number" | Your Official Number
   2: label "Password" | Your password
   3: button "Sign In" | Press to sign in
+  4: button "Forgot password?" | Press if you forgot your password
+```
+
+```shot getting-started-reset-password
+open: /
+as: guest
+do:
+  - click: button "Forgot password?"
+  - fill: label "Official Number" = B0539
+  - click: button "Send Code"
+  - wait: button "Reset Password"
+crop: div:has(> #reset-form)
+marks:
+  1: label "Code" | The 6 digits from the e-mail
+  2: label "New Password" | Your new password
+  3: button "Reset Password" | Press to save it
 ```
 
 ```shot getting-started-layout-desktop

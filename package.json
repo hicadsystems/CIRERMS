@@ -36,6 +36,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.5.0",
     "mysql2": "^3.11.5",
+    "nodemailer": "10.6.1",
     "pdfjs-dist": "4.10.38",
     "puppeteer-core": "25.18.1"
   },
