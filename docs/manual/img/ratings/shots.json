@@ -1,0 +1,58 @@
+{
+  "ratings-add-next-of-kin": {
+    "spec": "0611cba84ac0dd15",
+    "source": "7bb42fca63badb28",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-batch-upload": {
+    "spec": "4082f4d5c90faaf7",
+    "source": "ecda4caef341ea07",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-current-list": {
+    "spec": "2fa56f1a27cf405d",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-documents-page": {
+    "spec": "1016f8c45f663c32",
+    "source": "dc7c6b1a53f16946",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-my-details-page": {
+    "spec": "95f009b71cb4e888",
+    "source": "7bb42fca63badb28",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-new-rating-dialog": {
+    "spec": "39da468f0332271e",
+    "source": "c00d537b77c07b04",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-record": {
+    "spec": "7c742c68769cc42c",
+    "source": "7bb42fca63badb28",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
