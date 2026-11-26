@@ -5,15 +5,44 @@ const settings = require('../../shared/settings');
 const { validationError, notFound } = require('../../shared/errors');
 const { GROUPS } = require('./settings.groups');
 
+const n = (rows, key) => (rows.get(key) ? Number(rows.get(key).value) : null);
+
+/** A worked example in plain words, from the numbers as they are now. */
+function legendOf(g, rows) {
+  if (g.key === 'drafting' || g.key === 'advancement') {
+    const due = n(rows, `${g.key}.due_months`);
+    const green = n(rows, `${g.key}.band_green_to`);
+    const amber = n(rows, `${g.key}.band_amber_to`);
+    if (due === null || green === null || amber === null) return [];
+    const what = g.key === 'drafting' ? 'on the ship' : 'in the rate';
+    return [
+      `Under ${due} months ${what}: not due, not listed.`,
+      `${due} to ${green} months: due, GREEN. Newly due; start the work.`,
+      `${green + 1} to ${amber} months: AMBER. Waiting longer; deal with it soon.`,
+      `${amber + 1} months or more: RED. Long overdue; deal with it first.`,
+      'The colours only guide the order of work. Nothing happens to a rating automatically.',
+    ];
+  }
+  const v = (k) => n(rows, `discharge.${k}`);
+  if ([v('age_due'), v('service_due'), v('age_band_1'), v('age_band_2'), v('age_band_3'), v('service_band_1'), v('service_band_2'), v('service_band_3')].includes(null)) return [];
+  return [
+    `Due: at age ${v('age_due')}, or after ${v('service_due')} years of service, whichever comes first.`,
+    `Age pill: GREEN from ${v('age_band_1')}, AMBER from ${v('age_band_2')}, RED from ${v('age_band_3')}. Younger shows no colour.`,
+    `Service pill: GREEN from ${v('service_band_1')} years, AMBER from ${v('service_band_2')}, RED from ${v('service_band_3')}. Fewer years show no colour.`,
+    'GREEN means newly due, begin the process. AMBER means deal with it soon. RED means deal with it first. The colours only guide the order of work; nothing happens to a rating automatically.',
+  ];
+}
+
 /** The groups with each setting's current value and description. */
 async function listGroups(conn = null) {
   const rows = new Map((await settings.list('', conn)).map((r) => [r.key, r]));
   return GROUPS.map((g) => ({
     key: g.key,
     label: g.label,
+    legend: legendOf(g, rows),
     items: g.items.map((i) => {
       const r = rows.get(i.key);
-      return { key: i.key, label: i.label, unit: i.unit, min: i.min, max: i.max, value: r ? r.value : null, description: r ? r.description : '' };
+      return { key: i.key, label: i.label, unit: i.unit, min: i.min, max: i.max, value: r ? r.value : null, description: r ? r.description : '', help: i.help };
     }),
   }));
 }

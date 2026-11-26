@@ -1106,7 +1106,7 @@ async function settingsSuite(browser, viewport, theme, full) {
   const main = page.locator('#app-main');
   check(/Stand-in rules|stand-in rules/.test(await main.innerText()), 'Settings: the note about stand-in rules');
   for (const g of ['Drafting', 'Advancement', 'Discharge']) check((await main.locator(`[data-group="${g.toLowerCase()}"]`).count()) === 1, `Settings: a card for ${g}`);
-  check((await main.locator('[data-setting]').count()) === 14, 'Settings: all 14 settings are listed');
+  check((await main.locator('[data-setting]').count()) === 14 && (await main.locator('[data-legend]').count()) === 3, 'Settings: all 14 settings are listed');
   check(/Due for a draft after \(months on a ship\)/.test(await main.innerText()) && /10 months/.test(await main.innerText()), 'Settings: plain label, value with its unit');
   check(await noSideScroll(page), 'Settings: no sideways scroll');
   await shot(page, `settings-${phone ? 'phone' : 'desktop'}-${theme}`);

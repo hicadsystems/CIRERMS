@@ -9,11 +9,29 @@
  *   label    plain English, as the page shows it
  *   unit     'months' | 'years' | 'age'
  *   min,max  the whole numbers allowed
+ *   help     what the number does, in plain words (shown under the value and in the Edit dialog)
  *   after    (optional) the key whose value this one must not be below (atLeast) or must exceed (above)
  */
 const LIMITS = { months: [1, 600], age: [16, 70], years: [1, 50] };
 
-const item = (key, label, unit, rule = {}) => ({ key, label, unit, min: LIMITS[unit][0], max: LIMITS[unit][1], ...rule });
+const HELP = {
+  'drafting.due_months': "A rating appears on Drafting's due list once they have spent this many whole months on their current ship. Before that they are not listed. Raise it and fewer ratings are due; lower it and more are.",
+  'drafting.band_green_to': 'On the due list, months on the ship from the due month up to this number show a GREEN pill: newly due, plan the draft. It must not be lower than the due month.',
+  'drafting.band_amber_to': 'Months above the green limit up to this number show an AMBER pill: waiting longer, deal with it soon. Above this number the pill turns RED: long overdue, deal with it first. Must be higher than the green limit.',
+  'advancement.due_months': "A rating appears on Advancement's due list once they have spent this many whole months in their current rate. Before that they are not listed.",
+  'advancement.band_green_to': 'Months in rate from the due month up to this number show a GREEN pill: newly due, prepare the advancement. It must not be lower than the due month.',
+  'advancement.band_amber_to': 'Months above the green limit up to this number show an AMBER pill: waiting longer, deal with it soon. Above this number the pill turns RED: long overdue, deal with it first. Must be higher than the green limit.',
+  'discharge.age_due': "A rating appears on Discharge's due list when they reach this age, or when they reach the years of service below, whichever comes first.",
+  'discharge.service_due': "A rating appears on Discharge's due list after this many whole years of service, or at the age above, whichever comes first.",
+  'discharge.age_band_1': 'The Age pill on the due list turns GREEN from this age: newly due, begin the discharge process. Ages below it show no colour.',
+  'discharge.age_band_2': 'The Age pill turns AMBER from this age: getting close to the end, deal with it soon. Must be higher than the first threshold.',
+  'discharge.age_band_3': 'The Age pill turns RED from this age: past the expected age, deal with it first. Must be higher than the second threshold.',
+  'discharge.service_band_1': 'The Service pill on the due list turns GREEN from this many years of service: newly due, begin the discharge process. Fewer years show no colour.',
+  'discharge.service_band_2': 'The Service pill turns AMBER from this many years: getting close to the end, deal with it soon. Must be higher than the first threshold.',
+  'discharge.service_band_3': 'The Service pill turns RED from this many years: past the expected service, deal with it first. Must be higher than the second threshold.',
+};
+
+const item = (key, label, unit, rule = {}) => ({ key, label, unit, min: LIMITS[unit][0], max: LIMITS[unit][1], help: HELP[key], ...rule });
 
 const GROUPS = [
   {

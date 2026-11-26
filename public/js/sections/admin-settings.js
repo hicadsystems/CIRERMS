@@ -43,7 +43,7 @@ export async function mountAdminSettings(outlet, { info } = {}) {
   function openEdit(g) {
     const form = h('form', { className: 'space-y-3', novalidate: true, autocomplete: 'off' }, g.items.map((i) => field({
       label: i.label,
-      hint: `${i.min} to ${i.max} (${(UNIT[i.unit] || ['', ''])[1]}). ${i.description || ''}`.trim(),
+      hint: `${i.min} to ${i.max} (${(UNIT[i.unit] || ['', ''])[1]}). ${i.help || i.description || ''}`.trim(),
       control: textInput({ name: i.key, value: i.value === null ? '' : String(i.value), inputmode: 'numeric', maxlength: 3, autocomplete: 'off' }),
     })));
     const dlg = openDialog({ title: `Edit ${g.label} Settings`, size: 'md', body: form });
@@ -90,11 +90,20 @@ export async function mountAdminSettings(outlet, { info } = {}) {
     setTimeout(() => { const first = form.querySelector('input'); if (first) first.focus(); }, 0);
   }
 
+  // what the colours mean, worked out from the current numbers
+  function legend(g) {
+    if (!g.legend || !g.legend.length) return null;
+    return h('div', { className: 'mb-2 rounded-card border border-border bg-subtle px-3 py-2 text-xs', dataset: { legend: '' } }, [
+      h('p', { className: 'mb-1 font-semibold text-foreground', text: 'What this means now' }),
+      h('ul', { className: 'list-disc space-y-0.5 pl-4 text-muted-foreground' }, g.legend.map((t) => h('li', { text: t }))),
+    ]);
+  }
+
   // label and value rows (facts); the description sits under each value
   function body(g) {
-    return h('div', { dataset: { group: g.key } }, [facts(g.items.map((i) => [i.label, h('div', { dataset: { setting: i.key } }, [
+    return h('div', { dataset: { group: g.key } }, [legend(g), facts(g.items.map((i) => [i.label, h('div', { dataset: { setting: i.key } }, [
       h('div', { className: 'font-medium', dataset: { value: '' }, text: i.value === null ? 'N/A' : withUnit(i.value, i.unit) }),
-      i.description ? h('p', { className: 'mt-0.5 text-xs text-muted-foreground', text: i.description }) : null,
+      i.help || i.description ? h('p', { className: 'mt-0.5 text-xs text-muted-foreground', text: i.help || i.description }) : null,
     ])]))]);
   }
 }
