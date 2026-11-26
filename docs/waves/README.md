@@ -1,6 +1,6 @@
 # CIRERMS: the remaining waves, for any developer
 
-> **Every wave is done and merged (26/11/2026).** Wave P (D4, WP13) on 19/11/2026; wave E (WP7a 19/11, WP6 20/11); wave F (WP8 19/11, WP5 20/11); wave F2 (WP11 21/11, WP12 23/11); wave G (WP7b 20/11, WP9 23/11); wave H (WP10 23/11/2026). Nobody starts one again. This folder stays as the record of how the work was briefed; what was built is in `docs/PLAN.md` section 8 and the report notes in `docs/reports/`.
+> **Every wave is done and merged (26/11/2026).** Wave P (D4, WP13) on 19/11/2026; wave E (WP7a 19/11, WP6 20/11); wave F (WP8 19/11, WP5 20/11); wave F2 (WP11 21/11, WP12 23/11); wave G (WP7b 20/11, WP9 23/11); wave H (WP10 23/11/2026). Nobody starts one again. Wave U (the user guide, 26/11/2026) is the one wave after Phase 1, and is not done yet. This folder stays as the record of how the work was briefed; what was built is in `docs/PLAN.md` section 8 and the report notes in `docs/reports/`.
 
 This folder handed out the work of Phase 1 (`docs/PLAN.md`). Any developer can take a package: a
 person, or an AI coding session working for one. Each wave has its own file with a full brief per package: what to
@@ -10,7 +10,7 @@ note to leave. Read this page first, then your wave's file, then everything its 
 The administrator (who keeps `docs/PLAN.md`) inspects every branch before telling the owner it is ready to merge.
 The owner merges on GitHub. Nobody else merges, and nobody opens pull requests.
 
-## 1. The waves (all done and merged)
+## 1. The waves (all done and merged but wave U)
 
 A package may start only when everything in its "Needs merged first" column is on `master`. Two packages in the
 same wave do not depend on each other and can run at the same time, by two developers. Tell the owner which
@@ -29,6 +29,8 @@ package you take before you start, so two people never take the same one.
 | G | `wave-G-drafting-reports-and-reports.md` | WP7b Drafting Reports | `drafting-reports` | WP7a | Sonnet 5.5 · medium | M | `71` (if any) | `013_drafting_reports.sql` (if any) |
 | G | `wave-G-drafting-reports-and-reports.md` | WP9 Reports (six pages) | `reports` | WP7a | Sonnet 5.5 · high | L | `09` (if any) | `014_reports.sql` (if any) |
 | H | `wave-H-demo-finish.md` | WP10 Demo Finish | `demo-finish` | all of the above | Sonnet 5.5 · high | M | `10` (if any) | `015_demo_finish.sql` (if any) |
+| U | `wave-U-user-guide.md` | G1 the user guide's machinery, the screenshot script, the PDF book, Getting Started | `user-guide` | everything on master | Sonnet 5.5 · high | M | none | none |
+| U | `wave-U-user-guide.md` | G2 every module's chapter and its screenshots | `user-guide-content` | G1 | Sonnet 5.5 · medium | L | none | none |
 
 The waves are an order, not a wall: WP5 and WP12 need only WP13, so they can start as soon as it is merged, even
 before wave E finishes. WP8 waits for WP7a because it reuses the batch, approval and close parts WP7a builds.

@@ -219,6 +219,7 @@ export const AREAS = [
           { route: 'admin/roles', label: 'Manage Roles', icon: 'shield-user', screen: 'admin.roles' },
           { route: 'admin/password', label: 'Manage Password', icon: 'key-round', screen: 'admin.password' },
           { route: 'admin/audit', label: 'Audit Trail', icon: 'history', screen: 'admin.audit' },
+          { route: 'admin/settings', label: 'Settings', icon: 'sliders-horizontal', screen: 'admin.settings' },
         ],
       },
     ],
@@ -353,6 +354,7 @@ export const PAGES = [
   { pattern: 'admin/roles', module: 'admin', tab: 'admin/roles', title: 'Manage Roles', subtitle: 'What each role may open and change', short: 'Roles', screen: 'admin.roles', view: { file: 'admin-roles.js', mount: 'mountAdminRoles' } },
   { pattern: 'admin/password', module: 'admin', tab: 'admin/password', title: 'Manage Password', subtitle: 'Reset a password for someone who cannot sign in', short: 'Password', screen: 'admin.password', view: { file: 'admin-password.js', mount: 'mountAdminPassword' } },
   { pattern: 'admin/audit', module: 'admin', tab: 'admin/audit', title: 'Audit Trail', subtitle: 'Every action and change, newest first', short: 'Audit', screen: 'admin.audit', view: { file: 'admin-audit.js', mount: 'mountAdminAudit' } },
+  { pattern: 'admin/settings', module: 'admin', tab: 'admin/settings', title: 'Settings', subtitle: 'The numbers behind the due rules', short: 'Settings', screen: 'admin.settings', view: { file: 'admin-settings.js', mount: 'mountAdminSettings' } },
   {
     // "Coming in a Later Release" (drawn by the shell; shown to full-access roles only)
     pattern: 'soon/:key',

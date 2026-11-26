@@ -175,6 +175,18 @@ Every package below is merged (section 8).
 | WP13 | `printouts` | PDF reforming, build: a Chromium renderer (as NAVY-PAYROLL's) with Handlebars, D4's templates in `src/templates/printouts/`, every PDF the app makes today rebuilt from them and pdfkit removed; the walkthrough steps WP3b and WP3c broke fixed (`docs/waves/wave-P-printouts.md`) | Sonnet 5.5 · medium | D4 | M |
 | WP10 | `demo-finish` | Dashboard tiles live, Ctrl K reaches every new screen, demo data across every module, one walk-through of the whole app on desktop and phone in both themes against the demo, and the docs brought up to date | Sonnet 5.5 · medium | All the above | M |
 
+### The user guide (wave U, after Phase 1; `docs/waves/wave-U-user-guide.md`)
+
+The owner (26/11/2026): a user guide in the app, made as `praxisjbs/mycity-app` makes theirs: **User Guide** in the
+account menu just before Sign Out, **Ctrl+H** on a desktop opens it in a mini panel from the right, and the User
+Guide page's **Download PDF** gives the same guide as a PDF book. No tests or walkthroughs (the owner); the
+screenshots must be well captured.
+
+| Pkg | Branch | Scope | Model · effort | Needs merged first | Size |
+|---|---|---|---|---|---|
+| G1 | `user-guide` | The guide's machinery: chapters as Markdown in `docs/manual/` (mycity-app's format), cut on the server to the reader's privileges; the account menu item (desktop and phone); the User Guide page (contents, search, Back to Guide); the Ctrl+H panel; the screenshot script (`npm run guide:shots`, fast: desktop and phone, each light and dark, device scale 2, numbered marks, cropped, demo data); the PDF book by `renderPdf` (cover, contents with page numbers, house style); the Getting Started chapter | Sonnet 5.5 · high | everything on master | M |
+| G2 | `user-guide-content` | Every module's chapter, each page's tasks step by step with their `needs`, every picture taken by the script in its four captures | Sonnet 5.5 · medium | G1 | L |
+
 ## 6. Order: two sessions at a time
 
 | Wave | Runs together | Merged before the next wave | Done |
@@ -258,7 +270,9 @@ the next wave once the owner has merged.
 | WP12 | Merged 23/11/2026 (clean-up by Sonnet 5.5 · medium; about $1.35; `session_01G8Rfvjcssd8mGkzzqDfatu`): built by a developer (7791894), never run; the crash was the walkthrough's (it read the audit row wrongly; the edit's before and after are recorded as the brief asks); the clean-up also fixed the demo audit rows, a demo name that broke the disciplinary search, the record's Appraisals list scrolling sideways on a phone, and gave Appraisal Ratings a holder in the static tables walkthrough. All eleven walkthroughs pass; appraisal 105 checks in 23 s and disciplinary 191 on the administrator's fresh run. The Grading and Report filters are filter bars and keep their card (the picker rule covers lone pickers only). Last code commit 4fc42c5, head 773118e | `appraisal` | |
 | WP10 | Merged 23/11/2026 (Sonnet 5.5 · high; about $6.93; `session_01G8RfviynTAfn7EnjP8MaMq`): five live dashboard tiles (Memos and Mails gone), every demo rating's name in capitals (WP9's too), labels wrap at spaces or slashes only, a rating's user name follows its official number, `factPanels` gives a lone panel the full width (the closed Appraisal Period and Manning State dialogs were half-empty), Reports in Ctrl K and the demo walkthrough (73 pages), docs and the open questions in one list (now `docs/OPEN-QUESTIONS.md`). The owner's answers (23/11/2026): the tab strips stay as they were (undone in round 1b); relatives' names stay as typed. All thirteen walkthroughs pass; on the administrator's run of WP10 merged with master: reports 286, demo 57, appraisal 105. Last code commit 9a25cfc, head c27a3fe | `demo-finish` | |
 | Documents (extra: every open document brought up to date, `docs/OPEN-QUESTIONS.md` made) | Done 26/11/2026, on this branch for the owner to merge | `project-plan` | 26/11/2026: documents only; the plan's status, waves and what next, the administrator handbook, the waves, report and design indexes, README and CONVENTIONS; the questions of section 9 and the separate list for Hicad folded into `docs/OPEN-QUESTIONS.md` |
-| Settings page | Running 26/11/2026 (Sonnet 5.5 · medium, `session_01G8RfvjbcUqTXG9aWUmaoaf`), at the owner's request: System Administration > Settings shows the 14 stand-in due-rule numbers (Drafting, Advancement, Discharge) and lets an Administrator change them, audited, so Hicad's real values go in with no code change | `settings` | |
+| Settings page | Checked, ready to merge 26/11/2026 (Sonnet 5.5 · medium, `session_01G8RfvjbcUqTXG9aWUmaoaf`), at the owner's request: System Administration > Settings shows the 14 stand-in due-rule numbers (Drafting, Advancement, Discharge) and lets an Administrator change them, audited, so Hicad's real values go in with no code change | `settings` || 26/11/2026: 8057230; the administrator's run on fresh databases: system admin 350 (78 s), drafting 195, advancement 243, discharge 305; the page at 1440 light and 390 dark and its edit sheet looked at; merges cleanly with master |
+| G1 (user guide machinery) | Running 26/11/2026 (Sonnet 5.5 · high, `session_01G8RfvhykBcuGJKkernc9c7`) | `user-guide` | |
+| G2 (user guide content) | Planned 26/11/2026; starts when G1 is merged | `user-guide-content` | |
 
 ## 9. Open questions and what next
 
@@ -271,7 +285,7 @@ answers. Answered questions are not repeated there: the decision sections below 
 26/11/2026) are the record of what was decided, and the report notes in `docs/reports/` the record of what each
 package found.
 
-**What next** (owner, 26/11/2026): the **Settings page** (running, section 8), then the **user guide** in the app. After
+**What next** (owner, 26/11/2026): the **Settings page** (running, section 8), then the **user guide** in the app (packages G1 and G2, section 5 and `docs/waves/wave-U-user-guide.md`). After
 those, the import of the real records from the old database (section 1), once Hicad has answered what the open
 questions ask.
 
@@ -286,6 +300,15 @@ Offered and not chosen: a Federal Character distribution (by state of origin and
 imported special drafts, so it stays under Special Drafting (WP11). The stand-in due rules get a **Settings** page in
 System Administration. Next, after the documents are brought up to date: a **user guide** in the app (as the
 `praxisjbs/mycity-app` application does theirs), overseen by a new administrator session (section 9, what next).
+
+**Decisions for the user guide (owner, 26/11/2026,** asked by the administrator after studying mycity-app's guide):
+each reader receives only their part (the page, the Ctrl+H panel, the search and the PDF book are cut on the server
+to the reader's privileges, as mycity-app does); every picture is taken four times (desktop and phone, each light and dark), by a fast script; the
+page shows the one for the reader's device and theme, and the PDF book the desktop light one; two packages, G1 (Sonnet 5.5 · high) then G2 (Sonnet
+5.5 · medium). Decided by the administrator: mycity-app's chapter format and screenshot specs (numbered marks,
+crops, hashes to find stale pictures) are kept; its Quick Start, meaning search, written answers, voice search and CI gate
+are not; the search is by words; the PDF book is new to CIRERMS (mycity-app's guide has none) and uses `renderPdf`
+and the house printout style.
 
 ## 9a. Design decisions for Drafting, Training Drafting and Advancement
 
