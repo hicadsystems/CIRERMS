@@ -6,9 +6,10 @@
  *   - a cover: the crest, CIRERMS, User Guide, the date and who it was made for (their name and role);
  *   - a table of contents with the real page of every chapter and section: the book is made once, the page each
  *     heading landed on is read from the PDF's own links (pdfjs-dist), and it is made again with those numbers;
- *   - each chapter starts a new page; pictures are the desktop light ones (a picture taken only for the phone
- *     is used as it is, and each is drawn at the size it was taken), as data URIs so nothing is fetched while rendering, never cut across a page, each with
- *     its legend.
+ *   - each chapter starts a new page; pictures are those of the set the reader chose (device and theme; a picture
+ *     taken for one device only falls back to the other device's capture, in the chosen theme), each drawn at the
+ *     size it was taken, a phone's centred, as data URIs so nothing is fetched while rendering, never cut across a
+ *     page, each with its legend. The paper stays light in every set: only the pictures change.
  */
 const fs = require('fs');
 const path = require('path');
@@ -36,33 +37,35 @@ function spansHtml(spans, ids) {
 
 const NOTE_LABEL = { tip: 'Tip:', important: 'Important:', note: 'Note:' };
 
-function pictureFor(chapter, figure, images) {
+const SETS = { desktop: 'Desktop', phone: 'Mobile', light: 'Light Mode', dark: 'Dark Mode' };
+
+function pictureFor(chapter, figure, images, set) {
   const spec = chapter.pictures[figure.shot];
   if (!spec) return null;
-  // the desktop light picture; a picture taken only for the phone is used as it is
-  const device = spec.devices.includes('desktop') ? 'desktop' : 'phone';
-  const file = path.join(store.imgDir, chapter.slug, `${figure.shot}.${device}.light.png`);
+  // the chosen device's picture; one taken for the other device only is used as it is, in the chosen theme
+  const device = spec.devices.includes(set.device) ? set.device : spec.devices[0];
+  const file = path.join(store.imgDir, chapter.slug, `${figure.shot}.${device}.${set.theme}.png`);
   if (!images.has(file)) images.set(file, fs.existsSync(file) ? `data:image/png;base64,${fs.readFileSync(file).toString('base64')}` : null);
   const src = images.get(file);
   if (!src) return null;
   // drawn at the size it was taken (its pixels over the device scale, 2), as CSS pixels: sharp, never enlarged; the page caps it at the text width
   const size = service.pngSize(file);
-  return { src, alt: figure.alt, width: size ? Math.round(size.w / 2) : null, legend: spec.legend };
+  return { src, alt: figure.alt, width: size ? Math.round(size.w / 2) : null, centre: device === 'phone', legend: spec.legend };
 }
 
-function blocksFor(chapter, blocks, ids, images) {
+function blocksFor(chapter, blocks, ids, images, set) {
   return blocks.map((b) => {
     if (b.kind === 'paragraph') return { kind: b.kind, html: spansHtml(b.spans, ids) };
     if (b.kind === 'note') return { kind: b.kind, tone: b.tone, label: NOTE_LABEL[b.tone], html: spansHtml(b.spans, ids) };
     if (b.kind === 'bullets') return { kind: b.kind, items: b.items.map((s) => ({ html: spansHtml(s, ids) })) };
-    if (b.kind === 'steps') return { kind: b.kind, items: b.items.map((s) => ({ n: s.n, html: spansHtml(s.spans, ids), figure: s.figure ? pictureFor(chapter, s.figure, images) : null })) };
+    if (b.kind === 'steps') return { kind: b.kind, items: b.items.map((s) => ({ n: s.n, html: spansHtml(s.spans, ids), figure: s.figure ? pictureFor(chapter, s.figure, images, set) : null })) };
     if (b.kind === 'table') return { kind: b.kind, head: b.head.map((c) => ({ html: spansHtml(c, ids) })), rows: b.rows.map((r) => ({ cells: r.map((c) => ({ html: spansHtml(c, ids) })) })) };
-    return { kind: 'figure', figure: pictureFor(chapter, b.figure, images) || { src: null } };
+    return { kind: 'figure', figure: pictureFor(chapter, b.figure, images, set) || { src: null } };
   });
 }
 
 /** What the template reads. Headings get ids (c1, c1-s2, c1-s2-t1), which the contents link to. */
-function bookData(user, cut) {
+function bookData(user, cut, set) {
   const ids = new Map(); // a section's or task's slug -> its id in the book
   cut.chapters.forEach((c, ci) => c.sections.forEach((s, si) => {
     ids.set(s.slug, `c${ci + 1}-s${si + 1}`);
@@ -78,20 +81,20 @@ function bookData(user, cut) {
       n,
       title: c.title,
       summary: c.summary,
-      intro: blocksFor(c, c.intro, ids, images),
+      intro: blocksFor(c, c.intro, ids, images, set),
       sections: c.sections.map((s, si) => ({
         id: `c${n}-s${si + 1}`,
         n: `${n}.${si + 1}`,
         title: s.title,
-        blocks: blocksFor(c, s.blocks, ids, images),
-        tasks: s.tasks.map((t, ti) => ({ id: `c${n}-s${si + 1}-t${ti + 1}`, title: t.title, blocks: blocksFor(c, t.blocks, ids, images) })),
+        blocks: blocksFor(c, s.blocks, ids, images, set),
+        tasks: s.tasks.map((t, ti) => ({ id: `c${n}-s${si + 1}-t${ti + 1}`, title: t.title, blocks: blocksFor(c, t.blocks, ids, images, set) })),
       })),
     };
   });
   return {
     title: 'User Guide',
     generatedBy: user.fullName || user.username,
-    cover: { name: user.fullName || user.username, role: user.role || 'User', date: today() },
+    cover: { set: `${SETS[set.device]} · ${SETS[set.theme]}`, name: user.fullName || user.username, role: user.role || 'User', date: today() },
     toc,
     chapters,
   };
@@ -122,10 +125,10 @@ async function headingPages(pdfBuffer) {
   return pages;
 }
 
-async function buildBook(user) {
+async function buildBook(user, set = { device: 'desktop', theme: 'light' }) {
   const cut = service.cutFor(user);
   if (!cut.chapters.length) throw badRequest('There is no part of the guide for your role yet.', 'GUIDE_EMPTY');
-  const data = bookData(user, cut);
+  const data = bookData(user, cut, set);
   const options = { maxHtmlMb: MAX_HTML_MB };
   const first = await renderPdf('user-guide-book', data, options);
   const pages = await headingPages(first);

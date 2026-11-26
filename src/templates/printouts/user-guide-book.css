@@ -60,3 +60,7 @@ table.data.g-table thead th:first-child, table.data.g-table tbody td:first-child
 .g-legend { list-style: none; margin: 2mm 0 0; padding: 0; font-size: 8.8pt; color: var(--muted); }
 .g-legend li { display: flex; align-items: baseline; gap: 2mm; margin: 0.7mm 0; }
 .g-legend .mark { flex: none; width: 4.6mm; height: 4.6mm; border-radius: 50%; background: var(--navy); color: var(--page); font-size: 7.4pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+/* a phone's picture is centred at its own size */
+.g-shot.g-centre img { margin: 0 auto; }
+.g-cover .set { margin-top: 2mm; font-size: 11pt; color: var(--muted); }
