@@ -480,7 +480,7 @@ its pictures in `docs/manual/img/<chapter>/`); `docs/manual/README.md` says how 
 
 - **Reading it.** Account menu, **User Guide** (just before Sign Out; also on a phone), opens `#guide` (`#guide/<section>`; `?step=3` for a
   step). On a desktop `Ctrl+H` opens it in a mini panel from the right, at the section for the page in view. **Download PDF** (top right of the
-  page) opens the same guide as a book in the PDF preview. Every signed-in person may read it, and **each reader receives only their part**: the
+  page) asks for the set of pictures (desktop or mobile, light or dark mode) and opens the guide as a book in the PDF preview. Every signed-in person may read it, and **each reader receives only their part**: the
   server cuts the guide, the panel, the search, the pictures and the book to the person's privileges (a section is about a screen, a task or a
   step needs an action), so a Records Clerk never reads Manage Roles.
 - **Taking the pictures.** `npm run guide:shots` (needs the app running on the seeded demo data, and the machine's Playwright) takes four

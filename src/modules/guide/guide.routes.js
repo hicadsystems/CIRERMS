@@ -9,7 +9,7 @@
  *   GET /api/guide/where/:anchor            the chapter that holds a section or task (for #guide/<anchor>)
  *   GET /api/guide/search?q=                words, at least 2 characters, 25 results
  *   GET /api/guide/pictures/:chapter/:shot?device=desktop|phone&theme=light|dark
- *   GET /api/guide/book                     the PDF book
+ *   GET /api/guide/book?device=desktop|phone&theme=light|dark   the PDF book with that set of pictures
  */
 const express = require('express');
 const service = require('./guide.service');
@@ -48,10 +48,12 @@ router.get('/pictures/:chapter/:shot', asyncHandler(async (req, res) => {
 }));
 
 router.get('/book', asyncHandler(async (req, res) => {
-  const pdf = await buildBook(req.user);
+  const { device = 'desktop', theme = 'light' } = req.query;
+  if (!DEVICES.includes(device) || !THEMES.includes(theme)) throw badRequest('A book is for the desktop or the phone, in the light or the dark theme.');
+  const pdf = await buildBook(req.user, { device, theme });
   res.set({
     'Content-Type': 'application/pdf',
-    'Content-Disposition': 'inline; filename="CIRERMS-User-Guide.pdf"',
+    'Content-Disposition': `inline; filename="CIRERMS-User-Guide-${device}-${theme}.pdf"`,
     'Cache-Control': 'private, no-store',
     'X-Content-Type-Options': 'nosniff',
   });
