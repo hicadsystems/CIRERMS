@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head orientation="portrait"}}
+<link rel="stylesheet" href="docs-book.css">
+</head>
+<body class="book">
+
+<section class="bk-cover">
+  <img class="crest" src="assets/navy-logo.png" alt="">
+  <div class="org">NIGERIAN NAVY</div>
+  <h1>CIRERMS</h1>
+  <div class="sys">Centralised Integrated Ratings Electronic Records Management System</div>
+  <div class="rule"></div>
+  <div class="doc">Technical Handbook</div>
+  <div class="set">Technical Guide · Runbooks · Worked Example</div>
+  <dl class="for">
+    <div><dt>Date</dt><dd>{{cover.date}}</dd></div>
+    <div><dt>Built from</dt><dd>master {{cover.commit}}</dd></div>
+  </dl>
+</section>
+
+<section class="bk-toc">
+  {{> header title="Contents"}}
+  {{#each toc}}
+  <div class="toc-l{{level}}"><a class="toc-line" href="#{{id}}"><span class="t">{{title}}</span><i class="dots"></i><span class="pg">{{page}}</span></a></div>
+  {{/each}}
+</section>
+
+<section class="bk-file bk-intro">
+  {{> header title="Technical Handbook" subtitle=intro.title}}
+  <h1 class="bk-h bk-h1" id="{{intro.id}}">{{intro.title}}</h1>
+  {{{intro.html}}}
+</section>
+
+{{#each parts}}
+<section class="bk-part">
+  {{> header title="Technical Handbook" subtitle=title}}
+  <div class="bk-partno">Part {{n}}</div>
+  <h1 class="bk-h bk-h1 bk-parttitle" id="{{id}}">{{title}}</h1>
+  <p class="bk-blurb">{{blurb}}</p>
+  <ul class="bk-contents">{{#each files}}<li><a href="#{{id}}">{{title}}</a></li>{{/each}}</ul>
+</section>
+{{#each body}}
+<section class="bk-file">
+  {{> header title="Technical Handbook" subtitle=../title}}
+  <h2 class="bk-h bk-h2 bk-filetitle" id="{{id}}">{{title}}</h2>
+  {{{html}}}
+</section>
+{{/each}}
+{{/each}}
+
+</body>
+</html>
