@@ -2,7 +2,7 @@
 
 > **Done and merged (G1, G2 and G3 on 26/11/2026). Do not start this again.** It stays here as the record of how it was briefed; `docs/PLAN.md` section 8 says what was built.
 
-The owner (26/11/2026): a user guide inside the app, made the way the `praxisjbs/mycity-app` application makes
+The owner (26/11/2026): a user guide inside the app, made the way the `*********************` application makes
 theirs. It is reached from a **User Guide** item in the account menu, just before Sign Out. On a desktop, **Ctrl+H**
 opens it in a mini panel from the right. The User Guide page also has a **Download** that gives the same guide as a
 **PDF book**. The owner: "No need for testing or walkthrough, just ensure the screenshots are well captured and
@@ -30,7 +30,7 @@ the app and look at every screen and every page of the PDF yourself.
 ## How mycity-app does it (study it before you start)
 
 The reference is public and is read only. Clone it outside the CIRERMS working copy:
-`git clone --depth 1 https://github.com/praxisjbs/mycity-app /home/user/ref/mycity-app`. Read these files:
+`git clone --depth 1 https://github.com/********************* /home/user/ref/mycity-app`. Read these files:
 
 - `docs/manual/README.md`: how a chapter is written (front matter, sections, tasks, steps, bold names, links, notes,
   pictures and their `shot` specs).
@@ -60,6 +60,7 @@ everything in our own words and our own house style.
   · **Seed:** none
 
 ### Read first
+
 - `docs/PLAN.md` sections 3 and 8. `CONVENTIONS.md` in full, above all Frontend, the component kit and "To add a
   printout".
 - `README.md`: the demo accounts and their roles.
@@ -71,6 +72,7 @@ everything in our own words and our own house style.
 - mycity-app, as listed above.
 
 ### Build
+
 1. **The chapters.** One Markdown file per chapter in `docs/manual/` and the pictures in
    `docs/manual/img/<chapter>/`, as mycity-app keeps them. Write `docs/manual/README.md` in our words. It explains
    how to write a chapter and take its pictures, for G2 and later writers. The format follows mycity-app's:
@@ -86,6 +88,7 @@ everything in our own words and our own house style.
 
    A `needs` names a screen and an action from the privilege catalogue (`ratings.current add`), and several are
    separated by commas.
+
 2. **The reader's cut, on the server.** Add a small `guide` module (`src/modules/guide/`) that parses the chapters
    and cuts them to the signed-in person's privileges, as in decision 1:
    - steps renumbered after the cut;
@@ -102,6 +105,7 @@ everything in our own words and our own house style.
 
    Parse the chapters once at start, and again when a file changes in development. Add a Markdown dependency only
    if it is small and pinned, and say so in your report.
+
 3. **User Guide in the account menu**, just before Sign Out, with a Lucide icon from the sprite (for example
    `book-open`). It is in the desktop account menu (the user panel at the bottom of the sidebar) and in the phone's
    same menu. It opens the User Guide page (`#guide`, and `#guide/<section>` for one section). Add the page to
@@ -128,6 +132,7 @@ everything in our own words and our own house style.
    Claim the key with `preventDefault` as Ctrl+K does, and never while the session is locked. It does not open on
    a phone (no keyboard): the menu item serves there. Check it in Chromium. Edge uses the same engine, but say in
    your report that it was not tried on Edge itself.
+
 6. **The screenshot script**, `npm run guide:shots` (`scripts/guide/shoot.js`), on the app running locally with
    the demo seed:
    - `-- --chapter <slug>`, `-- --shot <id>` and `-- --stale`;
@@ -163,6 +168,7 @@ everything in our own words and our own house style.
    **No personal data in a picture**: demo data only, never a password field with text in it, never a one-time
    password dialog, never an e-mail address of a real person. Keep each file as small as a sharp picture allows,
    and report the folder's total size.
+
 7. **The PDF book**, rendered by `renderPdf` from a new template, `src/templates/printouts/user-guide-book.hbs`,
    with the house printout style: crest, watermark, fonts, header and the footer with RESTRICTED and Page X of Y.
    - A **cover**: the crest, CIRERMS, "User Guide", the date, and who it was made for (their name and role, since
@@ -175,6 +181,7 @@ everything in our own words and our own house style.
 
    The pictures go into the HTML as data URIs, so nothing is fetched while rendering. Download PDF on the page
    opens it in `openPdfPreview` (which has Download), never in a new tab.
+
 8. **One chapter, Getting Started** (`docs/manual/getting-started.md`), as the worked example, with its pictures
    taken by the script:
    - signing in;
@@ -187,10 +194,12 @@ everything in our own words and our own house style.
 
    Write it for Navy staff who have never used CIRERMS: say where to go, what to press and what they will see. Use
    plain words, short sentences, one action per step, dates dd/mm/yyyy, and screens named as they read.
+
 9. **Docs:** `README.md` and `CONVENTIONS.md` get a short User Guide part: where the chapters live, how to take
    the pictures, and that a change to a screen should retake its pictures and correct its chapter.
 
 ### Rules for G1 (beyond the README's)
+
 - Never change how the tab strips work (the owner, 23/11/2026). Never edit `public/js/core/choices.js`.
 - Tokens only, light and dark, desktop and phone, the fluid type scale, no inline scripts or `on*=` handlers.
   Rebuild the CSS (`npm run css:build`) when you add classes.
@@ -199,7 +208,9 @@ everything in our own words and our own house style.
   dependency), README and CONVENTIONS (their User Guide parts).
 
 ### Check (no tests or walkthroughs)
+
 Run the app on a fresh database (`npm run migrate:fresh`, `npm run seed`, `npm start`) and look yourself:
+
 - the menu item on desktop and phone;
 - Ctrl+H on three different pages, Esc and the close button;
 - the page at 1440 and 390 px in both themes, with no browser errors and nothing scrolling sideways;
@@ -208,8 +219,10 @@ Run the app on a fresh database (`npm run migrate:fresh`, `npm run seed`, `npm s
 - the PDF book page by page, as HICO001 and as B0541.
 
 ### Report
+
 Commit, push, then **one** report by `send_message` to the administrator session (its id is in your brief and in
 `docs/PLAN.md` section 7). The report gives:
+
 - the branch and last commit;
 - what was built against items 1 to 9;
 - what you looked at;
@@ -228,12 +241,14 @@ Then stop. No report note file is needed for an AI session.
   the report; do not change the demo data)
 
 ### Read first
+
 - `docs/manual/README.md` (G1's) and `docs/manual/getting-started.md`, the worked example.
 - `README.md` (each module's part: what every page does) and `docs/legacy/` only where the README leaves a rule
   unclear.
 - The app itself: run it and use every page before you write about it.
 
 ### What G1 left (26/11/2026, merged)
+
 - The format, spec keys (`open`, `as`, `device`, `do`, `marks`, `crop`, `height`, `session`, `sources`), targets
   and the `as` account names are in `docs/manual/README.md` and at the top of `scripts/guide/shoot.js`. A section's
   `screen=` is a nav screen id (`ratings.list`), not a route. Slugs have two or more words and are unique across the
@@ -252,8 +267,10 @@ Then stop. No report note file is needed for an AI session.
   field, and toasts (they are hidden).
 
 ### Write
+
 One chapter per module, in the sidebar's order, each with its sections (one per page), its tasks step by step and
 its pictures taken by `npm run guide:shots`:
+
 - Dashboard;
 - Ratings Management (Current, Former, New Rating, the record and its tabs, Batch Upload, Documents, My Details);
 - Drafting (its nine pages);
@@ -274,6 +291,7 @@ linking each page. Pictures follow G1's rules: demo data, sharp, cropped to the 
 light and dark), no personal data.
 
 ### Check (no tests or walkthroughs)
+
 - `npm run guide:shots` takes every picture without a failure.
 - Look at every picture yourself.
 - Read the page as HICO001, B0541 (Records Clerk) and B0705 (Drafting), and check each receives only their part.
@@ -281,7 +299,9 @@ light and dark), no personal data.
   across a page, nothing overflowing.
 
 ### Report
+
 As G1's: one `send_message` to the administrator session, then stop. Include:
+
 - the chapters and the count of sections, tasks and pictures;
 - the PDF's page count as HICO001;
 - anything the app does that seemed wrong while you wrote about it (report it; do not fix app code in this
@@ -291,8 +311,7 @@ As G1's: one `send_message` to the administrator session, then stop. Include:
 
 ## G3 `guide-book-options`
 
-The owner (26/11/2026): "The download manual prompts options. 1. Desktop and light mode 2. Desktop and dark mode
-3. Mobile and light mode 4. Mobile and dark mode. So no recapture since all shots are on repo, just build the manual
+The owner (26/11/2026): "The download manual prompts options. 1. Desktop and light mode 2. Desktop and dark mode 3. Mobile and light mode 4. Mobile and dark mode. So no recapture since all shots are on repo, just build the manual
 and insert the right set of images." This replaces the earlier rule that the book uses the desktop light pictures
 only.
 
@@ -300,6 +319,7 @@ only.
   **Size:** S · **Migration block:** none · **Seed:** none
 
 ### Do
+
 1. **The choice.** **Download PDF** on the User Guide page opens a small dialog (a bottom sheet on a phone, from the
    kit in `public/js/ui/`) offering four options:
    - **Desktop, Light Mode**
@@ -309,6 +329,7 @@ only.
 
    The option matching the reader's current device and theme is chosen at first. A **Make PDF** button opens the
    book in `openPdfPreview`, as today. Cancel closes the dialog.
+
 2. **The book.** `GET /api/guide/book?device=desktop|phone&theme=light|dark` (default desktop and light; anything
    else is refused with 400). `src/modules/guide/guide.book.js` inserts the pictures of that set,
    `<shot>.<device>.<theme>.png`. A picture taken for one device only falls back to the other device's capture, in
@@ -323,7 +344,9 @@ only.
 4. **Docs.** One line each in `README.md` (the User Guide part) and `docs/manual/README.md`.
 
 ### Check (no tests or walkthroughs)
+
 On a fresh database, as HICO001:
+
 - Make all four books.
 - Note each one's page count and size.
 - Look at a few pages of each, with pictures of the right device and theme and the contents numbers right.
@@ -331,4 +354,5 @@ On a fresh database, as HICO001:
 Look at the dialog at 1440 px and 390 px, in light and dark. Make one book as B0541, to see the cut still holds.
 
 ### Report
+
 One `send_message` to the administrator session, then stop.

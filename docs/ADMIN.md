@@ -82,7 +82,9 @@ git log --format='%h %an <%ae> %s' origin/master..origin/<branch>      # author 
 git diff --stat origin/master...origin/<branch>                         # only the package's files
 git log --format=%B origin/master..origin/<branch> | grep -ciE "co-authored|session_"   # 0; and read the messages for any mention of AI tools
 ```
+
 Then, by package type:
+
 - Every branch: no `choices.js` change; in source (not `public/css/output.css`, whose `#fff` is a
   Tailwind default) no `bg-white`, `text-white`, `#fff`, hex colours or palette colours; no inline
   `on*=` handlers or `<script>` blocks in the app; no `CREATE PROCEDURE/FUNCTION/TRIGGER/VIEW`;
@@ -100,13 +102,14 @@ Then, by package type:
   on WP1). Add the package's own walkthrough if it wrote one. **Every walkthrough runs in 5 minutes at most**
   (owner, 19/11/2026; PLAN rule 13): it prints its time and fails over 5 minutes; say so in every build brief.
 - The plan branch: after the owner merges `project-plan`, fast-forward it (`git merge --ff-only
-  origin/master`) before the next edit. A shallow clone once turned a merge into an add/add conflict
+origin/master`) before the next edit. A shallow clone once turned a merge into an add/add conflict
   and conflict markers were pushed by mistake: always `grep -c '^<<<<<<<'` before committing.
 
 ## 5. Writing a brief
 
 Each brief is self-contained (the session knows nothing else). Use this shape, as in the briefs for
 WP0, WP1, D1 and T1:
+
 1. What the package is, in one line.
 2. **Read first (binding):** `docs/PLAN.md` sections and its row, `CONVENTIONS.md`, `docs/legacy/`
    files for the module, the approved demo screens, and what earlier packages left (for example WP1's
@@ -124,17 +127,18 @@ WP0, WP1, D1 and T1:
 
 ## 6. Where things stand (26/11/2026)
 
-| Item | State |
-|---|---|
-| master | Every package is merged (the last, WP10, on 23/11/2026; `docs/PLAN.md` section 8 lists each with its date). The Settings page and the user guide (G1, G2, G3) merged 26/11/2026 |
-| Sessions | The Settings page (`settings`) merged 26/11/2026; its session is archived. The user guide, G1 (`user-guide`) and G2 (`user-guide-content`), merged 26/11/2026; both sessions archived. G3 (`guide-book-options`, the book in four picture sets) merged 26/11/2026 too, its session archived. No session is running. A documents session brought every open document up to date on `project-plan`. The administrator is now `session_01G8Rfvk1tUaL2XBW6Z3tbvT` (Opus 5.5 · medium, from 26/11/2026), which took over from `session_01G8RfvmysEhqqTQUZ45Qn5D` and oversees the user guide. All earlier sessions are finished and archived |
-| Next | The Settings page and the user guide are merged (26/11/2026). Next is the import of the real records, once Hicad answers `docs/OPEN-QUESTIONS.md`; the owner decides when. A change to a screen should retake its guide pictures (`npm run guide:shots -- --stale`) and correct its chapter (`docs/manual/README.md`). When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner |
-| Open questions | All in `docs/OPEN-QUESTIONS.md`: 9 for Hicad (the due rules, TY and DW, the verification forms, and more), 4 for the owner |
+| Item           | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| master         | Every package is merged (the last, WP10, on 23/11/2026; `docs/PLAN.md` section 8 lists each with its date). The Settings page and the user guide (G1, G2, G3) merged 26/11/2026                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Sessions       | The Settings page (`settings`) merged 26/11/2026; its session is archived. The user guide, G1 (`user-guide`) and G2 (`user-guide-content`), merged 26/11/2026; both sessions archived. G3 (`guide-book-options`, the book in four picture sets) merged 26/11/2026 too, its session archived. No session is running. A documents session brought every open document up to date on `project-plan`. The administrator is now `session_01G8Rfvk1tUaL2XBW6Z3tbvT` (Opus 5.5 · medium, from 26/11/2026), which took over from `session_01G8RfvmysEhqqTQUZ45Qn5D` and oversees the user guide. All earlier sessions are finished and archived |
+| Next           | The Settings page and the user guide are merged (26/11/2026). Next is the import of the real records, once Hicad answers `docs/OPEN-QUESTIONS.md`; the owner decides when. A change to a screen should retake its guide pictures (`npm run guide:shots -- --stale`) and correct its chapter (`docs/manual/README.md`). When the owner says a report note is in, fetch that branch, read `docs/reports/<package>.md`, check the branch as section 4 says (every walkthrough on a fresh database, the screens), and tell the owner                                                                                                        |
+| Open questions | All in `docs/OPEN-QUESTIONS.md`: 9 for Hicad (the due rules, TY and DW, the verification forms, and more), 4 for the owner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 Notes for coming briefs (the packages the old notes here named are done; what is left stands for every later brief):
+
 - **From WP1, for every build package:** register a module with `src/modules/<m>/<m>.module.js`
   (key, label, basePath, routes, privileges); guard each route with `requirePrivilege(screen,
-  action)` (the server refuses to start with an unguarded route); every write in
+action)` (the server refuses to start with an unguarded route); every write in
   `db.transaction` with `audit.record(tx, actor, {...})`; repo functions take a connection; pages in
   `nav.js` PAGES with screen, action, view; `can(screen, action)` from `public/js/core/access.js`
   for every button; grants for roles other than Administrator in the package's seed.
@@ -157,5 +161,5 @@ Notes for coming briefs (the packages the old notes here named are done; what is
 
 - The old system: `hicadsystems/cirems` (attach read-only with `add_repo` if needed). Its 2017
   backup is an older database; nothing more to get from it.
-- `praxisjbs/mycity-app` was the layout reference for the UI restructure; `swizfcodes/navy-payroll`
+- `*********************` was the layout reference for the UI restructure; `swizfcodes/navy-payroll`
   was the sign-in page reference. Neither is needed for the plan's packages.
