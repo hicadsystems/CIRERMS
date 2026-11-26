@@ -3,7 +3,7 @@
 - Package: WP7b Drafting Reports (Batch/Signal Content, Rate DOD History, Draft Report)
 - Branch: drafting-reports
 - Last commit: 1ed2ecc Drafting reports: the history page's rating picker sits on the page without a card
-- Done by: AI session for the owner
+- Done by: the owner
 - Date: 20/11/2026
 
 ## Built (against the brief, page by page)

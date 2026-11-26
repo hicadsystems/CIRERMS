@@ -3,7 +3,7 @@
 - Package: WP6 Training Drafting (clean-up: made to work, checked and tidied)
 - Branch: training-drafting
 - Last commit: 2496c01 Training Drafting: make it work against MySQL, run its walkthrough (the report's own commit comes after it)
-- Done by: for the owner, committed as swizfcodes
+- Done by: the owner (committed as swizfcodes)
 - Date: 20/11/2026
 
 ## Built (against the brief, page by page)

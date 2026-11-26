@@ -1,6 +1,8 @@
 # CIRERMS: the remaining waves, for any developer
 
-This folder hands out the work still to do in Phase 1 (`docs/PLAN.md`). Any developer can take a package: a
+> **Every wave is done and merged (26/11/2026).** Wave P (D4, WP13) on 19/11/2026; wave E (WP7a 19/11, WP6 20/11); wave F (WP8 19/11, WP5 20/11); wave F2 (WP11 21/11, WP12 23/11); wave G (WP7b 20/11, WP9 23/11); wave H (WP10 23/11/2026). Nobody starts one again. This folder stays as the record of how the work was briefed; what was built is in `docs/PLAN.md` section 8 and the report notes in `docs/reports/`.
+
+This folder handed out the work of Phase 1 (`docs/PLAN.md`). Any developer can take a package: a
 person, or an AI coding session working for one. Each wave has its own file with a full brief per package: what to
 build, what to read first, the model and effort to use if you work with an AI session, the checks, and the report
 note to leave. Read this page first, then your wave's file, then everything its brief lists under "Read first".
@@ -8,7 +10,7 @@ note to leave. Read this page first, then your wave's file, then everything its 
 The administrator (who keeps `docs/PLAN.md`) inspects every branch before telling the owner it is ready to merge.
 The owner merges on GitHub. Nobody else merges, and nobody opens pull requests.
 
-## 1. The remaining waves
+## 1. The waves (all done and merged)
 
 A package may start only when everything in its "Needs merged first" column is on `master`. Two packages in the
 same wave do not depend on each other and can run at the same time, by two developers. Tell the owner which

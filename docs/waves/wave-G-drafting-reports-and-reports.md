@@ -1,5 +1,7 @@
 # Wave G: Drafting Reports and Reports
 
+> **Done and merged (WP7b on 20/11/2026, WP9 on 23/11/2026). Do not start this again.** It stays here as the record of how it was briefed; the plan's status table (`docs/PLAN.md` section 8) and the report notes in `docs/reports/` say what was built.
+
 Two packages that can run at the same time, by two developers, once WP7a (the drafting tables) is merged. Both read
 data other modules write; neither writes ratings.
 

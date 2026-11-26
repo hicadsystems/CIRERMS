@@ -3,7 +3,7 @@
 - Package: WP13b Sharp PDF preview
 - Branch: preview-sharp
 - Last commit: see `git log` (preview code commit, then this report)
-- Done by: AI session for swizfcodes
+- Done by: the owner
 - Date: 19/11/2026
 
 ## Update 2: NAVY-PAYROLL way (administrator's instruction, the owner's words: the preview "exactly as the downloaded pdf is")
