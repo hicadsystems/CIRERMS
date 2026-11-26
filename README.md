@@ -286,6 +286,7 @@ The demo data is shared by every module (seeds `001` to `014` in `src/db/seeds/`
 ## 3.5. Documentation
 
 - [Documentation index](docs/README.md)
+- [Technical Handbook](docs/handbook/README.md): the technical guide, runbooks and worked example as one PDF and one Word file (`npm run docs:book` rebuilds them)
 - [Developer onboarding](docs/development/README.md)
 - [Local setup](docs/development/setup.md)
 - [Architecture](docs/development/architecture.md)

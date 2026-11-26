@@ -10,6 +10,8 @@ Use this index to find project, development, and operations information.
 4. [Creating and Maintaining Modules](development/modules.md): build a feature from the database to the screen, step by step, with code you can paste and test.
 5. [Troubleshooting](runbooks/incident-troubleshooting.md): when something breaks. Organised by what you see.
 
+The technical guide, the runbooks and the worked example are also built into one book, as a PDF and a Word file: see [Technical Handbook](handbook/README.md). `npm run docs:book` rebuilds it.
+
 ## Developer documentation
 
 - [Development overview](development/README.md)
