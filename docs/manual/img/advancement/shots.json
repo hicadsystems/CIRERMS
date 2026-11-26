@@ -1,0 +1,42 @@
+{
+  "advancement-board-list": {
+    "spec": "0395130b72f37ea1",
+    "source": "f82390b89f4fd3eb",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "advancement-close-list": {
+    "spec": "528e328fd9f17e65",
+    "source": "f82390b89f4fd3eb",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "advancement-create-batch": {
+    "spec": "93ad34dad951c129",
+    "source": "f82390b89f4fd3eb",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "advancement-due-list": {
+    "spec": "577d48e4772bc38d",
+    "source": "f82390b89f4fd3eb",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "advancement-review-page": {
+    "spec": "2ccfd01e60f972a8",
+    "source": "f82390b89f4fd3eb",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}

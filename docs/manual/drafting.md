@@ -93,7 +93,7 @@ Here you choose where each rating goes. Pick a batch at the top. The page shows 
 4. Press a rating. Its dialog opens.
 5. {needs="drafting.review edit"} Press **Edit Posting**. Choose the proposed ship, the vice or deployment if it applies, and a remark. Press **Save**.
 6. Read **Manning at the Proposed Ship** in the dialog. It says, for example, **Needs 1, will have 1**. Beside the ship in the list, a pill says **Over by 1** or **Under by 1**. This advises only.
-7. {needs="drafting.review edit"} Press **Not Recommended** to hold a rating back. Give a reason. The row is struck out and the Draft Form shows it struck out.
+7. {needs="drafting.review edit"} Press **Not Recommended** to hold a rating back. Type the **Reason**, then press **Not Recommended** again. The row is struck out and the Draft Form shows it struck out.
 8. {needs="drafting.review delete"} Press **Remove** to take the rating out of the batch.
 
 If the page says **This rating is not recommended. Remove the row, or add the rating again.**, a rating you held back cannot be given a ship. Remove it, or add it again.

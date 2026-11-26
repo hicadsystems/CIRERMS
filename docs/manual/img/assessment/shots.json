@@ -1,0 +1,34 @@
+{
+  "assessment-grading-list": {
+    "spec": "b121a9d13f5a69d6",
+    "source": "7c0bb06f5e2c5904",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "assessment-initiate-dialog": {
+    "spec": "781e09426edaa663",
+    "source": "7c0bb06f5e2c5904",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "assessment-periods-list": {
+    "spec": "64da337d60689e19",
+    "source": "7c0bb06f5e2c5904",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "assessment-report-page": {
+    "spec": "aafe0bfed6f09a27",
+    "source": "7c0bb06f5e2c5904",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  }
+}
