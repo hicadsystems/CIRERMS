@@ -9,7 +9,7 @@
   },
   "getting-started-guide-page": {
     "spec": "c3a580491e2be718",
-    "source": "e8097bf6f833e38d",
+    "source": "b295da3b871d4429",
     "devices": [
       "desktop",
       "phone"
@@ -24,7 +24,7 @@
   },
   "getting-started-guide-search": {
     "spec": "049c18b2509d2255",
-    "source": "e8097bf6f833e38d",
+    "source": "b295da3b871d4429",
     "devices": [
       "desktop",
       "phone"
@@ -67,6 +67,14 @@
       "phone"
     ]
   },
+  "getting-started-reset-password": {
+    "spec": "d23a6d4c9f0a0f22",
+    "source": "e3b0c44298fc1c14",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
   "getting-started-search": {
     "spec": "ebc58517a8104685",
     "source": "758fcab0b82efa92",
@@ -76,7 +84,7 @@
     ]
   },
   "getting-started-sign-in-page": {
-    "spec": "8fc1412b6fa91c7e",
+    "spec": "b1b8226f970a6cc9",
     "source": "e3b0c44298fc1c14",
     "devices": [
       "desktop",

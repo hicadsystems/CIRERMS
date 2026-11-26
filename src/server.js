@@ -6,6 +6,7 @@ const db = require('./db');
 const { privilegeCatalogue } = require('./modules');
 const accessService = require('./modules/access/access.service');
 const scheduled = require('./shared/scheduled');
+const mail = require('./shared/mail');
 
 async function start() {
   try {
@@ -31,6 +32,8 @@ async function start() {
     );
     // changes that take effect on a later date (a posting's WEF): applied at start, then every hour
     scheduled.start();
+    // Forgot Password sends e-mail: say where it goes (a file in development, a warning in production with no server)
+    (config.isProduction && !mail.configured() ? console.warn : console.log)(`[CIRERMS] ${mail.describe()}`);
   });
 
   const shutdown = async (signal) => {
