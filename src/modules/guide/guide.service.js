@@ -77,4 +77,4 @@ function pictureFile(user, chapterSlug, shot, device, theme) {
   return file;
 }
 
-module.exports = { cutFor, listContents, chapterFor, locate, searchFor, pictureFile };
+module.exports = { pngSize, cutFor, listContents, chapterFor, locate, searchFor, pictureFile };

@@ -307,6 +307,8 @@ marks:
 ```shot getting-started-guide-page
 open: #guide
 as: admin
+crop: #app-main
+height: 394
 marks:
   1: css [data-guide-search] | Search the guide
   2: css [aria-label="Guide contents"], select[aria-label="Chapter"] | The contents (on a phone, the chapter picker)
@@ -319,6 +321,8 @@ as: admin
 do:
   - fill: css [data-guide-search] = lock
   - wait: css [data-guide-result]
+crop: #app-main
+height: 600
 marks:
   1: css [data-guide-search] | The words you typed
   2: css [data-guide-result] | A result: press it to open that part
@@ -334,6 +338,5 @@ do:
 crop: [data-guide-panel]
 marks:
   1: css [data-guide-open-in-page] | Open in Page
-  2: button "Close the guide" | Close the panel
-  3: css [data-guide-search] | Search the guide
+  2: css [data-guide-search] | Search the guide
 ```

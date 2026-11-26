@@ -7,7 +7,7 @@
  *   - a table of contents with the real page of every chapter and section: the book is made once, the page each
  *     heading landed on is read from the PDF's own links (pdfjs-dist), and it is made again with those numbers;
  *   - each chapter starts a new page; pictures are the desktop light ones (a picture taken only for the phone
- *     is shown narrow), as data URIs so nothing is fetched while rendering, never cut across a page, each with
+ *     is used as it is, and each is drawn at the size it was taken), as data URIs so nothing is fetched while rendering, never cut across a page, each with
  *     its legend.
  */
 const fs = require('fs');
@@ -39,13 +39,15 @@ const NOTE_LABEL = { tip: 'Tip:', important: 'Important:', note: 'Note:' };
 function pictureFor(chapter, figure, images) {
   const spec = chapter.pictures[figure.shot];
   if (!spec) return null;
-  // the desktop light picture; a picture taken only for the phone is used narrow
+  // the desktop light picture; a picture taken only for the phone is used as it is
   const device = spec.devices.includes('desktop') ? 'desktop' : 'phone';
   const file = path.join(store.imgDir, chapter.slug, `${figure.shot}.${device}.light.png`);
   if (!images.has(file)) images.set(file, fs.existsSync(file) ? `data:image/png;base64,${fs.readFileSync(file).toString('base64')}` : null);
   const src = images.get(file);
   if (!src) return null;
-  return { src, alt: figure.alt, narrow: device === 'phone', legend: spec.legend };
+  // drawn at the size it was taken (its pixels over the device scale, 2), as CSS pixels: sharp, never enlarged; the page caps it at the text width
+  const size = service.pngSize(file);
+  return { src, alt: figure.alt, width: size ? Math.round(size.w / 2) : null, legend: spec.legend };
 }
 
 function blocksFor(chapter, blocks, ids, images) {

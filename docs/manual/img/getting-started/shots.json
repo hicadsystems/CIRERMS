@@ -8,7 +8,7 @@
     ]
   },
   "getting-started-guide-page": {
-    "spec": "07982937ae8d8d38",
+    "spec": "c3a580491e2be718",
     "source": "e8097bf6f833e38d",
     "devices": [
       "desktop",
@@ -16,14 +16,14 @@
     ]
   },
   "getting-started-guide-panel": {
-    "spec": "bb50277da7e1387f",
+    "spec": "084688b8a52f9cf7",
     "source": "c00d537b77c07b04",
     "devices": [
       "desktop"
     ]
   },
   "getting-started-guide-search": {
-    "spec": "4989a9cf97107364",
+    "spec": "049c18b2509d2255",
     "source": "e8097bf6f833e38d",
     "devices": [
       "desktop",

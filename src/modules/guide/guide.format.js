@@ -180,6 +180,10 @@ function parseShot(id, lines, firstLine) {
     list = null;
     if (key === 'open') spec.open = value;
     else if (key === 'as') spec.as = value;
+    else if (key === 'height') {
+      if (/^\d{2,4}$/.test(value)) spec.height = Number(value);
+      else problems.push(`${at}: height is a number of pixels, for example 480`);
+    }
     else if (key === 'crop') {
       spec.crop = value;
       if (/^css\b/.test(value)) problems.push(`${at}: crop is page, viewport, modal or a CSS selector written as it is (crop: #lock-card), without "css"`);

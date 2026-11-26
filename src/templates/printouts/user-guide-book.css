@@ -24,7 +24,7 @@
 .toc-line { display: flex; align-items: baseline; gap: 2mm; color: inherit; text-decoration: none; padding: 0.7mm 0; }
 .toc-line .t { flex: none; max-width: 84%; }
 .toc-line .dots { flex: 1; border-bottom: 1pt dotted var(--muted); transform: translateY(-1mm); min-width: 6mm; }
-.toc-line .pg { flex: none; font-family: var(--font-mono); font-weight: 700; color: var(--navy); }
+.toc-line .pg { flex: none; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
 .toc-chapter .toc-line .t b { color: var(--teal); margin-right: 1.5mm; }
 
 /* ---- a chapter ---- */
@@ -53,9 +53,8 @@
 .g-table { margin: 2mm 0 4mm; font-size: 9pt; }
 
 /* ---- pictures and their legends: never cut across a page ---- */
-.g-shot { margin: 3mm 0 4mm; break-inside: avoid; page-break-inside: avoid; }
-.g-shot img { display: block; max-width: 100%; max-height: 195mm; width: auto; height: auto; margin: 0 auto; border: 0.6pt solid var(--border); border-radius: 1.6mm; }
-.g-shot.narrow img { max-width: 62mm; }
+.g-shot { margin: 3mm 0 4mm; break-inside: avoid-page; }
+.g-shot img { display: block; max-width: 100%; max-height: 240mm; height: auto; object-fit: contain; margin: 0; border: 0.6pt solid var(--border); border-radius: 1.6mm; }
 .g-legend { list-style: none; margin: 2mm 0 0; padding: 0; font-size: 8.8pt; color: var(--muted); }
 .g-legend li { display: flex; align-items: baseline; gap: 2mm; margin: 0.7mm 0; }
-.g-legend .mark { flex: none; width: 4.6mm; height: 4.6mm; border-radius: 50%; background: var(--teal); color: var(--page); font-size: 7.4pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.g-legend .mark { flex: none; width: 4.6mm; height: 4.6mm; border-radius: 50%; background: var(--navy); color: var(--page); font-size: 7.4pt; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }

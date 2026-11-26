@@ -78,7 +78,8 @@ marks:
 | `device` | `both` (the default), `desktop` or `phone` |
 | `do` | Steps taken before the picture, one on each line under it: `click`, `fill`, `select`, `press`, `wait`, `scroll`. `phone ` or `desktop ` before a step runs it on that device only (`phone click: button "More"`) |
 | `marks` | Numbered marks drawn over their targets, one on each line: `1: button "Save" \| Saves the case`. The legend under the picture lists them |
-| `crop` | `page` (the default: the page without the empty space under it), `viewport`, `modal` (the open dialog, sheet or menu, without the empty space under its content), or a CSS selector written as it is (`crop: #lock-card`, not `css`). Every mark is always inside the picture |
+| `crop` | `page` (the default: the page without the empty space under it), `viewport`, `modal` (the open dialog, sheet or menu, without the empty space under its content), or a CSS selector written as it is (`crop: #lock-card`, not `css`; `crop: #app-main` is the page without the sidebar and bars). Every mark and its number is always inside the picture, and never covers the words or icon of what it marks |
+| `height` | Keeps only the top of the crop, in CSS pixels (`height: 470`), so a long page does not bring in what lies below |
 | `session` | `own`: the picture signs in on its own (it locks, ends or changes the session) |
 | `sources` | More files the picture depends on, one on each line, beside the section file its address opens (and the files it imports from `public/js/sections` and `public/js/shell`) |
 
