@@ -89,13 +89,15 @@ async function verificationPdf(kind, v, generatedBy) {
     ] : []);
     table = {
       heading: 'Clearance',
+      blank: true,
       columns: [
-        { label: 'Section', key: 'section', w: '44%' },
-        { label: 'Cleared By', key: 'clearedBy', w: '36%' },
-        { label: 'Date', key: 'date', kind: 'date', w: '20%' },
+        { label: 'Section', key: 'section', w: '38%' },
+        { label: 'Cleared', kind: 'check', w: '10%' },
+        { label: 'Cleared By', kind: 'fill' },
+        { label: 'Date', kind: 'fill', w: '18%' },
       ],
       rows: ['Ship or Unit', 'Stores and Equipment', 'Medical', 'Accounts and Pay', 'Documents and Records']
-        .map((section) => ({ section, clearedBy: '', date: '' })),
+        .map((section) => ({ section })),
       empty: 'No clearance sections are defined.',
     };
     note = source && source.comment ? `Comment: ${source.comment}` : '';
