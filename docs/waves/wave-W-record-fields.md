@@ -1,5 +1,7 @@
 # Wave W: the record's fields to the live system's
 
+> **Done and merged (W1 on 27/11/2026). Do not start this again.**
+
 The owner (27/11/2026), before the real records are imported: "For the NOK, spouse and children, we need to expand our
 form fields to be similar with legacy; for drafting, add branch, authority, command and state, in fact only leave out
 sub-branch." Then: "Leave state alone. The ship fields need adjustment: the type is land, sea, training, and the
