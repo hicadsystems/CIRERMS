@@ -2,6 +2,8 @@
 
 Scope: ONLY the old tables behind a rating and how they map to the new schema for the later import. The old pages are not documented here. Sources: `HRProjectDAL/Core/HicadHRProjectModel.edmx` (store model: tables, columns, declared foreign keys), `hpproject/Controllers/EmployeeController.cs` and `EmployeePersonalInfoController.cs` (only to find which tables are used), `hpproject/APIController/PersonelController.cs` (child-record endpoints). New schema: `src/db/migrations/20261116_090200_create_ratings.sql` (`ratings`), `20261116_090300_create_rating_records.sql` (`rating_*`), `20261116_090100_create_lookups.sql` (`ref_*`).
 
+> **Update (27/11/2026):** the fields below marked "NO EQUIVALENT" for next of kin, spouse, children and drafting history (all but the drafting State and Sub-Branch, which the owner left out) now have columns in the new schema (`20261120_160000_record_fields.sql`). [import-map.md](import-map.md) maps each one to its live column.
+
 Conventions: type shows `nvarchar(30)` etc.; `?` = nullable in the store model; `#` = identity. Everything below the edmx is a read of definitions only; no data was read. Procedure and view bodies are not available, so rules about "current / former" are inferred from C# (UNCONFIRMED where stated).
 
 ## 1. Identity of a rating: keys and linking

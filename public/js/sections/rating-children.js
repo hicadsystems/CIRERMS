@@ -25,7 +25,7 @@ import { confirmDialog } from '../ui/confirm.js';
 import { toast } from '../ui/toast.js';
 import { field, textInput, selectInput, setFieldErrors, clearFieldErrors } from '../ui/field.js';
 import { optionsWithHeld, filterLgas } from '../core/lookups.js';
-import { rowTips } from './disciplinary-parts.js';
+import { rowTip } from '../ui/row-tip.js';
 import { readForm, dateField } from './rating-fields.js';
 import { scheduledMoves } from './drafting-record.js';
 import { scheduledAdvancements } from './advancement-record.js';
@@ -292,7 +292,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   if (tab.look === 'cards') {
     const photo = nokPhoto({ serviceNumber, rating, readOnly: !canEdit });
     return h('div', { className: 'space-y-4' }, [
-      rowTips(h('div', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1' }, rows.map((r) => {
+      rowTip(h('div', { className: 'grid grid-cols-2 gap-4 phone:grid-cols-1' }, rows.map((r) => {
         const name = [r.first_name, r.last_name].filter(Boolean).join(' ');
         const o = opens(r, name);
         return h('section', { ...o, className: cx(CARD, 'p-4 transition-colors hover:bg-subtle', o.className) }, [
@@ -313,7 +313,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
     return h('div', { className: CARD }, [
       band,
       // Drafting: a move still to come (a WEF after today) shows first, as scheduled
-      rowTips(h('ol', { className: 'relative mx-4 my-4 ml-6 border-l-2 border-border' }, [tab.key === 'drafting' ? scheduledMoves(serviceNumber) : null, ...rows.map((p) => {
+      rowTip(h('ol', { className: 'relative mx-4 my-4 ml-6 border-l-2 border-border' }, [tab.key === 'drafting' ? scheduledMoves(serviceNumber) : null, ...rows.map((p) => {
         const current = !p.end_date;
         const what = p.ship_name || 'posting';
         const o = opens(p, what);
@@ -354,7 +354,7 @@ export function childPanel({ serviceNumber, tab, rows = [], rating = {}, readOnl
   return h('div', { className: cx(CARD, 'overflow-hidden') }, [
     band,
     tab.key === 'advancement' ? scheduledAdvancements(serviceNumber) : null, // a rate change still to come (WP8)
-    rowTips(h('div', { className: tab.details ? '' : 'overflow-x-auto' }, [table, cardList])),
+    rowTip(h('div', { className: tab.details ? '' : 'overflow-x-auto' }, [table, cardList])),
   ]);
 }
 
