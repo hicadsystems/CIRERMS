@@ -93,7 +93,7 @@ async function manifestAndServer(browser) {
     check(r.status() === 200 && /image\/png/.test(r.headers()['content-type'] || '') && size === icon.sizes, `icon ${icon.src} loads at ${icon.sizes}`, size);
     purposes.add(`${icon.purpose}:${icon.sizes}`);
   }
-  check(purposes.has('any:192x192') && purposes.has('any:512x512') && purposes.has('maskable:512x512'), 'icons: 192, 512 and a maskable 512');
+  check(purposes.has('any:192x192') && purposes.has('any:512x512') && m.icons.every((i) => i.purpose === 'any'), 'icons: 192 and 512, every one purpose any (no maskable)');
   const touch = await context.request.get(`${BASE}/assets/icons/apple-touch-icon.png`);
   check(touch.status() === 200, 'the Apple touch icon loads');
   const sw = await context.request.get(`${BASE}/sw.js`);
