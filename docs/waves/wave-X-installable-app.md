@@ -82,6 +82,8 @@ Read `docs/waves/README.md` first: its rules bind you.
 ### Added 27/11/2026 (owner)
 The account menu is restyled like the owner's mycity-app account menu, in three groups separated by dividers: (View My Details, Change Password, Lock Screen), (Light Mode or Dark Mode, User Guide, **Download App**), (Sign Out, in the neutral colour). "Download App" is item 4's Install App, renamed. Only the account menu changes; other menus keep their look.
 
+Also (owner and administrator, 27/11/2026): the app icon is the crest alone (the yellow ring with the blue inside), transparent, with no square background and no maskable icon. The Apple touch icon is the crest on the light page colour. Losing the network while the app is open shows an offline banner and "CIRERMS cannot reach the server", never a list's empty state or a raw "Failed to fetch".
+
 ### Check
 On a fresh database:
 - the installable walkthrough, the demo walkthrough and the access walkthrough;
