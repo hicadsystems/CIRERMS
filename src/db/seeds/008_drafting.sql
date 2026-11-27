@@ -8,7 +8,7 @@
 
 -- ---- the due rule: placeholders until Hicad supplies the real rule (PLAN 9 and 9a decision 7) ----
 INSERT IGNORE INTO settings (setting_key, value, description) VALUES
-  ('drafting.due_months', '10', 'Drafting: a rating is due for a draft after this many whole months on the current ship (placeholder rule).'),
+  ('drafting.due_months', '18', 'Drafting: a rating is due for a draft after this many whole months on the current ship (the live system''s rule).'),
   ('drafting.band_green_to', '20', 'Drafting: months on a ship show green from the due month up to this number.'),
   ('drafting.band_amber_to', '24', 'Drafting: months on a ship show amber above the green band up to this number; red above it.');
 
@@ -113,12 +113,12 @@ SELECT v.sn, (SELECT id FROM ref_ship WHERE name = v.ship), r.rate_id,
   UNION ALL SELECT 'B0720', 'NNS UNITY',         45, 23,   'Weapons electrician'
   UNION ALL SELECT 'B0721', 'NNS PATHFINDER',    50, 24,   'Fire control'
   UNION ALL SELECT 'B0721', 'NNS UNITY',         24, NULL, 'Weapon systems'
-  UNION ALL SELECT 'B0722', 'NNS BEECROFT',      38, 15,   'Sick bay attendant'
-  UNION ALL SELECT 'B0722', 'NHQ ABUJA',         15, NULL, 'Medical centre'
-  UNION ALL SELECT 'B0723', 'NNS DELTA',         36, 11,   'Sick bay'
-  UNION ALL SELECT 'B0723', 'NAVTRAC EBUTE-ERO', 11, NULL, 'Training medical centre'
-  UNION ALL SELECT 'B0724', 'NAVTRAC EBUTE-ERO', 30, 12,   'Basic training'
-  UNION ALL SELECT 'B0724', 'NNS BEECROFT',      12, NULL, 'Medical centre'
+  UNION ALL SELECT 'B0722', 'NNS BEECROFT',      45, 19,   'Sick bay attendant'
+  UNION ALL SELECT 'B0722', 'NHQ ABUJA',         19, NULL, 'Medical centre'
+  UNION ALL SELECT 'B0723', 'NNS DELTA',         44, 19,   'Sick bay'
+  UNION ALL SELECT 'B0723', 'NAVTRAC EBUTE-ERO', 19, NULL, 'Training medical centre'
+  UNION ALL SELECT 'B0724', 'NAVTRAC EBUTE-ERO', 38, 18,   'Basic training'
+  UNION ALL SELECT 'B0724', 'NNS BEECROFT',      18, NULL, 'Medical centre'
   UNION ALL SELECT 'B0725', 'NNS PATHFINDER',    40, 17,   'Communications systems'
   UNION ALL SELECT 'B0725', 'NHQ ABUJA',         17, NULL, 'ICT directorate'
   UNION ALL SELECT 'B0726', 'NNS DELTA',         55, 27,   'Ship''s office'
