@@ -27,8 +27,7 @@ and is **not kept in this repository** (PLAN rule 10). Only its rules are writte
 | H8 Schema copy | **Half** | The structure is here (every table, column and upload layout: `tbl_Person`, `tbl_DraftUpload`, `tbl_Trainingupload`, `tbl_advancementUpload`, `tbl_uploadexceltodischarge`). The lookup rows are not, because the script has no data. A rating is **current** when its exit type id is **1 or 7**; any other exit type is former. Which names ids 1 and 7 carry needs the lookup rows |
 | H9 Passwords | **No** | Not in a database script. Still open |
 
-Every answer is to be applied by a package, not by hand: the setting values (`drafting.due_months` to 18), the
-discharge re-engagement case, the advancement start date, and the training rule if the owner wants the live one.
+Every answer is applied as a setting or by a package, not by editing data: `drafting.due_months` becomes 18 (System Administration > Settings), and whatever the owner decides on the re-engaged ratings and the training rule. Advancement needs no change: the live system moves the seniority date to the board date on each promotion, and CIRERMS counts from the latest promotion of the current rate, which is the same date. The drafting colour bands (green to 20, amber to 24) are the old system's own and stay.
 
 ## For Hicad
 
