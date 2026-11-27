@@ -91,7 +91,7 @@ and is **not kept in this repository** (PLAN rule 10). Only its rules are writte
 - **Who answers:** Hicad.
 
 ### H6. The real verification forms and the special draft letter
-**Still open** after the live schema script (27/11/2026): report layouts are not in a database.
+**Still open** after the live schema script (27/11/2026): report layouts are not in a database. On 27/11/2026 the owner sent a screenshot of the live page, **Print Re-engagement Verification / Retirement Routine / Engagement Forms**: search by service number, then one row with three buttons, **Re-engagement Verification Form**, **Print Retirement Routine** and **Print Engagement Form**. It confirms the three forms and the page CIRERMS's Verification Forms page already follows (its column headings, FileName, MiddleName and LastName over the buttons, are an old fault not ported). The forms' own layouts are still needed: the PDF or a picture of what each button prints, for a demo rating.
 - **Asked:** copies of the real **Re-engagement Verification**, **Retirement Routine** and **Engagement Form**, and
   of the **Special Draft Letter**.
 - **Why:** the old reports are binary Crystal files that cannot be read, so the layouts were designed from the
@@ -112,7 +112,7 @@ and is **not kept in this repository** (PLAN rule 10). Only its rules are writte
 - **Who answers:** Hicad.
 
 ### H8. A schema-only copy of the live database
-**Half answered 27/11/2026:** the structure arrived (the table above); the lookup rows come with the data later. Current means exit type id 1 or 7.
+**Half answered 27/11/2026:** the structure arrived (the table above). The owner holds the live data (27/11/2026); its lookup rows come with the import, a later step the owner will start. Current means exit type id 1 or 7.
 - **Asked:** if possible, a copy of the old live database's structure with its lookup rows (not one personnel
   record): it would settle H1 to H4 at once, and give the real exit-type codes (which of A, M, C keep a rating
   current), the Excel upload layouts and the real values of ranks, ships, branches, states and commands.
@@ -123,7 +123,7 @@ and is **not kept in this repository** (PLAN rule 10). Only its rules are writte
 - **Who answers:** Hicad.
 
 ### H9. The old system's database passwords
-**Still open** after the live schema script (27/11/2026).
+**For the owner now (27/11/2026):** the owner holds the live database, so they can check whether the login in the old repository's `hpproject/Web.config` still opens it, and change it if so. The passwords are never sent to anyone or written here.
 - **Asked:** are the passwords in the old repository's `hpproject/Web.config` still in use? If so they should be
   changed.
 - **Why:** they are in plain text in a repository others can read. They were never copied here.
