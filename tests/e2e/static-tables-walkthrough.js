@@ -665,8 +665,8 @@ async function viewerRun(browser, theme, viewport) {
   check(await dlg.locator('input[name="name"]').isDisabled(), 'its fields are read-only');
   await shot(page, `viewer-${phone ? 'phone' : 'desktop'}-${theme}-ships`);
   await page.keyboard.press('Escape');
-  const p = await api(page, 'POST', '/api/tables/ships', { name: 'WT No', type: 'Ship' });
-  const u = await api(page, 'PUT', '/api/tables/ships/1', { name: 'WT No', type: 'Ship' });
+  const p = await api(page, 'POST', '/api/tables/ships', { name: 'WT No', type: 'Sea' });
+  const u = await api(page, 'PUT', '/api/tables/ships/1', { name: 'WT No', type: 'Sea' });
   const d = await api(page, 'DELETE', '/api/tables/ships/1');
   check(p.status === 403 && u.status === 403 && d.status === 403, 'the API refuses add, edit and delete (403)', `${p.status},${u.status},${d.status}`);
   check((await api(page, 'GET', '/api/tables/ships')).status === 200, 'but lists (200)');
@@ -805,7 +805,7 @@ const OPTIONS = {
   'offences.category': ['Conduct', 'Discipline', 'Duty', 'Property'],
   'sanctions.severity': ['Minor', 'Major'],
   'institution.type': ['University', 'Polytechnic', 'College', 'Secondary School', 'Training Centre', 'Training Base', 'Other'],
-  'ships.type': ['Ship', 'Base', 'Training'],
+  'ships.type': ['Sea', 'Land', 'Training'],
 };
 
 async function specification(browser) {
@@ -858,7 +858,7 @@ async function specification(browser) {
   check(lookups.exitTypes.filter((x) => x.isDeath).map((x) => x.code).join() === 'DE' && lookups.exitTypes.every((x) => typeof x.isDeath === 'boolean'), 'only the deceased exit type is marked Death (both flags are in /api/lookups)');
   check(lookups.inactive.entryModes.some((x) => x.name === 'Sportsmen Enlistment'), 'after a fresh seed the demo\'s switched-off entry mode is Inactive');
   check(lookups.exitTypes.find((x) => x.name === 'DECEASED').isDeath === true, 'after a fresh seed the deceased exit type has Death = yes');
-  check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 4 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not');
+  check(lookups.exitTypes.filter((x) => x.keepsCurrent).length === 5 && lookups.exitTypes.find((x) => x.code === 'RT').keepsCurrent === false, 'the other exit types do not (A, M, C, Active and this walk-through\'s own)');
 
   // Appraisal Ratings: low not above high, no overlap
   const g1 = await api(page, 'POST', '/api/tables/appraisal-ratings', { code: 'x1', name: 'WT Backwards', score_low: 50, score_high: 40 });
@@ -877,8 +877,8 @@ async function specification(browser) {
   check(lagos.code === 'LA' && lookups.geoPoliticalZones.find((z) => z.id === lagos.geoPoliticalZoneId).name === 'South West', 'lookups: a state carries its code and zone (Lagos, LA, South West)');
   check(lookups.states.every((x) => x.code && x.geoPoliticalZoneId), 'lookups: every state has both');
   const aradu = lookups.ships.find((x) => x.name === 'NNS ARADU');
-  check(aradu.type === 'Ship' && aradu.commandId && lookups.commands.find((c) => c.id === aradu.commandId), 'lookups: a ship carries its type and command');
-  check(lookups.ships.some((x) => x.type === 'Base'), 'lookups: ships and bases are told apart');
+  check(aradu.type === 'Sea' && aradu.commandId && lookups.commands.find((c) => c.id === aradu.commandId), 'lookups: a ship carries its type and command');
+  check(lookups.ships.some((x) => x.type === 'Land'), 'lookups: ships and bases are told apart (Sea and Land)');
   const tr = lookups.staffBranches.find((x) => x.name === 'Training');
   check(tr.code === 'TRG' && tr.commandId, 'lookups: a staff branch carries its code and command');
   check(lookups.titles.find((x) => x.name === 'PO').description === 'Petty Officer', 'lookups: a title carries its description');

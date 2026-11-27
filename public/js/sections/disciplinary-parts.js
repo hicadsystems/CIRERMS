@@ -78,7 +78,7 @@ export function rowTips(listEl) {
   };
   const hide = () => { if (tip) tip.classList.add('hidden'); };
   listEl.addEventListener('pointermove', (e) => {
-    const row = e.target.closest && e.target.closest('tbody tr[tabindex]');
+    const row = e.target.closest && e.target.closest('tbody tr[tabindex], [data-view-details]');
     if (!row || e.pointerType === 'touch') { hide(); return; }
     const t = tipEl();
     t.textContent = 'View Details';

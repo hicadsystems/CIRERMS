@@ -151,3 +151,9 @@ p.muted { color: var(--muted); }
 
 /* a record's identity block (photo and key facts) */
 .idblock { display: grid; grid-template-columns: 24mm 1fr; column-gap: 5mm; align-items: start; margin-bottom: 2mm; }
+
+/* a record's people (next of kin, spouse, children): one block each, label and value rows */
+.rec { margin: 0 0 3mm; break-inside: avoid; }
+.rec-head { display: flex; align-items: baseline; gap: 3mm; padding: 0.8mm 0; font-size: 9pt; color: var(--navy); }
+.rec-tag { font-size: 7.5pt; color: var(--muted); }
+.rec-none { margin: 1mm 0 3mm; color: var(--muted); }
