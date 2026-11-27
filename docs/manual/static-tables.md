@@ -62,10 +62,10 @@ If the page says **This ... is in use** and names where, for example **(5 rating
 | **Institution** | A **Code**, **Location** and **Type**, such as University or Training Base. A course picks one |
 | **Local Government** | Belongs to a **State**. A name is unique within its state |
 | **Languages** | A name only |
-| **Relationship** | A name only. Next of kin entries pick one |
+| **Relationship** | A name only. Next of kin entries pick one as their **Relationship** |
 | **Staff Branch** | May belong to a **Command**. The rating form's Staff Branch list follows the chosen command |
 | **Specialisation Area** | A **Code** of up to 15 characters. It appears in the batch numbers |
-| **Ships** | A **Type**: **Ship**, **Base** or **Training**, and an optional **Command**. Drafting uses the active ships |
+| **Ships** | A **Type**: **Sea**, **Land** or **Training**, and an optional **Command**. The list shows the name, type, command and status. The description is in the dialog. Drafting uses the active ships, and a posting takes its command from its ship |
 | **States** | A **Code** and a **Geo-Political Zone**. The rating form fills the zone from the state |
 | **Title** | A name and a description |
 | **Training** | A course. It needs an **Institution** and the **Weeks**, 1 to 104. **Branch** and **Specialisation** empty mean any. **Rates** are picked from a list that adds a chip. None picked means every rate. [Training Drafting](#training/process) offers these courses |

@@ -95,11 +95,11 @@ Below the bar are ten tabs.
 | Tab | What it holds |
 |---|---|
 | **Details** | Basic Details, Contact, Health and Official, as four cards |
-| **Next of Kin** | The people to call, with a photograph |
-| **Spouse** | The rating's spouse |
-| **Children** | The rating's children |
+| **Next of Kin** | The people to call, with their address and contact details, and a photograph |
+| **Spouse** | The rating's spouse, with the address |
+| **Children** | The rating's children, with the address, sex, date of birth and school |
 | **Advancement** | Every rate the rating has held, with dates, decoration and authority |
-| **Drafting** | The postings, as a timeline with the current one at the top |
+| **Drafting** | The postings, as a timeline with the current one at the top, each with its command, branch and status |
 | **Training** | Courses attended |
 | **Education** | Schools and qualifications |
 | **Language** | Languages spoken |
@@ -133,6 +133,37 @@ Below the bar are ten tabs.
 4. Press **Save**.
 
 ![Adding a next of kin](shot:ratings-add-next-of-kin)
+
+### Read an entry in full {#ratings-view-details needs="ratings.edit view"}
+
+The lists on **Next of Kin**, **Spouse**, **Children** and **Drafting** show only the main facts of each entry. To read all of it:
+
+1. Open the record and press the tab.
+2. Press the entry's row or card.
+3. Read the details, one fact on each line.
+4. Press **Close**. If your role may change entries, **Edit** and **Delete** are in the same place.
+
+![An entry in full](shot:ratings-view-details)
+
+### What each tab asks for {#ratings-tab-fields needs="ratings.edit view"}
+
+Fields with a star are required. Dates are dd/mm/yyyy. Names are kept as you type them.
+
+| Tab | Fields |
+|---|---|
+| **Next of Kin** | **First Name** \*, **Last Name** \*, **Next of Kin Type** (**Main** or **Alternate**), **Relationship** \*, **Mobile Number** \*, **Home Number**, **Email Address** \*, **Place of Work**, **Full Address** \* |
+| **Spouse** | **Full Name** \*, **Phone Number**, **Email Address**, **Street**, **Town**, **State**, **Local Government**, **P.O. Box** |
+| **Children** | **Full Name** \*, **Sex**, **Date of Birth**, **Phone Number**, **Email Address**, **Street**, **Town**, **State**, **Local Government**, **P.O. Box**, **School**, **Occupation**, **Office Address** |
+| **Drafting** | **Ship or Unit** \*, **Command**, **Branch**, **Rate at Posting**, **From**, **To**, **Authority**, **Decoration/Award**, **Status**, **Remarks** |
+
+- **Relationship** is picked from [Static Tables](#tables/relationship).
+- **Local Government** lists only the local governments of the **State** you chose. Choose the **State** first.
+- **Date of Birth** of a child cannot be in the future. The list shows the child's age.
+- On **Drafting**, picking the **Ship or Unit** fills its **Command**. You may change it. **Branch** starts as the rating's branch and **Status** starts as **Active**.
+- **Authority** is the signal that posted the rating, for example `NHQ/NP/DOD/135/2026`.
+- When a draft takes effect, the new posting is made for you with the ship's command, the rating's branch, the batch's authority and the status **Active**.
+
+![Adding a posting](shot:ratings-add-posting)
 
 To change an entry, press its edit icon.
 
@@ -234,6 +265,31 @@ marks:
   1: button "Next" | Go to the next step
 ```
 
+```shot ratings-view-details
+open: #ratings/edit/B0539
+as: admin
+do:
+  - click: tab "Next of Kin 2"
+  - click: text "Adaeze Okonkwo"
+  - wait: text "Full Address"
+crop: modal
+marks:
+  1: text "Full Address" | The address of the next of kin
+  2: button "Edit" | Change the entry
+```
+```shot ratings-add-posting
+open: #ratings/edit/B0539
+as: admin
+do:
+  - click: tab "Drafting 3"
+  - click: button "Add Posting"
+  - wait: label "Authority"
+  - click: heading "Add Posting"
+crop: modal
+marks:
+  1: label "Authority" | The signal
+  2: button "Save" | Save the posting
+```
 ```shot ratings-record
 open: #ratings/edit/B0539
 as: admin

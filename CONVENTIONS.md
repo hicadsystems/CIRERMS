@@ -467,7 +467,17 @@ module.exports = {
     source: { table, id } })` ends the open posting the day before the WEF and opens the new one on it, or, for a WEF
     after today, schedules it; `onSource(table, { applied, cancelled })` tells the caller's record when a scheduled
     move is made (or cannot be); `scheduledFor(serviceNumber)` is what is still to come (the record's Drafting tab
-    shows it, `js/sections/drafting-record.js`). Never write `rating_drafting` for a move any other way.
+    shows it, `js/sections/drafting-record.js`). Never write `rating_drafting` for a move any other way. The posting it
+    makes carries the new ship's Command (`ref_ship.command_id`), the rating's Branch, the authority it was given (the
+    batch's authority, or the special draft's signal) and the Active status (`ref_exit_type` named Active).
+  - **The record's fields** (`ratings.service.js`, `CHILD_TAB_CONFIG`): each tab's `sanitise` holds its required fields and
+    formats, `refs` names the Static Tables rows a field may pick (an id that is not in the table is refused under its
+    field), and `prepareFields` checks a local government belongs to its state and gives a new posting its defaults
+    (the ship's Command, the rating's Branch, Active) when the request leaves them out; an update writes only the keys it
+    sends. The audit trail needs nothing more: it keeps every changed column of the row. A relative's name is stored as
+    typed. A new field on a record tab goes in five places: its migration column, the tab's `fields` and `details` in
+    `public/js/sections/rating-children.js` (the Add and Edit dialog and View Details), the dossier in
+    `ratings.printouts.js`, and the audit (automatic).
   - **Scheduled changes** (`src/shared/scheduled`): `register(kind, { apply, cancelled })` at load, `schedule(tx,
     actor, { kind, serviceNumber, effectiveDate, payload, source })`, `cancel`, `forRating`, `applyDue({ today })`. The
     server (`src/server.js`) applies the changes due at start and then every hour, each in its own transaction (actor

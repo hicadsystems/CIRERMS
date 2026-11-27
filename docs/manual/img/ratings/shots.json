@@ -1,7 +1,15 @@
 {
   "ratings-add-next-of-kin": {
     "spec": "0611cba84ac0dd15",
-    "source": "7bb42fca63badb28",
+    "source": "279669de878d98b3",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-add-posting": {
+    "spec": "de1bb4fa718ebf8a",
+    "source": "279669de878d98b3",
     "devices": [
       "desktop",
       "phone"
@@ -33,7 +41,7 @@
   },
   "ratings-my-details-page": {
     "spec": "26bdf92876ea0929",
-    "source": "7bb42fca63badb28",
+    "source": "279669de878d98b3",
     "devices": [
       "desktop",
       "phone"
@@ -49,7 +57,15 @@
   },
   "ratings-record": {
     "spec": "0f6a7f429fa49196",
-    "source": "7bb42fca63badb28",
+    "source": "279669de878d98b3",
+    "devices": [
+      "desktop",
+      "phone"
+    ]
+  },
+  "ratings-view-details": {
+    "spec": "2badc647c6524bec",
+    "source": "279669de878d98b3",
     "devices": [
       "desktop",
       "phone"
