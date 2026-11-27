@@ -13,7 +13,7 @@
  * served with the right headers and the CSP allows them; the service worker registers and controls the page; after a
  * sign-in an /api/ answer, a PDF and a photo are never in the cache or served by the worker, and the cache holds only
  * static files; with the network cut a page load shows the offline page (light and dark) and Try Again works once the
- * network is back; a new version brings the update banner and Reload moves to it, with no reload by itself; Install App is
+ * network is back; a new version brings the update banner and Reload moves to it, with no reload by itself; Download App is
  * not in the account menu without an install offer; no browser errors at 1440 and 390. Exits non-zero when a check fails.
  * Runs in well under five minutes (it prints its time and fails over five).
  */
@@ -152,10 +152,10 @@ async function layout(browser, viewport, theme) {
   state.quiet = false;
   check(pdfPhoto.every(Boolean), `${label}: a photo, an upload and a PDF are not found in the cache after asking for them`);
 
-  // Install App is only offered when the browser offers installation
+  // Download App is only offered when the browser offers installation
   await page.locator(phone ? '#phone-header [aria-haspopup="menu"]' : '#rail [aria-haspopup="menu"]').last().click().catch(() => {});
   const items = await page.locator('[role="menu"] [role="menuitem"], [role="menu"] a, [role="menu"] button').allTextContents();
-  check(items.some((t) => /User Guide/.test(t)) && !items.some((t) => /Install App/.test(t)), `${label}: the account menu has no Install App while the browser offers none`, items.join('|'));
+  check(items.some((t) => /User Guide/.test(t)) && !items.some((t) => /Download App/.test(t)), `${label}: the account menu has no Download App while the browser offers none`, items.join('|'));
   await page.keyboard.press('Escape');
   // ... and shows it, just before User Guide, when it does
   await page.evaluate(() => {
@@ -166,11 +166,20 @@ async function layout(browser, viewport, theme) {
   });
   await page.locator(phone ? '#phone-header [aria-haspopup="menu"]' : '#rail [aria-haspopup="menu"]').last().click();
   const labels = await page.locator('[role="menu"] [role="menuitem"]').allTextContents();
-  const at = labels.findIndex((t) => /Install App/.test(t));
-  check(at >= 0 && /User Guide/.test(labels[at + 1] || ''), `${label}: with an install offer, Install App sits just before User Guide`, labels.join('|'));
+  const at = labels.findIndex((t) => /Download App/.test(t));
+  check(at >= 0 && /User Guide/.test(labels[at - 1] || '') && /Sign Out/.test(labels[at + 1] || ''), `${label}: with an install offer, Download App sits just after User Guide, in the group before Sign Out`, labels.join('|'));
+  const look = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('[role="menu"] [role="menuitem"]')];
+    const out = items.find((e) => /Sign Out/.test(e.textContent));
+    const first = items[0];
+    return { signOutSame: !!out && getComputedStyle(out).color === getComputedStyle(first).color, seps: document.querySelectorAll('[role="menu"] [role="separator"]').length, mutedIcon: !!first.querySelector('svg') && getComputedStyle(first.querySelector('svg')).color !== getComputedStyle(first).color };
+  });
+  check(look.signOutSame && look.seps === 2 && look.mutedIcon, `${label}: three groups, muted icons, Sign Out in the same colour as the other rows`, JSON.stringify(look));
+  await page.waitForTimeout(500); // the sheet's animation and the icons settle
+  await shot(page, `account-menu-${viewport.width}-${theme}`);
   if (at >= 0) {
-    await page.locator('[role="menu"] [role="menuitem"]', { hasText: 'Install App' }).click();
-    check(await page.evaluate(() => window.__prompted === true), `${label}: Install App asks the browser to install`);
+    await page.locator('[role="menu"] [role="menuitem"]', { hasText: 'Download App' }).click();
+    check(await page.evaluate(() => window.__prompted === true), `${label}: Download App asks the browser to install`);
   }
 
   // a new version: a static file changes (its time moves), so the server's worker text has a new version; the browser installs
