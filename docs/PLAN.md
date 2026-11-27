@@ -305,6 +305,8 @@ imported special drafts, so it stays under Special Drafting (WP11). The stand-in
 System Administration. Next, after the documents are brought up to date: a **user guide** in the app (as the
 `praxisjbs/mycity-app` application does theirs), overseen by a new administrator session (section 9, what next).
 
+**Decisions of 27/11/2026 (owner):** the live database's schema-only script (kept out of the repository) answers H1 to H4 (`docs/OPEN-QUESTIONS.md`): `drafting.due_months` becomes 18 in Settings, the bands stay; advancement needs no change; CIRERMS keeps its own discharge and training rules where they differ from the live ones, as more sensible. The import (the backup and its lookup rows) waits; the records will come as a SQL Server backup or data script.
+
 **Decisions of 26/11/2026 (owner), as the real database is about to arrive:** the three new document sets (technical guide, runbooks, worked example) become one Word file and one PDF, built by a script in the house style and committed (K1); the sign-in page loses its demo accounts box and gains Forgot Password, which e-mails a one-time code, not a link (K2). Both in `docs/waves/wave-V-handbook-and-password.md`.
 
 **Decisions for the user guide (owner, 26/11/2026,** asked by the administrator after studying mycity-app's guide):
