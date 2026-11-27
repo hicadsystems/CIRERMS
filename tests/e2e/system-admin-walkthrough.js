@@ -1107,7 +1107,7 @@ async function settingsSuite(browser, viewport, theme, full) {
   check(/Stand-in rules|stand-in rules/.test(await main.innerText()), 'Settings: the note about stand-in rules');
   for (const g of ['Drafting', 'Advancement', 'Discharge']) check((await main.locator(`[data-group="${g.toLowerCase()}"]`).count()) === 1, `Settings: a card for ${g}`);
   check((await main.locator('[data-setting]').count()) === 14 && (await main.locator('[data-legend]').count()) === 3, 'Settings: all 14 settings are listed');
-  check(/Due for a draft after \(months on a ship\)/.test(await main.innerText()) && /10 months/.test(await main.innerText()), 'Settings: plain label, value with its unit');
+  check(/Due for a draft after \(months on a ship\)/.test(await main.innerText()) && /18 months/.test(await main.innerText()), 'Settings: plain label, value with its unit');
   check(await noSideScroll(page), 'Settings: no sideways scroll');
   await shot(page, `settings-${phone ? 'phone' : 'desktop'}-${theme}`);
   const editDrafting = main.getByRole('button', { name: 'Edit Drafting settings' });
@@ -1133,13 +1133,13 @@ async function settingsSuite(browser, viewport, theme, full) {
   await input('drafting.band_amber_to').fill('30');
   await footBtn(dlg, 'Save').click();
   const confirm = dialogOf(page);
-  await confirm.getByText('Due for a draft after (months on a ship): 10 months to 12 months').waitFor();
+  await confirm.getByText('Due for a draft after (months on a ship): 18 months to 12 months').waitFor();
   check(/Shown green up to/.test(await confirm.innerText()), 'Settings: the confirmation states what changes');
   await footBtn(confirm, 'Change').click();
   await dlg.getByText(/Must not be below the due value \(12\)/).waitFor();
   check(true, 'Settings: a green band below the due month is refused by the server, under its field');
-  const stillTen = (await api(page, 'GET', '/api/settings')).body.data.find((g) => g.key === 'drafting').items.find((i) => i.key === 'drafting.due_months').value;
-  check(stillTen === '10', 'Settings: a refused save changes nothing', stillTen);
+  const stillLive = (await api(page, 'GET', '/api/settings')).body.data.find((g) => g.key === 'drafting').items.find((i) => i.key === 'drafting.due_months').value;
+  check(stillLive === '18', 'Settings: a refused save changes nothing', stillLive);
   const auditBefore = (await api(page, 'GET', '/api/audit?table=settings')).body.meta.total;
   await input('drafting.band_green_to').fill('20');
   await footBtn(dlg, 'Save').click();
@@ -1179,16 +1179,16 @@ async function settingsSuite(browser, viewport, theme, full) {
   const trail = (await api(page, 'GET', '/api/audit?table=settings&pageSize=25')).body;
   const row = trail.data.find((e) => e.recordId === 'drafting.due_months');
   const entry = row ? (await api(page, 'GET', `/api/audit/${row.id}`)).body.data : null;
-  check(trail.meta.total === auditBefore + 2 && !!entry && entry.action === 'UPDATE' && entry.changes.some((c) => c.from === '10' && c.to === '12'), 'Settings: the audit trail holds before and after for each changed key', JSON.stringify(entry && entry.changes));
+  check(trail.meta.total === auditBefore + 2 && !!entry && entry.action === 'UPDATE' && entry.changes.some((c) => c.from === '18' && c.to === '12'), 'Settings: the audit trail holds before and after for each changed key', JSON.stringify(entry && entry.changes));
   // the change reaches Drafting's due list at once
   const dueTotal = async () => (await api(page, 'GET', '/api/drafting/due?pageSize=100')).body.meta.total;
-  r = await put('drafting', { 'drafting.due_months': 10, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
-  const dueAt10 = await dueTotal();
+  r = await put('drafting', { 'drafting.due_months': 18, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
+  const dueAt18 = await dueTotal();
   await put('drafting', { 'drafting.due_months': 30, 'drafting.band_green_to': 40, 'drafting.band_amber_to': 50 });
   const dueAt30 = await dueTotal();
-  check(dueAt10 > 0 && dueAt30 < dueAt10, 'Settings: changing drafting.due_months changes the due list at once', `${dueAt10} then ${dueAt30}`);
+  check(dueAt18 > 0 && dueAt30 < dueAt18, 'Settings: changing drafting.due_months changes the due list at once', `${dueAt18} then ${dueAt30}`);
   // put the stand-in numbers back
-  r = await put('drafting', { 'drafting.due_months': 10, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
+  r = await put('drafting', { 'drafting.due_months': 18, 'drafting.band_green_to': 20, 'drafting.band_amber_to': 24 });
   check(r.status === 200, 'Settings: the stand-in numbers are put back');
   // the Settings tab comes after Audit Trail, and Ctrl K finds the page
   await page.keyboard.press('Control+k');
@@ -1213,7 +1213,7 @@ async function settingsWithoutGrant(browser) {
   r = await api(page, 'PUT', '/api/settings/drafting', { values: { 'drafting.due_months': 12 } });
   check(r.status === 403, 'PUT /api/settings/drafting: 403', `${r.status}`);
   const kept = await dbConn.query("SELECT value FROM settings WHERE setting_key = 'drafting.due_months'");
-  check(kept[0][0].value === '10', 'Settings: the refused write changed nothing');
+  check(kept[0][0].value === '18', 'Settings: the refused write changed nothing');
   check(ctx.errors.length === 0, 'no browser errors', ctx.errors.join(' | '));
   await ctx.context.close();
 }
