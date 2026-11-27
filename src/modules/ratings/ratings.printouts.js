@@ -58,9 +58,9 @@ const postingBlock = (p) => ({
 
 // the one-tab printout's table
 const DRAFTING_COLUMNS = [
-  { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '15%' }, { label: 'Command', key: 'command_name', w: '13%' }, { label: 'Branch', key: 'branch_name', w: '9%' },
-  { label: 'Rate', key: 'rate_name', w: '8%' }, { label: 'Start', key: 'start_date', kind: 'date', w: '8%' }, { label: 'End', key: 'end_date', kind: 'date', w: '8%' },
-  { label: 'Authority', key: 'authority', kind: 'code', w: '12%' }, { label: 'Decoration/Award', key: 'decoration', w: '11%' }, { label: 'Status', key: 'status_name' },
+  { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '14%' }, { label: 'Command', key: 'command_name', w: '13%' }, { label: 'Branch', key: 'branch_name', w: '8%' },
+  { label: 'Rate', key: 'rate_name', w: '14%' }, { label: 'Start', key: 'start_date', kind: 'date', w: '8%' }, { label: 'End', key: 'end_date', kind: 'date', w: '8%' },
+  { label: 'Authority', key: 'authority', kind: 'code', w: '12%' }, { label: 'Decoration/Award', key: 'decoration', w: '10%' }, { label: 'Status', key: 'status_name' },
 ];
 
 async function dossierPdf({ rating, children, generatedBy }) {
