@@ -143,6 +143,7 @@ and is **not kept in this repository** (PLAN rule 10). Only its rules are writte
 - **Who answers:** the owner.
 
 ### O2. What to carry over when the real records are imported (the later phase)
+**Answered by the owner (27/11/2026):** next of kin, spouse, children and postings take the live forms' fields (W1); everything else without a place in CIRERMS goes into a read-only legacy archive; faulty rows are imported, flagged and reported; accounts come across with no usable password. Photos and documents are settled with the import.
 - **Asked:** which data with no counterpart in the new tables is kept: spouse, children and next-of-kin addresses
   and children's dates of birth, the drafting authority (`signal`), the promotion rank code, passport, BVN and
   commission data. If any is kept, columns are added first; if not, the loss is recorded. Also: how rows with a
