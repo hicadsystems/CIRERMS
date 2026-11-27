@@ -1,6 +1,6 @@
 # Open questions
 
-Every question still open on CIRERMS, in one place, written 26/11/2026 from `docs/PLAN.md` (section 9 and its
+Every question still open on CIRERMS, in one place, written 26/11/2026 (H1 to H9 brought up to date 27/11/2026 from the live schema script, below) from `docs/PLAN.md` (section 9 and its
 decision sections), the report notes in `docs/reports/`, `docs/ADMIN.md` and the hand-off notes in `docs/legacy/`.
 A question the plan or a later report note has answered is not here; the decision sections of `docs/PLAN.md` (9a to 9e)
 are the record of those.
@@ -8,6 +8,27 @@ are the record of those.
 Until a question is answered the app runs on a stand-in, named under it. Every stand-in number for a due rule is a
 setting in the database (the `settings` table, read through `src/shared/settings`), so the real value is entered
 later without a code change.
+
+## What the live schema script answered (27/11/2026)
+
+On 27/11/2026 the owner sent a **schema-only script of the live database** (`HicadHRProject1`, scripted that day: 131
+tables, 35 views, 77 procedures, 1 function, and not one record). It was read once in the administrator's container
+and is **not kept in this repository** (PLAN rule 10). Only its rules are written here, in plain words.
+
+| Question | Answered? | What the live system does |
+|---|---|---|
+| H1 Draft | **Yes** | Due when the current posting (the employment-history row with no end date) has lasted **18 months or more**, counted in whole months from its start date. One number for everyone: no rate, branch or sea/shore difference, and no exit type left out by the rule itself. CIRERMS's stand-in is 10 months, which is **wrong** |
+| H2 Advancement | **Yes** | Due after **48 months from the rating's seniority date**. No appraisal grade or any other table is read, so Naval Character Assessment does not count. CIRERMS's 48 is right; check that it counts from the seniority date |
+| H3 Training | **Yes** | No time rule at all. The person picks a course, rate, branch and specialisation; every rating who matches all three is listed, with their last course (the latest training-history row) and length of service (years since the commission date). Nothing excludes someone recently trained or already in a batch |
+| H4 Discharge | **Yes** | Due when **age is 50 or more**, or **20 or more years since the date employed**, or the **re-engagement date has been reached** and the rating has not left. The live rule leaves out a rating already in a waiting discharge proposal only for the age case, an operator-precedence fault: CIRERMS ports the intent and leaves them out in every case. CIRERMS's 50 and 20 are right; add the re-engagement case if it is missing |
+| H5 TY and DW | **No** | The live tables and procedures never mention a posting type; the special-draft table has no such column. Still open |
+| H6 Forms | **No** | Crystal Reports layouts are not in a database script. Still open |
+| H7 Discharge upload | **Mostly** | The live upload takes, per row: name, title (rank), sex, official number, present ship, date of joining, authority, exit type (by its description), comment, entry mode, exit date, re-engagement date, approved by. CIRERMS's template keeps the fields that decide the discharge; entry mode and the re-engagement date are the two it lacks |
+| H8 Schema copy | **Half** | The structure is here (every table, column and upload layout: `tbl_Person`, `tbl_DraftUpload`, `tbl_Trainingupload`, `tbl_advancementUpload`, `tbl_uploadexceltodischarge`). The lookup rows are not, because the script has no data. A rating is **current** when its exit type id is **1 or 7**; any other exit type is former. Which names ids 1 and 7 carry needs the lookup rows |
+| H9 Passwords | **No** | Not in a database script. Still open |
+
+Every answer is to be applied by a package, not by hand: the setting values (`drafting.due_months` to 18), the
+discharge re-engagement case, the advancement start date, and the training rule if the owner wants the live one.
 
 ## For Hicad
 
