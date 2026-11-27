@@ -1,0 +1,9 @@
+{{#if heading}}<h2 class="sec">{{#if no}}<span class="n">{{no}}</span>{{/if}}{{heading}}</h2>{{/if}}
+{{#each records}}
+<section class="rec">
+  <div class="rec-head"><b>{{title}}</b>{{#if tag}}<span class="rec-tag">{{tag}}</span>{{/if}}</div>
+  {{> facts items=facts cols=2}}
+</section>
+{{else}}
+<p class="rec-none">{{#if empty}}{{empty}}{{else}}No records.{{/if}}</p>
+{{/each}}

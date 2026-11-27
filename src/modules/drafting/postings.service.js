@@ -5,7 +5,8 @@
  * (WP11) calls it the same way. Given a rating, a ship, a WEF and an authority:
  *
  *   - a WEF today or earlier moves the rating now: the open posting ends the day before the WEF, a new
- *     posting starts on the WEF at the ship (rating_drafting; the record's Drafting tab shows it and the
+ *     posting starts on the WEF at the ship, carrying the ship's Command, the rating's Branch, the authority and the
+ *     Active status (rating_drafting; the record's Drafting tab shows it and the
  *     current ship follows, as it is the open posting);
  *   - a WEF after today is Scheduled (src/shared/scheduled, kind 'posting'): nothing changes yet; the
  *     record's Drafting tab shows "Drafted to X wef dd/mm/yyyy" with Scheduled, and the server makes the
@@ -72,6 +73,8 @@ async function applyNow(tx, actor, { serviceNumber, shipId, wef, authority, rema
   }
   const postingId = await repo.insertPosting({
     serviceNumber, shipId: ship.id, rateId: rating.rate_id, startDate: day,
+    // the new ship's Command, the rating's Branch, the batch's authority (or the signal) and the Active status
+    branchId: rating.branch_id, commandId: ship.command_id, authority: (authority || '').slice(0, 150), exitTypeId: await repo.activeExitTypeId(conn),
     remarks: (remarks || (authority ? `Drafted under ${authority}` : '')).slice(0, 500), userId: actor.userId,
   }, conn);
   await audit.record(tx, actor, { action: 'INSERT', table: 'rating_drafting', recordId: `${serviceNumber}:${postingId}`, after: await repo.postingRaw(postingId, conn) });

@@ -531,23 +531,66 @@ async function resolveRatingPhotoFile(serviceNumberRaw, kind) {
 // Child Tab CRUD (8 history/family tabs)
 // ============================================================================
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const KIN_TYPES = ['Main', 'Alternate'];
+const todayIsoDate = () => new Date().toISOString().slice(0, 10);
+
+/** An e-mail address field: empty is allowed unless `required`; otherwise it must look like one. */
+function cleanEmail(val, errors, key, { required = false } = {}) {
+  const email = cleanNullableString(val ?? null, 150);
+  if (!email) {
+    if (required) errors[key] = 'Email Address is required.';
+  } else if (!EMAIL_RE.test(email)) {
+    errors[key] = 'Enter a valid email address.';
+  }
+  return email;
+}
+
+/** The address a spouse and a child carry: street, town, state, local government and P.O. box. */
+function cleanAddress(body, errors) {
+  const stateId = parseNullableId(body.state_id ?? null, 'state_id', errors);
+  const lgaId = parseNullableId(body.local_government_id ?? null, 'local_government_id', errors);
+  if (lgaId && !stateId && !errors.state_id) errors.local_government_id = 'Pick the State first.';
+  return {
+    street: cleanNullableString(body.street ?? null, 150),
+    town: cleanNullableString(body.town ?? null, 100),
+    state_id: stateId ?? null,
+    local_government_id: lgaId ?? null,
+    po_box: cleanNullableString(body.po_box ?? null, 30),
+  };
+}
+
 const CHILD_TAB_CONFIG = Object.freeze({
   'next-of-kin': {
     table: 'rating_next_of_kin',
     listFn: ratingsRepo.listNextOfKin,
+    refs: { next_of_kin_type_id: ['ref_next_of_kin_type', 'Relationship'] },
     sanitise(body) {
       const errors = {};
       const firstName = cleanNullableString(body.first_name, 100);
       const lastName = cleanNullableString(body.last_name, 100);
       if (!firstName) errors.first_name = 'First Name is required.';
       if (!lastName) errors.last_name = 'Last Name is required.';
+      const address = cleanNullableString(body.full_address ?? null, 250);
+      if (!address) errors.full_address = 'Full Address is required.';
       const nokTypeId = parseNullableId(body.next_of_kin_type_id ?? null, 'next_of_kin_type_id', errors);
+      if (!nokTypeId && !errors.next_of_kin_type_id) errors.next_of_kin_type_id = 'Relationship is required.';
+      const mobile = cleanNullableString(body.mobile_number ?? null, 30);
+      if (!mobile) errors.mobile_number = 'Mobile Number is required.';
+      const email = cleanEmail(body.email_address, errors, 'email_address', { required: true });
+      const kind = cleanNullableString(body.kin_type ?? null, 10);
+      if (kind && !KIN_TYPES.includes(kind)) errors.kin_type = 'Pick Main or Alternate.';
       if (Object.keys(errors).length) throw validationError('Please check Next of Kin details.', errors);
       return {
         first_name: firstName,
         last_name: lastName,
-        mobile_number: cleanNullableString(body.mobile_number ?? null, 30),
-        next_of_kin_type_id: nokTypeId ?? null,
+        mobile_number: mobile,
+        kin_type: kind,
+        full_address: address,
+        home_number: cleanNullableString(body.home_number ?? null, 30),
+        email_address: email,
+        place_of_work: cleanNullableString(body.place_of_work ?? null, 200),
+        next_of_kin_type_id: nokTypeId,
       };
     },
   },
@@ -555,39 +598,42 @@ const CHILD_TAB_CONFIG = Object.freeze({
   spouse: {
     table: 'rating_spouse',
     listFn: ratingsRepo.listSpouse,
+    refs: { state_id: ['ref_state', 'State'], local_government_id: ['ref_local_government', 'Local Government'] },
     sanitise(body) {
       const errors = {};
       const name = cleanNullableString(body.name, 200);
       if (!name) errors.name = 'Spouse Name is required.';
-      const email = cleanNullableString(body.email_address ?? null, 150);
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.email_address = 'Enter a valid email address.';
-      }
+      const email = cleanEmail(body.email_address, errors, 'email_address');
+      const address = cleanAddress(body, errors);
       if (Object.keys(errors).length) throw validationError('Please check Spouse details.', errors);
-      return {
-        name,
-        phone_number: cleanNullableString(body.phone_number ?? null, 30),
-        email_address: email,
-      };
+      return { name, phone_number: cleanNullableString(body.phone_number ?? null, 30), email_address: email, ...address };
     },
   },
 
   children: {
     table: 'rating_children',
     listFn: ratingsRepo.listChildren,
+    refs: { state_id: ['ref_state', 'State'], local_government_id: ['ref_local_government', 'Local Government'], gender_id: ['ref_gender', 'Sex'] },
     sanitise(body) {
       const errors = {};
       const name = cleanNullableString(body.name, 200);
       if (!name) errors.name = 'Child Name is required.';
-      const email = cleanNullableString(body.email_address ?? null, 150);
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.email_address = 'Enter a valid email address.';
-      }
+      const email = cleanEmail(body.email_address, errors, 'email_address');
+      const address = cleanAddress(body, errors);
+      const genderId = parseNullableId(body.gender_id ?? null, 'gender_id', errors);
+      const dob = parseCheckedDate(body.date_of_birth ?? null, 'date_of_birth', errors);
+      if (dob && dob > todayIsoDate()) errors.date_of_birth = 'Date of Birth cannot be in the future.';
       if (Object.keys(errors).length) throw validationError('Please check Children details.', errors);
       return {
         name,
         phone_number: cleanNullableString(body.phone_number ?? null, 30),
         email_address: email,
+        ...address,
+        gender_id: genderId ?? null,
+        date_of_birth: dob ?? null,
+        school: cleanNullableString(body.school ?? null, 150),
+        office_address: cleanNullableString(body.office_address ?? null, 250),
+        occupation: cleanNullableString(body.occupation ?? null, 100),
       };
     },
   },
@@ -619,6 +665,9 @@ const CHILD_TAB_CONFIG = Object.freeze({
   drafting: {
     table: 'rating_drafting',
     listFn: ratingsRepo.listDrafting,
+    refs: { branch_id: ['ref_branch', 'Branch'], command_id: ['ref_command', 'Command'], exit_type_id: ['ref_exit_type', 'Status'] },
+    // a new posting the form leaves unsaid takes the ship's Command and the Active status
+    defaults: true,
     sanitise(body) {
       const errors = {};
       const shipId = parseNullableId(body.ship_id, 'ship_id', errors);
@@ -629,12 +678,20 @@ const CHILD_TAB_CONFIG = Object.freeze({
       if (startDate && endDate && endDate < startDate) {
         errors.end_date = 'End Date cannot be earlier than Start Date.';
       }
+      const branchId = parseNullableId(body.branch_id, 'branch_id', errors);
+      const commandId = parseNullableId(body.command_id, 'command_id', errors);
+      const exitTypeId = parseNullableId(body.exit_type_id, 'exit_type_id', errors);
       if (Object.keys(errors).length) throw validationError('Please check Drafting details.', errors);
       return {
         ship_id: shipId,
         rate_id: rateId ?? null,
+        branch_id: branchId,
         start_date: startDate ?? null,
         end_date: endDate ?? null,
+        authority: cleanNullableString(body.authority ?? null, 150),
+        command_id: commandId,
+        decoration: cleanNullableString(body.decoration ?? null, 150),
+        exit_type_id: exitTypeId,
         remarks: cleanNullableString(body.remarks ?? null, 500),
       };
     },
@@ -741,6 +798,37 @@ async function resolveLinks(fields) {
   return out;
 }
 
+/**
+ * What a record's sanitised fields still need before they are stored: every picked row must exist,
+ * a local government must belong to the chosen state, and a new posting the form leaves unsaid
+ * takes the ship's Command, the rating's Branch and the Active status. A key the request left out
+ * is not written (an update changes only what it sends).
+ */
+async function prepareFields(cfg, fields, { isCreate, rating }) {
+  const out = { ...fields };
+  const errors = {};
+  if (cfg.defaults && isCreate) {
+    if (out.command_id === undefined && out.ship_id) {
+      const [ship] = await db.query('SELECT command_id FROM ref_ship WHERE id = ?', [out.ship_id]);
+      out.command_id = ship ? ship.command_id : null;
+    }
+    if (out.branch_id === undefined) out.branch_id = rating.branch_id || null;
+    if (out.exit_type_id === undefined) out.exit_type_id = await ratingsRepo.activeExitTypeId();
+  }
+  for (const [key, [table, label]] of Object.entries(cfg.refs || {})) {
+    if (!out[key]) continue;
+    const [row] = await db.query(`SELECT id FROM ${table} WHERE id = ?`, [out[key]]);
+    if (!row) errors[key] = `Pick ${label} from the list.`;
+  }
+  if (out.local_government_id && out.state_id && !errors.local_government_id) {
+    const [lga] = await db.query('SELECT state_id FROM ref_local_government WHERE id = ?', [out.local_government_id]);
+    if (lga && lga.state_id !== Number(out.state_id)) errors.local_government_id = 'That Local Government is not in the chosen State.';
+  }
+  if (Object.keys(errors).length) throw validationError('Please check the details.', errors);
+  for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k];
+  return out;
+}
+
 function getChildConfig(tabKey) {
   const cfg = CHILD_TAB_CONFIG[tabKey];
   if (!cfg) {
@@ -768,7 +856,7 @@ async function listChildRecords(serviceNumberRaw, tabKey) {
 async function createChildRecord(serviceNumberRaw, tabKey, body, actor) {
   const cfg = getChildConfig(tabKey);
   const rating = await ensureRatingExists(serviceNumberRaw);
-  const fields = await resolveLinks(cfg.sanitise(body || {}));
+  const fields = await prepareFields(cfg, await resolveLinks(cfg.sanitise(body || {})), { isCreate: true, rating });
 
   try {
     await db.transaction(async (tx) => {
@@ -809,7 +897,7 @@ async function updateChildRecord(serviceNumberRaw, tabKey, rowIdRaw, body, actor
     throw notFound('Record not found.');
   }
 
-  const fields = await resolveLinks(cfg.sanitise(body || {}));
+  const fields = await prepareFields(cfg, await resolveLinks(cfg.sanitise(body || {})), { isCreate: false, rating });
   try {
     await db.transaction(async (tx) => {
       const before = await ratingsRepo.findChildRow(cfg.table, rowId, rating.service_number, tx.connection);
@@ -1084,14 +1172,7 @@ const TAB_PDF_SPECS = Object.freeze({
   drafting: {
     title: 'Drafting',
     listFn: ratingsRepo.listDrafting,
-    columns: [
-      { label: 'S/N', kind: 'index', w: '6%' },
-      { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '22%' },
-      { label: 'Rate', key: 'rate_name', w: '14%' },
-      { label: 'Start Date', key: 'start_date', kind: 'date', w: '13%' },
-      { label: 'End Date', key: 'end_date', kind: 'date', w: '13%' },
-      { label: 'Remarks', key: 'remarks' },
-    ],
+    columns: [{ label: 'S/N', kind: 'index', w: '5%' }, ...printouts.DRAFTING_COLUMNS],
     // a drafting with no end date is the present one
     shape: (r) => ({ ...r, end_date: r.end_date || 'Present' }),
   },
@@ -1364,12 +1445,17 @@ async function processBatchUpload(buffer, actor) {
         const after = await ratingsRepo.findRawRating(item.ratingRecord.service_number, tx.connection);
         await audit.record(tx, actor, { action: 'INSERT', table: 'ratings', recordId: item.ratingRecord.service_number, after });
         if (item.shipId) {
+          // the posting carries the ship's Command, the rating's Branch and the Active status, as a move does
+          const [ship] = await db.query('SELECT command_id FROM ref_ship WHERE id = ?', [item.shipId], tx.connection);
           const postingId = await ratingsRepo.insertChildRow(
             'rating_drafting',
             {
               service_number: item.ratingRecord.service_number,
               ship_id: item.shipId,
               rate_id: item.ratingRecord.rate_id,
+              branch_id: item.ratingRecord.branch_id || null,
+              command_id: ship ? ship.command_id : null,
+              exit_type_id: await ratingsRepo.activeExitTypeId(tx.connection),
               start_date:
                 item.ratingRecord.date_employed
                 || item.ratingRecord.seniority_date

@@ -357,23 +357,39 @@ async function listNextOfKin(serviceNumber) {
        FROM rating_next_of_kin nok
        LEFT JOIN ref_next_of_kin_type nokt ON nokt.id = nok.next_of_kin_type_id
       WHERE nok.service_number = ?
-      ORDER BY nok.id ASC`,
+      ORDER BY (nok.kin_type = 'Main') DESC, nok.id ASC`,
     [serviceNumber]
   );
 }
 
 async function listSpouse(serviceNumber) {
   return db.query(
-    `SELECT * FROM rating_spouse WHERE service_number = ? ORDER BY id ASC`,
+    `SELECT sp.*, st.name AS state_name, lga.name AS local_government_name
+       FROM rating_spouse sp
+       LEFT JOIN ref_state st ON st.id = sp.state_id
+       LEFT JOIN ref_local_government lga ON lga.id = sp.local_government_id
+      WHERE sp.service_number = ? ORDER BY sp.id ASC`,
     [serviceNumber]
   );
 }
 
 async function listChildren(serviceNumber) {
   return db.query(
-    `SELECT * FROM rating_children WHERE service_number = ? ORDER BY id ASC`,
+    `SELECT ch.*, st.name AS state_name, lga.name AS local_government_name, g.name AS gender_name,
+            TIMESTAMPDIFF(YEAR, ch.date_of_birth, CURDATE()) AS age
+       FROM rating_children ch
+       LEFT JOIN ref_state st ON st.id = ch.state_id
+       LEFT JOIN ref_local_government lga ON lga.id = ch.local_government_id
+       LEFT JOIN ref_gender g ON g.id = ch.gender_id
+      WHERE ch.service_number = ? ORDER BY ch.id ASC`,
     [serviceNumber]
   );
+}
+
+/** The exit type a posting starts with: the one named Active, or null when the Static Tables have none. */
+async function activeExitTypeId(conn = null) {
+  const rows = await db.query("SELECT id FROM ref_exit_type WHERE name = 'Active' ORDER BY id LIMIT 1", [], conn);
+  return rows[0] ? rows[0].id : null;
 }
 
 async function listAdvancement(serviceNumber) {
@@ -392,11 +408,15 @@ async function listAdvancement(serviceNumber) {
 async function listDrafting(serviceNumber) {
   return db.query(
     `SELECT dr.*, ship.name AS ship_name, rate.name AS rate_name,
+            br.name AS branch_name, cmd.name AS command_name, ex.name AS status_name,
             CONCAT_WS(' ', r.surname, r.first_name, r.middle_name) AS rating_name
        FROM rating_drafting dr
        INNER JOIN ratings r ON r.service_number = dr.service_number
        LEFT JOIN ref_ship ship ON ship.id = dr.ship_id
        LEFT JOIN ref_rate rate ON rate.id = dr.rate_id
+       LEFT JOIN ref_branch br ON br.id = dr.branch_id
+       LEFT JOIN ref_command cmd ON cmd.id = dr.command_id
+       LEFT JOIN ref_exit_type ex ON ex.id = dr.exit_type_id
       WHERE dr.service_number = ?
       ORDER BY (dr.end_date IS NULL) DESC, COALESCE(dr.start_date, '9999-12-31') DESC, dr.id DESC`,
     [serviceNumber]
@@ -603,6 +623,7 @@ module.exports = {
   listChildren,
   listAdvancement,
   listDrafting,
+  activeExitTypeId,
   listTraining,
   listEducation,
   listLanguage,

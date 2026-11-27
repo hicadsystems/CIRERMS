@@ -28,6 +28,41 @@ function photoUri(rating) {
 
 const table = (no, heading, columns, rows) => ({ no, heading, columns, rows });
 
+const joinParts = (...parts) => parts.filter(Boolean).join(', ');
+const addressOf = (r) => joinParts(r.street, r.town, r.local_government_name, r.state_name, r.po_box ? `P.O. Box ${r.po_box}` : '');
+const dobWithAge = (r) => (r.date_of_birth ? `${dmy(r.date_of_birth)}${r.age !== null && r.age !== undefined ? ` (${r.age})` : ''}` : '');
+
+/** One person of the record as a block of label and value rows (the dossier shows them in full). */
+const nokBlock = (k) => ({
+  title: [k.first_name, k.last_name].filter(Boolean).join(' '),
+  tag: [k.kin_type, k.next_of_kin_type_name].filter(Boolean).join(' · '),
+  facts: [f('Relationship', k.next_of_kin_type_name), f('Next of Kin Type', k.kin_type), f('Mobile Number', k.mobile_number, 'code'), f('Home Number', k.home_number, 'code'),
+    f('Email Address', k.email_address), f('Place of Work', k.place_of_work), f('Full Address', k.full_address)],
+});
+const spouseBlock = (s) => ({
+  title: s.name, tag: 'Spouse',
+  facts: [f('Phone Number', s.phone_number, 'code'), f('Email Address', s.email_address), f('Address', addressOf(s))],
+});
+const childBlock = (c) => ({
+  title: c.name, tag: 'Child',
+  facts: [f('Sex', c.gender_name), f('Date of Birth', dobWithAge(c)), f('Phone Number', c.phone_number, 'code'), f('Email Address', c.email_address),
+    f('Address', addressOf(c)), f('School', c.school), f('Occupation', c.occupation), f('Office Address', c.office_address)],
+});
+
+const postingBlock = (p) => ({
+  title: p.ship_name || '-',
+  tag: `${p.end_date ? '' : 'Current · '}${dmy(p.start_date) || '?'} – ${p.end_date ? dmy(p.end_date) : 'Present'}`,
+  facts: [f('Command', p.command_name), f('Branch', p.branch_name), f('Rate at Posting', p.rate_name), f('Status', p.status_name),
+    f('Authority', p.authority), f('Decoration/Award', p.decoration), f('Remarks', p.remarks)],
+});
+
+// the one-tab printout's table
+const DRAFTING_COLUMNS = [
+  { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '14%' }, { label: 'Command', key: 'command_name', w: '13%' }, { label: 'Branch', key: 'branch_name', w: '8%' },
+  { label: 'Rate', key: 'rate_name', w: '14%' }, { label: 'Start', key: 'start_date', kind: 'date', w: '8%' }, { label: 'End', key: 'end_date', kind: 'date', w: '8%' },
+  { label: 'Authority', key: 'authority', kind: 'code', w: '12%' }, { label: 'Decoration/Award', key: 'decoration', w: '10%' }, { label: 'Status', key: 'status_name' },
+];
+
 async function dossierPdf({ rating, children, generatedBy }) {
   const r = rating;
   const data = {
@@ -64,27 +99,17 @@ async function dossierPdf({ rating, children, generatedBy }) {
       f('Entry Mode', r.entry_mode_name), f('Date Employed', r.date_employed, 'date'), f('Seniority Date', r.seniority_date, 'date'),
       f('Exit Type', r.exit_type_name), f('Exit Date', r.exit_date, 'date'), f('Exit Reason', r.exit_reason),
     ],
-    nextOfKin: table(5, 'Next of Kin', [
-      { label: 'First Name', key: 'first_name', w: '26%' }, { label: 'Last Name', key: 'last_name', w: '26%' },
-      { label: 'Mobile Number', key: 'mobile_number', kind: 'code', w: '24%' }, { label: 'Next of Kin Type', key: 'next_of_kin_type_name' },
-    ], children.nextOfKin || []),
-    family: table(6, 'Spouse & Children', [
-      { label: 'Relation', key: 'relation', w: '14%' }, { label: 'Name', key: 'name', w: '34%' },
-      { label: 'Phone Number', key: 'phone_number', kind: 'code', w: '22%' }, { label: 'Email Address', key: 'email_address' },
-    ], [
-      ...(children.spouse || []).map((s) => ({ relation: 'Spouse', ...s })),
-      ...(children.children || []).map((c) => ({ relation: 'Child', ...c })),
-    ]),
+    nextOfKin: { no: 5, heading: 'Next of Kin', empty: 'No next of kin is recorded.', records: (children.nextOfKin || []).map(nokBlock) },
+    family: {
+      no: 6, heading: 'Spouse & Children', empty: 'No spouse or children are recorded.',
+      records: [...(children.spouse || []).map(spouseBlock), ...(children.children || []).map(childBlock)],
+    },
     advancement: table(7, 'Advancement History', [
       { label: 'Rate', key: 'rate_name', w: '16%' }, { label: 'Start Date', key: 'start_date', kind: 'date', w: '13%' },
       { label: 'End Date', key: 'end_date', kind: 'date', w: '13%' }, { label: 'Decoration', key: 'decoration', w: '20%' },
       { label: 'Authority', key: 'authority', kind: 'code', w: '22%' }, { label: 'GCB No.', key: 'gcbno', kind: 'code' },
     ], children.advancement || []),
-    drafting: table(8, 'Drafting History', [
-      { label: 'Ship / Unit', key: 'ship_name', kind: 'name', w: '24%' }, { label: 'Rate', key: 'rate_name', w: '14%' },
-      { label: 'Start Date', key: 'start_date', kind: 'date', w: '14%' }, { label: 'End Date', key: 'end_date', kind: 'date', w: '14%' },
-      { label: 'Remarks', key: 'remarks' },
-    ], (children.drafting || []).map((d) => ({ ...d, end_date: d.end_date || 'Present' }))),
+    drafting: { no: 8, heading: 'Drafting History', empty: 'No postings are recorded.', records: (children.drafting || []).map(postingBlock) },
     training: table(9, 'Training & Education', [
       { label: 'Type', key: 'kind', w: '11%' }, { label: 'Institution', key: 'institution', w: '30%' }, { label: 'Qualification', key: 'qualification', w: '24%' },
       { label: 'Class', key: 'classification', w: '14%' }, { label: 'Period', key: 'period' },
@@ -151,4 +176,4 @@ async function listPdf({ status, rows, filter, generatedBy }) {
   return renderPdf('ratings-list', data);
 }
 
-module.exports = { dossierPdf, tabPdf, listPdf };
+module.exports = { dossierPdf, tabPdf, listPdf, DRAFTING_COLUMNS };
