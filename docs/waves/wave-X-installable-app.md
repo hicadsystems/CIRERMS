@@ -79,6 +79,9 @@ Read `docs/waves/README.md` first: its rules bind you.
    While you are in `tests/e2e/`, also fix the demo walkthrough: it expects every page to open a dialog, and the User
    Guide and Settings pages do not. Make those two pages exceptions, and it passes again.
 
+### Added 27/11/2026 (owner)
+The account menu is restyled like the owner's mycity-app account menu, in three groups separated by dividers: (View My Details, Change Password, Lock Screen), (Light Mode or Dark Mode, User Guide, **Download App**), (Sign Out, in the neutral colour). "Download App" is item 4's Install App, renamed. Only the account menu changes; other menus keep their look.
+
 ### Check
 On a fresh database:
 - the installable walkthrough, the demo walkthrough and the access walkthrough;
