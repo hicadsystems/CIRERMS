@@ -34,6 +34,7 @@ export function listView({ columns = [], load, card = {}, onPick = null, rowKey 
   let meta = { page: 1, pageSize: PAGE_SIZE, total: 0, totalPages: 1 };
   let picked = null;
   let token = 0;
+  let failure = null; // the last load's error: a list that could not load is never shown as empty
 
   const cell = (col, row) => (typeof col.render === 'function' ? col.render(row) : row[col.key]);
   const title = card.title || ((r) => cell(columns[1] || columns[0], r));
@@ -57,10 +58,15 @@ export function listView({ columns = [], load, card = {}, onPick = null, rowKey 
 
   const emptyNode = () => emptyState({ icon: empty.icon || 'search', title: empty.title || 'Nothing Found', text: empty.text || '' });
 
+  const failedNode = () => emptyState({ icon: 'wifi-off', title: 'Could Not Load the List', text: (failure && failure.message) || 'Try again in a moment.' });
+
   function draw() {
     tbody.replaceChildren();
     cards.replaceChildren();
-    if (!rows.length) {
+    if (failure) {
+      tbody.appendChild(h('tr', {}, h('td', { colspan: String(columns.length || 1) }, failedNode())));
+      cards.appendChild(h('div', { className: CARD }, failedNode()));
+    } else if (!rows.length) {
       tbody.appendChild(h('tr', {}, h('td', { colspan: String(columns.length || 1) }, emptyNode())));
       cards.appendChild(h('div', { className: CARD }, emptyNode()));
     }
@@ -105,6 +111,7 @@ export function listView({ columns = [], load, card = {}, onPick = null, rowKey 
 
   async function fetchPage() {
     const mine = ++token;
+    failure = null;
     loading();
     try {
       const res = await load({ page, pageSize: PAGE_SIZE });
@@ -118,6 +125,7 @@ export function listView({ columns = [], load, card = {}, onPick = null, rowKey 
     } catch (err) {
       if (mine !== token) return;
       rows = [];
+      failure = err || new Error('Could not load the list.');
       meta = { page: 1, pageSize: PAGE_SIZE, total: 0, totalPages: 1 };
       draw();
       toast((err && err.message) || 'Could not load the list.', 'error');

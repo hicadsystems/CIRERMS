@@ -50,7 +50,7 @@ function renderHeader(info) {
   const search = h('button', { type: 'button', className: ROUND, 'aria-label': 'Search', onClick: () => openSearch() }, icon('search', 'icon h-5 w-5'));
   const account = h('button', { type: 'button', className: ROUND, 'aria-label': 'Account' },
     photoAvatar(user.fullName || user.username || '', user.passportPhotoUrl, 'xs', user.initials || undefined, 'bg-sidebar-accent text-sidebar-accent-foreground shadow-none ring-0'));
-  attachMenu(account, accountItems, { title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
+  attachMenu(account, accountItems, { variant: 'account', title: user.fullName || user.username || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
   header.replaceChildren(
     lead,
     h('span', { id: 'phone-title', className: 'min-w-0 flex-1 truncate px-1 text-base font-semibold', text: info ? info.short : 'CIRERMS' }),

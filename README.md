@@ -527,3 +527,15 @@ its pictures in `docs/manual/img/<chapter>/`); `docs/manual/README.md` says how 
   captures of every picture: desktop and phone, light and dark. `-- --chapter <slug>`, `-- --shot <id>` and `-- --stale` take less;
   `npm run guide:check` finds mistakes in the chapters.
 - **Keeping it true.** A change to a screen should retake its pictures (`npm run guide:shots -- --stale`) and correct its chapter.
+
+## 9. Installable app (PWA)
+
+CIRERMS installs as an app: Chrome and Edge (desktop and Android) offer it, and iPhone and iPad use Share, Add to Home Screen. It opens in its own window with the crest as its icon. It is still the same web app talking to the same server; no record is kept on the device. **Installing needs HTTPS** (localhost is the one exception).
+
+- **Files.** `public/manifest.webmanifest` (name, `start_url` `/app.html`, scope `/`, standalone; its `theme_color` and `background_color` are the one place hex colours are written, mirroring `--sidebar` and `--background` in `css/input.css`), the icons in `public/assets/icons/` (made from the crest by `npm run icons:pwa`), `public/sw.js`, `public/offline.html`, and `js/core/pwa.js` (registers the worker, the update banner, the install offer).
+- **What is cached.** Only the app's own static files: the scripts, the stylesheet, the icon sprite, the images and icons, the manifest and the offline page. Pages (`app.html`, `index.html`) go to the network first; with no network the offline page shows.
+- **What never is.** `/api/` answers, PDFs, uploads, documents and photos: they hold personal data, so the worker never answers them and the cache only accepts paths from its own file list. Sign out and the lock screen are unchanged; there is nothing personal to clear.
+- **How the version moves.** The server (`src/pwa.js`) fills the worker's text with the package version and a hash of every static file's path, size and time. A new deployment (or any changed file) gives a different worker; the browser installs it beside the old one and the app shows "A new version of CIRERMS is ready." with **Reload**. Reload activates the new worker, which deletes the old cache, and the page reloads. Nothing reloads by itself. Bump `version` in `package.json` for a release as usual.
+- **Server.** `sw.js` is sent with `Cache-Control: no-cache` and `Service-Worker-Allowed: /`; the manifest as `application/manifest+json`; the CSP adds `manifest-src 'self'` (and already has `worker-src 'self'`).
+- **Check.** `NODE_PATH=$(npm root -g) node tests/e2e/installable-walkthrough.js`. A headless browser cannot complete a real install; the walk-through checks the parts (manifest, icons, worker, cache, offline page, update banner, the account menu item when an install offer is simulated).
+

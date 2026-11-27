@@ -132,7 +132,7 @@ export function renderRail(info) {
     ]),
     c ? null : icon('chevron-up', 'icon text-sidebar-muted'),
   ]);
-  attachMenu(accountBtn, accountItems, { placement: 'top', align: 'start', width: 'w-56', title: user.fullName || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
+  attachMenu(accountBtn, accountItems, { variant: 'account', placement: 'top', align: 'start', width: 'w-56', title: user.fullName || 'Account', subtitle: `${user.username || ''} · ${roleLabel(user)}` });
 
   rail.replaceChildren(brand, scroll, h('div', { className: 'relative flex-none border-t border-sidebar-border p-2.5' }, accountBtn));
   bindTips(rail);
