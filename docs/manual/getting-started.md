@@ -121,6 +121,7 @@ Press the account button to open the menu. It holds everything that belongs to y
 | **Change Password** | Lets you choose a new password. |
 | **Lock Screen** | Hides your work until you type your password. |
 | **Dark Mode** | Changes the colours for dim light. The item then reads **Light Mode**. |
+| **Install App** | Installs CIRERMS on this device. It shows only when your browser offers it, and not once CIRERMS is installed. See [Installing CIRERMS](#getting-started-installing). |
 | **User Guide** | Opens this guide. |
 | **Sign Out** | Ends your session. |
 
@@ -141,6 +142,48 @@ If the box says **The passwords do not match.**, type the new password again in 
 3. To go back, open the account menu and press **Light Mode**.
 
 On a desktop, the moon button at the top right does the same. CIRERMS remembers your choice on this device.
+
+## Installing CIRERMS {#getting-started-installing}
+
+You can install CIRERMS on your computer or phone. It then opens in its own window, with the crest as its icon, from the Start menu, the desktop or the home screen. Installing needs no app store and no installer file. CIRERMS still works through the server, so you need a network connection, and nothing about any rating is kept on your device. You sign in as you always do.
+
+> **Note:** Installing works only when the address of CIRERMS starts with `https://`. Your administrator sets this up. If your browser never offers to install, ask your administrator.
+
+### Install on a computer {#getting-started-install-computer}
+
+1. Open CIRERMS in Chrome or Edge and sign in.
+2. Press the install icon at the right end of the address bar. Or open the account menu and press **Install App**.
+3. Press **Install** in the box the browser shows.
+4. CIRERMS opens in its own window. Next time, open it from the Start menu or the desktop.
+
+### Install on an Android phone {#getting-started-install-android}
+
+1. Open CIRERMS in Chrome and sign in.
+2. Open the account menu at the top right and press **Install App**. Or open the browser menu and press **Install app**.
+3. Press **Install**.
+4. CIRERMS appears on your home screen with the crest. Press it to open.
+
+### Install on an iPhone or iPad {#getting-started-install-iphone}
+
+An iPhone or iPad does not offer **Install App**, so you add CIRERMS yourself. Use Safari.
+
+1. Open CIRERMS in Safari and sign in.
+2. Press **Share**, the square with an arrow.
+3. Scroll down and press **Add to Home Screen**.
+4. Press **Add**.
+5. CIRERMS appears on your home screen with the crest. Press it to open.
+
+### When a new version is ready {#getting-started-install-update}
+
+CIRERMS updates itself with the server. When a new version is ready, a message at the bottom of the screen says **A new version of CIRERMS is ready.**
+
+1. Finish what you are typing, and save it.
+2. Press **Reload**.
+3. CIRERMS reloads and opens the new version.
+
+CIRERMS never reloads by itself, so you never lose what you are typing. If you ignore the message, you carry on with the old version until you press **Reload** or close and open CIRERMS again.
+
+> **Tip:** If your network is down, CIRERMS shows **You Are Offline**. Check your network and press **Try Again**.
 
 ## The Lock Screen {#getting-started-lock-screen}
 

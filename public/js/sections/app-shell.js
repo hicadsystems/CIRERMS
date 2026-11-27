@@ -7,6 +7,7 @@
  * (shell/lock.js) covers everything while the session is locked. Ctrl K opens the search
  * palette and, on a desktop, Ctrl H the User Guide's mini panel (shell/guide-panel.js).
  */
+import '../core/pwa.js';
 import { api } from '../core/api.js';
 import { PAGES, describe } from '../core/nav.js';
 import { setAccess, pageAllowed, homeHref, can } from '../core/access.js';
