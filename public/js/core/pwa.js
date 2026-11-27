@@ -49,13 +49,26 @@ function showUpdateBanner(worker) {
   const banner = h('div', {
     id: 'update-banner',
     role: 'status',
-    className: 'fixed bottom-4 left-1/2 z-[70] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center gap-3 rounded-card border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-pop phone:bottom-20',
+    className: 'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-card border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-pop',
   }, [
     icon('info', 'icon flex-none text-info'),
     h('span', { className: 'min-w-0 flex-1 leading-relaxed', text: 'A new version of CIRERMS is ready.' }),
     reload,
   ]);
-  document.body.appendChild(banner);
+  // centred on the page beside the desktop sidebar (which can be folded); the full width on the sign-in page and on a phone
+  const wrap = h('div', {
+    id: 'update-banner-wrap',
+    className: 'pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4 phone:bottom-20',
+  }, banner);
+  const rail = document.getElementById('rail');
+  const place = () => {
+    const w = rail && rail.offsetParent !== null ? rail.getBoundingClientRect().width : 0;
+    wrap.style.paddingLeft = w ? `${w + 16}px` : '';
+  };
+  place();
+  if (rail && window.ResizeObserver) new ResizeObserver(place).observe(rail);
+  window.addEventListener('resize', place);
+  document.body.appendChild(wrap);
 }
 
 export function registerServiceWorker() {
