@@ -34,6 +34,7 @@ package you take before you start, so two people never take the same one.
 | V | `wave-V-handbook-and-password.md` | K1 the technical handbook (one Word file, one PDF) | `docs-book` | everything on master | Sonnet 5.5 · medium | S | none | none |
 | V | `wave-V-handbook-and-password.md` | K2 Forgot Password by e-mailed code; no demo box | `forgot-password` | everything on master | Sonnet 5.5 · high | M | `15` | `016_forgot_password.sql` (if needed) |
 | W | `wave-W-record-fields.md` | W1 the record's fields to the live system's; Ships' types and command column | `record-fields` | everything on master | Sonnet 5.5 · high | M | `16` | `017_record_fields.sql` |
+| X | `wave-X-installable-app.md` | X1 CIRERMS as an installable web app | `installable-app` | everything on master | Sonnet 5.5 · medium | S | none | none |
 
 The waves are an order, not a wall: WP5 and WP12 need only WP13, so they can start as soon as it is merged, even
 before wave E finishes. WP8 waits for WP7a because it reuses the batch, approval and close parts WP7a builds.
