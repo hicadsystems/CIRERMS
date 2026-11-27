@@ -7,6 +7,7 @@
  *
  * The banner ("A new version of CIRERMS is ready." with Reload) never reloads by itself, so nobody loses what they are
  * typing: Reload activates the waiting worker, and the page reloads once it has taken over.
+ * An offline banner ("You are offline. ...") shows while the browser is offline and goes when it is back online.
  * Loaded by both pages (js/sections/app-shell.js and auth.js), as early as possible so the install offer is not missed.
  */
 import { h } from '../ui/html.js';
@@ -36,29 +37,19 @@ export async function promptInstall() {
   try { await offer.userChoice; } catch (_) { /* closed without a choice */ }
 }
 
-function showUpdateBanner(worker) {
-  if (document.getElementById('update-banner')) return;
-  const reload = h('button', {
-    type: 'button',
-    className: 'inline-flex h-control flex-none items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-3.5 text-sm font-medium text-primary-foreground shadow-btn hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 phone:h-tap',
-    onClick: () => {
-      reload.disabled = true;
-      worker.postMessage({ type: 'SKIP_WAITING' });
-    },
-  }, [icon('refresh-cw'), 'Reload']);
+/** A quiet banner at the foot of the page, in the update banner's style and position (centred beside the desktop sidebar). */
+function bannerIn(id, nodes) {
   const banner = h('div', {
-    id: 'update-banner',
+    id,
     role: 'status',
     className: 'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-card border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-pop',
-  }, [
-    icon('info', 'icon flex-none text-info'),
-    h('span', { className: 'min-w-0 flex-1 leading-relaxed', text: 'A new version of CIRERMS is ready.' }),
-    reload,
-  ]);
-  // centred on the page beside the desktop sidebar (which can be folded); the full width on the sign-in page and on a phone
+  }, nodes);
   const wrap = h('div', {
-    id: 'update-banner-wrap',
-    className: 'pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4 phone:bottom-20',
+    id: `${id}-wrap`,
+    // a second banner stacks above the first
+    className: document.querySelector('[id$="-banner-wrap"]')
+      ? 'pointer-events-none fixed inset-x-0 bottom-20 z-[70] flex justify-center px-4 phone:bottom-36'
+      : 'pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4 phone:bottom-20',
   }, banner);
   const rail = document.getElementById('rail');
   const place = () => {
@@ -69,7 +60,41 @@ function showUpdateBanner(worker) {
   if (rail && window.ResizeObserver) new ResizeObserver(place).observe(rail);
   window.addEventListener('resize', place);
   document.body.appendChild(wrap);
+  return { wrap, place };
 }
+
+function showUpdateBanner(worker) {
+  if (document.getElementById('update-banner')) return;
+  const reload = h('button', {
+    type: 'button',
+    className: 'inline-flex h-control flex-none items-center justify-center gap-1.5 rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-3.5 text-sm font-medium text-primary-foreground shadow-btn hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 phone:h-tap',
+    onClick: () => {
+      reload.disabled = true;
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    },
+  }, [icon('refresh-cw'), 'Reload']);
+  bannerIn('update-banner', [
+    icon('info', 'icon flex-none text-info'),
+    h('span', { className: 'min-w-0 flex-1 leading-relaxed', text: 'A new version of CIRERMS is ready.' }),
+    reload,
+  ]);
+}
+
+let offlineBanner = null;
+function showOffline() {
+  if (offlineBanner || document.getElementById('offline-banner')) return;
+  offlineBanner = bannerIn('offline-banner', [
+    icon('wifi-off', 'icon flex-none text-warning'),
+    h('span', { className: 'min-w-0 flex-1 leading-relaxed', text: 'You are offline. CIRERMS needs the server; your work is not saved until you are back online.' }),
+  ]).wrap;
+}
+function hideOffline() {
+  if (offlineBanner) offlineBanner.remove();
+  offlineBanner = null;
+}
+window.addEventListener('offline', showOffline);
+window.addEventListener('online', hideOffline);
+if (navigator.onLine === false) window.addEventListener('DOMContentLoaded', showOffline);
 
 export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

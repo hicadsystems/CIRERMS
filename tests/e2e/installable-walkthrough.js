@@ -13,7 +13,7 @@
  * served with the right headers and the CSP allows them; the service worker registers and controls the page; after a
  * sign-in an /api/ answer, a PDF and a photo are never in the cache or served by the worker, and the cache holds only
  * static files; with the network cut a page load shows the offline page (light and dark) and Try Again works once the
- * network is back; a new version brings the update banner and Reload moves to it, with no reload by itself; Download App is
+ * network is back; the network cut inside the app (a plain message, an offline banner, a list that never reads as empty); a new version brings the update banner and Reload moves to it, with no reload by itself; Download App is
  * not in the account menu without an install offer; no browser errors at 1440 and 390. Exits non-zero when a check fails.
  * Runs in well under five minutes (it prints its time and fails over five).
  */
@@ -204,6 +204,43 @@ async function layout(browser, viewport, theme) {
   fs.utimesSync(touched, was.atime, was.mtime);
   const keys = Object.keys(await cacheKeys(page));
   check(keys.length === 1, `${label}: the old version's cache was replaced`, keys.join(','));
+
+  // the network cut while the app is open: a plain message, the offline banner, and a list that never reads as empty
+  await page.goto(`${BASE}/app.html#ratings/former`);
+  await page.waitForSelector('#app-main h1');
+  await page.waitForFunction(() => !document.querySelector('#app-main')?.textContent.includes('Loading'), null, { timeout: 15000 });
+  check(await page.locator('#offline-banner').count() === 0, `${label}: no offline banner while online`);
+  await context.setOffline(true);
+  await page.locator('#offline-banner').waitFor({ timeout: 5000 });
+  const ob = await page.locator('#offline-banner').textContent();
+  check(/You are offline\. CIRERMS needs the server; your work is not saved until you are back online\./.test(ob), `${label}: going offline shows the offline banner`);
+  const pos = await page.evaluate(() => {
+    const b = document.getElementById('offline-banner').getBoundingClientRect();
+    const r = document.getElementById('rail');
+    const railW = r && r.offsetParent !== null ? r.getBoundingClientRect().width : 0;
+    const mid = (b.left + b.right) / 2;
+    const area = (innerWidth + railW) / 2;
+    return { mid, area, railW, fits: b.left >= 0 && b.right <= innerWidth, bottomGap: innerHeight - b.bottom };
+  });
+  check(pos.fits && Math.abs(pos.mid - pos.area) < 24, `${label}: the offline banner is centred beside the sidebar and fits`, JSON.stringify(pos));
+  const msg = await page.evaluate(async () => {
+    const { api } = await import('/js/core/api.js');
+    try { await api.get('/api/ratings?status=current'); return 'no error'; } catch (e) { return `${e.status}|${e.code}|${e.message}`; }
+  });
+  check(msg === '0|NETWORK|CIRERMS cannot reach the server. Check your connection and try again.', `${label}: an unreachable server gives the plain message, not "Failed to fetch"`, msg);
+  state.quiet = true;
+  await page.evaluate(() => { window.location.hash = '#ratings/current'; });
+  await page.locator('#app-main p:visible', { hasText: 'Could Not Load the List' }).first().waitFor({ timeout: 10000 });
+  const body = await page.locator('#app-main').textContent();
+  check(!/No Ratings Found/.test(body) && /CIRERMS cannot reach the server/.test(body), `${label}: the list shows the error state, never "No Ratings Found"`, body.slice(0, 200));
+  const toastText = await page.locator('#toast-root').textContent().catch(() => '');
+  check(!/Failed to fetch/.test(toastText + body) && /cannot reach the server/.test(toastText), `${label}: the toast reads the plain message`, toastText);
+  await shot(page, `offline-in-app-${viewport.width}-${theme}`);
+  await context.setOffline(false);
+  await page.waitForFunction(() => !document.getElementById('offline-banner'), null, { timeout: 5000 });
+  check(true, `${label}: coming back online removes the offline banner`);
+  state.quiet = false;
+  await page.evaluate(() => { window.location.hash = '#dashboard'; });
 
   // the network cut: a page load shows the offline page
   await context.setOffline(true);

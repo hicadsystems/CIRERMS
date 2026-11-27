@@ -221,6 +221,9 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   (`js/core/pwa.js`) offers **Reload**; never reload by itself. New static files are picked up by the list on their own. The CSP
   allows `manifest-src 'self'` and `worker-src 'self'`. The manifest's two colours mirror `--sidebar` and `--background`: the only hex
   allowed in the app, and they change with the tokens. Icons are made from the crest by `npm run icons:pwa`.
+- **Offline.** A request that cannot reach the server throws `ApiClientError` (status 0, code `NETWORK`) reading "CIRERMS cannot
+  reach the server. Check your connection and try again."; a list that failed to load shows that as its error state, never "No ... Found"
+  (`ui/list-view.js`, so every list does the same); `js/core/pwa.js` shows the offline banner while the browser is offline.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
 - Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);
   the rail, the module tabs, the phone header, bottom bar and More sheet, and the router all read it.
