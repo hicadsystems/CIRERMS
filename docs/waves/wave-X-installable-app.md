@@ -1,5 +1,7 @@
 # Wave X: CIRERMS as an installable app
 
+> **Done and merged (X1 on 27/11/2026); the owner installed it and it works. Do not start this again.**
+
 The owner (27/11/2026): "Can we build a downloadable SPA for this?" They chose an **installable web app** (a PWA).
 Chrome and Edge on desktop and on phones offer to install CIRERMS. It then opens in its own window with the crest as
 its icon, from the Start menu, the desktop or the home screen. It starts fast and updates itself with the server.
