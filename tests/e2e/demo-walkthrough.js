@@ -235,7 +235,7 @@ async function palette(browser) {
 // ---- every page, in one layout ---------------------------------------------------------------------------
 const DIALOG_BUTTON = /^(New |Add |Create |Initiate |Draft a )/;
 // pages that are forms or pickers: no list and no add button, so no dialog is expected
-const NO_DIALOG = new Set(['ratings/upload', 'ratings/documents', 'ratings/my-details', 'advancement/upload', 'disciplinary/initiate', 'discharge/service', 'discharge/forms', 'discharge/upload', 'special-drafting/upload', 'training/review', 'training/history', 'training/upload', 'admin/password', 'ratings/edit/B0539']);
+const NO_DIALOG = new Set(['ratings/upload', 'ratings/documents', 'ratings/my-details', 'advancement/upload', 'disciplinary/initiate', 'discharge/service', 'discharge/forms', 'discharge/upload', 'special-drafting/upload', 'training/review', 'training/history', 'training/upload', 'admin/password', 'ratings/edit/B0539', 'guide', 'admin/settings']);
 
 const NEEDS_SHIP = new Set(['reports/ship-history', 'reports/nominal-roll']);
 

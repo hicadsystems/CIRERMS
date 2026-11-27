@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const config = require('./config');
 const db = require('./db');
 const { mountModules } = require('./modules');
+const { serviceWorkerSource } = require('./pwa');
 const { notFoundHandler, errorHandler } = require('./middleware/error');
 
 const app = express();
@@ -30,6 +31,8 @@ app.use(
         frameSrc: ["'self'", 'blob:'],
         // PDF.js draws the app's own PDF preview in a worker served from our own origin
         workerSrc: ["'self'", 'blob:'],
+        // the installable app: the manifest and the service worker
+        manifestSrc: ["'self'"],
         objectSrc: ["'self'", 'blob:'],
         baseUri: ["'self'"],
         formAction: ["'self'"],
@@ -69,12 +72,25 @@ try {
   console.warn('[CIRERMS] pdfjs-dist is not installed: run npm install; the PDF preview needs it.');
 }
 
+// The service worker, with this deployment's version in it; never cached by the browser's HTTP cache
+app.get('/sw.js', (_req, res) => {
+  res.set({
+    'Content-Type': 'text/javascript; charset=utf-8',
+    'Cache-Control': 'no-cache',
+    'Service-Worker-Allowed': '/',
+  });
+  res.send(serviceWorkerSource());
+});
+
 // Serve static SPA shell & partials from public/
 app.use(
   express.static(config.publicDir, {
     index: 'index.html',
     etag: true,
     maxAge: config.isProduction ? '1h' : 0,
+    setHeaders: (res, file) => {
+      if (file.endsWith('.webmanifest')) res.type('application/manifest+json');
+    },
   })
 );
 

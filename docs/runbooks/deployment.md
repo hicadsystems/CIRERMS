@@ -18,6 +18,8 @@ Seeds are safe to repeat (they do not duplicate rows), but the Compose command r
 6. Confirm environment variables and secrets, in particular `JWT_SECRET` (required in production; changing it signs everyone out).
 7. Confirm Chromium (PDF printouts) and upload storage are available.
 
+Installing CIRERMS as an app (Chrome, Edge, Android, iPhone and iPad) needs HTTPS on the public address; browsers allow it on `localhost` only. Serve CIRERMS over HTTPS and do not cache `/sw.js` in the reverse proxy.
+
 ## Docker Compose deployment
 
 From the release checkout:

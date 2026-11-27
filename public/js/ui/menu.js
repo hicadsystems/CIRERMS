@@ -9,6 +9,8 @@
  *     title      the phone sheet's title (default: the button's text or aria-label)
  *     subtitle   a line under the sheet's title (the account sheet's "HICO001 · Administrator")
  *     width      the popover's width class (default 'w-44'; the account menu uses 'w-56')
+ *     variant    'account' gives the account menu its roomier look: grouped rows with dividers, muted icons, no red;
+ *                other menus keep the default look
  *   openMenu(trigger, items, options)   opens one now; returns { close }
  *
  * Desktop: a popover beside the button; arrow keys move through it, Esc and a
@@ -26,12 +28,17 @@ function closeCurrent() {
   if (current) current.close();
 }
 
-function itemNode(item, onDone, sheet) {
-  if (item.divider) return h('div', { className: sheet ? 'my-1 h-px bg-border' : 'my-1 h-px bg-border', role: 'separator' });
-  const cls = sheet
+function itemNode(item, onDone, sheet, account) {
+  if (item.divider) return h('div', { className: account ? 'mx-1 my-1.5 h-px bg-border' : 'my-1 h-px bg-border', role: 'separator' });
+  const cls = account
+    ? cx(
+      'flex w-full items-center gap-3 text-left text-sm font-normal text-foreground outline-none transition-colors hover:bg-subtle focus-visible:bg-subtle',
+      sheet ? 'min-h-tap rounded-ctl px-3 py-3 text-base' : 'rounded-ctl px-3 py-2.5'
+    )
+    : sheet
     ? cx(buttonClass('outline').replace('justify-center', 'justify-start'), 'w-full', item.tone === 'danger' && 'text-destructive')
     : cx('flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:bg-subtle', item.tone === 'danger' ? 'text-destructive hover:bg-error-soft' : 'hover:bg-subtle');
-  const children = [item.icon ? icon(item.icon) : null, item.label];
+  const children = [item.icon ? icon(item.icon, account ? 'icon flex-none text-muted-foreground' : undefined) : null, item.label];
   const run = (e) => {
     onDone();
     if (typeof item.onSelect === 'function') item.onSelect(e);
@@ -40,7 +47,8 @@ function itemNode(item, onDone, sheet) {
   return h('button', { type: 'button', role: 'menuitem', className: cls, disabled: item.disabled, onClick: run }, children);
 }
 
-export function openMenu(trigger, items, { align = 'end', placement = 'bottom', title, subtitle, width = 'w-44' } = {}) {
+export function openMenu(trigger, items, { align = 'end', placement = 'bottom', title, subtitle, width = 'w-44', variant } = {}) {
+  const account = variant === 'account';
   closeCurrent();
   const list = typeof items === 'function' ? items() : items;
 
@@ -50,7 +58,9 @@ export function openMenu(trigger, items, { align = 'end', placement = 'bottom', 
       size: 'sm',
       body: [
         subtitle ? h('div', { className: 'mb-3 text-sm text-muted-foreground', text: subtitle }) : null,
-        h('div', { className: 'flex flex-col gap-2', role: 'menu' }, list.filter((it) => !it.divider).map((it) => itemNode(it, () => dlg.close(), true))),
+        account
+          ? h('div', { className: 'flex flex-col', role: 'menu' }, list.map((it) => itemNode(it, () => dlg.close(), true, true)))
+          : h('div', { className: 'flex flex-col gap-2', role: 'menu' }, list.filter((it) => !it.divider).map((it) => itemNode(it, () => dlg.close(), true))),
       ],
     });
     return { close: () => dlg.close() };
@@ -58,7 +68,7 @@ export function openMenu(trigger, items, { align = 'end', placement = 'bottom', 
 
   const pop = h('div', {
     role: 'menu',
-    className: cx('fixed z-[55] rounded-card border border-border/70 bg-popover p-1 text-sm text-popover-foreground shadow-pop', width),
+    className: cx('fixed z-[55] rounded-card border border-border/70 bg-popover text-sm text-popover-foreground shadow-pop', account ? 'p-1.5' : 'p-1', width),
   });
   const close = () => {
     if (!pop.isConnected) return;
@@ -70,7 +80,7 @@ export function openMenu(trigger, items, { align = 'end', placement = 'bottom', 
     window.removeEventListener('scroll', onScroll, true);
     if (current && current.pop === pop) current = null;
   };
-  list.forEach((it) => pop.appendChild(itemNode(it, close, false)));
+  list.forEach((it) => pop.appendChild(itemNode(it, close, false, account)));
   document.body.appendChild(pop);
 
   // place it beside the trigger, flipping when it would leave the window

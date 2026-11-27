@@ -24,7 +24,7 @@ const ICONS = [
   // record tabs
   'id-card', 'heart', 'baby', 'book-open', 'languages',
   // actions
-  'plus', 'pencil', 'trash-2', 'eye', 'copy', 'printer', 'download', 'upload', 'file-up', 'refresh-cw',
+  'plus', 'pencil', 'trash-2', 'eye', 'copy', 'printer', 'download', 'wifi-off', 'upload', 'file-up', 'refresh-cw',
   'funnel', 'sliders-horizontal', 'x', 'check',
   // files and documents
   'file-text', 'file-spreadsheet', 'folder-open', 'image', 'paperclip', 'list',

@@ -8,6 +8,7 @@
  * words whether or not the number has an account, and never shows a hint of the e-mail address. On
  * success it returns to Sign In with a toast.
  */
+import '../core/pwa.js';
 import { api, setFallbackToken } from '../core/api.js';
 import { bindThemeButton } from '../core/theme.js';
 import { toast } from '../ui/toast.js';

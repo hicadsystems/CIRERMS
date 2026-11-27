@@ -215,6 +215,15 @@ Each work package numbers its migrations in its own block, `20261120_WW####_name
   panels out in two columns on desktop; a lone panel takes the full width.
 - A page's picker (batch, period) sits on the page without a card, label above, `desk:w-96`, full width on a phone.
 - Date fields are typed and shown as dd/mm/yyyy (`core/dates.js` `parseDisplayDate`) and sent as YYYY-MM-DD.
+- **Installable app.** `public/sw.js` caches only the app's own static files (listed by the server, `src/pwa.js`) and never `/api/`,
+  PDFs, uploads, documents or photos; pages go network first, with `public/offline.html` when there is no network. The worker's
+  version is the package version plus a hash of the static files, so a new deployment replaces the old cache and the update banner
+  (`js/core/pwa.js`) offers **Reload**; never reload by itself. New static files are picked up by the list on their own. The CSP
+  allows `manifest-src 'self'` and `worker-src 'self'`. The manifest's two colours mirror `--sidebar` and `--background`: the only hex
+  allowed in the app, and they change with the tokens. Icons are made from the crest by `npm run icons:pwa`.
+- **Offline.** A request that cannot reach the server throws `ApiClientError` (status 0, code `NETWORK`) reading "CIRERMS cannot
+  reach the server. Check your connection and try again."; a list that failed to load shows that as its error state, never "No ... Found"
+  (`ui/list-view.js`, so every list does the same); `js/core/pwa.js` shows the offline banner while the browser is offline.
 - All requests go through one api client in `js/core/api.js` (adds token, handles JSON/FormData/blob downloads and errors).
 - Navigation lives in one catalogue, `js/core/nav.js` (areas, modules, tabs, every page's title and screen id);
   the rail, the module tabs, the phone header, bottom bar and More sheet, and the router all read it.

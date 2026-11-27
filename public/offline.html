@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Offline · CIRERMS</title>
+  <link rel="icon" type="image/png" href="/assets/navy-logo.png" />
+  <meta name="theme-color" content="#0074a8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1a30" media="(prefers-color-scheme: dark)" />
+  <script src="/js/core/theme-boot.js"></script>
+  <link rel="stylesheet" href="/css/output.css" />
+</head>
+<!-- Shown by the service worker (sw.js) when a page cannot reach the server. js/core/offline.js runs Try Again. -->
+<body class="app-canvas flex min-h-dvh items-center justify-center bg-background px-4 text-foreground">
+  <main class="w-full max-w-md rounded-card border border-border bg-background p-8 text-center shadow-pop">
+    <img src="/assets/navy-crest.webp" alt="Nigerian Navy crest" class="mx-auto mb-5 h-24 w-auto object-contain" />
+    <span class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <svg class="icon h-6 w-6" aria-hidden="true"><use href="/assets/icons.svg#wifi-off"></use></svg>
+    </span>
+    <h1 class="text-xl font-semibold">You Are Offline</h1>
+    <p class="mt-2 text-sm leading-relaxed text-muted-foreground">CIRERMS needs a connection to the server. Check your network and try again.</p>
+    <button id="retry" type="button" class="mt-6 inline-flex h-control items-center justify-center gap-1.5 whitespace-nowrap rounded-ctl bg-gradient-to-b from-primary to-primary-hover px-3.5 text-sm font-medium text-primary-foreground shadow-btn hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 phone:h-tap">
+      <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#refresh-cw"></use></svg>
+      Try Again
+    </button>
+  </main>
+  <script type="module" src="/js/core/offline.js"></script>
+</body>
+</html>

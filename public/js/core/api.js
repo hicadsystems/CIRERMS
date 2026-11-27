@@ -38,6 +38,19 @@ function buildAuthHeaders(extra = {}) {
   return headers;
 }
 
+/** What a person reads when the network or the server cannot be reached (a fetch TypeError, not an HTTP error). */
+export const UNREACHABLE_MESSAGE = 'CIRERMS cannot reach the server. Check your connection and try again.';
+
+/** fetch(), with an unreachable server given a plain message and code NETWORK instead of the browser's "Failed to fetch". */
+async function send(url, options) {
+  try {
+    return await fetch(url, options);
+  } catch (err) {
+    if (err && err.name === 'AbortError') throw err;
+    throw new ApiClientError(0, 'NETWORK', UNREACHABLE_MESSAGE);
+  }
+}
+
 export class ApiClientError extends Error {
   constructor(status, code, message, fields = null) {
     super(message);
@@ -53,7 +66,7 @@ async function request(url, { method = 'GET', body = undefined, isFormData = fal
     body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}
   );
 
-  const response = await fetch(url, {
+  const response = await send(url, {
     method,
     credentials: 'include',
     headers,
@@ -93,7 +106,7 @@ function parseFilenameFromDisposition(disposition) {
 }
 
 export async function fetchBlob(url) {
-  const response = await fetch(url, {
+  const response = await send(url, {
     method: 'GET',
     credentials: 'include',
     headers: buildAuthHeaders(),

@@ -20,6 +20,7 @@
     "css:build": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
     "css:watch": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
     "icons:build": "node scripts/build-icons.js",
+    "icons:pwa": "node scripts/build-pwa-icons.js",
     "demo:build": "node docs/design/build-demo.js",
     "printouts:render": "node docs/design/printouts/render.js",
     "guide:shots": "node scripts/guide/shoot.js",
