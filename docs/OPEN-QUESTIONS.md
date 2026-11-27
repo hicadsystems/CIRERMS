@@ -1,6 +1,6 @@
 # Open questions
 
-Every question still open on CIRERMS, in one place, written 26/11/2026 from `docs/PLAN.md` (section 9 and its
+Every question still open on CIRERMS, in one place, written 26/11/2026 (H1 to H9 brought up to date 27/11/2026 from the live schema script, below) from `docs/PLAN.md` (section 9 and its
 decision sections), the report notes in `docs/reports/`, `docs/ADMIN.md` and the hand-off notes in `docs/legacy/`.
 A question the plan or a later report note has answered is not here; the decision sections of `docs/PLAN.md` (9a to 9e)
 are the record of those.
@@ -9,9 +9,30 @@ Until a question is answered the app runs on a stand-in, named under it. Every s
 setting in the database (the `settings` table, read through `src/shared/settings`), so the real value is entered
 later without a code change.
 
+## What the live schema script answered (27/11/2026)
+
+On 27/11/2026 the owner sent a **schema-only script of the live database** (`HicadHRProject1`, scripted that day: 131
+tables, 35 views, 77 procedures, 1 function, and not one record). It was read once in the administrator's container
+and is **not kept in this repository** (PLAN rule 10). Only its rules are written here, in plain words.
+
+| Question | Answered? | What the live system does |
+|---|---|---|
+| H1 Draft | **Yes** | Due when the current posting (the employment-history row with no end date) has lasted **18 months or more**, counted in whole months from its start date. One number for everyone: no rate, branch or sea/shore difference, and no exit type left out by the rule itself. CIRERMS's stand-in is 10 months, which is **wrong** |
+| H2 Advancement | **Yes** | Due after **48 months from the rating's seniority date**. No appraisal grade or any other table is read, so Naval Character Assessment does not count. CIRERMS's 48 is right; check that it counts from the seniority date |
+| H3 Training | **Yes** | No time rule at all. The person picks a course, rate, branch and specialisation; every rating who matches all three is listed, with their last course (the latest training-history row) and length of service (years since the commission date). Nothing excludes someone recently trained or already in a batch |
+| H4 Discharge | **Yes** | Due when **age is 50 or more**, or **20 or more years since the date employed**, or the rating has a **re-engagement date of today or later** and has not left (so every re-engaged rating is listed, whatever their age). The live rule leaves out a rating already in a waiting discharge proposal only for the age case, an operator-precedence fault: CIRERMS ports the intent and leaves them out in every case. CIRERMS's 50 and 20 are right. CIRERMS does the opposite for re-engaged ratings: it leaves them off the list until their re-engagement ends (the owner, 27/11/2026: CIRERMS's way stays) |
+| H5 TY and DW | **No** | The live tables and procedures never mention a posting type; the special-draft table has no such column. Still open |
+| H6 Forms | **No** | Crystal Reports layouts are not in a database script. Still open |
+| H7 Discharge upload | **Mostly** | The live upload takes, per row: name, title (rank), sex, official number, present ship, date of joining, authority, exit type (by its description), comment, entry mode, exit date, re-engagement date, approved by. CIRERMS's template keeps the fields that decide the discharge; entry mode and the re-engagement date are the two it lacks |
+| H8 Schema copy | **Half** | The structure is here (every table, column and upload layout: `tbl_Person`, `tbl_DraftUpload`, `tbl_Trainingupload`, `tbl_advancementUpload`, `tbl_uploadexceltodischarge`). The lookup rows are not, because the script has no data. A rating is **current** when its exit type id is **1 or 7**; any other exit type is former. Which names ids 1 and 7 carry needs the lookup rows |
+| H9 Passwords | **No** | Not in a database script. Still open |
+
+**Decision (owner, 27/11/2026):** keep CIRERMS's discharge and training rules. Every answer is applied as a setting or by a package, not by editing data: `drafting.due_months` becomes 18 (System Administration > Settings), and nothing else: the owner (27/11/2026) keeps CIRERMS's own rules where they differ from the live ones, for discharge (a re-engaged rating is not listed until the re-engagement ends) and training (the course's own branch, specialisation and rates, and nobody already in an open batch for it), as more sensible. Advancement needs no change: the live system moves the seniority date to the board date on each promotion, and CIRERMS counts from the latest promotion of the current rate, which is the same date. The drafting colour bands (green to 20, amber to 24) are the old system's own and stay.
+
 ## For Hicad
 
 ### H1. Who is due for a draft
+**Answered 27/11/2026** by the live schema script: 18 months on the current posting, the same for everyone. Set `drafting.due_months` to 18; the bands 20 and 24 stay (the old system's own).
 - **Asked:** the real rule for who is due for a draft: months on the current ship (and whether sea and shore time
   count differently), by rate group and branch, and which service states and exit types are left out.
 - **Why:** the rule lived in the old system's SQL Server procedures and views, which exist nowhere we can reach
@@ -23,6 +44,7 @@ later without a code change.
   container and never kept in the repository.
 
 ### H2. Who is due for advancement
+**Answered 27/11/2026** by the live schema script: 48 months from the seniority date, which the live system moves to the board date on each promotion; no appraisal grade is read. CIRERMS already does this; no change.
 - **Asked:** the real rule for who is due for the next rate (time in rate and any other conditions), and whether
   the appraisal grades (Naval Character Assessment) count. The old code does not read them, but the view that decides
   who is due is missing, so a hidden join cannot be ruled out (`docs/legacy/open-questions.md` 3).
@@ -34,6 +56,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H3. Who is eligible for a training course
+**Answered 27/11/2026** by the live schema script: everyone of the chosen rate, branch and specialisation, with no time rule. The owner keeps CIRERMS's stricter rule (the course's own branch, specialisation and rates; nobody already in an open batch for it).
 - **Asked:** the real rule for who may be put forward for a course (length of service, time since the last course,
   branch, department, rate).
 - **Why:** it lived only in the missing procedure `migratefromTrainingHisToTrainingDraftTex`
@@ -45,6 +68,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H4. Who is due for discharge
+**Answered 27/11/2026** by the live schema script: age 50, or 20 years since joining, or any re-engaged rating. CIRERMS's 50 and 20 match; the owner keeps CIRERMS's handling of re-engaged ratings (not listed until the re-engagement ends).
 - **Asked:** the real rule: age, length of service, and what makes a rating "due" in the old `dischargeproposal` view.
 - **Why:** the missing view held it.
 - **Used in:** Discharge Administration, Process Discharge (Due for Discharge, its colour pills); Reports, Retirement
@@ -55,6 +79,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H5. What the posting types TY and DW stand for
+**Still open** after the live schema script (27/11/2026): it never mentions a posting type.
 - **Asked:** the meaning of the posting types **TY** and **DW** (the other two are Complement and Vice), and whether
   the list is complete.
 - **Why:** the owner does not know; the old code only passes them on to the missing procedure
@@ -66,6 +91,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H6. The real verification forms and the special draft letter
+**Still open** after the live schema script (27/11/2026): report layouts are not in a database. On 27/11/2026 the owner sent a screenshot of the live page, **Print Re-engagement Verification / Retirement Routine / Engagement Forms**: search by service number, then one row with three buttons, **Re-engagement Verification Form**, **Print Retirement Routine** and **Print Engagement Form**. It confirms the three forms and the page CIRERMS's Verification Forms page already follows (its column headings, FileName, MiddleName and LastName over the buttons, are an old fault not ported). **Closed by the owner (27/11/2026):** CIRERMS's three printouts carry every field that is needed; the old layouts are not copied. The Retirement Routine's Clearance is filled in by hand by each section's officer on the printed form (blank lines and a tick box, as D4 designed it). If Hicad says the discharge office records clearances itself, it becomes a screen later.
 - **Asked:** copies of the real **Re-engagement Verification**, **Retirement Routine** and **Engagement Form**, and
   of the **Special Draft Letter**.
 - **Why:** the old reports are binary Crystal files that cannot be read, so the layouts were designed from the
@@ -77,6 +103,7 @@ later without a code change.
 - **Who answers:** Hicad (the owner passes the copies on).
 
 ### H7. The discharge upload template
+**Mostly answered 27/11/2026** by the live schema script: the live upload's columns are listed in the table above; CIRERMS lacks only entry mode and the re-engagement date.
 - **Asked:** is the demo's template right? The old repository lacks the file.
 - **Why:** it was designed from the fields the old import reads: official number, exit type, exit date, authority,
   approved by, comment.
@@ -85,6 +112,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H8. A schema-only copy of the live database
+**Half answered 27/11/2026:** the structure arrived (the table above). The owner holds the live data (27/11/2026); its lookup rows come with the import, a later step the owner will start. Current means exit type id 1 or 7.
 - **Asked:** if possible, a copy of the old live database's structure with its lookup rows (not one personnel
   record): it would settle H1 to H4 at once, and give the real exit-type codes (which of A, M, C keep a rating
   current), the Excel upload layouts and the real values of ranks, ships, branches, states and commands.
@@ -95,6 +123,7 @@ later without a code change.
 - **Who answers:** Hicad.
 
 ### H9. The old system's database passwords
+**For the owner now (27/11/2026):** the owner holds the live database, so they can check whether the login in the old repository's `hpproject/Web.config` still opens it, and change it if so. The passwords are never sent to anyone or written here.
 - **Asked:** are the passwords in the old repository's `hpproject/Web.config` still in use? If so they should be
   changed.
 - **Why:** they are in plain text in a repository others can read. They were never copied here.
